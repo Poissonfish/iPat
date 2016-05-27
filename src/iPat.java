@@ -13,7 +13,7 @@ import java.io.IOException;
 
 public class iPat {
 	public static void main(String[] args){        
-		iPatFrame main = new iPatFrame();
+		JFrame main = new iPatFrame();
 		main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		main.setTitle("iPat");		
 		main.pack();
