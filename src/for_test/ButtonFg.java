@@ -1,3 +1,4 @@
+package for_test;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
