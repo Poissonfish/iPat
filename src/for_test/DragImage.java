@@ -38,7 +38,7 @@ public class DragImage extends JComponent implements MouseMotionListener {
   }
 
   public static void main(String[] args) {
-    String imageFile = "Figure.png";
+    String imageFile = "/home/mclab/git/iPat/src/for_test/Model.png";
     // Turn off double buffering
     RepaintManager.currentManager(null).setDoubleBufferingEnabled(false);
 

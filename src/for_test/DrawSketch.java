@@ -26,11 +26,6 @@ public class DrawSketch {
 		jFrame.setVisible(true);
 	}
 }
-class REC extends Rectangle{
-	public REC(){
-		
-	}
-}
 
 class sketch extends JPanel implements MouseMotionListener {
 

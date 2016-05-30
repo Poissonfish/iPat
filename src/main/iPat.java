@@ -14,85 +14,116 @@ import java.io.IOException;
 
 public class iPat {
 	public static void main(String[] args){        
-		JFrame main = new iPatFrame();
+		JFrame main = new JFrame();
+		main.setTitle("iPat");	
+		main.setSize(400, 300);
 		main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		main.setTitle("iPat");		
-		main.pack();
-		main.show();
+		Container cPane = main.getContentPane();
+		cPane.add(new myPanel());	
+		main.setVisible(true);
 	}
 }
-
-
-class iPatFrame extends JFrame {
+class myPanel extends JPanel implements MouseMotionListener{
+	
+	int imageX[];
+	int imageY[];
+	Image tbg[];
+	Image ttt;
+	Rectangle imageBounds[];
+			
+			
+	int TBindex =0;
+	int Click=1;
+	
 	JButton TB = new JButton();
-	JButton FG = new JButton();
-	JButton EG = new JButton();
+	JPanel buPanel = new JPanel(new MigLayout("debug"));
 	
-	ImageIcon[] TBs = new ImageIcon[10];
-	//JButton[] FGs = new JButton[10];
-	//JButton[] EGs = new JButton[10];
-	
-	int TBindex = 1;
-	int FGindex = 1;
-	int EGindex = 1;
-	
-	JPanel buPanel = new JPanel(new MigLayout());
-	JPanel paPanel = new JPanel();		
 
-	public void addTB() {
-    		try{
-    			Image TBI = ImageIO.read(getClass().getResource("../resources/Table.png"));
-    			TBs[1]= new ImageIcon(TBI);
-    		} catch (IOException ex){}
-    		repaint();
-    		
-    		System.out.println("helo");
-    		/*
-    	 	SwingUtilities.updateComponentTreeUI(this);
-    		frame.invalidate();
-    		frame.validate();
-    		frame.repaint();
-    		*/
-   
+	@Override
+	protected void paintComponent(Graphics g) {
+	     super.paintComponent(g);
+	     //Graphics2D g2D = (Graphics2D) g;
+	     g.drawImage(tbg[TBindex], imageX[TBindex], imageY[TBindex], this);	     
 	}
+	
+	@Override
+	public void mouseMoved(MouseEvent ev) {
+		int move_x=ev.getX();
+		int move_y=ev.getY();
+		
+		for (int i=0;i<10;i++){
+			if (imageBounds[i].contains(move_x, move_y)){
+				TBindex=i;
+			}
+		}
+	}
+	
+	
+	
+	
+	@Override
+	 public void mouseDragged(MouseEvent e) {
+		int imX = e.getX();
+		int imY = e.getY();
+		Graphics graphics = getGraphics();
+ 		graphics.setXORMode(getBackground());
+ 		((Graphics2D) graphics).drawImage(tbg[TBindex], imageX[TBindex], imageY[TBindex], this);
+ 		((Graphics2D) graphics).drawImage(tbg[TBindex], imX, imY, this);
+ 		graphics.dispose();
+	}
+	
+	
+	public myPanel(){	
+		JPanel mainPanel= new JPanel(new MigLayout("debug"));
 
-	public iPatFrame(){	
 		try{
-			Image iconPS = ImageIO.read(getClass().getResource("../resources/Table.png"));
+			Image iconPS = ImageIO.read(getClass().getResource("../resources/Model.png"));
 			TB.setIcon(new ImageIcon(iconPS));
 		} catch (IOException ex){}
-			
-		buPanel.add(TB);
-		//buPanel.add(FG);
-		//buPanel.add(EG);
-		buPanel.setBorder(new TitledBorder(new EtchedBorder(),"Data Input"));
-		paPanel.setBorder(new TitledBorder(new EtchedBorder(),"Paint Input"));
-		JPanel mainPanel= new JPanel();
-		//JPanel mainPanel= new JPanel(new MigLayout("debug ,fill","","[grow][grow][grow]"));
-		mainPanel.setPreferredSize(new Dimension(400, 700));
-		mainPanel.add(buPanel);
-		mainPanel.add(paPanel);
+		//for (int i=0; i<11; i++){
+			try{
+				//tbg[0] = ImageIO.read(getClass().getResource("../resources/Figure.png"));
+				ttt = ImageIO.read(getClass().getResource("../resources/Figure.png"));
 
-		this.setContentPane(mainPanel);	
+			} catch (IOException ex){}
+						
+		//}
+	
+
 		
 		TB.addMouseListener(new MouseAdapter() {
     		@Override
     		public void mousePressed(MouseEvent evt) {
     			int x = evt.getX();
     			int y = evt.getY();
-    			if (contains(x,y)){    			
-    				addTB();
+    			if (contains(x,y)){ 
+    				imageX[TBindex]=0;
+    				imageY[TBindex]=0;
+    				imageBounds[TBindex]=new Rectangle(imageX[TBindex], imageY[TBindex],150, 150);
+    				repaint();
+    				TBindex++;
     			}
     		}
-    	});
+    	});   	
 		
-    	//addMouseMotionListener(this);				
+		mainPanel.addMouseListener(new MouseAdapter(){
+			@Override
+			public void mousePressed(MouseEvent evp){
+				Click= -1;
+			}
+			@Override
+			public void mouseReleased(MouseEvent evr){
+				Click= 1;
+			}
+			
+		});
+				
+				
+		buPanel.add(TB);
+		buPanel.setBorder(new TitledBorder(new EtchedBorder(),"Data Input"));
+		//JPanel mainPanel= new JPanel(new MigLayout("debug ,fill","","[grow][grow][grow]"));
+		mainPanel.add(buPanel);					
+		this.add(mainPanel);
+		addMouseMotionListener(this);
 	}
-	
-	
-	
-	
 }
-	
-
-
