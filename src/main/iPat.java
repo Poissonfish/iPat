@@ -12,7 +12,9 @@ import javax.swing.border.*;
 import net.miginfocom.swing.MigLayout;
 import java.io.IOException;
 
+
 public class iPat {
+
 	public static void main(String[] args){        
 		JFrame main = new JFrame();
 		main.setTitle("iPat");	
@@ -44,6 +46,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 	JFileChooser chooser= new JFileChooser();
 	String file;
 	int value;
+	JLabel filen= new JLabel("hh");
 	
 	@Override
 	protected void paintComponent(Graphics g) {
@@ -69,6 +72,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 		if (TBindex !=0){
 			imageX[TBindex]=imX-(imageW/2);
 		 	imageY[TBindex]=imY-(imageH/2);
+		 	filen.setLocation(imageX[TBindex],imageY[TBindex]+imageH+10);
 			imageBounds[TBindex]=new Rectangle(imageX[TBindex], imageY[TBindex], ttt[TBindex].getWidth(null), ttt[TBindex].getHeight(null));
 		 	repaint();
 		}	
@@ -113,6 +117,9 @@ class myPanel extends JPanel implements MouseMotionListener{
     	    					 if (value == JFileChooser.APPROVE_OPTION){
     	    					    File selectedfile = chooser.getSelectedFile();
     	    					  	file= selectedfile.getAbsolutePath();
+    	    						filen.setLocation(imageX[i], imageY[i]+imageH+10);
+    	    						filen.setSize(200,15);
+    	    						filen.setText(selectedfile.getName());
     	    					 }
     					   	};
     					}
@@ -153,8 +160,15 @@ class myPanel extends JPanel implements MouseMotionListener{
     	});   	
 		
 		buPanel.add(TB);
-		mainPanel.add(buPanel);					
+		mainPanel.add(buPanel);	
+		this.setLayout(null);
+
+		this.add(filen);
 		this.add(mainPanel);
+
+		mainPanel.setLocation(500,0);
+		mainPanel.setSize(200,200);
+
 		addMouseMotionListener(this);
 	}
 }
