@@ -18,7 +18,7 @@ public class iPat {
 	public static void main(String[] args){        
 		JFrame main = new JFrame();
 		main.setTitle("iPat");	
-		main.setSize(2000,600);
+		main.setSize(1500,600);
 		main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Container cPane = main.getContentPane();
 		cPane.add(new myPanel());	
@@ -38,25 +38,116 @@ class myPanel extends JPanel implements MouseMotionListener{
 		
 	int TBindex =0;
 	int count=0;
-	Boolean Create=false;
 	
 	JButton TB = new JButton();
 	JPanel buPanel = new JPanel(new MigLayout("debug"));	
 
-	JFileChooser chooser= new JFileChooser();
-	String file;
-	int value;
-	JLabel filen= new JLabel("hh");
+	JFileChooser[] chooser= new JFileChooser[MAX];
+	String[] file= new String[MAX];
+	int[] value= new int[MAX];
+	JLabel[] filen= new JLabel[MAX];		
+
+	public myPanel(){			
+		JPanel mainPanel= new JPanel(new MigLayout("debug"));
+		
+		for (int i=1; i<=MAX-1; i++){
+			chooser[i]= new JFileChooser();
+			file[i]= new String();
+			filen[i]= new JLabel("hello");
+			this.add(filen[i]);	
+		}	
+				
+		try{
+			Image iconPS = ImageIO.read(this.getClass().getResourceAsStream("Model.png"));
+			TB.setIcon(new ImageIcon(iconPS));
+		} catch (IOException ex){}	
+		for (int i=1; i<=MAX-1; i++){
+			try{
+				ttt[i] = ImageIO.read(this.getClass().getResourceAsStream("table.png"));
+			} catch (IOException ex){System.out.println("file not found!");}
+		}
+		
+		imageH=ttt[1].getHeight(null);	
+		imageW=ttt[1].getWidth(null);
+		
+		buPanel.add(TB);
+		mainPanel.add(buPanel);	
+		this.setLayout(null);		
+		this.add(mainPanel);
+		mainPanel.setLocation(500,0);
+		mainPanel.setSize(200,200);
+		addMouseMotionListener(this);	
+		
+		TB.addMouseListener(new MouseAdapter() {
+    		@Override
+    		public void mousePressed(MouseEvent evt) {
+    			int x = evt.getX();
+    			int y = evt.getY();
+    			if (contains(x,y)){
+    				count++;
+    				imageX[count]=50+200*(count-1);
+    				imageY[count]=300;		
+    				imageBounds[count]=new Rectangle(imageX[count], imageY[count],ttt[count].getWidth(null), ttt[count].getHeight(null));
+    				repaint();
+    			}		
+    		}
+    	});   		
+		
+		this.addMouseListener(new MouseAdapter(){
+			@Override
+			public void mousePressed(MouseEvent ee){
+				int move_x=ee.getX();
+    			int move_y=ee.getY();			
+    			if (count>0){			
+    				for (int i=1; i<=count;i++){
+    					if (imageBounds[i].contains(move_x, move_y)){
+    						TBindex=i;
+    						System.out.println(i);
+  								
+    						if (SwingUtilities.isRightMouseButton(ee)){
+    							System.out.println("right");
+    							 value[i]= chooser[i].showOpenDialog(null);
+    	    					 if (value[i] == JFileChooser.APPROVE_OPTION){
+    	    					    File selectedfile = chooser[i].getSelectedFile();
+    	    					  	file[i]= selectedfile.getAbsolutePath();
+    	    						filen[i].setLocation(imageX[i], imageY[i]+imageH+10);
+    	    						filen[i].setSize(200,15);
+    	    						filen[i].setText(selectedfile.getName());
+    	    					 }
+    					   	};
+    					}
+    				}
+    			}  			
+			}	
+			@Override
+    		public void mouseClicked(MouseEvent evt) {
+    			int x = evt.getX();
+    			int y = evt.getY();
+    			if (evt.getClickCount() >= 2) {
+    				for (int i=1; i<=count; i++){
+    					if (imageBounds[i].contains(x,y)){
+        					openfile(i);
+    					}
+    				}
+    				
+    			}
+    		}		
+			@Override
+			public void mouseReleased(MouseEvent ee){
+				TBindex=0;
+			}
+			
+		});		
+	}
 	
 	@Override
 	protected void paintComponent(Graphics g) {
 	     super.paintComponent(g);
 		 System.out.println("use paint");
 	     //Graphics2D g2D = (Graphics2D) g;
-	     if (Create){	    	 
+	     if (count>0){	    	 
 	    	 for (int i=1; i<=count; i++){
 			     g.drawImage(ttt[i], imageX[i], imageY[i], this);	
-				 System.out.println(i);
 	    	 }
 	     }
 	}
@@ -72,103 +163,18 @@ class myPanel extends JPanel implements MouseMotionListener{
 		if (TBindex !=0){
 			imageX[TBindex]=imX-(imageW/2);
 		 	imageY[TBindex]=imY-(imageH/2);
-		 	filen.setLocation(imageX[TBindex],imageY[TBindex]+imageH+10);
+		 	filen[TBindex].setLocation(imageX[TBindex],imageY[TBindex]+imageH+10);
 			imageBounds[TBindex]=new Rectangle(imageX[TBindex], imageY[TBindex], ttt[TBindex].getWidth(null), ttt[TBindex].getHeight(null));
 		 	repaint();
 		}	
 	}	
 	
-	public void openfile(){
-		File openfile= new File(file);
+	public void openfile(int i){
+		File openfile= new File(file[i]);
 			try{
 				Desktop.getDesktop().open(openfile);
 			} catch(IOException e) {
 				e.printStackTrace();
 			}
-	}
-	
-	public myPanel(){			
-		JPanel mainPanel= new JPanel(new MigLayout("debug"));
-		try{
-			Image iconPS = ImageIO.read(this.getClass().getResourceAsStream("Model.png"));
-			TB.setIcon(new ImageIcon(iconPS));
-		} catch (IOException ex){}	
-		for (int i=1; i<=MAX-1; i++){
-			try{
-				ttt[i] = ImageIO.read(this.getClass().getResourceAsStream("Figure.png"));
-			} catch (IOException ex){System.out.println("file not found!");}
-		}
-		imageH=ttt[1].getHeight(null);	
-		imageW=ttt[1].getWidth(null);				
-
-		this.addMouseListener(new MouseAdapter(){
-			@Override
-			public void mousePressed(MouseEvent ee){
-				int move_x=ee.getX();
-    			int move_y=ee.getY();			
-    			if (Create){			
-    				for (int i=1; i<=count;i++){
-    					if (imageBounds[i].contains(move_x, move_y)){
-    						TBindex=i;
-    						System.out.println(i);
-  								
-    						if (SwingUtilities.isRightMouseButton(ee)){
-    							 value= chooser.showOpenDialog(null);
-    	    					 if (value == JFileChooser.APPROVE_OPTION){
-    	    					    File selectedfile = chooser.getSelectedFile();
-    	    					  	file= selectedfile.getAbsolutePath();
-    	    						filen.setLocation(imageX[i], imageY[i]+imageH+10);
-    	    						filen.setSize(200,15);
-    	    						filen.setText(selectedfile.getName());
-    	    					 }
-    					   	};
-    					}
-    				}
-    			}  			
-			}	
-			@Override
-    		public void mouseClicked(MouseEvent evt) {
-    			int x = evt.getX();
-    			int y = evt.getY();
-    			if (evt.getClickCount() >= 2) {
-    				openfile();
-    			}
-    		}
-			
-			@Override
-			public void mouseReleased(MouseEvent ee){
-				TBindex=0;
-			}
-			
-		});
-		
-		
-		TB.addMouseListener(new MouseAdapter() {
-    		@Override
-    		public void mousePressed(MouseEvent evt) {
-    			int x = evt.getX();
-    			int y = evt.getY();
-    			if (contains(x,y)){
-    				count++; 
-    				Create=true;
-    				imageX[count]=50+200*(count-1);
-    				imageY[count]=300;		
-    				imageBounds[count]=new Rectangle(imageX[count], imageY[count],ttt[count].getWidth(null), ttt[count].getHeight(null));
-    				repaint();
-    			}		
-    		}
-    	});   	
-		
-		buPanel.add(TB);
-		mainPanel.add(buPanel);	
-		this.setLayout(null);
-
-		this.add(filen);
-		this.add(mainPanel);
-
-		mainPanel.setLocation(500,0);
-		mainPanel.setSize(200,200);
-
-		addMouseMotionListener(this);
-	}
+	}			
 }
