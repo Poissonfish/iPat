@@ -41,7 +41,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 	int FGimageY_int=200;
 	int[] MOimageX= new int[MOMAX];
 	int[] MOimageY= new int[MOMAX];
-	int MOimageX_int=450;
+	int MOimageX_int=430;
 	int MOimageY_int=200;
 	
 	int TBimageH, TBimageW,
@@ -161,11 +161,11 @@ class myPanel extends JPanel implements MouseMotionListener{
 		MOimageH=MO[1].getHeight(null);	
 		MOimageW=MO[1].getWidth(null);
 		
-		JPanel startPanel = new JPanel(new MigLayout("fillx, debug","[][grow][]",""));	
+		JPanel startPanel = new JPanel(new MigLayout("fillx","[][grow][]",""));	
 		startPanel.add(TBButton,"grow");
 		startPanel.add(FGButton,"grow");
 		startPanel.add(MOButton,"grow");
-		JPanel mainPanel= new JPanel(new MigLayout("fillx, debug"));	
+		JPanel mainPanel= new JPanel(new MigLayout("fillx"));	
 		mainPanel.add(iPat,"alignx c, wrap");
 		mainPanel.add(startPanel, "alignx c");	
 		mainPanel.setLocation(80,0);
