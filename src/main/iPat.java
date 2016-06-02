@@ -14,11 +14,10 @@ import java.io.IOException;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.Icon;
 
-public class iPat{	
-		
+public class iPat {	
+
 	public static void main(String[] args){    
-		//Robot AA;
-			
+	
 		JFrame main = new JFrame();
 		main.setTitle("iPat");	
 		main.setSize(550,800);
@@ -29,33 +28,23 @@ public class iPat{
 		cPane.add(LP);	
 		main.setVisible(true);
 		
-		
 		LP.addMouseMotionListener(new MouseAdapter(){
 			@Override
 			 public void mouseDragged(MouseEvent e) {
 				int x= e.getX();
 				int y= e.getY();
-				System.out.println("hello");
-				/*
-				try{
-				       AA = new Robot();
-				    }catch(AWTException ll){ll.printStackTrace();}
+				System.out.println("hello");						
 				if (x<1){
-					AA.mouseMove(main.getX(), y);
-				}	*/	
+				};	
 			}
 			@Override
 			public void mouseMoved(MouseEvent e) {
 				// TODO Auto-generated method stub
-				
-			}
-			
-		});
-		
-		
-	}
-
 	
+			}	
+		});
+			
+	}
 	
 }
 
@@ -210,7 +199,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 		mainPanel.add(startPanel, "alignx c");	
 		mainPanel.setLocation(80,0);
 		mainPanel.setSize(400,800);
-		
 		
 		startPanel.setOpaque(false);
 		mainPanel.setOpaque(false);
@@ -439,10 +427,27 @@ class myPanel extends JPanel implements MouseMotionListener{
 	 public void mouseDragged(MouseEvent e) {
 		int imX = e.getX();
 		int imY = e.getY();
-		
 		if (TBindex !=0){
-			TBimageX[TBindex]=imX-(TBimageW/2);
-		 	TBimageY[TBindex]=imY-(TBimageH/2);
+			if(imX<(0+(TBimageW/2))){
+				TBimageX[TBindex]=0;
+				if(imY<(200+(TBimageH/2))){
+				 	TBimageY[TBindex]=200;
+				}else{
+					TBimageY[TBindex]=imY-(TBimageH/2);
+				}
+			}else if(imY<(200+(TBimageH/2))){
+				TBimageX[TBindex]=imX-(TBimageW/2);
+			 	TBimageY[TBindex]=200;
+			}else if(imY>500){
+				TBimageX[TBindex]=imX-(TBimageW/2);
+			 	TBimageY[TBindex]=500;			
+			}else if(imX>400){
+				TBimageX[TBindex]=400;
+			 	TBimageY[TBindex]=imY-(TBimageH/2);
+			}else{
+				TBimageX[TBindex]=imX-(TBimageW/2);
+			 	TBimageY[TBindex]=imY-(TBimageH/2);
+			}
 		 	TBname[TBindex].setLocation(TBimageX[TBindex],TBimageY[TBindex]+TBimageH+10);
 			TBBound[TBindex]=new Rectangle(TBimageX[TBindex], TBimageY[TBindex], TB[TBindex].getWidth(null), TB[TBindex].getHeight(null));
 		 	repaint();
