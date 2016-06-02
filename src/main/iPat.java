@@ -14,17 +14,49 @@ import java.io.IOException;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.Icon;
 
-public class iPat {
-
-	public static void main(String[] args){        
+public class iPat{	
+		
+	public static void main(String[] args){    
+		//Robot AA;
+			
 		JFrame main = new JFrame();
 		main.setTitle("iPat");	
 		main.setSize(550,800);
+		main.setLocation(500,200); 
 		main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Container cPane = main.getContentPane();
-		cPane.add(new myPanel());	
+		JPanel LP= new myPanel();
+		cPane.add(LP);	
 		main.setVisible(true);
+		
+		
+		LP.addMouseMotionListener(new MouseAdapter(){
+			@Override
+			 public void mouseDragged(MouseEvent e) {
+				int x= e.getX();
+				int y= e.getY();
+				System.out.println("hello");
+				/*
+				try{
+				       AA = new Robot();
+				    }catch(AWTException ll){ll.printStackTrace();}
+				if (x<1){
+					AA.mouseMove(main.getX(), y);
+				}	*/	
+			}
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		});
+		
+		
 	}
+
+	
+	
 }
 
 class myPanel extends JPanel implements MouseMotionListener{	
@@ -52,6 +84,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 	Image[] TB= new Image[TBMAX];
 	Image[] FG= new Image[FGMAX];
 	Image[] MO= new Image[MOMAX];
+	Image csv;
 	
 	Rectangle[] TBBound= new Rectangle[TBMAX];
 	Rectangle[] FGBound= new Rectangle[FGMAX];
@@ -88,38 +121,44 @@ class myPanel extends JPanel implements MouseMotionListener{
 
 	Timer timer; 
 	
+	Robot A;
 	
-	public myPanel(){			
+
+	public myPanel(){	
+	
 		try{
 			Image iconIP = ImageIO.read(getClass().getResource("iPat.png"));
 			iPat.setIcon(new ImageIcon(iconIP));
 		} catch (IOException ex){}
-
+		try{
+			csv = ImageIO.read(this.getClass().getResourceAsStream("CSV.png"));
+		} catch (IOException ex){System.out.println("file not found!");}
+		
+		
 		try{
 			Image iconPS = ImageIO.read(this.getClass().getResourceAsStream("Table.png"));
 			TBButton.setIcon(new ImageIcon(iconPS));
-		} catch (IOException ex){}	
-		
+		} catch (IOException ex){}		
 		for (int i=1; i<=TBMAX-1; i++){
 			try{
 				TB[i] = ImageIO.read(this.getClass().getResourceAsStream("Table.png"));
 			} catch (IOException ex){System.out.println("file not found!");}
 		}
+		
 		try{
 			Image iconPS = ImageIO.read(this.getClass().getResourceAsStream("Figure.png"));
 			FGButton.setIcon(new ImageIcon(iconPS));
 		} catch (IOException ex){}	
-		
 		for (int i=1; i<=FGMAX-1; i++){
 			try{
 				FG[i] = ImageIO.read(this.getClass().getResourceAsStream("Figure.png"));
 			} catch (IOException ex){System.out.println("file not found!");}
 		}
+		
 		try{
 			Image iconPS = ImageIO.read(this.getClass().getResourceAsStream("Model.png"));
 			MOButton.setIcon(new ImageIcon(iconPS));
 		} catch (IOException ex){}	
-		
 		for (int i=1; i<=MOMAX-1; i++){
 			try{
 				MO[i] = ImageIO.read(this.getClass().getResourceAsStream("Model.png"));
@@ -166,20 +205,34 @@ class myPanel extends JPanel implements MouseMotionListener{
 		startPanel.add(TBButton,"grow");
 		startPanel.add(FGButton,"grow");
 		startPanel.add(MOButton,"grow");
-		JPanel mainPanel= new JPanel(new MigLayout("fillx"));	
+		JPanel mainPanel= new JPanel(new MigLayout("debug, fillx"));	
 		mainPanel.add(iPat,"alignx c, wrap");
 		mainPanel.add(startPanel, "alignx c");	
 		mainPanel.setLocation(80,0);
-		mainPanel.setSize(400,200);
+		mainPanel.setSize(400,800);
 		
 		
 		startPanel.setOpaque(false);
 		mainPanel.setOpaque(false);
 		
-		
 		this.setLayout(null);		
 		this.add(mainPanel);
+			
+		/*
 		
+		mainPanel.addMouseMotionListener(new MouseMotionListener(){
+	        @Override
+	        public void mouseDragged(MouseEvent e) {
+	        	
+	         A.mouseMove(e.getX(), e.getY());
+	        }
+
+	        @Override
+	        public void mouseMoved(MouseEvent e) {
+	       
+	        }
+	    });	*/	
+
 		addMouseMotionListener(this);
 		
 		timer = new Timer(10, new ActionListener() {
@@ -259,11 +312,18 @@ class myPanel extends JPanel implements MouseMotionListener{
     							System.out.println("right");
     							 TBvalue[i]= TBchooser[i].showOpenDialog(null);
     	    					 if (TBvalue[i] == JFileChooser.APPROVE_OPTION){
-    	    					    File selectedfile = TBchooser[i].getSelectedFile();    	    					    
+    	    					    File selectedfile = TBchooser[i].getSelectedFile(); 
+    	    					    
+    	    					 
+    	    					    /*
     	    					    Icon result = TBchooser[i].getUI().getFileView(TBchooser[i]).getIcon(selectedfile);
     	    					    TB[i]= iconToImage(result);
-//    	    					    TB[i] = ((ImageIcon) ico).getImage();
+//    	    			*/
     	    					  	TBfile[i]= selectedfile.getAbsolutePath();
+    	    					    if (TBfile[i].indexOf("csv")>=0){
+    	    					    	TB[i]=csv;
+    	    					    }
+    	    			
     	    						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH+10);
     	    						TBname[i].setSize(200,15);
     	    						TBname[i].setText(selectedfile.getName());
@@ -344,8 +404,10 @@ class myPanel extends JPanel implements MouseMotionListener{
 				MOindex=0;
 			}
 			
-		});		
+		});				
 	}	
+	
+	
 	@Override
 	protected void paintComponent(Graphics g) {
 	     super.paintComponent(g);
@@ -370,12 +432,14 @@ class myPanel extends JPanel implements MouseMotionListener{
 	
 	@Override
 	public void mouseMoved(MouseEvent ev) {
+		
 	}
 	
 	@Override
 	 public void mouseDragged(MouseEvent e) {
 		int imX = e.getX();
 		int imY = e.getY();
+		
 		if (TBindex !=0){
 			TBimageX[TBindex]=imX-(TBimageW/2);
 		 	TBimageY[TBindex]=imY-(TBimageH/2);
@@ -423,6 +487,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 				e.printStackTrace();
 			}
 	}	
+	/*
 	static Image iconToImage(Icon icon) {
         if (icon instanceof ImageIcon) {
             return ((ImageIcon)icon).getImage();
@@ -439,4 +504,5 @@ class myPanel extends JPanel implements MouseMotionListener{
             return image;
         }
     }
+    */
 }
