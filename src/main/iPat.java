@@ -11,7 +11,8 @@ import javax.swing.*;
 import javax.swing.border.*;
 import net.miginfocom.swing.MigLayout;
 import java.io.IOException;
-
+import javax.swing.filechooser.FileSystemView;
+import javax.swing.Icon;
 
 public class iPat {
 
@@ -171,6 +172,11 @@ class myPanel extends JPanel implements MouseMotionListener{
 		mainPanel.setLocation(80,0);
 		mainPanel.setSize(400,200);
 		
+		
+		startPanel.setOpaque(false);
+		mainPanel.setOpaque(false);
+		
+		
 		this.setLayout(null);		
 		this.add(mainPanel);
 		
@@ -236,12 +242,14 @@ class myPanel extends JPanel implements MouseMotionListener{
     		}
     	}); 
 		
-		
 		this.addMouseListener(new MouseAdapter(){
 			@Override
 			public void mousePressed(MouseEvent ee){
+				
 				int move_x=ee.getX();
-    			int move_y=ee.getY();			
+    			int move_y=ee.getY();		
+    			
+
     			if (TBcount>0){			
     				for (int i=1; i<=TBcount;i++){
     					if (TBBound[i].contains(move_x, move_y)){
@@ -251,18 +259,22 @@ class myPanel extends JPanel implements MouseMotionListener{
     							System.out.println("right");
     							 TBvalue[i]= TBchooser[i].showOpenDialog(null);
     	    					 if (TBvalue[i] == JFileChooser.APPROVE_OPTION){
-    	    					    File selectedfile = TBchooser[i].getSelectedFile();
+    	    					    File selectedfile = TBchooser[i].getSelectedFile();    	    					    
+    	    					    Icon result = TBchooser[i].getUI().getFileView(TBchooser[i]).getIcon(selectedfile);
+    	    					    TB[i]= iconToImage(result);
+//    	    					    TB[i] = ((ImageIcon) ico).getImage();
     	    					  	TBfile[i]= selectedfile.getAbsolutePath();
     	    						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH+10);
     	    						TBname[i].setSize(200,15);
     	    						TBname[i].setText(selectedfile.getName());
     	    						TBindex=0;
+    	    						repaint();
     	    					 }
     					   	};
     					}
     				}
     			} 
-    			if (FGcount>0){			
+    			if (FGcount>0&&TBindex==0){			
     				for (int i=1; i<=FGcount;i++){
     					if (FGBound[i].contains(move_x, move_y)){
     						FGindex=i;
@@ -282,7 +294,7 @@ class myPanel extends JPanel implements MouseMotionListener{
     					}
     				}
     			} 
-    			if (MOcount>0){			
+    			if (MOcount>0&&TBindex==0&&FGindex==0){			
     				for (int i=1; i<=MOcount;i++){
     					if (MOBound[i].contains(move_x, move_y)){
     						MOindex=i;
@@ -411,4 +423,20 @@ class myPanel extends JPanel implements MouseMotionListener{
 				e.printStackTrace();
 			}
 	}	
+	static Image iconToImage(Icon icon) {
+        if (icon instanceof ImageIcon) {
+            return ((ImageIcon)icon).getImage();
+        } else {
+            int w = icon.getIconWidth();
+            int h = icon.getIconHeight();
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            GraphicsDevice gd = ge.getDefaultScreenDevice();
+            GraphicsConfiguration gc = gd.getDefaultConfiguration();
+            BufferedImage image = gc.createCompatibleImage(w, h);
+            Graphics2D g = image.createGraphics();
+            icon.paintIcon(null, g, 0, 0);
+            g.dispose();
+            return image;
+        }
+    }
 }
