@@ -95,8 +95,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 		try{
 			csv = ImageIO.read(this.getClass().getResourceAsStream("CSV.png"));
 		} catch (IOException ex){System.out.println("file not found!");}
-		
-		
+				
 		try{
 			TBimage = ImageIO.read(this.getClass().getResourceAsStream("Table.png"));
 			TBButton.setIcon(new ImageIcon(TBimage));
@@ -128,7 +127,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 		MOimageH=MO[1].getHeight(null);	
 		MOimageW=MO[1].getWidth(null);
 		
-
 		final Timer fade = new Timer(40, new ActionListener() {
              @Override
              public void actionPerformed(ActionEvent e) {
@@ -149,28 +147,32 @@ class myPanel extends JPanel implements MouseMotionListener{
              }
          });
 			
-		startPanel = new JPanel(new MigLayout("debug, fillx", "[]","[]"));	
-		buttonPanel = new JPanel(new MigLayout("debug, fillx","[][]","[]"));
-		mainPanel= new JPanel(new MigLayout("debug, fillx","[]","[][]"));	
+		startPanel = new JPanel(new MigLayout("debug, fillx", "[]","[][]"));	
+		//buttonPanel = new JPanel(new MigLayout("debug, fillx","[][]","[]"));
+		//mainPanel= new JPanel(new MigLayout("debug, fillx","[]","[][]"));	
 		nullPanel= new JPanel();
 
-		startPanel.add(iPat,"alignx c");
-			
+		startPanel.add(iPat,"wrap, span 2, alignx c");
+		startPanel.add(TBButton,"alignx r");
+		startPanel.add(MOButton,"alignx l");
+
+		/*
 		buttonPanel.add(TBButton,"alignx r");
 		buttonPanel.add(MOButton,"alignx l");
 		
 		mainPanel.add(startPanel, "alignx c, grow, wrap");
-		mainPanel.add(buttonPanel, "alignx c, grow");
+		mainPanel.add(nullPanel, "alignx c, grow");
+		*/
 		
 		this.setLayout(new MigLayout("debug, fillx","[grow]","[][grow]"));
-		this.add(mainPanel,"grow, wrap");
+		this.add(startPanel,"grow, wrap");
 		this.add(nullPanel,"grow"); 
 
 		nullPanel.setLayout(null);
 		
 		startPanel.setOpaque(false);
-		mainPanel.setOpaque(false);
 		nullPanel.setOpaque(false);
+		
 		
 		for (int i=1; i<=TBMAX-1; i++){
 			TBchooser[i]= new JFileChooser();
@@ -183,10 +185,13 @@ class myPanel extends JPanel implements MouseMotionListener{
 			nullPanel.add(MOname[i]);
 		}			
 		
-		mainPanel.addMouseListener(new MouseAdapter() {
+		startPanel.addMouseListener(new MouseAdapter() {
     		@Override
     		public void mouseEntered(MouseEvent evt) {
     			System.out.println("enter");
+    			if (TBindex!=0){
+        			fade.start();	
+    			}
     		}
     		@Override
     		public void mouseExited(MouseEvent evt) {
@@ -331,7 +336,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 	     }
 	     Graphics2D g2d= (Graphics2D) g.create();
 	     g2d.setComposite(AlphaComposite.SrcOver.derive(alpha));
-	     g2d.drawImage(csv, 100, 100, this);
+	     g2d.drawImage(csv, 300, 100, this);
 	     g2d.dispose();
 	}
 	
