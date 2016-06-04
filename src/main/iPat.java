@@ -21,34 +21,36 @@ public class iPat {
 		main.setTitle("iPat");	
 		main.setSize(550,800);
 		main.setLocation(200,0); 
+		main.setLayout(new BorderLayout());
 		main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Container cPane = main.getContentPane();
 		cPane.add(new myPanel());	
 		main.setVisible(true);
+		main.setResizable(false);
 		System.out.println(cPane.getWidth());
 	}
 	
 }
 
 class myPanel extends JPanel implements MouseMotionListener{	
-	private static final int TBMAX=50;
-	private static final int MOMAX=50;
+	private static final int TBMAX=99;
+	private static final int MOMAX=99;
 
 	int[] TBimageX= new int[TBMAX];
 	int[] TBimageY= new int[TBMAX];
-	int TBimageX_int=50;
-	int TBimageY_int=200;
+	int[] TBimageH= new int[TBMAX];
+	int[] TBimageW= new int[TBMAX];
 	int[] MOimageX= new int[MOMAX];
 	int[] MOimageY= new int[MOMAX];
+	int[] MOimageH= new int[TBMAX];
+	int[] MOimageW= new int[TBMAX];
+	
 	int MOimageX_int=430;
 	int MOimageY_int=200;
 	
-	int TBimageH, TBimageW,
-		MOimageH, MOimageW;
-	
 	Image[] TB= new Image[TBMAX];
 	Image[] MO= new Image[MOMAX];
-	Image csv, TBimage;
+	Image csv, TBimage, trash, blank;
 	
 	Rectangle[] TBBound= new Rectangle[TBMAX];
 	Rectangle[] MOBound= new Rectangle[MOMAX];
@@ -59,10 +61,31 @@ class myPanel extends JPanel implements MouseMotionListener{
 	int TBcount =0;
 	int MOcount =0;
 	
-	JPanel startPanel;
+	int[] TBposX={50,  50,  50,  50,  50,  50,  50,
+				  200, 200, 200, 200, 200, 200, 200,
+				  350, 350, 350, 350, 350, 350, 350,
+				  60, 60, 60, 60, 60, 60, 60,
+				  210, 210, 210, 210, 210, 210, 210,
+				  360, 360, 360, 360, 360, 360, 360,
+				  70, 70, 70, 70, 70, 70, 70,
+				  220, 220, 220, 220, 220, 220, 220,
+				  370, 370, 370, 370, 370, 370, 370};
+	int[] TBposY={160, 240, 320, 400, 480, 560, 640,
+				  160, 240, 320, 400, 480, 560, 640,
+				  160, 240, 320, 400, 480, 560, 640,
+				  170, 250, 330, 410, 490, 570, 650,
+				  170, 250, 330, 410, 490, 570, 650,
+				  170, 250, 330, 410, 490, 570, 650,
+				  180, 260, 340, 420, 500, 580, 660,
+				  180, 260, 340, 420, 500, 580, 660,
+				  180, 260, 340, 420, 500, 580, 660};
+	int pos;
+	
+	JLayeredPane startPanel;
 	JPanel mainPanel;	
 	JPanel nullPanel;
 	JPanel buttonPanel;
+	JPanel layoutPanel;
 	
 	JButton TBButton = new JButton();
 	JButton MOButton = new JButton();
@@ -86,12 +109,22 @@ class myPanel extends JPanel implements MouseMotionListener{
 	private float alpha=0f;
 	private long startTime=-1;
 	
-	public myPanel(){	
+	boolean removeornot=false;
+	int delbbound=200;
+	JLabel trashl;
 	
+	int link;
+	
+	public myPanel(){	
+		this.setBackground(Color.white);
 		try{
 			Image iconIP = ImageIO.read(getClass().getResource("iPat.png"));
 			iPat.setIcon(new ImageIcon(iconIP));
 		} catch (IOException ex){}
+		try{
+			trash = ImageIO.read(getClass().getResource("trash.png"));
+		} catch (IOException ex){}
+	
 		try{
 			csv = ImageIO.read(this.getClass().getResourceAsStream("CSV.png"));
 		} catch (IOException ex){System.out.println("file not found!");}
@@ -113,19 +146,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 				MO[i] = ImageIO.read(this.getClass().getResourceAsStream("Model.png"));
 			} catch (IOException ex){System.out.println("file not found!");}
 		}
-
-		TBButton.setOpaque(false);
-		TBButton.setContentAreaFilled(false);
-		TBButton.setBorderPainted(false);
-		MOButton.setOpaque(false);
-		MOButton.setContentAreaFilled(false);
-		MOButton.setBorderPainted(false);
-		iPat.setOpaque(false);
-		
-		TBimageH=TB[1].getHeight(null);	
-		TBimageW=TB[1].getWidth(null);	
-		MOimageH=MO[1].getHeight(null);	
-		MOimageW=MO[1].getWidth(null);
 		
 		final Timer fade = new Timer(40, new ActionListener() {
              @Override
@@ -146,63 +166,73 @@ class myPanel extends JPanel implements MouseMotionListener{
                  }
              }
          });
-			
-		startPanel = new JPanel(new MigLayout("debug, fillx", "[]","[][]"));	
-		//buttonPanel = new JPanel(new MigLayout("debug, fillx","[][]","[]"));
-		//mainPanel= new JPanel(new MigLayout("debug, fillx","[]","[][]"));	
+		
+		////////////
+		////////////
+		////////////
+		//LAYOUT.START
+		////////////
+		////////////
+		////////////
+		
+		TBButton.setOpaque(false);
+		TBButton.setContentAreaFilled(false);
+		TBButton.setBorderPainted(false);
+		MOButton.setOpaque(false);
+		MOButton.setContentAreaFilled(false);
+		MOButton.setBorderPainted(false);
+		iPat.setOpaque(false);
+		
+		startPanel = new JLayeredPane();
+		layoutPanel = new JPanel(new MigLayout("fillx", "[]","[][]"));	
 		nullPanel= new JPanel();
-
-		startPanel.add(iPat,"wrap, span 2, alignx c");
-		startPanel.add(TBButton,"alignx r");
-		startPanel.add(MOButton,"alignx l");
-
-		/*
-		buttonPanel.add(TBButton,"alignx r");
-		buttonPanel.add(MOButton,"alignx l");
 		
-		mainPanel.add(startPanel, "alignx c, grow, wrap");
-		mainPanel.add(nullPanel, "alignx c, grow");
-		*/
-		
-		this.setLayout(new MigLayout("debug, fillx","[grow]","[][grow]"));
-		this.add(startPanel,"grow, wrap");
+		layoutPanel.add(iPat,"wrap, span 2, alignx c");
+		layoutPanel.add(TBButton,"alignx r");
+		layoutPanel.add(MOButton,"alignx l");
+				
+		startPanel.setPreferredSize(new Dimension(550, 200));
+		trashl = new JLabel(new ImageIcon(trash));
+		startPanel.add(trashl, new Integer(1));
+		startPanel.add(layoutPanel,  new Integer(3));
+		trashl.setBounds(new Rectangle(-1000, -50, 550, 300));
+		trashl.setVisible(true);
+		layoutPanel.setBounds(new Rectangle(0, 0, 550,200));
+		layoutPanel.setVisible(true);
+
+		this.setLayout(new MigLayout(" fillx","[grow]","[grow]"));
+		this.add(startPanel,"dock north");
 		this.add(nullPanel,"grow"); 
-
+	
 		nullPanel.setLayout(null);
-		
 		startPanel.setOpaque(false);
+		layoutPanel.setOpaque(false);
 		nullPanel.setOpaque(false);
-		
-		
+			
+		////////////
+		////////////
+		////////////
+		//LAYOUT.END
+		////////////
+		////////////
+		////////////
+				
 		for (int i=1; i<=TBMAX-1; i++){
 			TBchooser[i]= new JFileChooser();
 			TBfile[i]= new String();
 			TBname[i]= new JLabel();
 			nullPanel.add(TBname[i]);
+			TBimageH[i]=TB[i].getHeight(null);	
+			TBimageW[i]=TB[i].getWidth(null);		
 		}	
 		for (int i=1; i<=MOMAX-1; i++){
 			MOname[i]= new JLabel();		
 			nullPanel.add(MOname[i]);
-		}			
-		
-		startPanel.addMouseListener(new MouseAdapter() {
-    		@Override
-    		public void mouseEntered(MouseEvent evt) {
-    			System.out.println("enter");
-    			if (TBindex!=0){
-        			fade.start();	
-    			}
-    		}
-    		@Override
-    		public void mouseExited(MouseEvent evt) {
-    			System.out.println("out");
-    		}
-		});
+			MOimageH[i]=MO[i].getHeight(null);	
+			MOimageW[i]=MO[i].getWidth(null);
+		}
 		
 		addMouseMotionListener(this);
-		
-		
-		
 		
 		timer = new Timer(10, new ActionListener() {
 			int ant=10;
@@ -228,8 +258,10 @@ class myPanel extends JPanel implements MouseMotionListener{
     			int y = evt.getY();
     			if (contains(x,y)){
     				TBcount++;
-    				TBimageX[TBcount]=TBimageX_int;
-    				TBimageY[TBcount]=TBimageY_int-40+100*(TBcount-1);					
+    				pos= ((TBcount-1)%63);
+    				System.out.println(pos);
+    				TBimageX[TBcount]=TBposX[pos];
+    				TBimageY[TBcount]=TBposY[pos];					
        				timer.start();	   			
     			}		
     		}
@@ -249,14 +281,12 @@ class myPanel extends JPanel implements MouseMotionListener{
     			}		
     		}
     	}); 
-		
+
 		this.addMouseListener(new MouseAdapter(){
 			@Override
-			public void mousePressed(MouseEvent ee){
-				
+			public void mousePressed(MouseEvent ee){				
 				int move_x=ee.getX();
-    			int move_y=ee.getY();		
-    			
+    			int move_y=ee.getY();		    			
     			if (TBcount>0){			
     				for (int i=1; i<=TBcount;i++){
     					if (TBBound[i].contains(move_x, move_y)){
@@ -269,7 +299,9 @@ class myPanel extends JPanel implements MouseMotionListener{
     	    					    File selectedfile = TBchooser[i].getSelectedFile();  	    					    
     	    					  	TBfile[i]= selectedfile.getAbsolutePath();
     	    					  	iconchange(i); 
-    	    						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH-200);
+    	    					  	TBimageH[TBindex]=TB[i].getHeight(null);
+    	    					  	TBimageW[TBindex]=TB[i].getHeight(null);
+    	    						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-195);
     	    						TBname[i].setSize(200,15);
     	    						TBname[i].setText(selectedfile.getName());
     	    						TBindex=0;
@@ -301,7 +333,26 @@ class myPanel extends JPanel implements MouseMotionListener{
     			}
     		}		
 			@Override
-			public void mouseReleased(MouseEvent ee){
+			public void mouseReleased(MouseEvent ee){	
+				int y=ee.getY();
+				
+				if (removeornot){
+					if (TBindex!=0&&y<delbbound){
+						TBimageX[TBindex]=-100;
+						TBimageY[TBindex]=-100;
+						TBname[TBindex].setLocation(-100,-100);
+						repaint();
+					}else if(MOindex!=0&&y<delbbound){
+						MOimageX[MOindex]=-100;
+						MOimageY[MOindex]=-100;
+						MOname[MOindex].setLocation(-100,-100);
+						repaint();
+					}
+    				trashl.setBounds(new Rectangle(-1000, -50, 550, 300));  				
+					startPanel.setLayer(trashl, new Integer(1));
+					trashl.setVisible(true);
+					removeornot=false;
+	    		}
 				TBindex=0;
 				MOindex=0;
 			}
@@ -323,7 +374,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 	@Override
 	protected void paintComponent(Graphics g) {
 	     super.paintComponent(g);
-		// System.out.println("use paint");
+		 System.out.println("use paint");
 	     if (TBcount>0){	    	 
 	    	 for (int i=1; i<=TBcount; i++){
 			     g.drawImage(TB[i], TBimageX[i], TBimageY[i], this);
@@ -334,10 +385,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 			     g.drawImage(MO[i], MOimageX[i], MOimageY[i], this);	
 	    	 }
 	     }
-	     Graphics2D g2d= (Graphics2D) g.create();
-	     g2d.setComposite(AlphaComposite.SrcOver.derive(alpha));
-	     g2d.drawImage(csv, 300, 100, this);
-	     g2d.dispose();
 	}
 	
 	@Override
@@ -355,105 +402,131 @@ class myPanel extends JPanel implements MouseMotionListener{
 		int boundS=800;
 		int boundE=550;
 		if (TBindex !=0){		
-			if(imX<(0+(TBimageW/2))){
+			if(imX<(0+(TBimageW[TBindex]/2))){
 				TBimageX[TBindex]=0;
-				if(imY<(boundN+(TBimageH/2))){
+				if(imY<(boundN+(TBimageH[TBindex]/2))){
 				 	TBimageY[TBindex]=boundN;
-				}else if(imY>(boundS-(TBimageH/2))){
-					TBimageY[TBindex]=boundS-TBimageH;
+				}else if(imY>(boundS-(TBimageH[TBindex]/2))){
+					TBimageY[TBindex]=boundS-TBimageH[TBindex];
 				}else{
-					TBimageY[TBindex]=imY-(TBimageH/2);
+					TBimageY[TBindex]=imY-(TBimageH[TBindex]/2);
 				}
 				
-			}else if(imY<(boundN+(TBimageH/2))){
+			}else if(imY<(boundN+(TBimageH[TBindex]/2))){
 			 	TBimageY[TBindex]=boundN;
-			 	if(imX<(0+TBimageW/2)){
+			 	if(imX<(0+TBimageW[TBindex]/2)){
 					TBimageX[TBindex]=0;
-			 	}else if(imX>(boundE-TBimageW/2)){
-			 		TBimageX[TBindex]=boundE-TBimageW;
+			 	}else if(imX>(boundE-TBimageW[TBindex]/2)){
+			 		TBimageX[TBindex]=boundE-TBimageW[TBindex];
 			 	}else{
-			 		TBimageX[TBindex]=imX-(TBimageW/2);
+			 		TBimageX[TBindex]=imX-(TBimageW[TBindex]/2);
 			 	}
 			 	
-			}else if(imX>(boundE-(TBimageW/2))){
-			 	TBimageX[TBindex]=boundE-TBimageW;
-			 	if(imY<(boundN+(TBimageH/2))){
+			}else if(imX>(boundE-(TBimageW[TBindex]/2))){
+			 	TBimageX[TBindex]=boundE-TBimageW[TBindex];
+			 	if(imY<(boundN+(TBimageH[TBindex]/2))){
 				 	TBimageY[TBindex]=boundN;
-				}else if(imY>(boundS-(TBimageH/2))){
-					TBimageY[TBindex]=boundS-TBimageH;
+				}else if(imY>(boundS-(TBimageH[TBindex]/2))){
+					TBimageY[TBindex]=boundS-TBimageH[TBindex];
 				}else{
-					TBimageY[TBindex]=imY-(TBimageH/2);
+					TBimageY[TBindex]=imY-(TBimageH[TBindex]/2);
 				}
 			 	
-			}else if(imY>(boundS-(TBimageH/2))){
-			 	TBimageY[TBindex]=boundS-TBimageH;
-			 	if(imX<(0+TBimageW/2)){
+			}else if(imY>(boundS-(TBimageH[TBindex]/2))){
+			 	TBimageY[TBindex]=boundS-TBimageH[TBindex];
+			 	if(imX<(0+TBimageW[TBindex]/2)){
 					TBimageX[TBindex]=0;
-			 	}else if(imX>(boundE-TBimageW/2)){
-			 		TBimageX[TBindex]=boundE-TBimageW;
+			 	}else if(imX>(boundE-TBimageW[TBindex]/2)){
+			 		TBimageX[TBindex]=boundE-TBimageW[TBindex];
 			 	}else{
-			 		TBimageX[TBindex]=imX-(TBimageW/2);
+			 		TBimageX[TBindex]=imX-(TBimageW[TBindex]/2);
 			 	}	
 			 	
 			 }else{
-				TBimageX[TBindex]=imX-(TBimageW/2);
-			 	TBimageY[TBindex]=imY-(TBimageH/2);
+				TBimageX[TBindex]=imX-(TBimageW[TBindex]/2);
+			 	TBimageY[TBindex]=imY-(TBimageH[TBindex]/2);
 			}
-		 	TBname[TBindex].setLocation(TBimageX[TBindex],TBimageY[TBindex]+TBimageH-200);
+		 	TBname[TBindex].setLocation(TBimageX[TBindex],TBimageY[TBindex]+TBimageH[TBindex]-195);
 			TBBound[TBindex]=new Rectangle(TBimageX[TBindex], TBimageY[TBindex], TB[TBindex].getWidth(null), TB[TBindex].getHeight(null));
 		 	repaint();
 		}
 		if (MOindex !=0){
-			if(imX<(0+(MOimageW/2))){
+			if(imX<(0+(MOimageW[MOindex]/2))){
 				MOimageX[TBindex]=0;
-				if(imY<(boundN+(MOimageH/2))){
+				if(imY<(boundN+(MOimageH[MOindex]/2))){
 				 	MOimageY[MOindex]=boundN;
-				}else if(imY>(boundS-(MOimageH/2))){
-					MOimageY[MOindex]=boundS-MOimageH;
+				}else if(imY>(boundS-(MOimageH[MOindex]/2))){
+					MOimageY[MOindex]=boundS-MOimageH[MOindex];
 				}else{
-					MOimageY[MOindex]=imY-(MOimageH/2);
+					MOimageY[MOindex]=imY-(MOimageH[MOindex]/2);
 				}
 				
-			}else if(imY<(boundN+(MOimageH/2))){
+			}else if(imY<(boundN+(MOimageH[MOindex]/2))){
 			 	MOimageY[MOindex]=boundN;
-			 	if(imX<(0+MOimageW/2)){
+			 	if(imX<(0+MOimageW[MOindex]/2)){
 					MOimageX[MOindex]=0;
-			 	}else if(imX>(boundE-MOimageW/2)){
-			 		MOimageX[MOindex]=boundE-MOimageW;
+			 	}else if(imX>(boundE-MOimageW[MOindex]/2)){
+			 		MOimageX[MOindex]=boundE-MOimageW[MOindex];
 			 	}else{
-			 		MOimageX[MOindex]=imX-(MOimageW/2);
+			 		MOimageX[MOindex]=imX-(MOimageW[MOindex]/2);
 			 	}
 			 	
-			}else if(imX>(boundE-(MOimageW/2))){
-			 	MOimageX[MOindex]=boundE-MOimageW;
-			 	if(imY<(boundN+(MOimageH/2))){
+			}else if(imX>(boundE-(MOimageW[MOindex]/2))){
+			 	MOimageX[MOindex]=boundE-MOimageW[MOindex];
+			 	if(imY<(boundN+(MOimageH[MOindex]/2))){
 				 	MOimageY[MOindex]=boundN;
-				}else if(imY>(boundS-(MOimageH/2))){
-					MOimageY[MOindex]=boundS-MOimageH;
+				}else if(imY>(boundS-(MOimageH[MOindex]/2))){
+					MOimageY[MOindex]=boundS-MOimageH[MOindex];
 				}else{
-					MOimageY[MOindex]=imY-(MOimageH/2);
+					MOimageY[MOindex]=imY-(MOimageH[MOindex]/2);
 				}
 			 	
-			}else if(imY>(boundS-(MOimageH/2))){
-			 	MOimageY[MOindex]=boundS-MOimageH;
-			 	if(imX<(0+MOimageW/2)){
+			}else if(imY>(boundS-(MOimageH[MOindex]/2))){
+			 	MOimageY[MOindex]=boundS-MOimageH[MOindex];
+			 	if(imX<(0+MOimageW[MOindex]/2)){
 					MOimageX[MOindex]=0;
-			 	}else if(imX>(boundE-MOimageW/2)){
-			 		MOimageX[MOindex]=boundE-MOimageW;
+			 	}else if(imX>(boundE-MOimageW[MOindex]/2)){
+			 		MOimageX[MOindex]=boundE-MOimageW[MOindex];
 			 	}else{
-			 		MOimageX[MOindex]=imX-(MOimageW/2);
+			 		MOimageX[MOindex]=imX-(MOimageW[MOindex]/2);
 			 	}	
 			 	
 			 }else{
-				MOimageX[MOindex]=imX-(MOimageW/2);
-			 	MOimageY[MOindex]=imY-(MOimageH/2);
+				MOimageX[MOindex]=imX-(MOimageW[MOindex]/2);
+			 	MOimageY[MOindex]=imY-(MOimageH[MOindex]/2);
 			}
 			
-		 	MOname[MOindex].setLocation(MOimageX[MOindex],MOimageY[MOindex]+MOimageH-200);
+		 	MOname[MOindex].setLocation(MOimageX[MOindex],MOimageY[MOindex]+MOimageH[MOindex]-200);
 			MOBound[MOindex]=new Rectangle(MOimageX[MOindex], MOimageY[MOindex], MO[MOindex].getWidth(null), MO[MOindex].getHeight(null));
 		 	repaint();
 		}
-	}	
+		if ((TBindex!=0|MOindex!=0)&&imY<=(delbbound)){
+			trashl.setBounds(new Rectangle(0, -50, 550, 300));
+			startPanel.setLayer(trashl, new Integer(200));
+			trashl.setVisible(true);
+			startPanel.revalidate();
+			removeornot=true;		
+		}else if(imY>delbbound&&removeornot){
+			trashl.setBounds(new Rectangle(-1000, -50, 550, 300));
+			startPanel.setLayer(trashl, new Integer(1));
+			trashl.setVisible(true);
+			removeornot=false;				
+		}		
+		for (int i=1; i<=TBcount; i++){
+			if (i == TBindex) {
+	                continue;
+	        }
+			int x= TBimageX[TBindex]+(TBimageW[TBindex]/2);
+			int y= TBimageY[TBindex]+(TBimageH[TBindex]/2);
+			int x2= TBimageX[i]+(TBimageW[i]/2);
+			int y2= TBimageY[i]+(TBimageH[i]/2);
+			double dist= Math.sqrt(Math.pow((x-x2), 2) + Math.pow((y-y2), 2));
+			if (dist<150){
+				System.out.println("close to "+i);
+				link=i;
+			}
+		}
+}
 	
 	public void TBopenfile(int i){
 		File openfile= new File(TBfile[i]);
