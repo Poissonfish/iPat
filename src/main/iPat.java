@@ -124,6 +124,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 	JLabel trashl;
 	
 	int link;
+	int coA, coB;
 	
 	public myPanel(){	
 		this.setBackground(Color.white);
@@ -329,6 +330,14 @@ class myPanel extends JPanel implements MouseMotionListener{
     					}
     				}
     			} 
+    			if (COBound[0]!=null && COBound[0].contains(move_x, move_y)){
+					COindex=1;
+					MOindex=0;
+					TBindex=0;
+					System.out.println("CO is selected");	
+    			}else{
+    				COindex=0;
+    			}
 			}	
 			@Override
     		public void mouseClicked(MouseEvent evt) {
@@ -363,18 +372,26 @@ class myPanel extends JPanel implements MouseMotionListener{
 					trashl.setVisible(true);
 					removeornot=false;
 	    		}
-				if(link!=0){
-					///
-					///
-					///
-					///
-					///
+				if(link!=0 & TBindex!=0){
+					
 					System.out.println("linked");
 					COimageX[0]=Math.min(TBimageX[link], TBimageX[TBindex]);
 					COimageY[0]=Math.min(TBimageY[link], TBimageY[TBindex]);
-					int difH= TBimageY[link]+TBimageH[link]-TBimageY[TBindex]; 
-					COimageH[0]=difH+TBimageH[TBindex];
-						
+					if (TBimageX[link]>=TBimageX[TBindex]){
+						COimageW[0]=TBimageX[link]+TBimageW[link]-TBimageX[TBindex];
+					}else{
+						COimageW[0]=TBimageX[TBindex]+TBimageW[TBindex]-TBimageX[link];
+					}
+					if (TBimageY[link]>=TBimageY[TBindex]){
+						COimageH[0]=TBimageY[link]+TBimageH[link]-TBimageY[TBindex];
+					}else{
+						COimageH[0]=TBimageY[TBindex]+TBimageH[TBindex]-TBimageY[link];
+					}
+		        	COBound[0]=new Rectangle(COimageX[0], COimageY[0], COimageW[0], COimageH[0]);
+					coA= link;
+					coB= TBindex;
+				}else{
+					MOindex=0;
 				}
 				
 				TBindex=0;
@@ -429,6 +446,28 @@ class myPanel extends JPanel implements MouseMotionListener{
 					 TBname,  boundN,  boundS,  boundE, TBBound, TB);
 		KeepInPanel (imX, imY, MOindex, MOimageW, MOimageH, MOimageX, MOimageY,
 					 MOname,  boundN,  boundS,  boundE, MOBound, MO);
+		if(COindex!=0){
+			///
+			///
+			///
+			///
+			///
+			int dx= imX- COimageX[1]+(COimageW[1]/2);
+			int dy= imY- COimageY[1]+(COimageH[1]/2);
+
+			TBimageY[coA]=TBimageY[coA]+dy;
+			TBimageY[coB]=TBimageY[coB]+dy;
+			TBimageX[coA]=TBimageX[coA]+dx;
+			TBimageX[coB]=TBimageX[coB]+dx;
+			repaint();
+			///
+			///
+			///
+			///
+			///
+			
+		}
+		
 		
 		if ((TBindex!=0|MOindex!=0)&&imY<=(delbbound)){
 			trashl.setBounds(new Rectangle(0, -50, 550, 300));
@@ -455,6 +494,9 @@ class myPanel extends JPanel implements MouseMotionListener{
 				if (dist<100){
 					System.out.println("close to "+i);
 					link=i;
+					break;
+				}else{
+					link=0;
 				}
 			}
 		}
@@ -468,6 +510,8 @@ class myPanel extends JPanel implements MouseMotionListener{
 				e.printStackTrace();
 			}
 	}	
+	
+	
 	public void KeepInPanel (int x, int y, int index, int[] imageW, int[] imageH, int[] imageX, int[] imageY,
 							 JLabel[] name, int boundN, int boundS, int boundE, Rectangle[] Bound, Image[] image){
 		if (index !=0){		
