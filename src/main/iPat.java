@@ -349,16 +349,17 @@ class myPanel extends JPanel implements MouseMotionListener{
 					if (TBindex!=0&&y<delbbound){
 						TBimageX[TBindex]=-100;
 						TBimageY[TBindex]=-100;
+						TBBound[TBindex]=new Rectangle(-100,-100,0,0);
 						TBname[TBindex].setLocation(-100,-100);
 						repaint();
 					}else if(MOindex!=0&&y<delbbound){
 						MOimageX[MOindex]=-100;
 						MOimageY[MOindex]=-100;
+						MOBound[MOindex]=new Rectangle(-100,-100,0,0);
 						MOname[MOindex].setLocation(-100,-100);
 						repaint();
 					}
     				trashl.setBounds(new Rectangle(-1000, -50, 550, 300));  				
-					startPanel.setLayer(trashl, new Integer(1));
 					trashl.setVisible(true);
 					removeornot=false;
 	    		}
