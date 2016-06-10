@@ -14,8 +14,7 @@ import java.io.IOException;
 import javax.swing.filechooser.FileSystemView;
 
 
-public class iPat {	
-
+public class iPat {
 	public static void main(String[] args){    	
 		JFrame main = new JFrame();
 		main.setTitle("iPat");	
@@ -52,18 +51,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 	int[] COimageH= new int[COMAX];
 	int[] COimageW= new int[COMAX];
 		
-	int MOimageX_int=430;
-	int MOimageY_int=200;
-	
-	Image[] TB= new Image[TBMAX];
-	Image[] MO= new Image[MOMAX];
-	Image Excel, Powerpoint, Word, Music, Video, Unknown, Trash, 
-		  TBimage, MOimage;
-		
-	Rectangle[] TBBound= new Rectangle[TBMAX];
-	Rectangle[] MOBound= new Rectangle[MOMAX];
-	Rectangle[] COBound= new Rectangle[COMAX];
-	
 	int TBindex =0;
 	int MOindex =0;
 	int COindex =0;
@@ -71,6 +58,10 @@ class myPanel extends JPanel implements MouseMotionListener{
 	int TBcount =0;
 	int MOcount =0;
 	int COcount =0;
+	
+	Rectangle[] TBBound= new Rectangle[TBMAX];
+	Rectangle[] MOBound= new Rectangle[MOMAX];
+	Rectangle[] COBound= new Rectangle[COMAX];
 	
 	int[] TBposX={50,  50,  50,  50,  50,  50,  50,
 				  200, 200, 200, 200, 200, 200, 200,
@@ -90,8 +81,17 @@ class myPanel extends JPanel implements MouseMotionListener{
 				  180, 260, 340, 420, 500, 580, 660,
 				  180, 260, 340, 420, 500, 580, 660,
 				  180, 260, 340, 420, 500, 580, 660};
+	
+	int MOimageX_int=430;
+	int MOimageY_int=200;
+	
 	int pos;
 	
+	Image[] TB= new Image[TBMAX];
+	Image[] MO= new Image[MOMAX];
+	Image Excel, Powerpoint, Word, Music, Video, Unknown, Trash, 
+		  TBimage, MOimage;
+
 	JLayeredPane startPanel;
 	JPanel mainPanel;	
 	JPanel nullPanel;
@@ -103,14 +103,13 @@ class myPanel extends JPanel implements MouseMotionListener{
 	JLabel iPat = new JLabel();
 
 	JFileChooser[] TBchooser= new JFileChooser[TBMAX];
-	
 	String[] TBfile= new String[TBMAX];
-		
 	int[] TBvalue= new int[TBMAX];
 	
 	JLabel[] TBname= new JLabel[TBMAX];	
 	JLabel[] MOname= new JLabel[MOMAX];		
 
+	//animation
 	Timer timer;
 	int panH;
 	int panW;
@@ -120,18 +119,20 @@ class myPanel extends JPanel implements MouseMotionListener{
 	private float alpha=0f;
 	private long startTime=-1;
 	
+	//removal zone
 	boolean removeornot=false;
 	int delbbound=200;
 	JLabel trashl;
 	
-	int link;
-	int coA, coB;
-	//int[][] x = new int[10][20];
+	//combine
+	Boolean link=false;
+	int[][] COint= new int[COMAX][4];
 	
-	int linex1=-100,
-		linex2=-100,
-		liney1=-100,
-		liney2=-100;
+	//line
+	int linex1=0,
+		linex2=0,
+		liney1=0,
+		liney2=0;
 	
 	public myPanel(){	
 		this.setBackground(Color.white);
@@ -142,7 +143,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 		try{
 			Trash = ImageIO.read(getClass().getResource("Trash.png"));
 		} catch (IOException ex){}
-	
 		
 		try{
 			Excel = ImageIO.read(this.getClass().getResourceAsStream("Excel.png"));
@@ -161,9 +161,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 		} catch (IOException ex){}
 		try{
 			Unknown = ImageIO.read(this.getClass().getResourceAsStream("Unknown.png"));
-		} catch (IOException ex){}				
-		
-		
+		} catch (IOException ex){}		
 		
 		try{
 			TBimage = ImageIO.read(this.getClass().getResourceAsStream("Table.png"));
@@ -180,10 +178,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 			MO[i] = MOimage;
 		}
 		
-		
-		
-		
-		
+		/*
 		final Timer fade = new Timer(40, new ActionListener() {
              @Override
              public void actionPerformed(ActionEvent e) {
@@ -203,6 +198,7 @@ class myPanel extends JPanel implements MouseMotionListener{
                  }
              }
          });
+		*/
 		
 		////////////
 		////////////
@@ -210,8 +206,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 		//LAYOUT.START
 		////////////
 		////////////
-		////////////
-		
+		////////////		
 		TBButton.setOpaque(false);
 		TBButton.setContentAreaFilled(false);
 		TBButton.setBorderPainted(false);
@@ -245,15 +240,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 		startPanel.setOpaque(false);
 		layoutPanel.setOpaque(false);
 		nullPanel.setOpaque(false);
-			
-		////////////
-		////////////
-		////////////
-		//LAYOUT.END
-		////////////
-		////////////
-		////////////
-				
+		
 		for (int i=1; i<=TBMAX-1; i++){
 			TBchooser[i]= new JFileChooser();
 			TBfile[i]= new String();
@@ -267,10 +254,15 @@ class myPanel extends JPanel implements MouseMotionListener{
 			nullPanel.add(MOname[i]);
 			MOimageH[i]=MO[i].getHeight(null);	
 			MOimageW[i]=MO[i].getWidth(null);
-		}
-		
-		addMouseMotionListener(this);
-		
+		}	
+		////////////
+		////////////
+		////////////
+		//LAYOUT.END
+		////////////
+		////////////
+		////////////	
+	
 		timer = new Timer(10, new ActionListener() {
 			int ant=10;
 		    @Override
@@ -287,9 +279,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 		        }
 		    }
 		});
-			
-		
-		
 		
 		TBButton.addMouseListener(new MouseAdapter() {
     		@Override
@@ -305,8 +294,7 @@ class myPanel extends JPanel implements MouseMotionListener{
        				timer.start();	   			
     			}		
     		}
-    	});  
-		
+    	});  		
 		MOButton.addMouseListener(new MouseAdapter() {
     		@Override
     		public void mousePressed(MouseEvent evt) {
@@ -321,8 +309,6 @@ class myPanel extends JPanel implements MouseMotionListener{
     			}		
     		}
     	}); 
-
-		
 		
 		this.addMouseListener(new MouseAdapter(){
 			@Override
@@ -357,7 +343,6 @@ class myPanel extends JPanel implements MouseMotionListener{
     				for (int i=1; i<=MOcount;i++){
     					if (MOBound[i].contains(move_x, move_y)){
     						MOindex=i;
-    						System.out.println(i);		
     					}
     				}
     			} 
@@ -431,7 +416,9 @@ class myPanel extends JPanel implements MouseMotionListener{
     			}
     		}
 			
-		});				
+		});	
+		
+		addMouseMotionListener(this);
 	}	
 	
 	@Override
@@ -448,8 +435,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 	    	 for (int i=1; i<=MOcount; i++){
 			     g.drawImage(MO[i], MOimageX[i], MOimageY[i], this);	
 	    	 }
-	     }
-	    
+	     }	    
 	}
 	
 	@Override
@@ -507,15 +493,36 @@ class myPanel extends JPanel implements MouseMotionListener{
 		}
 		
 		if(TBindex!=0){
+			int[] TBdist= new int[TBcount];
+			int[] MOdist= new int[MOcount];
+			int x= TBimageX[TBindex]+(TBimageW[TBindex]/2);
+			int y= TBimageY[TBindex]+(TBimageH[TBindex]/2);
+			
 			for (int i=1; i<=TBcount; i++){
 				if (i == TBindex) {
 		                continue;
 		        }
-				int x= TBimageX[TBindex]+(TBimageW[TBindex]/2);
-				int y= TBimageY[TBindex]+(TBimageH[TBindex]/2);
 				int x2= TBimageX[i]+(TBimageW[i]/2);
 				int y2= TBimageY[i]+(TBimageH[i]/2);
 				double dist= Math.sqrt(Math.pow((x-x2), 2) + Math.pow((y-y2), 2));
+				TBdist[i]= (int) dist;
+			}
+			for (int i=1; i<=MOcount; i++){
+				if (i == MOindex) {
+		                continue;
+		        }
+				int x2= MOimageX[i]+(MOimageW[i]/2);
+				int y2= MOimageY[i]+(MOimageH[i]/2);
+				double dist= Math.sqrt(Math.pow((x-x2), 2) + Math.pow((y-y2), 2));
+				MOdist[i]= (int) dist;
+			}
+			int[] dist = new int[TBdist.length + MOdist.length];
+			System.arraycopy(TBdist, 0, dist, 0 		   , TBdist.length);
+			System.arraycopy(MOdist, 0, dist, TBdist.length, MOdist.length);
+			MinValue(dist);				
+				
+				
+				/*
 				if (dist<100){
 					System.out.println("close to "+i);
 					link=i;
@@ -531,6 +538,8 @@ class myPanel extends JPanel implements MouseMotionListener{
 					liney1=0;
 					liney2=0;
 				}
+				*/
+				
 			}
 		}
 	}
@@ -543,7 +552,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 		int y= ev.getY();
 		//System.out.println("("+x+", "+y+")");
 	}
-	
 	public void TBopenfile(int i){
 		File openfile= new File(TBfile[i]);
 			try{
@@ -600,7 +608,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 	
 	// html
 	
-
 	public void KeepInPanel (int x, int y, int index, int[] imageW, int[] imageH, int[] imageX, int[] imageY,
 							 JLabel[] name, int boundN, int boundS, int boundE, Rectangle[] Bound, Image[] image){
 		if (index !=0){		
@@ -653,6 +660,15 @@ class myPanel extends JPanel implements MouseMotionListener{
 		 	repaint();
 		}
 	}
+	public static int MinValue(int[] array){  
+	     int minValue = array[0];  
+	     for(int i=1;i<array.length;i++){  
+	     if(array[i] < minValue){  
+	     minValue = array[i];  
+	        }  
+	     }  
+	    return minValue;  
+	}  
 	
 	/*
 	static Image iconToImage(Icon icon) {
