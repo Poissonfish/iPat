@@ -377,11 +377,10 @@ class myPanel extends JPanel implements MouseMotionListener{
 					trashl.setVisible(true);
 					removeornot=false;
 	    		}
-				if(link!=0 & TBindex!=0){
-					
+				if( (COint[COcount][0]==0|COint[COcount][0]==1) & (TBindex!=0|MOindex!=0)){
 					System.out.println("linked");
-					COimageX[1]=Math.min(TBimageX[link], TBimageX[TBindex]);
-					COimageY[1]=Math.min(TBimageY[link], TBimageY[TBindex]);
+					COimageX[COcount]=Math.min(TBimageX[link], TBimageX[TBindex]);
+					COimageY[COcount]=Math.min(TBimageY[link], TBimageY[TBindex]);
 					if (TBimageX[link]>=TBimageX[TBindex]){
 						COimageW[1]=TBimageX[link]+TBimageW[link]-TBimageX[TBindex];
 					}else{
@@ -449,6 +448,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 					 TBname,  boundN,  boundS,  boundE, TBBound, TB);
 		KeepInPanel (imX, imY, MOindex, MOimageW, MOimageH, MOimageX, MOimageY,
 					 MOname,  boundN,  boundS,  boundE, MOBound, MO);
+		/*
 		if(COindex!=0){
 			///
 			///
@@ -478,6 +478,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 			///
 			
 		}	
+		*/
 		
 		if ((TBindex!=0|MOindex!=0)&&imY<=(delbbound)){
 			trashl.setBounds(new Rectangle(0, -50, 550, 300));
@@ -495,9 +496,8 @@ class myPanel extends JPanel implements MouseMotionListener{
 		if(TBindex!=0){
 			int[] TBdist= new int[TBcount];
 			int[] MOdist= new int[MOcount];
-			int x= TBimageX[TBindex]+(TBimageW[TBindex]/2);
-			int y= TBimageY[TBindex]+(TBimageH[TBindex]/2);
-			
+			int x= imX;
+			int y= imY;	
 			for (int i=1; i<=TBcount; i++){
 				if (i == TBindex) {
 		                continue;
@@ -519,28 +519,49 @@ class myPanel extends JPanel implements MouseMotionListener{
 			int[] dist = new int[TBdist.length + MOdist.length];
 			System.arraycopy(TBdist, 0, dist, 0 		   , TBdist.length);
 			System.arraycopy(MOdist, 0, dist, TBdist.length, MOdist.length);
-			MinValue(dist);				
-				
-				
-				/*
-				if (dist<100){
-					System.out.println("close to "+i);
-					link=i;
-					linex1=x;
-					linex2=x2;
-					liney1=y;
-					liney2=y2;
-					break;	
-				}else{
-					link=0;
-					linex1=0;
-					linex2=0;
-					liney1=0;
-					liney2=0;
+			int minvalue= MinValue(dist);				
+			if (minvalue<100){
+				for (int i=1; i<=TBcount; i++){
+					if(TBdist[i]==minvalue){
+						COint[COcount][0]= 0;//
+						COint[COcount][1]= TBindex;
+						COint[COcount][2]= 0;
+						COint[COcount][3]= i;
+						linex1= imX;
+						liney1= imY;
+						linex2= TBimageX[i]+(TBimageW[i]/2);
+						liney2= TBimageY[i]+(TBimageH[i]/2);
+						repaint();
+						break;
+					}
 				}
-				*/
-				
-			}
+				if(COint[COcount][0]!=0&&COint[COcount][0]!=1){
+					for (int i=1; i<=MOcount; i++){
+						if(MOdist[i]==minvalue){
+							COint[COcount][0]= 0;//
+							COint[COcount][1]= MOindex;
+							COint[COcount][2]= 0;
+							COint[COcount][3]= i;
+							linex1= imX;
+							liney1= imY;
+							linex2= MOimageX[i]+(MOimageW[i]/2);
+							liney2= MOimageY[i]+(MOimageH[i]/2);
+							repaint();
+							break;
+						}
+					}
+				}
+			}else{
+				COint[COcount][0]= -1;//
+				COint[COcount][1]= -1;
+				COint[COcount][2]= -1;
+				COint[COcount][3]= -1;
+				linex1=0;
+				linex2=0;
+				liney1=0;
+				liney2=0;
+				repaint();
+			}	
 		}
 	}
 	
@@ -660,14 +681,15 @@ class myPanel extends JPanel implements MouseMotionListener{
 		 	repaint();
 		}
 	}
+	
 	public static int MinValue(int[] array){  
 	     int minValue = array[0];  
-	     for(int i=1;i<array.length;i++){  
-	     if(array[i] < minValue){  
-	     minValue = array[i];  
-	        }  
+	     for(int i=1; i<array.length; i++){  
+	    	 if(array[i] < minValue){  
+	    		 minValue = array[i];  
+	    	 }	  
 	     }  
-	    return minValue;  
+	     return minValue;  
 	}  
 	
 	/*
