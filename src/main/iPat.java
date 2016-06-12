@@ -53,7 +53,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 		
 	int TBindex =0;
 	int MOindex =0;
-	int COindex =0;
+	int COindex =-1;
 	
 	int TBcount =0;
 	int MOcount =0;
@@ -129,10 +129,11 @@ class myPanel extends JPanel implements MouseMotionListener{
 	int[][] COint= new int[COMAX][4];
 	
 	//line
-	int linex1=0,
-		linex2=0,
-		liney1=0,
-		liney2=0;
+	int[] linex=new int[2],
+		  liney=new int[2];
+	
+	//circle
+	Color red = new Color(255, 0, 0, 20);
 	
 	public myPanel(){	
 		this.setBackground(Color.white);
@@ -347,7 +348,7 @@ class myPanel extends JPanel implements MouseMotionListener{
     				}
     			} 
     			if (COBound[0]!=null){
-    				for (int i=0; i<=COcount; i++){
+    				for (int i=0; i<=COcount-1; i++){
     					if(COBound[i].contains(move_x, move_y)){
     						COindex=i;
     						MOindex=0;
@@ -384,41 +385,25 @@ class myPanel extends JPanel implements MouseMotionListener{
 					System.out.println("linked");
 					int X1=0, Y1=0, W1=0, H1=0, X2=0, Y2=0, W2=0, H2=0;
 					if(COint[COcount][0]+COint[COcount][1]==2){
-						X1=MOimageX[MOindex];
-						Y1=MOimageY[MOindex];
-						W1=MOimageW[MOindex];
-						H1=MOimageH[MOindex];
-						X2=MOimageX[COint[COcount][3]];
-						Y2=MOimageY[COint[COcount][3]];
-						W2=MOimageW[COint[COcount][3]];
-						H2=MOimageH[COint[COcount][3]];
+						X1=MOimageX[MOindex]; Y1=MOimageY[MOindex];
+						W1=MOimageW[MOindex]; H1=MOimageH[MOindex];
+						X2=MOimageX[COint[COcount][3]];	Y2=MOimageY[COint[COcount][3]];
+						W2=MOimageW[COint[COcount][3]];	H2=MOimageH[COint[COcount][3]];
 					}else if(COint[COcount][0]==0 &&COint[COcount][1]==1){
-						X1=TBimageX[TBindex];
-						Y1=TBimageY[TBindex];
-						W1=TBimageW[TBindex];
-						H1=TBimageH[TBindex];
-						X2=MOimageX[COint[COcount][3]];
-						Y2=MOimageY[COint[COcount][3]];
-						W2=MOimageW[COint[COcount][3]];
-						H2=MOimageH[COint[COcount][3]];
+						X1=TBimageX[TBindex]; Y1=TBimageY[TBindex];
+						W1=TBimageW[TBindex]; H1=TBimageH[TBindex];
+						X2=MOimageX[COint[COcount][3]]; Y2=MOimageY[COint[COcount][3]];
+						W2=MOimageW[COint[COcount][3]];	H2=MOimageH[COint[COcount][3]];
 					}else if(COint[COcount][0]==1 &&COint[COcount][1]==0){
-						X1=MOimageX[MOindex];
-						Y1=MOimageY[MOindex];
-						W1=MOimageW[MOindex];
-						H1=MOimageH[MOindex];
-						X2=TBimageX[COint[COcount][3]];
-						Y2=TBimageY[COint[COcount][3]];
-						W2=TBimageW[COint[COcount][3]];
-						H2=TBimageH[COint[COcount][3]];				
+						X1=MOimageX[MOindex]; Y1=MOimageY[MOindex];
+						W1=MOimageW[MOindex]; H1=MOimageH[MOindex];
+						X2=TBimageX[COint[COcount][3]]; Y2=TBimageY[COint[COcount][3]];
+						W2=TBimageW[COint[COcount][3]];	H2=TBimageH[COint[COcount][3]];				
 					}else if(COint[COcount][0]+COint[COcount][1]==0){
-						X1=TBimageX[TBindex];
-						Y1=TBimageY[TBindex];
-						W1=TBimageW[TBindex];
-						H1=TBimageH[TBindex];
-						X2=TBimageX[COint[COcount][3]];
-						Y2=TBimageY[COint[COcount][3]];
-						W2=TBimageW[COint[COcount][3]];
-						H2=TBimageH[COint[COcount][3]];
+						X1=TBimageX[TBindex]; Y1=TBimageY[TBindex];
+						W1=TBimageW[TBindex]; H1=TBimageH[TBindex];
+						X2=TBimageX[COint[COcount][3]]; Y2=TBimageY[COint[COcount][3]];
+						W2=TBimageW[COint[COcount][3]];	H2=TBimageH[COint[COcount][3]];
 					}
 					COimageX[COcount]=Math.min(X1, X2);
 					COimageY[COcount]=Math.min(Y1, Y2);
@@ -433,10 +418,16 @@ class myPanel extends JPanel implements MouseMotionListener{
 						COimageH[COcount]=Y1+H1-Y2;
 					}
 					COBound[COcount]=new Rectangle(COimageX[COcount], COimageY[COcount], COimageW[COcount], COimageH[COcount]);
+					linex[0]=0;
+					linex[1]=0;
+					liney[0]=0;
+					liney[1]=0;
 					COcount++;
+					repaint();
 				}
 				TBindex=0;
 				MOindex=0;
+				COindex=-1;
 			}
 			
 			@Override
@@ -460,8 +451,16 @@ class myPanel extends JPanel implements MouseMotionListener{
 	@Override
 	protected void paintComponent(Graphics g) {
 	     super.paintComponent(g);
+	     if (COcount>0){
+	    	 for (int i=0; i<COcount; i++){
+	    		 g.setColor(red);
+	    		 g.fillOval((int)(COimageX[i]+COimageW[i]*.3), (int)(COimageY[i]+COimageH[i]*.3),
+	    				 	(int)(COimageW[i]*.4), (int)(COimageH[i]*.4));
+	    	 }
+	     }
 		 System.out.println("use paint");
-		 g.drawLine(linex1, liney1, linex2, liney2);
+		 g.setColor(Color.darkGray);
+		 g.drawLine(linex[0], liney[0], linex[1], liney[1]);
 	     if (TBcount>0){	    	 
 	    	 for (int i=1; i<=TBcount; i++){
 			     g.drawImage(TB[i], TBimageX[i], TBimageY[i], this);
@@ -485,105 +484,38 @@ class myPanel extends JPanel implements MouseMotionListener{
 					 TBname,  boundN,  boundS,  boundE, TBBound, TB);
 		KeepInPanel (imX, imY, MOindex, MOimageW, MOimageH, MOimageX, MOimageY,
 					 MOname,  boundN,  boundS,  boundE, MOBound, MO);
+		if(TBindex!=0){
+			CombinedorNot(TBindex, TBimageX, TBimageY, TBimageW, TBimageH, 0);
+		}else if(MOindex!=0){
+			CombinedorNot(MOindex, MOimageX, MOimageY, MOimageW, MOimageH, 1);
+		}
 		
-		if(COindex!=0){
+		if(COindex!=-1){
 			int dx= imX- (COimageX[COindex]+(COimageW[COindex]/2));
 			int dy= imY- (COimageY[COindex]+(COimageH[COindex]/2));
-			System.out.println("dx="+dx+" , dy="+dy+" COindex= "+COindex);
-			
+			System.out.println("COindex= "+COindex);	
 			COimageX[COindex]=COimageX[COindex]+dx;					
 			COimageY[COindex]=COimageY[COindex]+dy;
 			COBound[COindex]=new Rectangle(COimageX[COindex], COimageY[COindex], COimageW[COindex], COimageH[COindex]);
-
 			if(COint[COindex][0]==0){
 				if(COint[COindex][1]==0){
-					TBimageX[COint[COindex][2]]=TBimageX[COint[COindex][2]]+dx;
-					TBimageY[COint[COindex][2]]=TBimageY[COint[COindex][2]]+dy;
-					TBBound[COint[COindex][2]]=new Rectangle(TBimageX[COint[COindex][2]], TBimageY[COint[COindex][2]],
-															 TB[COint[COindex][2]].getWidth(null), TB[COint[COindex][2]].getHeight(null));
-					TBname[COint[COindex][2]].setLocation(TBimageX[COint[COindex][2]], 
-														  TBimageY[COint[COindex][2]]+TBimageH[COint[COindex][2]]-195);
-					
-					TBimageX[COint[COindex][3]]=TBimageX[COint[COindex][3]]+dx;
-					TBimageY[COint[COindex][3]]=TBimageY[COint[COindex][3]]+dy;
-					TBBound[COint[COindex][3]]=new Rectangle(TBimageX[COint[COindex][3]], TBimageY[COint[COindex][3]],
-															 TB[COint[COindex][3]].getWidth(null), TB[COint[COindex][3]].getHeight(null));
-					TBname[COint[COindex][3]].setLocation(TBimageX[COint[COindex][3]], 
-														  TBimageY[COint[COindex][3]]+TBimageH[COint[COindex][3]]-195);		
-					
-					linex1=TBimageX[COint[COindex][2]]+(TBimageW[COint[COindex][2]]/2);
-					linex2=TBimageX[COint[COindex][3]]+(TBimageW[COint[COindex][3]]/2);
-					liney1=TBimageY[COint[COindex][2]]+(TBimageH[COint[COindex][2]]/2);
-					liney2=TBimageY[COint[COindex][3]]+(TBimageH[COint[COindex][3]]/2);
+					dragcombined(dx, dy, COint[COindex][2], TBimageX, TBimageY, TBimageW, TBimageH, TB, TBBound, TBname);
+					dragcombined(dx, dy, COint[COindex][3], TBimageX, TBimageY, TBimageW, TBimageH, TB, TBBound, TBname);
 				}else if(COint[COindex][1]==1){
-					TBimageX[COint[COindex][2]]=TBimageX[COint[COindex][2]]+dx;
-					TBimageY[COint[COindex][2]]=TBimageY[COint[COindex][2]]+dy;
-					TBBound[COint[COindex][2]]=new Rectangle(TBimageX[COint[COindex][2]], TBimageY[COint[COindex][2]],
-															 TB[COint[COindex][2]].getWidth(null), TB[COint[COindex][2]].getHeight(null));
-					TBname[COint[COindex][2]].setLocation(TBimageX[COint[COindex][2]], 
-														  TBimageY[COint[COindex][2]]+TBimageH[COint[COindex][2]]-195);
-					
-					MOimageX[COint[COindex][3]]=MOimageX[COint[COindex][3]]+dx;
-					MOimageY[COint[COindex][3]]=MOimageY[COint[COindex][3]]+dy;
-					MOBound[COint[COindex][3]]=new Rectangle(MOimageX[COint[COindex][3]], MOimageY[COint[COindex][3]],
-															 MO[COint[COindex][3]].getWidth(null), MO[COint[COindex][3]].getHeight(null));
-					MOname[COint[COindex][3]].setLocation(MOimageX[COint[COindex][3]], 
-														  MOimageY[COint[COindex][3]]+MOimageH[COint[COindex][3]]-195);	
-					
-					linex1=TBimageX[COint[COindex][2]]+(TBimageW[COint[COindex][2]]/2);
-					linex2=MOimageX[COint[COindex][3]]+(MOimageW[COint[COindex][3]]/2);
-					liney1=TBimageY[COint[COindex][2]]+(TBimageH[COint[COindex][2]]/2);
-					liney2=MOimageY[COint[COindex][3]]+(MOimageH[COint[COindex][3]]/2);
+					dragcombined(dx, dy, COint[COindex][2], TBimageX, TBimageY, TBimageW, TBimageH, TB, TBBound, TBname);
+					dragcombined(dx, dy, COint[COindex][3], MOimageX, MOimageY, MOimageW, MOimageH, MO, MOBound, MOname);
 				}		
 			}else if (COint[COindex][0]==1){
 				if(COint[COindex][1]==0){	
-					MOimageX[COint[COindex][2]]=MOimageX[COint[COindex][2]]+dx;
-					MOimageY[COint[COindex][2]]=MOimageY[COint[COindex][2]]+dy;
-					MOBound[COint[COindex][2]]=new Rectangle(MOimageX[COint[COindex][2]], MOimageY[COint[COindex][2]],
-															 MO[COint[COindex][2]].getWidth(null), MO[COint[COindex][2]].getHeight(null));
-					MOname[COint[COindex][2]].setLocation(MOimageX[COint[COindex][2]], 
-														  MOimageY[COint[COindex][2]]+MOimageH[COint[COindex][2]]-195);	
-					
-					TBimageX[COint[COindex][3]]=TBimageX[COint[COindex][3]]+dx;
-					TBimageY[COint[COindex][3]]=TBimageY[COint[COindex][3]]+dy;
-					TBBound[COint[COindex][3]]=new Rectangle(TBimageX[COint[COindex][3]], TBimageY[COint[COindex][3]],
-															 TB[COint[COindex][3]].getWidth(null), TB[COint[COindex][3]].getHeight(null));
-					TBname[COint[COindex][3]].setLocation(TBimageX[COint[COindex][3]], 
-														  TBimageY[COint[COindex][3]]+TBimageH[COint[COindex][3]]-195);
-					
-					linex1=MOimageX[COint[COindex][2]]+(MOimageW[COint[COindex][2]]/2);
-					linex2=TBimageX[COint[COindex][3]]+(TBimageW[COint[COindex][3]]/2);
-					liney1=MOimageY[COint[COindex][2]]+(MOimageH[COint[COindex][2]]/2);
-					liney2=TBimageY[COint[COindex][3]]+(TBimageH[COint[COindex][3]]/2);
+					dragcombined(dx, dy, COint[COindex][2], MOimageX, MOimageY, MOimageW, MOimageH, MO, MOBound, MOname);
+					dragcombined(dx, dy, COint[COindex][3], TBimageX, TBimageY, TBimageW, TBimageH, TB, TBBound, TBname);
 				}else if(COint[COindex][1]==1){
-					MOimageX[COint[COindex][2]]=MOimageX[COint[COindex][2]]+dx;
-					MOimageY[COint[COindex][2]]=MOimageY[COint[COindex][2]]+dy;
-					MOBound[COint[COindex][2]]=new Rectangle(MOimageX[COint[COindex][2]], MOimageY[COint[COindex][2]],
-															 MO[COint[COindex][2]].getWidth(null), MO[COint[COindex][2]].getHeight(null));
-					MOname[COint[COindex][2]].setLocation(MOimageX[COint[COindex][2]], 
-														  MOimageY[COint[COindex][2]]+MOimageH[COint[COindex][2]]-195);	
-					
-					MOimageX[COint[COindex][3]]=MOimageX[COint[COindex][3]]+dx;
-					MOimageY[COint[COindex][3]]=MOimageY[COint[COindex][3]]+dy;
-					MOBound[COint[COindex][3]]=new Rectangle(MOimageX[COint[COindex][3]], MOimageY[COint[COindex][3]],
-															 MO[COint[COindex][3]].getWidth(null), MO[COint[COindex][3]].getHeight(null));
-					MOname[COint[COindex][3]].setLocation(MOimageX[COint[COindex][3]], 
-														  MOimageY[COint[COindex][3]]+MOimageH[COint[COindex][3]]-195);	
-					
-					linex1=MOimageX[COint[COindex][2]]+(MOimageW[COint[COindex][2]]/2);
-					linex2=MOimageX[COint[COindex][3]]+(MOimageW[COint[COindex][3]]/2);
-					liney1=MOimageY[COint[COindex][2]]+(MOimageH[COint[COindex][2]]/2);
-					liney2=MOimageY[COint[COindex][3]]+(MOimageH[COint[COindex][3]]/2);
-					
+					dragcombined(dx, dy, COint[COindex][2], MOimageX, MOimageY, MOimageW, MOimageH, MO, MOBound, MOname);
+					dragcombined(dx, dy, COint[COindex][3], MOimageX, MOimageY, MOimageW, MOimageH, MO, MOBound, MOname);
 				}
 			}
-			
 			repaint();
-			///
-			///
-			
 		}	
-		
 		
 		if ((TBindex!=0|MOindex!=0)&&imY<=(delbbound)){
 			trashl.setBounds(new Rectangle(0, -50, 550, 300));
@@ -598,87 +530,17 @@ class myPanel extends JPanel implements MouseMotionListener{
 			removeornot=false;				
 		}
 		
-		if(TBindex!=0){
-			int[] TBdist= new int[TBcount];
-			int[] MOdist= new int[MOcount];
-			int x= TBimageX[TBindex]+(TBimageW[TBindex]/2);
-			int y= TBimageY[TBindex]+(TBimageH[TBindex]/2);	
-			for (int i=1; i<=TBcount; i++){
-				if (i == TBindex) {
-		                continue;
-		        }
-				int x2= TBimageX[i]+(TBimageW[i]/2);
-				int y2= TBimageY[i]+(TBimageH[i]/2);
-				int dist= (int) Math.sqrt(Math.pow((x-x2), 2) + Math.pow((y-y2), 2));
-				TBdist[1]= dist;
-			}
-			for (int i=1; i<=MOcount; i++){
-				if (i == MOindex) {
-		                continue;
-		        }
-				int x2= MOimageX[i]+(MOimageW[i]/2);
-				int y2= MOimageY[i]+(MOimageH[i]/2);
-				double dist= Math.sqrt(Math.pow((x-x2), 2) + Math.pow((y-y2), 2));
-				MOdist[i]= (int) dist;
-			}
-			int[] dist = new int[TBdist.length + MOdist.length];
-			System.arraycopy(TBdist, 0, dist, 0 		   , TBdist.length);
-			System.arraycopy(MOdist, 0, dist, TBdist.length, MOdist.length);
-			int minvalue= MinValue(dist);				
-			if (minvalue<100){
-				for (int i=1; i<=TBcount; i++){
-					if(TBdist[i]==minvalue){
-						System.out.println("TBlink");
-						COint[COcount][0]= 0;//
-						COint[COcount][1]= 0;
-						COint[COcount][2]= TBindex;
-						COint[COcount][3]= i;
-						linex1= TBimageX[TBindex]+(TBimageW[TBindex]/2);
-						liney1= TBimageY[TBindex]+(TBimageH[TBindex]/2);
-						linex2= TBimageX[i]+(TBimageW[i]/2);
-						liney2= TBimageY[i]+(TBimageH[i]/2);
-						repaint();
-						break;
-					}
-				}
-				if(COint[COcount][0]!=0&&COint[COcount][0]!=1){
-					for (int i=1; i<=MOcount; i++){
-						if(MOdist[i]==minvalue){
-							System.out.println("COlink");
-							COint[COcount][0]= 0;//
-							COint[COcount][1]= 1;
-							COint[COcount][2]= TBindex;
-							COint[COcount][3]= i;
-							linex1= TBimageX[TBindex]+(TBimageW[TBindex]/2);
-							liney1= TBimageY[TBindex]+(TBimageH[TBindex]/2);
-							linex2= MOimageX[i]+(MOimageW[i]/2);
-							liney2= MOimageY[i]+(MOimageH[i]/2);
-							repaint();
-							break;
-						}
-					}
-				}
-			}else{
-				COint[COcount][0]= -1;//
-				COint[COcount][1]= -1;
-				COint[COcount][2]= -1;
-				COint[COcount][3]= -1;
-				linex1=0;
-				linex2=0;
-				liney1=0;
-				liney2=0;
-				repaint();
-			}	
-		}
+		
 	}
-	
 	
 	
 	@Override
 	public void mouseMoved(MouseEvent ev) {
+		/*
 		int x= ev.getX();
 		int y= ev.getY();
-		//System.out.println("("+x+", "+y+")");
+		System.out.println("("+x+", "+y+")");
+		*/
 	}
 	public void TBopenfile(int i){
 		File openfile= new File(TBfile[i]);
@@ -735,6 +597,91 @@ class myPanel extends JPanel implements MouseMotionListener{
 	}
 	
 	// html
+	public void CombinedorNot(int index, int[] X, int[] Y, int[] W, int[] H, int TorM){
+		int[] TBdist= new int[TBcount+1];
+		int[] MOdist= new int[MOcount+1];
+		int x= X[index]+(W[index]/2);
+		int y= Y[index]+(H[index]/2);	
+		for (int i=1; i<=TBcount; i++){
+			if (i == TBindex) {
+	            TBdist[i]=10000;
+	        }else{
+	        	int x2= TBimageX[i]+(TBimageW[i]/2);
+				int y2= TBimageY[i]+(TBimageH[i]/2);
+				int dist= (int) Math.sqrt(Math.pow((x-x2), 2) + Math.pow((y-y2), 2));
+				System.out.println("TBdist"+i+" : "+dist);
+				TBdist[i]= dist;	
+	        }			
+		}
+		for (int i=1; i<=MOcount; i++){
+			if (i == MOindex) {
+				MOdist[i]=10000;   
+	        }else{
+	        	int x2= MOimageX[i]+(MOimageW[i]/2);
+				int y2= MOimageY[i]+(MOimageH[i]/2);
+				int dist= (int) Math.sqrt(Math.pow((x-x2), 2) + Math.pow((y-y2), 2));
+				System.out.println("MOdist"+i+" : "+dist);
+				MOdist[i]= dist;
+	        }	
+		}
+		int[] newdist = new int[TBdist.length + MOdist.length-2];
+		System.arraycopy(TBdist, 1, newdist, 0 		   , TBdist.length-1);
+		System.arraycopy(MOdist, 1, newdist, TBdist.length-1, MOdist.length-1);
+		int minvalue= MinValue(newdist);	
+		System.out.println("minvalue= "+minvalue);
+		
+		if (minvalue<100& minvalue>50){
+			for (int i=1; i<=TBcount; i++){
+				if(TBdist[i]==minvalue){
+					System.out.println("TBlink to "+i);
+					COint[COcount][0]= TorM;//
+					COint[COcount][1]= 0;
+					COint[COcount][2]= index;
+					COint[COcount][3]= i;
+					linex[0]= X[index]+(W[index]/2);
+					liney[0]= Y[index]+(H[index]/2);
+					linex[1]= TBimageX[i]+(TBimageW[i]/2);
+					liney[1]= TBimageY[i]+(TBimageH[i]/2);
+					repaint();
+					break;
+				}
+			}
+			for (int i=1; i<=MOcount; i++){
+				if(MOdist[i]==minvalue){
+					System.out.println("COlink");
+					COint[COcount][0]= TorM;//
+					COint[COcount][1]= 1;
+					COint[COcount][2]= index;
+					COint[COcount][3]= i;
+					linex[0]= X[index]+(W[index]/2);
+					liney[0]= Y[index]+(H[index]/2);
+					linex[1]= MOimageX[i]+(MOimageW[i]/2);
+					liney[1]= MOimageY[i]+(MOimageH[i]/2);
+					repaint();
+					break;
+				}	
+			}
+		}else{
+			COint[COcount][0]= -1;//
+			COint[COcount][1]= -1;
+			COint[COcount][2]= -1;
+			COint[COcount][3]= -1;
+			linex[0]=0;
+			linex[1]=0;
+			liney[0]=0;
+			liney[1]=0;
+			repaint();
+		}	
+	}
+	
+	public void dragcombined (int dx, int dy, int index,
+							  int[] X, int[] Y, int[] W, int[] H, Image[] image, Rectangle[] bound, JLabel[] name){						
+		X[index]=X[index]+dx;
+		Y[index]=Y[index]+dy;
+		bound[index]= new Rectangle(X[index], Y[index], 
+									  image[index].getWidth(null), image[index].getHeight(null));
+		name[index].setLocation(X[index], Y[index]+H[index]-195);
+	}
 	
 	public void KeepInPanel (int x, int y, int index, int[] imageW, int[] imageH, int[] imageX, int[] imageY,
 							 JLabel[] name, int boundN, int boundS, int boundE, Rectangle[] Bound, Image[] image){
