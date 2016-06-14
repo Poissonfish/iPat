@@ -735,7 +735,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 							MOco[0][index]=1;
 							MOco[1][index]=COcount;
 						}	
-						
+						link=false;
 					}else if (TBco[0][i]!=-1){						
 						if(TorM==0){
 							TBco[0][index]=1;
@@ -757,19 +757,30 @@ class myPanel extends JPanel implements MouseMotionListener{
 			
 			for (int i=1; i<=MOcount; i++){
 				if(MOdist[i]==minvalue){
-					System.out.println("COlink");
-					COint[COcount][0]= TorM;//
-					COint[COcount][1]= 1;
-					COint[COcount][2]= index;
-					COint[COcount][3]= i;
-					if(TorM==0){
-						TBco[0][index]=1;
-						TBco[1][index]=COcount;
-					}else if (TorM==1){
-						MOco[0][index]=1;
-						MOco[1][index]=COcount;
+					if(MOco[0][i]==-1){
+						System.out.println("COlink");
+						COint[COcount][0]= TorM;//
+						COint[COcount][1]= 1;
+						COint[COcount][2]= index;
+						COint[COcount][3]= i;
+						if(TorM==0){
+							TBco[0][index]=1;
+							TBco[1][index]=COcount;
+						}else if (TorM==1){
+							MOco[0][index]=1;
+							MOco[1][index]=COcount;
+						}
+						link=false;						
+					}else if(MOco[0][i]!=-1){
+						if(TorM==0){
+							TBco[0][index]=1;
+							TBco[1][index]=MOco[1][i];
+						}else if (TorM==1){
+							MOco[0][index]=1;
+							MOco[1][index]=MOco[1][i];
+						}
+						link=true;
 					}
-					
 					linex[0]= X[index]+(W[index]/2);
 					liney[0]= Y[index]+(H[index]/2);
 					linex[1]= MOimageX[i]+(MOimageW[i]/2);
