@@ -41,12 +41,14 @@ class myPanel extends JPanel implements MouseMotionListener{
 	int[] TBimageH= new int[TBMAX];
 	int[] TBimageW= new int[TBMAX];
 	int[][] TBco= new int[TBMAX][2];
+	int[] TBdelete=new int[TBMAX];
 	
 	int[] MOimageX= new int[MOMAX];
 	int[] MOimageY= new int[MOMAX];
 	int[] MOimageH= new int[MOMAX];
 	int[] MOimageW= new int[MOMAX];
 	int[][] MOco= new int[MOMAX][2];
+	int[] MOdelete=new int[MOMAX];
 	
 	int[] COimageX= new int[COMAX];
 	int[] COimageY= new int[COMAX];
@@ -327,7 +329,7 @@ class myPanel extends JPanel implements MouseMotionListener{
     				for (int i=1; i<=TBcount;i++){
     					if (TBBound[i].contains(move_x, move_y)){
     						TBindex=i;
-    						System.out.println(i);					
+    						System.out.println("this is "+ i);					
     						if (SwingUtilities.isRightMouseButton(ee)){
     							System.out.println("right");
     							 TBvalue[i]= TBchooser[i].showOpenDialog(null);
@@ -371,14 +373,12 @@ class myPanel extends JPanel implements MouseMotionListener{
 				int y=ee.getY();				
 				if (removeornot){
 					if (TBindex!=0&&y<delbbound){
-						TBimageX[TBindex]=-100;
-						TBimageY[TBindex]=-100;
+						TBdelete[TBindex]=-1;
 						TBBound[TBindex]=new Rectangle(-100,-100,0,0);
 						TBname[TBindex].setLocation(-100,-100);
 						repaint();
 					}else if(MOindex!=0&&y<delbbound){
-						MOimageX[MOindex]=-100;
-						MOimageY[MOindex]=-100;
+						MOdelete[MOindex]=-1;
 						MOBound[MOindex]=new Rectangle(-100,-100,0,0);
 						MOname[MOindex].setLocation(-100,-100);
 						repaint();
@@ -418,7 +418,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 					}
 					COBound[cindex]=new Rectangle(COimageX[cindex], COimageY[cindex], COimageW[cindex], COimageH[cindex]);
 					
-					link=false;
+					
 					linex[0]=0;
 					linex[1]=0;
 					liney[0]=0;
@@ -427,13 +427,13 @@ class myPanel extends JPanel implements MouseMotionListener{
 					*/
 				}
 				
-				if( (COco[COcount][0]==0|COco[COcount][0]==1) & (TBindex!=0|MOindex!=0)){
+				if( (COco[COcount][0]==0|COco[COcount][0]==1) & (TBindex!=0|MOindex!=0) & !link){
 					System.out.println("linked");
 					if (TBindex!=0){
-						TBco[COco[COcount][3]][0]=1;
+						TBco[COco[COcount][3]][0]=2;
 						TBco[COco[COcount][3]][1]=COcount;
 					}else if(MOindex!=0){
-						MOco[COco[COcount][3]][0]=1;
+						MOco[COco[COcount][3]][0]=2;
 						MOco[COco[COcount][3]][1]=COcount;
 					}
 					
@@ -471,18 +471,20 @@ class myPanel extends JPanel implements MouseMotionListener{
 					}else{
 						COimageH[COcount]=Y1+H1-Y2;
 					}
-					COBound[COcount]=new Rectangle(COimageX[COcount], COimageY[COcount], COimageW[COcount], COimageH[COcount]);
-					linex[0]=0;
-					linex[1]=0;
-					liney[0]=0;
-					liney[1]=0;
-					COcount++;
-					repaint();	
+					COBound[COcount]=new Rectangle(COimageX[COcount], COimageY[COcount], COimageW[COcount], COimageH[COcount]);		
+					COcount++;	
 				}
-				
+				linex[0]=0;
+				linex[1]=0;
+				liney[0]=0;
+				liney[1]=0;
+
+				repaint();
 				TBindex=0;
 				MOindex=0;
 				COindex=-1;
+
+				link=false;
 			}
 			
 			@Override
@@ -518,6 +520,11 @@ class myPanel extends JPanel implements MouseMotionListener{
 		 g.drawLine(linex[0], liney[0], linex[1], liney[1]);
 	     if (TBcount>0){	    	 
 	    	 for (int i=1; i<=TBcount; i++){
+	    		 if(TBdelete[i]==-1){continue;}			     
+			     for(int j=1; j<=TBcount; j++){
+			    	 if(i==j|TBdelete[j]==-1){continue;}
+			    	 g.drawLine(TBimageX[i]+(TBimageW[i]/2), TBimageY[i]+(TBimageH[i]/2), TBimageX[j]+(TBimageW[j]/2), TBimageY[j]+(TBimageH[j]/2));
+			     }
 			     g.drawImage(TB[i], TBimageX[i], TBimageY[i], this);
 	    	 }
 	     }	   
@@ -732,14 +739,15 @@ class myPanel extends JPanel implements MouseMotionListener{
 						COco[COcount][2]= index;
 						COco[COcount][3]= i;			
 						if(TorM==0){
-							TBco[index][0]=1;
+							TBco[index][0]=2;
 							TBco[index][1]=COcount;
 						}else if (TorM==1){
-							MOco[index][0]=1;
+							MOco[index][0]=2;
 							MOco[index][1]=COcount;
 						}	
 						link=false;
-					}else if (TBco[i][0]!=-1){						
+					}else if (TBco[i][0]!=-1){	
+						System.out.println("TBlink to "+i);
 						if(TorM==0){
 							TBco[index][0]=1;
 							TBco[index][1]=TBco[i][1];
@@ -768,10 +776,10 @@ class myPanel extends JPanel implements MouseMotionListener{
 						COco[COcount][2]= index;
 						COco[COcount][3]= i;
 						if(TorM==0){
-							TBco[index][0]=1;
+							TBco[index][0]=2;
 							TBco[index][1]=COcount;
 						}else if (TorM==1){
-							MOco[index][0]=1;
+							MOco[index][0]=2;
 							MOco[index][1]=COcount;
 						}
 						link=false;						
