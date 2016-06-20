@@ -16,7 +16,7 @@ import javax.swing.filechooser.FileSystemView;
 
 public class iPat {
 	public static void main(String[] args){    	
-		JFrame main = new JFrame();
+		JFrame main = new myFrame();
 		main.setTitle("iPat");	
 		main.setSize(550,800);
 		main.setLocation(200,0); 
@@ -25,11 +25,27 @@ public class iPat {
 		Container cPane = main.getContentPane();
 		cPane.add(new myPanel());	
 		main.setVisible(true);
-		main.setResizable(false);
+		//main.setResizable(false);
 		System.out.println(cPane.getWidth());
 	}
 	
 }
+
+class myFrame extends JFrame{
+	public myFrame(){
+		this.addComponentListener(new ComponentAdapter() {
+			@Override
+	        public void componentResized(ComponentEvent evt) {
+				System.out.println("componentResized");
+	            Component c = (Component)evt.getSource();
+	            //........
+	        }	
+		});
+	}
+}
+
+
+
 
 class myPanel extends JPanel implements MouseMotionListener{	
 	private static final int TBMAX=999;
@@ -99,7 +115,8 @@ class myPanel extends JPanel implements MouseMotionListener{
 	Image[] Trash= new Image[10];
 	Image Excel, Powerpoint, Word, Music, Video, Unknown, 
 		  TBimage, MOimage;
-
+	
+	JPanel mainstartPanel;
 	JLayeredPane startPanel;
 	JPanel mainPanel;	
 	JPanel nullPanel;
@@ -227,13 +244,16 @@ class myPanel extends JPanel implements MouseMotionListener{
 		MOButton.setBorderPainted(false);
 		iPat.setOpaque(false);
 		
+		
+		mainstartPanel =new JPanel(new MigLayout("debug,fillx", "[grow]","[]"));
 		startPanel = new JLayeredPane();
-		layoutPanel = new JPanel(new MigLayout("fillx", "[]","[][]"));	
+		startPanel.setLayout(new FlowLayout());
+		layoutPanel = new JPanel(new MigLayout(" fillx", "[grow]","[][]"));	
 		nullPanel= new JPanel();
 		
 		layoutPanel.add(iPat,"wrap, span 2, alignx c");
-		layoutPanel.add(TBButton,"alignx r");
-		layoutPanel.add(MOButton,"alignx l");
+		layoutPanel.add(TBButton,"grow, alignx r");
+		layoutPanel.add(MOButton,"grow, alignx l");
 				
 		startPanel.setPreferredSize(new Dimension(550, 200));
 		trashl = new JLabel(new ImageIcon());
@@ -243,9 +263,12 @@ class myPanel extends JPanel implements MouseMotionListener{
 		trashl.setVisible(true);
 		layoutPanel.setBounds(new Rectangle(0, 0, 550,200));
 		layoutPanel.setVisible(true);
+ 
 
-		this.setLayout(new MigLayout(" fillx","[grow]","[grow]"));
-		this.add(startPanel,"dock north");
+		mainstartPanel.add(startPanel, "growx, alignx c");
+		
+		this.setLayout(new MigLayout("fillx","[grow]","[grow]"));
+		this.add(mainstartPanel," dock north");
 		this.add(nullPanel,"grow"); 
 	
 		nullPanel.setLayout(null);
