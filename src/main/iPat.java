@@ -13,39 +13,51 @@ import net.miginfocom.swing.MigLayout;
 import java.io.IOException;
 import javax.swing.filechooser.FileSystemView;
 
-
 public class iPat {
+	static int Wide=1000;
+	static JLayeredPane startPanel;
+	static JPanel nullPanel;
+	static JPanel layoutPanel;
+	
 	public static void main(String[] args){    	
-		JFrame main = new myFrame();
+		JFrame main = new JFrame();
+		JPanel ipat = new myPanel(Wide, layoutPanel, startPanel, nullPanel);
 		main.setTitle("iPat");	
-		main.setSize(550,800);
 		main.setLocation(200,0); 
 		main.setLayout(new BorderLayout());
 		main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Container cPane = main.getContentPane();
-		cPane.add(new myPanel());	
+		cPane.add(ipat);	
+		main.pack();
 		main.setVisible(true);
-		//main.setResizable(false);
-		System.out.println(cPane.getWidth());
-	}
-	
-}
-
-class myFrame extends JFrame{
-	public myFrame(){
-		this.addComponentListener(new ComponentAdapter() {
+		main.addComponentListener(new ComponentAdapter() {
 			@Override
 	        public void componentResized(ComponentEvent evt) {
 				System.out.println("componentResized");
 	            Component c = (Component)evt.getSource();
-	            //........
+	            System.out.println("H: "+c.getHeight()+" W: "+c.getWidth()); 
+	            Wide=main.getWidth();
+	            main.setSize(Wide, 700);
+	            startPanel.resize(Wide,200);
+	            //(new Dimension(Wide, 200));
+	            //http://stackoverflow.com/questions/6666637/resize-jpanel-from-jframe
+	            layoutPanel.setBounds(new Rectangle(0, 0, Wide,200));
+	            nullPanel.setSize(new Dimension(Wide, 500));
+
+	            startPanel.setVisible(true);
+	            layoutPanel.setVisible(true);
+	            nullPanel.setVisible(true);
+	            
+	            startPanel.revalidate();
+	            layoutPanel.revalidate();
+	            nullPanel.revalidate();
+	            ipat.revalidate();
+	            cPane.revalidate();
+	            System.out.println("Wide: "+Wide);
 	        }	
-		});
-	}
+		});	
+	}	
 }
-
-
-
 
 class myPanel extends JPanel implements MouseMotionListener{	
 	private static final int TBMAX=999;
@@ -161,7 +173,15 @@ class myPanel extends JPanel implements MouseMotionListener{
 	Color ovalcolor = new Color(231,57,131, 150);
 	Color themecolor = new Color(54, 164, 239, 150);
 	
-	public myPanel(){	
+	//windows size
+	int Wide;
+	
+	public myPanel(int Wideint, JPanel l, JLayeredPane s, JPanel n){	
+		this.Wide=Wideint;
+		this.layoutPanel=l;
+		this.startPanel=s;
+		this.nullPanel=n;
+		
 		this.setBackground(Color.white);
 		try{
 			Image iconIP = ImageIO.read(getClass().getResource("iPat.png"));
@@ -243,35 +263,34 @@ class myPanel extends JPanel implements MouseMotionListener{
 		MOButton.setContentAreaFilled(false);
 		MOButton.setBorderPainted(false);
 		iPat.setOpaque(false);
-		
-		
-		mainstartPanel =new JPanel(new MigLayout("debug,fillx", "[grow]","[]"));
+				
 		startPanel = new JLayeredPane();
-		startPanel.setLayout(new FlowLayout());
 		layoutPanel = new JPanel(new MigLayout(" fillx", "[grow]","[][]"));	
 		nullPanel= new JPanel();
 		
 		layoutPanel.add(iPat,"wrap, span 2, alignx c");
 		layoutPanel.add(TBButton,"grow, alignx r");
 		layoutPanel.add(MOButton,"grow, alignx l");
-				
-		startPanel.setPreferredSize(new Dimension(550, 200));
+		
+		
+		startPanel.setPreferredSize(new Dimension(Wide, 200));
 		trashl = new JLabel(new ImageIcon());
 		startPanel.add(trashl, new Integer(1));
 		startPanel.add(layoutPanel,  new Integer(3));
-		trashl.setBounds(new Rectangle(-1000, -50, 550, 300));
+		trashl.setBounds(new Rectangle(-1000, -50, Wide, 300));
 		trashl.setVisible(true);
-		layoutPanel.setBounds(new Rectangle(0, 0, 550,200));
+		layoutPanel.setBounds(new Rectangle(0, 0, Wide,200));
 		layoutPanel.setVisible(true);
- 
-
-		mainstartPanel.add(startPanel, "growx, alignx c");
+		
+		nullPanel.setLayout(null);
+		nullPanel.setPreferredSize(new Dimension(Wide, 500));
 		
 		this.setLayout(new MigLayout("fillx","[grow]","[grow]"));
-		this.add(mainstartPanel," dock north");
+		this.add(startPanel," dock north");
 		this.add(nullPanel,"grow"); 
 	
-		nullPanel.setLayout(null);
+		
+		
 		startPanel.setOpaque(false);
 		layoutPanel.setOpaque(false);
 		nullPanel.setOpaque(false);
@@ -618,8 +637,8 @@ class myPanel extends JPanel implements MouseMotionListener{
 		int imX = e.getX();
 		int imY = e.getY();
 		int boundN=0; //205
-		int boundS=800;
-		int boundE=550;
+		int boundS=680;
+		int boundE=Wide;
 		System.out.println("COindex= "+COindex);
 		if(TBindex!=0){
 			CombinedorNot(TBindex, TBimageX, TBimageY, TBimageW, TBimageH, 1);
