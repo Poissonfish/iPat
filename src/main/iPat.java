@@ -3,6 +3,7 @@ package main;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.prefs.Preferences;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
@@ -14,16 +15,17 @@ import java.io.IOException;
 import javax.swing.filechooser.FileSystemView;
 
 public class iPat {
-	static int Wide=1000;
+	static int Wide=1200;
+	static int Heigth=700;
 	static JLayeredPane startPanel;
-	static JPanel nullPanel;
+	static JLayeredPane nullPanel;
 	static JPanel layoutPanel;
 	
 	public static void main(String[] args){    	
 		JFrame main = new JFrame();
-		JPanel ipat = new myPanel(Wide, layoutPanel, startPanel, nullPanel);
+		JPanel ipat = new myPanel(Wide, Heigth, layoutPanel, startPanel, nullPanel);
 		main.setTitle("iPat");	
-		main.setLocation(200,0); 
+		main.setLocation(400, 0); 
 		main.setLayout(new BorderLayout());
 		main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Container cPane = main.getContentPane();
@@ -36,11 +38,11 @@ public class iPat {
 				System.out.println("componentResized");
 	            Component c = (Component)evt.getSource();
 	            System.out.println("H: "+c.getHeight()+" W: "+c.getWidth()); 
-	            Wide=main.getWidth();
-	            main.setSize(Wide, 700);
-	            startPanel.resize(Wide,200);
-	            //(new Dimension(Wide, 200));
-	            //http://stackoverflow.com/questions/6666637/resize-jpanel-from-jframe
+	         //   Wide=main.getWidth();
+	            main.setSize(Wide, Heigth);
+	            System.out.println("Wide: "+Wide);
+	            /*startPanel.resize(Wide,200);
+	            http://stackoverflow.com/questions/6666637/resize-jpanel-from-jframe
 	            layoutPanel.setBounds(new Rectangle(0, 0, Wide,200));
 	            nullPanel.setSize(new Dimension(Wide, 500));
 
@@ -53,16 +55,19 @@ public class iPat {
 	            nullPanel.revalidate();
 	            ipat.revalidate();
 	            cPane.revalidate();
-	            System.out.println("Wide: "+Wide);
+	            */	            
 	        }	
 		});	
 	}	
 }
 
+
+
+
 class myPanel extends JPanel implements MouseMotionListener{	
-	private static final int TBMAX=999;
-	private static final int MOMAX=999;
-	private static final int COMAX=100;	
+	private static final int TBMAX=100;
+	private static final int MOMAX=100;
+	private static final int COMAX=20;	
 	
 	int[] TBimageX= new int[TBMAX];
 	int[] TBimageY= new int[TBMAX];
@@ -125,13 +130,13 @@ class myPanel extends JPanel implements MouseMotionListener{
 	Image[] TB= new Image[TBMAX];
 	Image[] MO= new Image[MOMAX];
 	Image[] Trash= new Image[10];
+	Image[] White= new Image[10];
 	Image Excel, Powerpoint, Word, Music, Video, Unknown, 
-		  TBimage, MOimage;
+		  TBimage, MOimage, Prefbar;	
 	
-	JPanel mainstartPanel;
 	JLayeredPane startPanel;
 	JPanel mainPanel;	
-	JPanel nullPanel;
+	JLayeredPane nullPanel;
 	JPanel buttonPanel;
 	JPanel layoutPanel;
 	
@@ -174,10 +179,28 @@ class myPanel extends JPanel implements MouseMotionListener{
 	Color themecolor = new Color(54, 164, 239, 150);
 	
 	//windows size
-	int Wide;
+	int Wide, Heigth;
 	
-	public myPanel(int Wideint, JPanel l, JLayeredPane s, JPanel n){	
+	//Preference
+	Preferences pref1 = Preferences.userRoot().node("/ipat1");  
+	Preferences pref2 = Preferences.userRoot().node("/ipat2");  
+	Preferences pref3 = Preferences.userRoot().node("/ipat3");  
+	Preferences pref4 = Preferences.userRoot().node("/ipat4");  
+	Rectangle prefBound1 = new Rectangle();
+	Rectangle prefBound2 = new Rectangle();
+	Rectangle prefBound3 = new Rectangle();
+	Rectangle prefBound4 = new Rectangle();
+	Rectangle saveBound = new Rectangle();
+	Rectangle restoreBound = new Rectangle();
+	JLabel whitel;
+	JLabel prefbarl;
+	int prefselect =0;
+	int prefindex =0;
+	
+	
+	public myPanel(int Wideint, int Heigthint, JPanel l, JLayeredPane s, JLayeredPane n){	
 		this.Wide=Wideint;
+		this.Heigth=Heigthint;
 		this.layoutPanel=l;
 		this.startPanel=s;
 		this.nullPanel=n;
@@ -190,7 +213,12 @@ class myPanel extends JPanel implements MouseMotionListener{
 		try{
 			for(int i=0; i<10; i++){
 				Trash[i] = ImageIO.read(getClass().getResource("trash"+i+".png"));
+				White[i] = ImageIO.read(getClass().getResource("white"+i+".png"));
 			}
+		} catch (IOException ex){}
+		
+		try{
+			Prefbar = ImageIO.read(this.getClass().getResourceAsStream("prefbar.png"));
 		} catch (IOException ex){}
 		
 		try{
@@ -225,8 +253,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 		}
 		for (int i=1; i<=MOMAX-1; i++){
 			MO[i] = MOimage;
-		}
-		
+		}	
 		/*
 		final Timer fade = new Timer(40, new ActionListener() {
              @Override
@@ -249,52 +276,69 @@ class myPanel extends JPanel implements MouseMotionListener{
          });
 		*/
 		
-		////////////
-		////////////
+	
 		////////////
 		//LAYOUT.START
 		////////////
-		////////////
-		////////////		
+		//this ---startPanel(layered)------trashl*
+		//      |					 |	
+		//		|					 --layoutPanel-----iPat*
+		//		|							 		|
+		//		|							 		--TBButton*
+		//		|									|
+		//		|							 		--MOButton*
+		//		|
+		//		--nullPanel(layered)----prefbarl*
+		//							  |
+		//				              ---whitel*
+		//		
+		//		
+		
 		TBButton.setOpaque(false);
 		TBButton.setContentAreaFilled(false);
 		TBButton.setBorderPainted(false);
 		MOButton.setOpaque(false);
 		MOButton.setContentAreaFilled(false);
 		MOButton.setBorderPainted(false);
-		iPat.setOpaque(false);
-				
+		iPat.setOpaque(false);			
+		trashl = new JLabel(new ImageIcon());
+			
 		startPanel = new JLayeredPane();
-		layoutPanel = new JPanel(new MigLayout(" fillx", "[grow]","[][]"));	
-		nullPanel= new JPanel();
+		layoutPanel = new JPanel(new MigLayout(" fillx", "[]","[][]"));	
+		nullPanel= new JLayeredPane();
+		prefbarl = new JLabel(new ImageIcon());
+		whitel = new JLabel(new ImageIcon());
 		
 		layoutPanel.add(iPat,"wrap, span 2, alignx c");
-		layoutPanel.add(TBButton,"grow, alignx r");
-		layoutPanel.add(MOButton,"grow, alignx l");
+		layoutPanel.add(TBButton," alignx r");
+		layoutPanel.add(MOButton," alignx l");
 		
-		
-		startPanel.setPreferredSize(new Dimension(Wide, 200));
-		trashl = new JLabel(new ImageIcon());
+		startPanel.setPreferredSize(new Dimension(Wide, 200));	
 		startPanel.add(trashl, new Integer(1));
 		startPanel.add(layoutPanel,  new Integer(3));
 		trashl.setBounds(new Rectangle(-1000, -50, Wide, 300));
-		trashl.setVisible(true);
 		layoutPanel.setBounds(new Rectangle(0, 0, Wide,200));
-		layoutPanel.setVisible(true);
 		
-		nullPanel.setLayout(null);
-		nullPanel.setPreferredSize(new Dimension(Wide, 500));
+		nullPanel.setPreferredSize(new Dimension(Wide, Heigth-200));
+		nullPanel.add(prefbarl, new Integer(1));
+		prefbarl.setIcon(new ImageIcon(Prefbar));
+		prefbarl.setBounds(new Rectangle(Wide,480,Wide,20));
+		prefBound1= new Rectangle(47,682,30,20);
+		prefBound2= new Rectangle(77,682,30,20);
+		prefBound3= new Rectangle(107,682,30,20);
+		prefBound4= new Rectangle(137,682,30,20);
+		saveBound= new Rectangle(203,682,30,20);
+		restoreBound= new Rectangle(1100,682,30,20);
 		
 		this.setLayout(new MigLayout("fillx","[grow]","[grow]"));
 		this.add(startPanel," dock north");
 		this.add(nullPanel,"grow"); 
-	
 		
 		
 		startPanel.setOpaque(false);
 		layoutPanel.setOpaque(false);
 		nullPanel.setOpaque(false);
-		
+				
 		for (int i=1; i<=TBMAX-1; i++){
 			TBchooser[i]= new JFileChooser();
 			TBfile[i]= new String();
@@ -376,18 +420,15 @@ class myPanel extends JPanel implements MouseMotionListener{
 		this.addMouseListener(new MouseAdapter(){
 			@Override
 			public void mousePressed(MouseEvent ee){
-				System.out.println(COco[COcount][0]);
 				int move_x=ee.getX();
     			int move_y=ee.getY();
     			COindex=-1;
 				TBindex=0;
     			MOindex=0;
-    			
     			if (TBcount>0){			
     				for (int i=1; i<=TBcount;i++){
     					if (TBBound[i].contains(move_x, move_y)){
-    						TBindex=i;
-    						System.out.println("this is "+ i);					
+    						TBindex=i;			
     						if (SwingUtilities.isRightMouseButton(ee)){
     							 TBvalue[i]= TBchooser[i].showOpenDialog(null);
     	    					 if (TBvalue[i] == JFileChooser.APPROVE_OPTION){
@@ -424,6 +465,62 @@ class myPanel extends JPanel implements MouseMotionListener{
     					}
     				}
     			}
+    			if(prefBound1.contains(move_x, move_y)){
+    				System.out.println("pref1");
+    				getPreference(pref1);
+    				prefindex=1;
+    			}else if(prefBound2.contains(move_x, move_y)){
+    				System.out.println("pref2");
+    				getPreference(pref2);
+    				prefindex=2;
+    			}else if(prefBound3.contains(move_x, move_y)){
+    				System.out.println("pref3");
+    				getPreference(pref3);
+    				prefindex=3;
+    			}else if(prefBound4.contains(move_x, move_y)){
+    				System.out.println("pref4");
+    				getPreference(pref4);
+    				prefindex=4;
+    			}else if(saveBound.contains(move_x, move_y)){
+    				System.out.println("save");
+    				if(prefindex==1){
+    					setPreference(pref1);
+    					getPreference(pref1);
+    				}else if (prefindex==2){
+    					setPreference(pref2);
+    					getPreference(pref2);
+    				}else if (prefindex==3){
+    					setPreference(pref3);
+    					getPreference(pref3);
+    				}else if (prefindex==4){
+    					setPreference(pref4);
+    					getPreference(pref4);
+    				}
+    			}else if(restoreBound.contains(move_x, move_y)){
+    				if(prefindex==1){
+    					removePreference(pref1);
+    					getPreference(pref1);
+    					System.out.println("remove1");
+    				}else if (prefindex==2){
+    					removePreference(pref2);
+    					getPreference(pref2);
+    				}else if (prefindex==3){
+    					removePreference(pref3);
+    					getPreference(pref3);
+    				}else if (prefindex==4){
+    					removePreference(pref4);
+    					getPreference(pref4);
+    				}
+    			}
+    			System.out.println("TBcount= "+TBcount);
+    			System.out.println("MOcount= "+MOcount);
+    			System.out.println("COcount= "+COcount);
+    			System.out.println("TBco= "+TBco[1][0]+TBco[1][1]+TBco[1][2]);
+    			System.out.println("MOco= "+MOco[1][0]+MOco[1][1]+MOco[1][2]);
+    			System.out.println("COco= "+COco[0][0]+COco[0][1]+COco[0][2]+COco[1][3]);
+    			System.out.println("TBX= "+TBimageX[1]+"  TBY= "+TBimageY[1]+"  TBW= "+TBimageW[1]+"  TBH= "+TBimageH[1]);
+    			System.out.println("COX= "+COimageX[0]+"  COY= "+COimageY[0]+"  COW= "+COimageW[0]+"  COH= "+COimageH[0]);
+    			
 			}	
 				
 			@Override
@@ -606,18 +703,35 @@ class myPanel extends JPanel implements MouseMotionListener{
     		}
 			
 		});	
-		
+		prefindex=1;
+		getPreference(pref1);
 		addMouseMotionListener(this);
 	}	
 	
 	@Override
 	protected void paintComponent(Graphics g) {	
 	     super.paintComponent(g);
+	     if (prefselect!=0){
+		     g.setColor(Color.CYAN);
+		     if(prefselect==1){
+		    	 g.fill3DRect(57,680 , 5, 5, false);
+		     }else if(prefselect==2){
+		    	 g.fill3DRect(87,680 , 5, 5, false);
+		     }else if(prefselect==3){
+		    	 g.fill3DRect(117,680 , 5, 5, false);
+		     }else if(prefselect==4){
+		    	 g.fill3DRect(147,680 , 5, 5, false);
+		     }else if(prefselect==5){
+		    	 g.fill3DRect(217,680 , 5, 5, false);
+		     }else if(prefselect==-1){
+		    	 g.fill3DRect(1100, 680, 5, 5, false);
+		     }
+	     }
 	     g.setColor(ovalcolor);
 	     if (COcount>0){
 	    	 for (int i=0; i<COcount; i++){    		 
-	    		 g.fillOval((int)(COimageX[i]-25+COimageW[i]*.5), (int)(COimageY[i]-25 +COimageH[i]*.5),
-	    				 	50, 50);
+	    		 g.fillOval((int)(COimageX[i]-12.5+COimageW[i]*.5), (int)(COimageY[i]-12.5 +COimageH[i]*.5),
+	    				 	25, 25);
 	    	 }
 	     }	
 		 DrawDashedLine(g, linex[0], liney[0], linex[1], liney[1]);	
@@ -637,9 +751,8 @@ class myPanel extends JPanel implements MouseMotionListener{
 		int imX = e.getX();
 		int imY = e.getY();
 		int boundN=0; //205
-		int boundS=680;
+		int boundS=Heigth;
 		int boundE=Wide;
-		System.out.println("COindex= "+COindex);
 		if(TBindex!=0){
 			CombinedorNot(TBindex, TBimageX, TBimageY, TBimageW, TBimageH, 1);
 			KeepInPanel (imX, imY, TBindex, TBimageW, TBimageH, TBimageX, TBimageY,
@@ -660,7 +773,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 		if(COindex!=-1){		
 			int dx= imX- (COimageX[COindex]+(COimageW[COindex]/2));
 			int dy= imY- (COimageY[COindex]+(COimageH[COindex]/2));
-			System.out.println("COindex= "+COindex);	
 			COimageX[COindex]=COimageX[COindex]+dx;					
 			COimageY[COindex]=COimageY[COindex]+dy;
 			COBound[COindex]=new Rectangle(COimageX[COindex], COimageY[COindex], COimageW[COindex], COimageH[COindex]);
@@ -751,7 +863,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 		    		TA=false;
 		    	}
 		    }
-		});		
+		});		//47,682
 		if ((TBindex!=0|MOindex!=0|COindex!=-1)&&imY<=(delbbound)&&!removeornot){
 			TA=true;
 			TrashAnimation.start();
@@ -776,10 +888,32 @@ class myPanel extends JPanel implements MouseMotionListener{
 			trashl.setVisible(true);
 			removeornot=false;				
 		}	
-		/*
-		System.out.println("("+x+", "+y+")");
-		*/
+		
+		if(y>680){
+			prefbarl.setBounds(0,480,Wide,20);
+		}else if(y<=680){
+			prefbarl.setBounds(Wide,480,Wide,20);
+		}
+		
+		if(prefBound1.contains(x, y)){
+			prefselect=1;repaint();
+		}else if(prefBound2.contains(x, y)){
+			prefselect=2;repaint();
+		}else if(prefBound3.contains(x, y)){
+			prefselect=3;repaint();
+		}else if(prefBound4.contains(x, y)){
+			prefselect=4;repaint();
+		}else if(saveBound.contains(x, y)){
+			prefselect=5;repaint();
+		}else if(restoreBound.contains(x, y)){
+			prefselect=-1;repaint();
+		}else{
+			prefselect=0;repaint();
+		}
+		
+		//System.out.println("("+x+", "+y+")");		
 	}
+	
 	public void TBopenfile(int i){
 		File openfile= new File(TBfile[i]);
 			try{
@@ -1094,10 +1228,201 @@ class myPanel extends JPanel implements MouseMotionListener{
 	    		     } 
 	    		 }
 	    	 }
-	     }
-		 
-		
+		 }	
 	}
+	
+	public void setPreference(Preferences pre){
+		pre.putInt("TBcount", TBcount);
+		pre.putInt("MOcount", MOcount);
+		pre.putInt("COcount", COcount);
+		for (int i=1; i<=TBcount; i++){
+			String TBnametemp= TBname[i].getText();
+			pre.put("TBname"+i, TBnametemp);
+			pre.put("TBfile"+i, TBfile[i]);
+			pre.putInt("TBimageX"+i, TBimageX[i]);
+			pre.putInt("TBimageY"+i, TBimageY[i]);
+			pre.putInt("TBimageH"+i, TBimageH[i]);
+			pre.putInt("TBimageW"+i, TBimageW[i]);
+			pre.putInt("TBdelte"+i, TBdelete[i]);
+			pre.putInt("TBvalue"+i, TBvalue[i]);
+			for (int j=0; j<=2; j++){
+				pre.putInt("TBco"+i+j, TBco[i][j]);
+			}					
+		}
+		for (int i=1; i<=MOcount; i++){
+			String MOnametemp= MOname[i].getText();
+			pre.put("MOname"+i, MOnametemp);
+			pre.putInt("MOimageX"+i, MOimageX[i]);
+			pre.putInt("MOimageY"+i, MOimageY[i]);
+			pre.putInt("MOimageH"+i, MOimageH[i]);
+			pre.putInt("MOimageW"+i, MOimageW[i]);
+			pre.putInt("MOdelte"+i, MOdelete[i]);
+			for (int j=0; j<=2; j++){
+				pre.putInt("MOco"+i+j, MOco[i][j]);
+			}					
+		}
+		for (int i=0; i<=COcount-1; i++){
+			pre.putInt("COimageX"+i, COimageX[i]);
+			pre.putInt("COimageY"+i, COimageY[i]);
+			pre.putInt("COimageH"+i, COimageH[i]);
+			pre.putInt("COimageW"+i, COimageW[i]);
+			for (int j=0; j<=3; j++){
+				pre.putInt("COco"+i+j, COco[i][j]);
+			}	
+		}
+	}
+	
+	public void getPreference(Preferences pre){
+		TBcount= pre.getInt("TBcount", 0);
+		MOcount= pre.getInt("MOcount", 0);
+		COcount= pre.getInt("COcount", 0);
+		//problem here
+		for (int i=1; i<=TBcount; i++){
+			TBname[i].setText(pre.get("TBname"+i, ""));
+			TBfile[i]= pre.get("TBfile"+i, "");
+			System.out.println("getX"+i+pre.getInt("TBimageX"+i,0));
+			TBimageX[i]= pre.getInt("TBimageX"+i, -100);
+			System.out.println("getX"+i+pre.getInt("TBimageX"+i,0));
+			TBimageY[i]= pre.getInt("TBimageY"+i, -100);
+			TBimageH[i]= pre.getInt("TBimageH"+i, 0);
+			TBimageW[i]= pre.getInt("TBimageW"+i, 0);
+			TBdelete[i]= pre.getInt("TBdelete"+i, 0);
+			TBvalue[i]= pre.getInt("TBvalue"+i, 0);			
+			for (int j=0; j<=2; j++){
+				if(j==2){
+					TBco[i][j]=pre.getInt("TBco"+i+j, 0);
+				}else{TBco[i][j]=pre.getInt("TBco"+i+j, -1);}
+			}	
+			TB[i]=TBimage;
+			if(!TBfile[i].isEmpty()){
+				iconchange(i);	
+			}
+			TBBound[i]=new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
+		}
+		for (int i=1; i<=MOcount; i++){
+			MOname[i].setText(pre.get("MOname"+i, ""));
+			MOimageX[i]= pre.getInt("MOimageX"+i, -100);
+			MOimageY[i]= pre.getInt("MOimageY"+i, -100);
+			MOimageH[i]= pre.getInt("MOimageH"+i, 0);
+			MOimageW[i]= pre.getInt("MOimageW"+i, 0);
+			MOdelete[i]= pre.getInt("MOdelete"+i, 0);		
+			for (int j=0; j<=2; j++){
+				if(j==2){
+					MOco[i][j]=pre.getInt("MOco"+i+j, 0);
+				}else{MOco[i][j]=pre.getInt("MOco"+i+j, -1);}
+			}	
+			MO[i]=MOimage;
+			MOBound[i]=new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
+		}
+		for (int i=0; i<=COcount-1; i++){
+			COimageX[i]= pre.getInt("COimageX"+i, -100);
+			COimageY[i]= pre.getInt("COimageY"+i, -100);
+			COimageH[i]= pre.getInt("COimageH"+i, 0);
+			COimageW[i]= pre.getInt("COimageW"+i, 0);
+			for (int j=0; j<=3; j++){
+				COco[i][j]= pre.getInt("COco"+i+j, 0);
+			}	
+			COBound[i]=new Rectangle(COimageX[i], COimageY[i], COimageW[i], COimageH[i]);
+		}
+		repaint();
+	}
+	
+	public void removePreference(Preferences pre){
+		int TBc=TBcount;
+		int MOc=MOcount;
+		int COc=COcount;
+		pre.remove("TBcount");
+		pre.remove("MOcount");
+		pre.remove("COcount");
+		for (int i=1; i<=TBc; i++){
+			System.out.println("TBremove "+i);
+			pre.remove("TBname"+i);
+			pre.remove("TBfile"+i);
+			System.out.println("TBimageX "+i+pre.getInt("TBimageX"+i,0));
+			pre.remove("TBimageX"+i);
+			pre.remove("TBimageY"+i);
+			pre.remove("TBimageH"+i);
+			pre.remove("TBimageW"+i);
+			pre.remove("TBdelte"+i);
+			pre.remove("TBvalue"+i);
+			for (int j=0; j<=2; j++){
+				pre.remove("TBco"+i+j);
+			}				
+			System.out.println("TBimageX "+i+pre.getInt("TBimageX"+i,0));
+		}
+		for (int i=1; i<=MOc; i++){
+			pre.remove("MOname"+i);
+			pre.remove("MOimageX"+i);
+			pre.remove("MOimageY"+i);
+			pre.remove("MOimageH"+i);
+			pre.remove("MOimageW"+i);
+			pre.remove("MOdelte"+i);
+			for (int j=0; j<=2; j++){
+				pre.remove("MOco"+i+j);
+			}					
+		}
+		for (int i=0; i<=COc-1; i++){
+			pre.remove("COimageX"+i);
+			pre.remove("COimageY"+i);
+			pre.remove("COimageH"+i);
+			pre.remove("COimageW"+i);
+			for (int j=0; j<=3; j++){
+				pre.remove("COco"+i+j);
+			}	
+		}
+		repaint();
+		/*
+	 	int TBc=TBcount;
+		int MOc=MOcount;
+		int COc=COcount;
+		
+		pre.putInt("TBcount", 0);
+		pre.putInt("MOcount", 0);
+		pre.putInt("COcount", 0);
+		for (int i=1; i<=TBc; i++){
+			TBname[i].setText("");
+			pre.put("TBname"+i, "");
+			pre.put("TBfile"+i, "");
+			pre.putInt("TBimageX"+i, -100);
+			pre.putInt("TBimageY"+i, -100);
+			pre.putInt("TBimageH"+i, 0);
+			pre.putInt("TBimageW"+i, 0);
+			pre.putInt("TBdelte"+i, 0);
+			pre.putInt("TBvalue"+i, 0);
+			for (int j=0; j<=2; j++){
+				if(j==2){
+					pre.putInt("TBco"+i+j, 0);
+				}else{pre.putInt("TBco"+i+j, -1);}
+			}
+			
+		}
+		for (int i=1; i<=MOc; i++){
+			MOname[i].setText("");
+			pre.put("MOname"+i, "");
+			pre.putInt("MOimageX"+i, -100);
+			pre.putInt("MOimageY"+i, -100);
+			pre.putInt("MOimageH"+i, 0);
+			pre.putInt("MOimageW"+i, 0);
+			pre.putInt("MOdelte"+i, 0);
+			for (int j=0; j<=2; j++){
+				if(j==2){
+					pre.putInt("MOco"+i+j, 0);
+				}else{pre.putInt("MOco"+i+j, -1);}
+			}				
+		}
+		for (int i=0; i<=COc-1; i++){
+			pre.putInt("COimageX"+i, -100);
+			pre.putInt("COimageY"+i, -100);
+			pre.putInt("COimageH"+i, 0);
+			pre.putInt("COimageW"+i, 0);
+			for (int j=0; j<=3; j++){
+				pre.putInt("COco"+i+j, 0);
+			}	
+		}
+		repaint();
+		 */
+	}
+	
 	/*
 	static Image iconToImage(Icon icon) {
         if (icon instanceof ImageIcon) {
