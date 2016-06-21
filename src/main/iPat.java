@@ -25,7 +25,7 @@ public class iPat {
 		JFrame main = new JFrame();
 		JPanel ipat = new myPanel(Wide, Heigth, layoutPanel, startPanel, nullPanel);
 		main.setTitle("iPat");	
-		main.setLocation(400, 0); 
+		main.setLocation(200, 0); 
 		main.setLayout(new BorderLayout());
 		main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Container cPane = main.getContentPane();
@@ -703,8 +703,8 @@ class myPanel extends JPanel implements MouseMotionListener{
     		}
 			
 		});	
-		prefindex=1;
-		getPreference(pref1);
+	prefindex=4;
+	getPreference(pref4);
 		addMouseMotionListener(this);
 	}	
 	
@@ -1074,9 +1074,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 					repaint();
 					break;					
 				}
-			}
-			
-			
+			}		
 			
 		}else{
 			COco[COcount][0]= -1;//
@@ -1277,12 +1275,10 @@ class myPanel extends JPanel implements MouseMotionListener{
 		MOcount= pre.getInt("MOcount", 0);
 		COcount= pre.getInt("COcount", 0);
 		//problem here
-		for (int i=1; i<=TBcount; i++){
+		for (int i=1; i<=TBMAX-1; i++){
 			TBname[i].setText(pre.get("TBname"+i, ""));
 			TBfile[i]= pre.get("TBfile"+i, "");
-			System.out.println("getX"+i+pre.getInt("TBimageX"+i,0));
 			TBimageX[i]= pre.getInt("TBimageX"+i, -100);
-			System.out.println("getX"+i+pre.getInt("TBimageX"+i,0));
 			TBimageY[i]= pre.getInt("TBimageY"+i, -100);
 			TBimageH[i]= pre.getInt("TBimageH"+i, 0);
 			TBimageW[i]= pre.getInt("TBimageW"+i, 0);
@@ -1294,12 +1290,16 @@ class myPanel extends JPanel implements MouseMotionListener{
 				}else{TBco[i][j]=pre.getInt("TBco"+i+j, -1);}
 			}	
 			TB[i]=TBimage;
+			if(TBimageH[i]==0|TBimageW[i]==0){
+				TBimageH[i]=TB[i].getHeight(null);
+				TBimageW[i]=TB[i].getWidth(null);
+			}
 			if(!TBfile[i].isEmpty()){
 				iconchange(i);	
 			}
 			TBBound[i]=new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
 		}
-		for (int i=1; i<=MOcount; i++){
+		for (int i=1; i<=MOMAX-1; i++){
 			MOname[i].setText(pre.get("MOname"+i, ""));
 			MOimageX[i]= pre.getInt("MOimageX"+i, -100);
 			MOimageY[i]= pre.getInt("MOimageY"+i, -100);
@@ -1314,7 +1314,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 			MO[i]=MOimage;
 			MOBound[i]=new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
 		}
-		for (int i=0; i<=COcount-1; i++){
+		for (int i=0; i<=COMAX-1; i++){
 			COimageX[i]= pre.getInt("COimageX"+i, -100);
 			COimageY[i]= pre.getInt("COimageY"+i, -100);
 			COimageH[i]= pre.getInt("COimageH"+i, 0);
