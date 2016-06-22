@@ -23,14 +23,16 @@ public class iPat {
 	
 	public static void main(String[] args){    	
 		JFrame main = new JFrame();
-		JPanel ipat = new myPanel(Wide, Heigth, layoutPanel, startPanel, nullPanel);
 		main.setTitle("iPat");	
 		main.setLocation(200, 0); 
+		main.setSize(Wide, Heigth);
 		main.setLayout(new BorderLayout());
 		main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Container cPane = main.getContentPane();
+		Wide= main.getWidth();
+		Heigth= main.getHeight();
+		JPanel ipat = new myPanel(Wide, Heigth, layoutPanel, startPanel, nullPanel);
 		cPane.add(ipat);	
-		main.setSize(Wide, Heigth);
 		main.setVisible(true);
 		main.addComponentListener(new ComponentAdapter() {
 			@Override
@@ -39,7 +41,7 @@ public class iPat {
 	            Component c = (Component)evt.getSource();
 	            System.out.println("H: "+c.getHeight()+" W: "+c.getWidth()); 
 	         //   Wide=main.getWidth();
-	            main.setSize(Wide, Heigth);
+	        //    main.setSize(Wide, Heigth);
 	            System.out.println("Wide: "+Wide);
 	            /*startPanel.resize(Wide,200);
 	            http://stackoverflow.com/questions/6666637/resize-jpanel-from-jframe
@@ -319,19 +321,19 @@ class myPanel extends JPanel implements MouseMotionListener{
 		startPanel.setPreferredSize(new Dimension(Wide, 200));	
 		startPanel.add(trashl, new Integer(1));
 		startPanel.add(layoutPanel,  new Integer(3));
-		trashl.setBounds(new Rectangle(-1000, -50, Wide, 300));
+		trashl.setBounds(new Rectangle(-1000, -50, Wide, 200));
 		layoutPanel.setBounds(new Rectangle(0, 0, Wide,200));
 		
 		nullPanel.setPreferredSize(new Dimension(Wide, Heigth-200));
-		nullPanel.add(prefbarl, new Integer(1));
+		nullPanel.add(prefbarl);
 		prefbarl.setIcon(new ImageIcon(Prefbar));
-		prefbarl.setBounds(new Rectangle(Wide,Heigth-220 ,Wide,20));
-		prefBound1= new Rectangle(47,Heigth-18,30,20);
-		prefBound2= new Rectangle(77,Heigth-18,30,20);
-		prefBound3= new Rectangle(107,Heigth-18,30,20);
-		prefBound4= new Rectangle(137,Heigth-18,30,20);
-		saveBound= new Rectangle(203,Heigth-18,30,20);
-		restoreBound= new Rectangle(1100,Heigth-18,30,20);
+		
+		prefBound1= new Rectangle(47,Heigth-38,30,40);
+		prefBound2= new Rectangle(77,Heigth-38,30,40);
+		prefBound3= new Rectangle(107,Heigth-38,30,40);
+		prefBound4= new Rectangle(137,Heigth-38,30,40);
+		saveBound= new Rectangle(203,Heigth-38,30,40);
+		restoreBound= new Rectangle(1100,Heigth-38,30,40);
 		
 		this.setLayout(new MigLayout("fillx","[grow]","[grow]"));
 		this.add(startPanel," dock north");
@@ -442,7 +444,7 @@ class myPanel extends JPanel implements MouseMotionListener{
     	    					  	iconchange(i); 
     	    					  	TBimageH[TBindex]=TB[i].getHeight(null);
     	    					  	TBimageW[TBindex]=TB[i].getHeight(null);
-    	    						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-195);
+    	    						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
     	    						TBname[i].setSize(200,15);
     	    						TBname[i].setText(selectedfile.getName());
     	    						TBindex=0;
@@ -740,17 +742,17 @@ class myPanel extends JPanel implements MouseMotionListener{
 	     if (prefselect!=0){
 		     g.setColor(Color.CYAN);
 		     if(prefselect==1){
-		    	 g.fill3DRect(57,Heigth-20 , 5, 5, false);
+		    	 g.fill3DRect(57,Heigth-40 , 5, 5, false);
 		     }else if(prefselect==2){
-		    	 g.fill3DRect(87,Heigth-20 , 5, 5, false);
+		    	 g.fill3DRect(87,Heigth-40 , 5, 5, false);
 		     }else if(prefselect==3){
-		    	 g.fill3DRect(117,Heigth-20 , 5, 5, false);
+		    	 g.fill3DRect(117,Heigth-40 , 5, 5, false);
 		     }else if(prefselect==4){
-		    	 g.fill3DRect(147,Heigth-20 , 5, 5, false);
+		    	 g.fill3DRect(147,Heigth-40 , 5, 5, false);
 		     }else if(prefselect==5){
-		    	 g.fill3DRect(217,Heigth-20 , 5, 5, false);
+		    	 g.fill3DRect(217,Heigth-40 , 5, 5, false);
 		     }else if(prefselect==-1){
-		    	 g.fill3DRect(1100, Heigth-20, 5, 5, false);
+		    	 g.fill3DRect(1100, Heigth-40, 5, 5, false);
 		     }
 	     }
 	     g.setColor(ovalcolor);
@@ -783,13 +785,13 @@ class myPanel extends JPanel implements MouseMotionListener{
 		int imX = e.getX();
 		int imY = e.getY();
 		int boundN=0; //205
-		int boundS=Heigth;
-		int boundE=Wide;
+		int boundS=Heigth-20;
+		int boundE=Wide-10;
 		if(TBindex!=0){
 			CombinedorNot(TBindex, TBimageX, TBimageY, TBimageW, TBimageH, 1);
 			KeepInPanel (imX, imY, TBindex, TBimageW, TBimageH, TBimageX, TBimageY,
 						 boundN,  boundS,  boundE, TBBound);
-		 	TBname[TBindex].setLocation(TBimageX[TBindex],TBimageY[TBindex]+TBimageH[TBindex]-195);
+		 	TBname[TBindex].setLocation(TBimageX[TBindex],TBimageY[TBindex]+TBimageH[TBindex]-185);
 			TBBound[TBindex]=new Rectangle(TBimageX[TBindex], TBimageY[TBindex], TB[TBindex].getWidth(null), TB[TBindex].getHeight(null));
 			repaint();
 			
@@ -797,7 +799,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 			CombinedorNot(MOindex, MOimageX, MOimageY, MOimageW, MOimageH, 2);
 			KeepInPanel (imX, imY, MOindex, MOimageW, MOimageH, MOimageX, MOimageY,
 						 boundN,  boundS,  boundE, MOBound);
-			MOname[MOindex].setLocation(MOimageX[MOindex],MOimageY[MOindex]+MOimageH[MOindex]-195);
+			MOname[MOindex].setLocation(MOimageX[MOindex],MOimageY[MOindex]+MOimageH[MOindex]-185);
 			MOBound[MOindex]=new Rectangle(MOimageX[MOindex], MOimageY[MOindex], MO[MOindex].getWidth(null), MO[MOindex].getHeight(null));
 			repaint();
 		}
@@ -807,16 +809,10 @@ class myPanel extends JPanel implements MouseMotionListener{
 			int cy= COimageY[COindex];
 			int dx= imX- cx-(COimageW[COindex]/2);
 			int dy= imY- cy-(COimageH[COindex]/2);
-			COimageX[COindex]=COimageX[COindex]+dx;					
-			COimageY[COindex]=COimageY[COindex]+dy;
 			if(COco[COindex][0]==1){
 				if(COco[COindex][1]==1){
-					int x1=TBimageX[COco[COindex][2]];
-					int x2=TBimageX[COco[COindex][3]];
-					int y1=TBimageY[COco[COindex][2]];
-					int y2=TBimageY[COco[COindex][3]];
-					if (TBimageX[COco[COindex][2]]>=0 & TBimageX[COco[COindex][3]]>=0 & 
-						TBimageX[COco[COindex][2]]+TBimageW[COco[COindex][2]]<=boundE & TBimageX[COco[COindex][3]]+TBimageW[COco[COindex][3]]<=boundE){
+					if (TBimageX[COco[COindex][2]]+dx>=0 & TBimageX[COco[COindex][3]]+dx>=0 & 
+						TBimageX[COco[COindex][2]]+TBimageW[COco[COindex][2]]+dx<=boundE & TBimageX[COco[COindex][3]]+TBimageW[COco[COindex][3]]+dx<=boundE){
 						TBimageX[COco[COindex][2]]=TBimageX[COco[COindex][2]]+dx;
 						TBimageX[COco[COindex][3]]=TBimageX[COco[COindex][3]]+dx;
 						for (int i=1; i<=TBcount; i++){
@@ -830,52 +826,61 @@ class myPanel extends JPanel implements MouseMotionListener{
 								MOimageX[i]=MOimageX[i]+dx;
 							}
 						}
-						if(TBimageY[COco[COindex][2]]>=0& TBimageY[COco[COindex][3]]>=0&){
-							
-						}else if(TBimageY[COco[COindex][2]]+TBimageH[COco[COindex][2]]<=boundS& TBimageY[COco[COindex][3]]+TBimageH[COco[COindex][3]]<=boundS){
-							
-						}else{
-							
+						if(TBimageY[COco[COindex][2]]+dy>=0& TBimageY[COco[COindex][3]]+dy>=0&
+						   TBimageY[COco[COindex][2]]+TBimageH[COco[COindex][2]]+dy<=boundS& TBimageY[COco[COindex][3]]+TBimageH[COco[COindex][3]]+dy<=boundS){
+							TBimageY[COco[COindex][2]]=TBimageY[COco[COindex][2]]+dy;
+							TBimageY[COco[COindex][3]]=TBimageY[COco[COindex][3]]+dy;
+							for (int i=1; i<=TBcount; i++){
+								if(i==COco[COindex][2]|i==COco[COindex][3]){continue;}
+								if(TBco[i][1]==COindex){
+									TBimageY[i]=TBimageY[i]+dy;
+								}
+							}
+							for (int i=1; i<=MOcount; i++){
+								if(MOco[i][1]==COindex){
+									MOimageY[i]=MOimageY[i]+dy;
+								}
+							}	
+						}					
+					}else if(TBimageY[COco[COindex][2]]>=0& TBimageY[COco[COindex][3]]>=0&
+							 TBimageY[COco[COindex][2]]+TBimageH[COco[COindex][2]]<=boundS& TBimageY[COco[COindex][3]]+TBimageH[COco[COindex][3]]<=boundS){
+						TBimageY[COco[COindex][2]]=TBimageY[COco[COindex][2]]+dy;
+						TBimageY[COco[COindex][3]]=TBimageY[COco[COindex][3]]+dy;
+						for (int i=1; i<=TBcount; i++){
+							if(i==COco[COindex][2]|i==COco[COindex][3]){continue;}
+							if(TBco[i][1]==COindex){
+								TBimageY[i]=TBimageY[i]+dy;
+							}
 						}
-					}else if (TBimageX[COco[COindex][2]]+TBimageW[COco[COindex][2]]>boundE| TBimageX[COco[COindex][3]]+TBimageW[COco[COindex][3]]>boundE){
-						if(TBimageY[COco[COindex][2]]<0| TBimageY[COco[COindex][3]]<0){
-							
-						}else if(TBimageY[COco[COindex][2]]+TBimageH[COco[COindex][2]]>boundS| TBimageY[COco[COindex][3]]+TBimageH[COco[COindex][3]]>boundS){
-							
-						}else{
-							
+						for (int i=1; i<=MOcount; i++){
+							if(MOco[i][1]==COindex){
+								MOimageY[i]=MOimageY[i]+dy;
+							}
 						}
-					}else if (TBimageY[COco[COindex][2]]+TBimageH[COco[COindex][2]]>boundS| TBimageY[COco[COindex][3]]+TBimageH[COco[COindex][3]]>boundS){
-						if(TBimageX[COco[COindex][2]]<0|TBimageX[COco[COindex][3]]<0){
-							
-						}else if(TBimageX[COco[COindex][2]]+TBimageW[COco[COindex][2]]>boundE| TBimageX[COco[COindex][3]]+TBimageW[COco[COindex][3]]>boundE){
-							
-						}else{
-							
-						}
-					}else if (TBimageY[COco[COindex][2]]<0| TBimageY[COco[COindex][3]]<0){
-						if(TBimageX[COco[COindex][2]]<0|TBimageX[COco[COindex][3]]<0){
-							
-						}else if(TBimageX[COco[COindex][2]]+TBimageW[COco[COindex][2]]>boundE| TBimageX[COco[COindex][3]]+TBimageW[COco[COindex][3]]>boundE){
-							
-						}else{
-							
-						}
-					}else{
-						
 					}
-					
-						
-					X[index]=X[index]+dx;
-					Y[index]=Y[index]+dy;
-					bound[index]= new Rectangle(X[index], Y[index], 
-												  image[index].getWidth(null), image[index].getHeight(null));
-					name[index].setLocation(X[index], Y[index]+H[index]-195);
-					
-					
-					
-					
-					
+					for (int i=1; i<=TBcount; i++){
+						if(TBco[i][1]==COindex){
+							TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i],  TB[i].getWidth(null), TB[i].getHeight(null));
+							TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+						}
+					}
+					for (int i=1; i<=MOcount; i++){
+						if(MOco[i][1]==COindex){
+							MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i],  MO[i].getWidth(null), MO[i].getHeight(null));
+							MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+						}
+					}
+					if(TBimageX[COco[COindex][2]]>TBimageX[COco[COindex][3]]){
+						COimageX[COindex]=TBimageX[COco[COindex][3]];
+					}else{
+						COimageX[COindex]=TBimageX[COco[COindex][2]];
+					}
+					if(TBimageY[COco[COindex][2]]>TBimageY[COco[COindex][3]]){
+						COimageY[COindex]=TBimageY[COco[COindex][3]];
+					}else{
+						COimageY[COindex]=TBimageY[COco[COindex][2]];
+					}
+					COBound[COindex]=new Rectangle(COimageX[COindex], COimageY[COindex], COimageH[COindex], COimageW[COindex]);	
 					
 					/*
 					
@@ -944,10 +949,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 							dragcombined(dx, dy, i, MOimageX, MOimageY, MOimageW, MOimageH, MO, MOBound, MOname);
 						}
 					}*/
-					
-					
-					
-					
 					
 				}else if(COco[COindex][1]==2){
 					dragcombined(dx, dy, COco[COindex][2], TBimageX, TBimageY, TBimageW, TBimageH, TB, TBBound, TBname);
@@ -1048,10 +1049,10 @@ class myPanel extends JPanel implements MouseMotionListener{
 			removeornot=false;				
 		}	
 		
-		if(y>680){
-			prefbarl.setBounds(0,480,Wide,20);
-		}else if(y<=680){
-			prefbarl.setBounds(Wide,480,Wide,20);
+		if(y>Heigth-40){
+			prefbarl.setBounds(0, Heigth-240, Wide, 40);
+		}else if(y<=Heigth-40){
+			prefbarl.setBounds(Wide, Heigth-240, Wide, 40);
 		}
 		
 		if(prefBound1.contains(x, y)){
@@ -1262,7 +1263,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 		Y[index]=Y[index]+dy;
 		bound[index]= new Rectangle(X[index], Y[index], 
 									  image[index].getWidth(null), image[index].getHeight(null));
-		name[index].setLocation(X[index], Y[index]+H[index]-195);
+		name[index].setLocation(X[index], Y[index]+H[index]-185);
 	}
 	
 	public void KeepInPanel (int x, int y, int index, int[] imageW, int[] imageH, int[] imageX, int[] imageY,
@@ -1455,7 +1456,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 				TBimageW[i]=TB[i].getWidth(null);
 			}
 			TBname[i].setText(pre.get("TBname"+i, ""));
-			TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-195);
+			TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
 			TBname[i].setSize(200,15);
 			if(!TBfile[i].isEmpty()){
 				iconchange(i);	
