@@ -809,135 +809,14 @@ class myPanel extends JPanel implements MouseMotionListener{
 			int cy= COimageY[COindex];
 			int dx= imX- cx-(COimageW[COindex]/2);
 			int dy= imY- cy-(COimageH[COindex]/2);
+			COimageX[COindex]=COimageX[COindex]+dx;					
+			COimageY[COindex]=COimageY[COindex]+dy;
+			COBound[COindex]=new Rectangle(COimageX[COindex], COimageY[COindex], COimageW[COindex], COimageH[COindex]);
 			if(COco[COindex][0]==1){
 				if(COco[COindex][1]==1){
-					if (TBimageX[COco[COindex][2]]+dx>=0 & TBimageX[COco[COindex][3]]+dx>=0 & 
-						TBimageX[COco[COindex][2]]+TBimageW[COco[COindex][2]]+dx<=boundE & TBimageX[COco[COindex][3]]+TBimageW[COco[COindex][3]]+dx<=boundE){
-						TBimageX[COco[COindex][2]]=TBimageX[COco[COindex][2]]+dx;
-						TBimageX[COco[COindex][3]]=TBimageX[COco[COindex][3]]+dx;
-						for (int i=1; i<=TBcount; i++){
-							if(i==COco[COindex][2]|i==COco[COindex][3]){continue;}
-							if(TBco[i][1]==COindex){
-								TBimageX[i]=TBimageX[i]+dx;
-							}
-						}
-						for (int i=1; i<=MOcount; i++){
-							if(MOco[i][1]==COindex){
-								MOimageX[i]=MOimageX[i]+dx;
-							}
-						}
-						if(TBimageY[COco[COindex][2]]+dy>=0& TBimageY[COco[COindex][3]]+dy>=0&
-						   TBimageY[COco[COindex][2]]+TBimageH[COco[COindex][2]]+dy<=boundS& TBimageY[COco[COindex][3]]+TBimageH[COco[COindex][3]]+dy<=boundS){
-							TBimageY[COco[COindex][2]]=TBimageY[COco[COindex][2]]+dy;
-							TBimageY[COco[COindex][3]]=TBimageY[COco[COindex][3]]+dy;
-							for (int i=1; i<=TBcount; i++){
-								if(i==COco[COindex][2]|i==COco[COindex][3]){continue;}
-								if(TBco[i][1]==COindex){
-									TBimageY[i]=TBimageY[i]+dy;
-								}
-							}
-							for (int i=1; i<=MOcount; i++){
-								if(MOco[i][1]==COindex){
-									MOimageY[i]=MOimageY[i]+dy;
-								}
-							}	
-						}					
-					}else if(TBimageY[COco[COindex][2]]>=0& TBimageY[COco[COindex][3]]>=0&
-							 TBimageY[COco[COindex][2]]+TBimageH[COco[COindex][2]]<=boundS& TBimageY[COco[COindex][3]]+TBimageH[COco[COindex][3]]<=boundS){
-						TBimageY[COco[COindex][2]]=TBimageY[COco[COindex][2]]+dy;
-						TBimageY[COco[COindex][3]]=TBimageY[COco[COindex][3]]+dy;
-						for (int i=1; i<=TBcount; i++){
-							if(i==COco[COindex][2]|i==COco[COindex][3]){continue;}
-							if(TBco[i][1]==COindex){
-								TBimageY[i]=TBimageY[i]+dy;
-							}
-						}
-						for (int i=1; i<=MOcount; i++){
-							if(MOco[i][1]==COindex){
-								MOimageY[i]=MOimageY[i]+dy;
-							}
-						}
-					}
-					for (int i=1; i<=TBcount; i++){
-						if(TBco[i][1]==COindex){
-							TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i],  TB[i].getWidth(null), TB[i].getHeight(null));
-							TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
-						}
-					}
-					for (int i=1; i<=MOcount; i++){
-						if(MOco[i][1]==COindex){
-							MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i],  MO[i].getWidth(null), MO[i].getHeight(null));
-							MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
-						}
-					}
-					if(TBimageX[COco[COindex][2]]>TBimageX[COco[COindex][3]]){
-						COimageX[COindex]=TBimageX[COco[COindex][3]];
-					}else{
-						COimageX[COindex]=TBimageX[COco[COindex][2]];
-					}
-					if(TBimageY[COco[COindex][2]]>TBimageY[COco[COindex][3]]){
-						COimageY[COindex]=TBimageY[COco[COindex][3]];
-					}else{
-						COimageY[COindex]=TBimageY[COco[COindex][2]];
-					}
-					COBound[COindex]=new Rectangle(COimageX[COindex], COimageY[COindex], COimageH[COindex], COimageW[COindex]);	
-					
-					/*
-					
-					
-					imageX[index]=0;
-					if(y<(boundN+(imageH[index]/2))){
-					 	imageY[index]=boundN;
-					}else if(y>(boundS-(imageH[index]/2))){
-						imageY[index]=boundS-imageH[index];
-					}else{
-						imageY[index]=y-(imageH[index]/2);
-					}
-					
-				}else if(y<(boundN+(imageH[index]/2))){
-				 	imageY[index]=boundN;
-				 	if(x<(0+imageW[index]/2)){
-						imageX[index]=0;
-				 	}else if(x>(boundE-imageW[index]/2)){
-				 		imageX[index]=boundE-imageW[index];
-				 	}else{
-				 		imageX[index]=x-(imageW[index]/2);
-				 	}
-				 	
-				}else if(x>(boundE-(imageW[index]/2))){
-				 	imageX[index]=boundE-imageW[index];
-				 	if(y<(boundN+(imageH[index]/2))){
-					 	imageY[index]=boundN;
-					}else if(y>(boundS-(imageH[index]/2))){
-						imageY[index]=boundS-imageH[index];
-					}else{
-						imageY[index]=y-(imageH[index]/2);
-					}
-				 	
-				}else if(y>(boundS-(imageH[index]/2))){
-				 	imageY[index]=boundS-imageH[index];
-				 	if(x<(0+imageW[index]/2)){
-						imageX[index]=0;
-				 	}else if(x>(boundE-imageW[index]/2)){
-				 		imageX[index]=boundE-imageW[index];
-				 	}else{
-				 		imageX[index]=x-(imageW[index]/2);
-				 	}	
-				 	
-				 }else{
-					imageX[index]=x-(imageW[index]/2);
-				 	imageY[index]=y-(imageH[index]/2);
-				}
-				*/
-					
-					/*
 					dragcombined(dx, dy, COco[COindex][2], TBimageX, TBimageY, TBimageW, TBimageH, TB, TBBound, TBname);
 					dragcombined(dx, dy, COco[COindex][3], TBimageX, TBimageY, TBimageW, TBimageH, TB, TBBound, TBname);
-					if(TBimageX[COco[COindex][2]]<0|TBimageX[COco[COindex][3]]<0){
-						TBimageX[COco[COindex][2]]= x1;
-						TBimageX[COco[COindex][3]]= x2;
-						COimageX[COindex]=cx;
-					}
+					
 					for (int i=1; i<=TBcount; i++){
 						if(i==COco[COindex][2]|i==COco[COindex][3]){continue;}
 						if(TBco[i][1]==COindex){
@@ -948,8 +827,8 @@ class myPanel extends JPanel implements MouseMotionListener{
 						if(MOco[i][1]==COindex){
 							dragcombined(dx, dy, i, MOimageX, MOimageY, MOimageW, MOimageH, MO, MOBound, MOname);
 						}
-					}*/
-					
+					}
+					COBound[COindex]=new Rectangle(COimageX[COindex], COimageY[COindex], COimageW[COindex], COimageH[COindex]);
 				}else if(COco[COindex][1]==2){
 					dragcombined(dx, dy, COco[COindex][2], TBimageX, TBimageY, TBimageW, TBimageH, TB, TBBound, TBname);
 					dragcombined(dx, dy, COco[COindex][3], MOimageX, MOimageY, MOimageW, MOimageH, MO, MOBound, MOname);
@@ -999,7 +878,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 					}
 				}
 			}
-			COBound[COindex]=new Rectangle(COimageX[COindex], COimageY[COindex], COimageW[COindex], COimageH[COindex]);
 			repaint();
 		}	
 	
