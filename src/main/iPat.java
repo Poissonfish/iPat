@@ -804,84 +804,30 @@ class myPanel extends JPanel implements MouseMotionListener{
 			repaint();
 		}
 		
-		if(COindex!=-1){		
-			int cx= COimageX[COindex];
-			int cy= COimageY[COindex];
-			int dx= imX- cx-(COimageW[COindex]/2);
-			int dy= imY- cy-(COimageH[COindex]/2);
-			COimageX[COindex]=COimageX[COindex]+dx;					
-			COimageY[COindex]=COimageY[COindex]+dy;
-			COBound[COindex]=new Rectangle(COimageX[COindex], COimageY[COindex], COimageW[COindex], COimageH[COindex]);
-			if(COco[COindex][0]==1){
-				if(COco[COindex][1]==1){
-					dragcombined(dx, dy, COco[COindex][2], TBimageX, TBimageY, TBimageW, TBimageH, TB, TBBound, TBname);
-					dragcombined(dx, dy, COco[COindex][3], TBimageX, TBimageY, TBimageW, TBimageH, TB, TBBound, TBname);
-					
-					for (int i=1; i<=TBcount; i++){
-						if(i==COco[COindex][2]|i==COco[COindex][3]){continue;}
-						if(TBco[i][1]==COindex){
-							dragcombined(dx, dy, i, TBimageX, TBimageY, TBimageW, TBimageH, TB, TBBound, TBname);
-						}
-					}
-					for (int i=1; i<=MOcount; i++){
-						if(MOco[i][1]==COindex){
-							dragcombined(dx, dy, i, MOimageX, MOimageY, MOimageW, MOimageH, MO, MOBound, MOname);
-						}
-					}
-					COBound[COindex]=new Rectangle(COimageX[COindex], COimageY[COindex], COimageW[COindex], COimageH[COindex]);
-				}else if(COco[COindex][1]==2){
-					dragcombined(dx, dy, COco[COindex][2], TBimageX, TBimageY, TBimageW, TBimageH, TB, TBBound, TBname);
-					dragcombined(dx, dy, COco[COindex][3], MOimageX, MOimageY, MOimageW, MOimageH, MO, MOBound, MOname);
-					for (int i=1; i<=TBcount; i++){
-						if(i==COco[COindex][2]){continue;}
-						if(TBco[i][1]==COindex){
-							dragcombined(dx, dy, i, TBimageX, TBimageY, TBimageW, TBimageH, TB, TBBound, TBname);
-						}
-					}
-					for (int i=1; i<=MOcount; i++){
-						if(i==COco[COindex][3]){continue;}
-						if(MOco[i][1]==COindex){
-							dragcombined(dx, dy, i, MOimageX, MOimageY, MOimageW, MOimageH, MO, MOBound, MOname);
-						}
-					}
-				}		
-			}else if (COco[COindex][0]==2){
-				if(COco[COindex][1]==1){	
-					dragcombined(dx, dy, COco[COindex][2], MOimageX, MOimageY, MOimageW, MOimageH, MO, MOBound, MOname);
-					dragcombined(dx, dy, COco[COindex][3], TBimageX, TBimageY, TBimageW, TBimageH, TB, TBBound, TBname);
-					for (int i=1; i<=MOcount; i++){
-						if(i==COco[COindex][2]){continue;}
-						if(MOco[i][1]==COindex){
-							dragcombined(dx, dy, i, MOimageX, MOimageY, MOimageW, MOimageH, MO, MOBound, MOname);
-						}
-					}
-					for (int i=1; i<=TBcount; i++){
-						if(i==COco[COindex][3]){continue;}
-						if(TBco[i][1]==COindex){
-							dragcombined(dx, dy, i, TBimageX, TBimageY, TBimageW, TBimageH, TB, TBBound, TBname);
-						}
-					}
-					
-				}else if(COco[COindex][1]==2){
-					dragcombined(dx, dy, COco[COindex][2], MOimageX, MOimageY, MOimageW, MOimageH, MO, MOBound, MOname);
-					dragcombined(dx, dy, COco[COindex][3], MOimageX, MOimageY, MOimageW, MOimageH, MO, MOBound, MOname);
-					for (int i=1; i<=MOcount; i++){
-						if(i==COco[COindex][2]|i==COco[COindex][3]){continue;}
-						if(MOco[i][1]==COindex){
-							dragcombined(dx, dy, i, MOimageX, MOimageY, MOimageW, MOimageH, MO, MOBound, MOname);
-						}
-					}
-					for (int i=1; i<=TBcount; i++){
-						if(TBco[i][1]==COindex){
-							dragcombined(dx, dy, i, TBimageX, TBimageY, TBimageW, TBimageH, TB, TBBound, TBname);
-						}
-					}
-				}
+		if(COindex!=-1){	
+			int dx= imX- (COimageX[COindex]+(COimageW[COindex]/2));
+			int dy= imY- (COimageY[COindex]+(COimageH[COindex]/2));
+			if(COco[COindex][0]==1&COco[COindex][1]==1){
+					DragandKeepCombinedinPanel (imX, imY, dx, dy, boundE, boundS,
+							COco[COindex][2], TBimageX, TBimageY, TBimageW, TBimageH, TBBound, TBname, 1,
+							COco[COindex][3], TBimageX, TBimageY, TBimageW, TBimageH, TBBound, TBname, 1);
+			}else if(COco[COindex][0]==1&COco[COindex][1]==2){
+					DragandKeepCombinedinPanel (imX, imY, dx, dy, boundE, boundS,
+							COco[COindex][2], TBimageX, TBimageY, TBimageW, TBimageH, TBBound, TBname, 1,
+							COco[COindex][3], MOimageX, MOimageY, MOimageW, MOimageH, MOBound, MOname, 2);		
+			}else if (COco[COindex][0]==2&COco[COindex][1]==1){
+					DragandKeepCombinedinPanel (imX, imY, dx, dy, boundE, boundS,
+							COco[COindex][2], MOimageX, MOimageY, MOimageW, MOimageH, MOBound, MOname, 2,
+							COco[COindex][3], TBimageX, TBimageY, TBimageW, TBimageH, TBBound, TBname, 1);
+			}else if(COco[COindex][0]==2&COco[COindex][1]==2){
+					DragandKeepCombinedinPanel (imX, imY, dx, dy, boundE, boundS,
+							COco[COindex][2], MOimageX, MOimageY, MOimageW, MOimageH, MOBound, MOname, 2,
+							COco[COindex][3], MOimageX, MOimageY, MOimageW, MOimageH, MOBound, MOname, 2);
 			}
 			repaint();
 		}	
 	
-		TrashAnimation = new Timer(20, new ActionListener() {
+		TrashAnimation = new Timer(15, new ActionListener() {
 			int i=0;
 			Boolean quit=true;
 		    @Override
@@ -1142,6 +1088,432 @@ class myPanel extends JPanel implements MouseMotionListener{
 		bound[index]= new Rectangle(X[index], Y[index], 
 									  image[index].getWidth(null), image[index].getHeight(null));
 		name[index].setLocation(X[index], Y[index]+H[index]-185);
+	}
+	
+	public void DragandKeepCombinedinPanel (int x, int y, int dx, int dy, int boundE, int boundS, 
+											int index1, int[] X1, int[] Y1, int[] W1, int[] H1, Rectangle[] Bound1, JLabel[] name1, int TBMO1,
+											int index2, int[] X2, int[] Y2, int[] W2, int[] H2, Rectangle[] Bound2, JLabel[] name2,int TBMO2){	
+		int[] tbx=new int[TBcount+1];
+		int[] tby=new int[TBcount+1];
+		int[] mox=new int[MOcount+1];
+		int[] moy=new int[MOcount+1];
+		for (int i=1; i<=TBcount; i++){
+			if(TBMO1==1&i==index1){continue;}
+			if(TBMO2==1&i==index2){continue;}
+			if(TBco[i][1]==COindex){
+				tbx[i]=TBimageX[i]-COimageX[COindex];
+				tby[i]=TBimageY[i]-COimageY[COindex];
+			}
+		}
+		for (int i=1; i<=MOcount; i++){
+			if(TBMO1==2&i==index1){continue;}
+			if(TBMO2==2&i==index2){continue;}
+			if(MOco[i][1]==COindex){
+				mox[i]=MOimageX[i]-COimageX[COindex];
+				moy[i]=MOimageY[i]-COimageY[COindex];	
+			}
+		}
+		if (x-(COimageW[COindex]/2)<0){
+			COimageX[COindex]=0;								
+			if(X1[index1]>X2[index2]){
+				X1[index1]=0+COimageW[COindex]-W1[index1];
+				X2[index2]=0;
+			}else{
+				X1[index1]=0;
+				X2[index2]=0+COimageW[COindex]-W2[index2];			
+			}		
+			if(y-(COimageH[COindex]/2)<0){
+				COimageY[COindex]=0;
+				if(Y1[index1]>Y2[index2]){
+					Y1[index1]=0+COimageH[COindex]-H1[index1];
+					Y2[index2]=0;		
+				}else{
+					Y1[index1]=0;
+					Y2[index2]=0+COimageH[COindex]-H2[index2];
+				}
+				for (int i=1; i<=TBcount; i++){
+					if(TBMO1==1&i==index1){continue;}
+					if(TBMO2==1&i==index2){continue;}
+					if(TBco[i][1]==COindex){
+						TBimageX[i]=COimageX[COindex]+tbx[i];
+						TBimageY[i]=COimageY[COindex]+tby[i];
+						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+					}
+				}
+				for (int i=1; i<=MOcount; i++){
+					if(TBMO1==2&i==index1){continue;}
+					if(TBMO2==2&i==index2){continue;}
+					if(MOco[i][1]==COindex){
+						MOimageX[i]=COimageX[COindex]+mox[i];
+						MOimageY[i]=COimageY[COindex]+moy[i];
+						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+					}
+				}
+			}else if(y+(COimageH[COindex]/2)>boundS){
+				COimageY[COindex]=boundS-COimageH[COindex];
+				if(Y1[index1]>Y2[index2]){
+					Y1[index1]=boundS-H1[index1];
+					Y2[index2]=boundS-COimageH[COindex];
+				}else{
+					Y1[index1]=boundS-COimageH[COindex];
+					Y2[index2]=boundS-H1[index2];
+				}
+				for (int i=1; i<=TBcount; i++){
+					if(TBMO1==1&i==index1){continue;}
+					if(TBMO2==1&i==index2){continue;}
+					if(TBco[i][1]==COindex){
+						TBimageX[i]=COimageX[COindex]+tbx[i];
+						TBimageY[i]=COimageY[COindex]+tby[i];
+						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+					}
+				}
+				for (int i=1; i<=MOcount; i++){
+					if(TBMO1==2&i==index1){continue;}
+					if(TBMO2==2&i==index2){continue;}
+					if(MOco[i][1]==COindex){
+						MOimageX[i]=COimageX[COindex]+mox[i];
+						MOimageY[i]=COimageY[COindex]+moy[i];
+						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+					}
+				}
+			}else {
+				COimageY[COindex]=COimageY[COindex]+dy;
+				Y1[index1]=Y1[index1]+dy;
+				Y2[index2]=Y2[index2]+dy;
+				for (int i=1; i<=TBcount; i++){
+					if(TBMO1==1&i==index1){continue;}
+					if(TBMO2==1&i==index2){continue;}
+					if(TBco[i][1]==COindex){
+						TBimageX[i]=COimageX[COindex]+tbx[i];
+						TBimageY[i]=TBimageY[i]+dy;
+						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+					}
+				}
+				for (int i=1; i<=MOcount; i++){
+					if(TBMO1==2&i==index1){continue;}
+					if(TBMO2==2&i==index2){continue;}
+					if(MOco[i][1]==COindex){
+						MOimageX[i]=COimageX[COindex]+mox[i];
+						MOimageY[i]=MOimageY[i]+dy;
+						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+					}
+				}	
+			}	
+		}else if(x+(COimageW[COindex]/2)>boundE){
+			COimageX[COindex]=boundE-COimageW[COindex];								
+			if(X1[index1]>X2[index2]){
+				X1[index1]=boundE-W1[index1];
+				X2[index2]=boundE-COimageW[COindex];
+			}else{
+				X1[index1]=boundE-COimageW[COindex];
+				X2[index2]=boundE-W2[index2];		
+			}		
+			if(y-(COimageH[COindex]/2)<0){
+				COimageY[COindex]=0;
+				if(Y1[index1]>Y2[index2]){
+					Y1[index1]=0+COimageH[COindex]-H1[index1];
+					Y2[index2]=0;		
+				}else{
+					Y1[index1]=0;
+					Y2[index2]=0+COimageH[COindex]-H2[index2];
+				}
+				for (int i=1; i<=TBcount; i++){
+					if(TBMO1==1&i==index1){continue;}
+					if(TBMO2==1&i==index2){continue;}
+					if(TBco[i][1]==COindex){
+						TBimageX[i]=COimageX[COindex]+tbx[i];
+						TBimageY[i]=COimageY[COindex]+tby[i];
+						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+					}
+				}
+				for (int i=1; i<=MOcount; i++){
+					if(TBMO1==2&i==index1){continue;}
+					if(TBMO2==2&i==index2){continue;}
+					if(MOco[i][1]==COindex){
+						MOimageX[i]=COimageX[COindex]+mox[i];
+						MOimageY[i]=COimageY[COindex]+moy[i];
+						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+					}
+				}
+			}else if(y+(COimageH[COindex]/2)>boundS){
+				COimageY[COindex]=boundS-COimageH[COindex];
+				if(Y1[index1]>Y2[index2]){
+					Y1[index1]=boundS-H1[index1];
+					Y2[index2]=boundS-COimageH[COindex];
+				}else{
+					Y1[index1]=boundS-COimageH[COindex];
+					Y2[index2]=boundS-H1[index2];
+				}
+				for (int i=1; i<=TBcount; i++){
+					if(TBMO1==1&i==index1){continue;}
+					if(TBMO2==1&i==index2){continue;}
+					if(TBco[i][1]==COindex){
+						TBimageX[i]=COimageX[COindex]+tbx[i];
+						TBimageY[i]=COimageY[COindex]+tby[i];
+						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+					}
+				}
+				for (int i=1; i<=MOcount; i++){
+					if(TBMO1==2&i==index1){continue;}
+					if(TBMO2==2&i==index2){continue;}
+					if(MOco[i][1]==COindex){
+						MOimageX[i]=COimageX[COindex]+mox[i];
+						MOimageY[i]=COimageY[COindex]+moy[i];
+						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+					}
+				}
+			}else {
+				COimageY[COindex]=COimageY[COindex]+dy;
+				Y1[index1]=Y1[index1]+dy;
+				Y2[index2]=Y2[index2]+dy;
+				for (int i=1; i<=TBcount; i++){
+					if(TBMO1==1&i==index1){continue;}
+					if(TBMO2==1&i==index2){continue;}
+					if(TBco[i][1]==COindex){
+						TBimageX[i]=COimageX[COindex]+tbx[i];
+						TBimageY[i]=TBimageY[i]+dy;
+						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+					}
+				}
+				for (int i=1; i<=MOcount; i++){
+					if(TBMO1==2&i==index1){continue;}
+					if(TBMO2==2&i==index2){continue;}
+					if(MOco[i][1]==COindex){
+						MOimageX[i]=COimageX[COindex]+mox[i];
+						MOimageY[i]=MOimageY[i]+dy;
+						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+					}
+				}	
+			}	
+		}else if(y-(COimageH[COindex]/2)<0){
+			COimageY[COindex]=0;						
+			if(Y1[index1]>Y2[index2]){
+				Y1[index1]=0+COimageH[COindex]-H1[index1];
+				Y2[index2]=0;		
+			}else{
+				Y1[index1]=0;
+				Y2[index2]=0+COimageH[COindex]-H2[index2];
+			}			
+			if (x-(COimageW[COindex]/2)<0){
+				COimageX[COindex]=0;								
+				if(X1[index1]>X2[index2]){
+					X1[index1]=0+COimageW[COindex]-W1[index1];
+					X2[index2]=0;
+				}else{
+					X1[index1]=0;
+					X2[index2]=0+COimageW[COindex]-W2[index2];			
+				}
+				for (int i=1; i<=TBcount; i++){
+					if(TBMO1==1&i==index1){continue;}
+					if(TBMO2==1&i==index2){continue;}
+					if(TBco[i][1]==COindex){
+						TBimageX[i]=COimageX[COindex]+tbx[i];
+						TBimageY[i]=COimageY[COindex]+tby[i];
+						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+					}
+				}
+				for (int i=1; i<=MOcount; i++){
+					if(TBMO1==2&i==index1){continue;}
+					if(TBMO2==2&i==index2){continue;}
+					if(MOco[i][1]==COindex){
+						MOimageX[i]=COimageX[COindex]+mox[i];
+						MOimageY[i]=COimageY[COindex]+moy[i];
+						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+					}
+				}
+			}else if(x+(COimageW[COindex]/2)>boundE){
+				COimageX[COindex]=boundE-COimageW[COindex];								
+				if(X1[index1]>X2[index2]){
+					X1[index1]=boundE-W1[index1];
+					X2[index2]=boundE-COimageW[COindex];
+				}else{
+					X1[index1]=boundE-COimageW[COindex];
+					X2[index2]=boundE-W2[index2];		
+				}
+				for (int i=1; i<=TBcount; i++){
+					if(TBMO1==1&i==index1){continue;}
+					if(TBMO2==1&i==index2){continue;}
+					if(TBco[i][1]==COindex){
+						TBimageX[i]=COimageX[COindex]+tbx[i];
+						TBimageY[i]=COimageY[COindex]+tby[i];
+						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+					}
+				}
+				for (int i=1; i<=MOcount; i++){
+					if(TBMO1==2&i==index1){continue;}
+					if(TBMO2==2&i==index2){continue;}
+					if(MOco[i][1]==COindex){
+						MOimageX[i]=COimageX[COindex]+mox[i];
+						MOimageY[i]=COimageY[COindex]+moy[i];
+						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+					}
+				}
+			}else{
+				COimageX[COindex]=COimageX[COindex]+dx;
+				X1[index1]=X1[index1]+dx;
+				X2[index2]=X2[index2]+dx;
+				for (int i=1; i<=TBcount; i++){
+					if(TBMO1==1&i==index1){continue;}
+					if(TBMO2==1&i==index2){continue;}
+					if(TBco[i][1]==COindex){
+						TBimageX[i]=TBimageX[i]+dx;
+						TBimageY[i]=COimageY[COindex]+tby[i];
+						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+					}
+				}
+				for (int i=1; i<=MOcount; i++){
+					if(TBMO1==2&i==index1){continue;}
+					if(TBMO2==2&i==index2){continue;}
+					if(MOco[i][1]==COindex){
+						MOimageX[i]=MOimageX[i]+dx;
+						MOimageY[i]=COimageY[COindex]+moy[i];
+						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+					}
+				}
+			}	
+		}else if(y+(COimageH[COindex]/2)>boundS){
+			COimageY[COindex]=boundS-COimageH[COindex];
+			if(Y1[index1]>Y2[index2]){
+				Y1[index1]=boundS-H1[index1];
+				Y2[index2]=boundS-COimageH[COindex];
+			}else{
+				Y1[index1]=boundS-COimageH[COindex];
+				Y2[index2]=boundS-H1[index2];
+			}	
+			if (x-(COimageW[COindex]/2)<0){
+				COimageX[COindex]=0;								
+				if(X1[index1]>X2[index2]){
+					X1[index1]=0+COimageW[COindex]-W1[index1];
+					X2[index2]=0;
+				}else{
+					X1[index1]=0;
+					X2[index2]=0+COimageW[COindex]-W2[index2];			
+				}
+				for (int i=1; i<=TBcount; i++){
+					if(TBMO1==1&i==index1){continue;}
+					if(TBMO2==1&i==index2){continue;}
+					if(TBco[i][1]==COindex){
+						TBimageX[i]=COimageX[COindex]+tbx[i];
+						TBimageY[i]=COimageY[COindex]+tby[i];
+						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+					}
+				}
+				for (int i=1; i<=MOcount; i++){
+					if(TBMO1==2&i==index1){continue;}
+					if(TBMO2==2&i==index2){continue;}
+					if(MOco[i][1]==COindex){
+						MOimageX[i]=COimageX[COindex]+mox[i];
+						MOimageY[i]=COimageY[COindex]+moy[i];
+						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+					}
+				}
+			}else if(x+(COimageW[COindex]/2)>boundE){
+				COimageX[COindex]=boundE-COimageW[COindex];								
+				if(X1[index1]>X2[index2]){
+					X1[index1]=boundE-W1[index1];
+					X2[index2]=boundE-COimageW[COindex];
+				}else{
+					X1[index1]=boundE-COimageW[COindex];
+					X2[index2]=boundE-W2[index2];		
+				}
+				for (int i=1; i<=TBcount; i++){
+					if(TBMO1==1&i==index1){continue;}
+					if(TBMO2==1&i==index2){continue;}
+					if(TBco[i][1]==COindex){
+						TBimageX[i]=COimageX[COindex]+tbx[i];
+						TBimageY[i]=COimageY[COindex]+tby[i];
+						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+					}
+				}
+				for (int i=1; i<=MOcount; i++){
+					if(TBMO1==2&i==index1){continue;}
+					if(TBMO2==2&i==index2){continue;}
+					if(MOco[i][1]==COindex){
+						MOimageX[i]=COimageX[COindex]+mox[i];
+						MOimageY[i]=COimageY[COindex]+moy[i];
+						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+					}
+				}
+			}else{
+				COimageX[COindex]=COimageX[COindex]+dx;
+				X1[index1]=X1[index1]+dx;
+				X2[index2]=X2[index2]+dx;
+				for (int i=1; i<=TBcount; i++){
+					if(TBMO1==1&i==index1){continue;}
+					if(TBMO2==1&i==index2){continue;}
+					if(TBco[i][1]==COindex){
+						TBimageX[i]=TBimageX[i]+dx;
+						TBimageY[i]=COimageY[COindex]+tby[i];
+						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+					}
+				}
+				for (int i=1; i<=MOcount; i++){
+					if(TBMO1==2&i==index1){continue;}
+					if(TBMO2==2&i==index2){continue;}
+					if(MOco[i][1]==COindex){
+						MOimageX[i]=MOimageX[i]+dx;
+						MOimageY[i]=COimageY[COindex]+moy[i];
+						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+					}
+				}
+			}
+		}else{
+			COimageX[COindex]=COimageX[COindex]+dx;
+			COimageY[COindex]=COimageY[COindex]+dy;
+			X1[index1]=X1[index1]+dx;
+			X2[index2]=X2[index2]+dx;
+			Y1[index1]=Y1[index1]+dy;
+			Y2[index2]=Y2[index2]+dy;
+			for (int i=1; i<=TBcount; i++){
+				if(TBMO1==1&i==index1){continue;}
+				if(TBMO2==1&i==index2){continue;}
+				if(TBco[i][1]==COindex){
+					TBimageX[i]=TBimageX[i]+dx;
+					TBimageY[i]=TBimageY[i]+dy;
+					TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
+					TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+				}
+			}
+			for (int i=1; i<=MOcount; i++){
+				if(TBMO1==2&i==index1){continue;}
+				if(TBMO2==2&i==index2){continue;}
+				if(MOco[i][1]==COindex){
+					MOimageX[i]=MOimageX[i]+dx;
+					MOimageY[i]=MOimageY[i]+dy;
+					MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
+					MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+				}
+			}
+		}
+		Bound1[index1]= new Rectangle(X1[index1], Y1[index1], W1[index1], H1[index1]);
+		Bound2[index2]= new Rectangle(X2[index2], Y2[index2], W2[index2], H2[index2]);
+		name1[index1].setLocation(X1[index1], Y1[index1]+H1[index1]-185);
+		name2[index2].setLocation(X2[index2], Y2[index2]+H2[index2]-185);
+		COBound[COindex]=new Rectangle(COimageX[COindex], COimageY[COindex], COimageW[COindex], COimageH[COindex]);	
 	}
 	
 	public void KeepInPanel (int x, int y, int index, int[] imageW, int[] imageH, int[] imageX, int[] imageY,
