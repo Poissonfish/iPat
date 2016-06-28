@@ -152,7 +152,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 	Image[] MO= new Image[MOMAX];
 	Image[] Trash= new Image[10];
 	Image[] White= new Image[10];
-	Image Excel, Powerpoint, Word, Music, Video, Unknown, 
+	Image Excel, Powerpoint, Word, Music, Video, Unknown, Text, 
 		  TBimage, MOimage, Prefbar;
 	
 	JLayeredPane startPanel;
@@ -269,6 +269,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 			Word = ImageIO.read(this.getClass().getResourceAsStream("resources/Word.png"));
 			Video = ImageIO.read(this.getClass().getResourceAsStream("resources/Video.png"));
 			Music = ImageIO.read(this.getClass().getResourceAsStream("resources/Music.png"));
+			Text = ImageIO.read(this.getClass().getResourceAsStream("resources/Text.png"));
 			Unknown = ImageIO.read(this.getClass().getResourceAsStream("resources/Unknown.png"));
 		} catch (IOException ex){}
 		
@@ -450,29 +451,35 @@ class myPanel extends JPanel implements MouseMotionListener{
     				Intro= new Timer(20, new ActionListener(){
     					int t=10;
     					float f=0f;
+    					int w=0;
     					@Override
     					public void actionPerformed(ActionEvent ani) {	
     						if(insub){				
     							if(f<1f){
     								TBButton.setAlpha(f);		
         							TBButton.setBounds(new Rectangle((Wide/2)-182, 90-(t*2), 80, 60)); 
+        							setBackground(black[10-t]);
     							} 							
-    							if(f>0.3f){
+    							if(f>0.3f&f<=1.3f){
     								MOButton.setAlpha(f-0.3f);		
-        							MOButton.setBounds(new Rectangle((Wide/2)+107, 90-((t+3)*2), 80, 60)); 
-    							}
-    							
-    							MOButton.setVisible(true);
-    							TBButton.setVisible(true);
-    							setBackground(black[10-t]);
+        							MOButton.setBounds(new Rectangle((Wide/2)+90, 90-((t+3)*2), 80, 60)); 
+    							} 									
 	    				    	f=f+0.1f;
 	    				    	t--;
-	    				    	if(f-0.3f>1f){
-	    				    		Intro.stop();
+	    				    	if(f-0.3f>1f & f<=2.2f){
 	    				    		setBackground(Color.WHITE);
+	    				    		prefindex=1;
+	    				    		getPreference(pref1);
+	    				    		whitel.setBounds(0, 0, Wide, Heigth);
+	    				    		whitel.setIcon(new ImageIcon(White[w]));
+	    				    		w++;
+	    				    	}
+	    				    	if(f>2.3f){
+	    				    		Intro.stop();
+	    				    		whitel.setBounds(Wide, 0, Wide, Heigth);
 	    				    		f=0f;
 	    				    		insub=false;
-	    				    	}	
+	    				    	}
     						}					
     					}	
     				});
@@ -520,17 +527,7 @@ class myPanel extends JPanel implements MouseMotionListener{
     						System.out.println("CO is selected");	
     					}
     				}
-    			}
-    		
-    			System.out.println("TBcount= "+TBcount);
-    			System.out.println("MOcount= "+MOcount);
-    			System.out.println("COcount= "+COcount);
-    			System.out.println("TBco= "+TBco[1][0]+TBco[1][1]+TBco[1][2]);
-    			System.out.println("MOco= "+MOco[1][0]+MOco[1][1]+MOco[1][2]);
-    			System.out.println("COco= "+COco[0][0]+COco[0][1]+COco[0][2]+COco[1][3]);
-    			System.out.println("TBX= "+TBimageX[1]+"  TBY= "+TBimageY[1]+"  TBW= "+TBimageW[1]+"  TBH= "+TBimageH[1]);
-    			System.out.println("COX= "+COimageX[0]+"  COY= "+COimageY[0]+"  COW= "+COimageW[0]+"  COH= "+COimageH[0]);
-    			
+    			}    			
 			}	
 				
 			@Override
@@ -914,8 +911,7 @@ class myPanel extends JPanel implements MouseMotionListener{
     			}
     		}
 		});	
-	prefindex=1;
-	getPreference(pref1);
+	
 	addMouseMotionListener(this);
 }
 	
@@ -1210,6 +1206,11 @@ class myPanel extends JPanel implements MouseMotionListener{
 	  	else if	(TBfile[i].indexOf(".m4v")>=0){TB[i]=Video;}
 	  	else if	(TBfile[i].indexOf(".mkv")>=0){TB[i]=Video;}
 	  	else if	(TBfile[i].indexOf(".rm")>=0){TB[i]=Video;}
+	  	
+		else if	(TBfile[i].indexOf(".txt")>=0){TB[i]=Text;}
+		else if	(TBfile[i].indexOf(".r")>=0){TB[i]=Text;}
+		else if	(TBfile[i].indexOf(".java")>=0){TB[i]=Text;}
+		else if	(TBfile[i].indexOf(".log")>=0){TB[i]=Text;}
 	  	
 	  	else{TB[i]=Unknown;}	  	
 	}
