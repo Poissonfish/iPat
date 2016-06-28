@@ -43,7 +43,7 @@ public class iPat {
 	            Component c = (Component)evt.getSource();
 	            System.out.println("H: "+c.getHeight()+" W: "+c.getWidth()); 
 	         //   Wide=main.getWidth();
-	        //    main.setSize(Wide, Heigth);
+	            main.setSize(Wide, Heigth);
 	            System.out.println("Wide: "+Wide);
 	            /*startPanel.resize(Wide,200);
 	            http://stackoverflow.com/questions/6666637/resize-jpanel-from-jframe
@@ -608,6 +608,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						    	repaint();
 						    	if(t==0){
 						    		CDAindex=-1;
+						    		CombinedDeleteAnimation.stop();
 						    	} 
 						    	/*
 						    	 g.fillOval((int)(COimageX[i]-12.5+COimageW[i]*.5), (int)(COimageY[i]-12.5 +COimageH[i]*.5),
