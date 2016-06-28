@@ -3,6 +3,7 @@ package main;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.TimerTask;
 import java.util.prefs.Preferences;
 import java.awt.*;
 import java.awt.event.*;
@@ -17,6 +18,7 @@ import javax.swing.filechooser.FileSystemView;
 public class iPat {
 	static int Wide=1200;
 	static int Heigth=700;
+	static int PHeight=190;
 	static JLayeredPane startPanel;
 	static JLayeredPane nullPanel;
 	static JPanel layoutPanel;
@@ -31,7 +33,7 @@ public class iPat {
 		Container cPane = main.getContentPane();
 		Wide= main.getWidth();
 		Heigth= main.getHeight();
-		JPanel ipat = new myPanel(Wide, Heigth, layoutPanel, startPanel, nullPanel);
+		JPanel ipat = new myPanel(Wide, Heigth, PHeight, layoutPanel, startPanel, nullPanel);
 		cPane.add(ipat);	
 		main.setVisible(true);
 		main.addComponentListener(new ComponentAdapter() {
@@ -67,6 +69,23 @@ public class iPat {
 
 
 class myPanel extends JPanel implements MouseMotionListener{	
+	  private static class ipatButton extends JButton {
+	        private float alpha = 1f;        
+	        public float getAlpha() {
+	            return alpha;
+	        }
+	        public void setAlpha(float alpha) {
+	            this.alpha = alpha;
+	            repaint();
+	        }
+	        @Override
+	        public void paintComponent(Graphics g) {
+	            Graphics2D g2 = (Graphics2D) g;
+	            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));          
+	            super.paintComponent(g2);
+	        }
+	  }
+	
 	private static final int TBMAX=200;
 	private static final int MOMAX=200;
 	private static final int COMAX=100;	
@@ -134,7 +153,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 	Image[] Trash= new Image[10];
 	Image[] White= new Image[10];
 	Image Excel, Powerpoint, Word, Music, Video, Unknown, 
-		  TBimage, MOimage, Prefbar;	
+		  TBimage, MOimage, Prefbar;
 	
 	JLayeredPane startPanel;
 	JPanel mainPanel;	
@@ -142,8 +161,8 @@ class myPanel extends JPanel implements MouseMotionListener{
 	JPanel buttonPanel;
 	JPanel layoutPanel;
 	
-	JButton TBButton = new JButton();
-	JButton MOButton = new JButton();
+	ipatButton TBButton = new ipatButton();
+	ipatButton MOButton = new ipatButton();
 	JLabel iPat = new JLabel();
 
 	JFileChooser[] TBchooser= new JFileChooser[TBMAX];
@@ -154,8 +173,12 @@ class myPanel extends JPanel implements MouseMotionListener{
 	JLabel[] MOname= new JLabel[MOMAX];		
 
 	//animation
-	Timer timer, TrashAnimation, DashLineAnimation, CombinedDeleteAnimation;
+	Timer TrashAnimation, DashLineAnimation, CombinedDeleteAnimation, 
+		Fadein1, Fadein2, Fadein3, Fadein4, Fadesave, Wipe;
+	
 	Boolean TA;
+	
+	
 	 //combine 
 		int CDAindex=-1, CDAint=0, CDAi=0;
 		int CDAW, CDAH;
@@ -184,7 +207,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 	Color themecolor = new Color(54, 164, 239, 150);
 	
 	//windows size
-	int Wide, Heigth;
+	int Wide, Heigth, panelHeigth;
 	
 	//Preference
 	Preferences pref1 = Preferences.userRoot().node("/ipat1");  
@@ -198,59 +221,62 @@ class myPanel extends JPanel implements MouseMotionListener{
 	Rectangle saveBound = new Rectangle();
 	Rectangle restoreBound = new Rectangle();
 	JLabel whitel;
-	JLabel prefbarl;
+	JLabel preshowl;
 	int prefselect =0;
 	int prefindex =0;
+	Timer preshow1, preshow2, preshow3, preshow4;
+	Image[] Preshow1= new Image[10];
+	Image[] Preshow2= new Image[10];
+	Image[] Preshow3= new Image[10];
+	Image[] Preshow4= new Image[10];
+	Boolean pre, showornot=false;
+	
+	//Intro
+	Timer Intro;
+	Color[] black= new Color[13];
+	Boolean in=false, insub=false;
+	
+	//Button
+	Timer TBanimation, MOanimation;
 	
 	
-	public myPanel(int Wideint, int Heigthint, JPanel l, JLayeredPane s, JLayeredPane n){	
+	public myPanel(int Wideint, int Heigthint, int pH, JPanel l, JLayeredPane s, JLayeredPane n){	
 		this.Wide=Wideint;
 		this.Heigth=Heigthint;
+		this.panelHeigth=pH;
 		this.layoutPanel=l;
 		this.startPanel=s;
 		this.nullPanel=n;
-		
-		this.setBackground(Color.white);
+			
 		try{
-			Image iconIP = ImageIO.read(getClass().getResource("iPat.png"));
+			Image iconIP = ImageIO.read(getClass().getResource("resources/iPat.png"));
 			iPat.setIcon(new ImageIcon(iconIP));
 		} catch (IOException ex){}
 		try{
 			for(int i=0; i<10; i++){
-				Trash[i] = ImageIO.read(getClass().getResource("trash"+i+".png"));
-				White[i] = ImageIO.read(getClass().getResource("white"+i+".png"));
+				Trash[i] = ImageIO.read(getClass().getResource("resources/trash"+i+".png"));
+				White[i] = ImageIO.read(getClass().getResource("resources/white"+i+".png"));
+				Preshow1[i] = ImageIO.read(getClass().getResource("resources/prefbar1"+i+".png"));
+				Preshow2[i] = ImageIO.read(getClass().getResource("resources/prefbar2"+i+".png"));
+				Preshow3[i] = ImageIO.read(getClass().getResource("resources/prefbar3"+i+".png"));
+				Preshow4[i] = ImageIO.read(getClass().getResource("resources/prefbar4"+i+".png"));
 			}
 		} catch (IOException ex){}
 		
 		try{
-			Prefbar = ImageIO.read(this.getClass().getResourceAsStream("prefbar.png"));
+			Excel = ImageIO.read(this.getClass().getResourceAsStream("resources/Excel.png"));
+			Powerpoint = ImageIO.read(this.getClass().getResourceAsStream("resources/Powerpoint.png"));
+			Word = ImageIO.read(this.getClass().getResourceAsStream("resources/Word.png"));
+			Video = ImageIO.read(this.getClass().getResourceAsStream("resources/Video.png"));
+			Music = ImageIO.read(this.getClass().getResourceAsStream("resources/Music.png"));
+			Unknown = ImageIO.read(this.getClass().getResourceAsStream("resources/Unknown.png"));
 		} catch (IOException ex){}
 		
-		try{
-			Excel = ImageIO.read(this.getClass().getResourceAsStream("Excel.png"));
-		} catch (IOException ex){}
-		try{
-			Powerpoint = ImageIO.read(this.getClass().getResourceAsStream("Powerpoint.png"));
-		} catch (IOException ex){}
-		try{
-			Word = ImageIO.read(this.getClass().getResourceAsStream("Word.png"));
-		} catch (IOException ex){}
-		try{
-			Video = ImageIO.read(this.getClass().getResourceAsStream("Video.png"));
-		} catch (IOException ex){}
-		try{
-			Music = ImageIO.read(this.getClass().getResourceAsStream("Music.png"));
-		} catch (IOException ex){}
-		try{
-			Unknown = ImageIO.read(this.getClass().getResourceAsStream("Unknown.png"));
-		} catch (IOException ex){}		
 		
 		try{
-			TBimage = ImageIO.read(this.getClass().getResourceAsStream("Table.png"));
+			TBimage = ImageIO.read(this.getClass().getResourceAsStream("resources/Table.png"));
 			TBButton.setIcon(new ImageIcon(TBimage));
-		} catch (IOException ex){}
-		try{
-			MOimage = ImageIO.read(this.getClass().getResourceAsStream("Model.png"));
+			MOimage = ImageIO.read(this.getClass().getResourceAsStream("resources/Model.png"));
 			MOButton.setIcon(new ImageIcon(MOimage));
 		} catch (IOException ex){}			
 		for (int i=1; i<=TBMAX-1; i++){
@@ -259,29 +285,12 @@ class myPanel extends JPanel implements MouseMotionListener{
 		for (int i=1; i<=MOMAX-1; i++){
 			MO[i] = MOimage;
 		}	
-		/*
-		final Timer fade = new Timer(40, new ActionListener() {
-             @Override
-             public void actionPerformed(ActionEvent e) {
-                 if (startTime < 0) {
-                     startTime = System.currentTimeMillis();
-                 } else {
-                     long time = System.currentTimeMillis();
-                     long duration = time - startTime;
-                     if (duration >= RT) {
-                         startTime = -1;
-                         ((Timer) e.getSource()).stop();
-                         alpha = 1f;
-                     } else {
-                         alpha = 1f - ((float) duration / (float) RT);
-                     }
-                     repaint();
-                 }
-             }
-         });
-		*/
 		
-	
+		for (int i=1; i<14; i++){
+			black[i-1]= new Color(228+2*i,228+2*i,228+2*i, 255);
+		}
+		this.setBackground(black[0]);
+		
 		////////////
 		//LAYOUT.START
 		////////////
@@ -309,38 +318,35 @@ class myPanel extends JPanel implements MouseMotionListener{
 		trashl = new JLabel(new ImageIcon());
 			
 		startPanel = new JLayeredPane();
-		layoutPanel = new JPanel(new MigLayout(" fillx", "[]","[][]"));	
 		nullPanel= new JLayeredPane();
-		prefbarl = new JLabel(new ImageIcon());
-		whitel = new JLabel(new ImageIcon());
+		preshowl = new JLabel(new ImageIcon());
+		whitel = new JLabel(new ImageIcon());		
 		
-		layoutPanel.add(iPat,"wrap, span 2, alignx c");
-		layoutPanel.add(TBButton," alignx r");
-		layoutPanel.add(MOButton," alignx l");
-		
-		startPanel.setPreferredSize(new Dimension(Wide, 200));	
+		startPanel.setPreferredSize(new Dimension(Wide, panelHeigth));	
 		startPanel.add(trashl, new Integer(1));
-		startPanel.add(layoutPanel,  new Integer(3));
-		trashl.setBounds(new Rectangle(-1000, -50, Wide, 200));
-		layoutPanel.setBounds(new Rectangle(0, 0, Wide,200));
+		startPanel.add(iPat, new Integer(4));
+		startPanel.add(TBButton, new Integer(5));
+		startPanel.add(MOButton, new Integer(6));
 		
-		nullPanel.setPreferredSize(new Dimension(Wide, Heigth-200));
-		nullPanel.add(prefbarl);
-		prefbarl.setIcon(new ImageIcon(Prefbar));
+		trashl.setBounds(new Rectangle(-1000, -50, Wide, panelHeigth));
+		iPat.setBounds(new Rectangle(523, 10, 150, 80)); 
 		
-		prefBound1= new Rectangle(47,Heigth-38,30,40);
-		prefBound2= new Rectangle(77,Heigth-38,30,40);
-		prefBound3= new Rectangle(107,Heigth-38,30,40);
-		prefBound4= new Rectangle(137,Heigth-38,30,40);
-		saveBound= new Rectangle(203,Heigth-38,30,40);
-		restoreBound= new Rectangle(1100,Heigth-38,30,40);
+		nullPanel.setPreferredSize(new Dimension(Wide, Heigth-panelHeigth));
+		nullPanel.add(preshowl);
+		nullPanel.add(whitel);
+		
+		prefBound1= new Rectangle(30,Heigth-58,80,60);
+		prefBound2= new Rectangle(110,Heigth-58,80,60);
+		prefBound3= new Rectangle(195,Heigth-58,80,60);
+		prefBound4= new Rectangle(280,Heigth-58,80,60);
+		saveBound= new Rectangle(413,Heigth-58,43,60);
+		restoreBound= new Rectangle(1119,Heigth-58,48,60);
 		
 		this.setLayout(new MigLayout("fillx","[grow]","[grow]"));
 		this.add(startPanel," dock north");
 		this.add(nullPanel,"grow"); 
 		
 		startPanel.setOpaque(false);
-		layoutPanel.setOpaque(false);
 		nullPanel.setOpaque(false);
 				
 		for (int i=1; i<=TBMAX-1; i++){
@@ -369,20 +375,35 @@ class myPanel extends JPanel implements MouseMotionListener{
 		////////////
 		////////////	
 		
-		timer = new Timer(10, new ActionListener() {
+		TBanimation = new Timer(10, new ActionListener() {
 			int ant=10;
+			int[] tbposx={365, 390, 415, 440, 465};
 		    @Override
 		    public void actionPerformed(ActionEvent ae) {
-		    	System.out.println("t= "+ant);
-		    	double d=Math.pow(ant*50, .3);
-		    	int dd= (int)d;
-				TBimageY[TBcount]=TBimageY[TBcount]+(dd);
+		    	int tbin=(TBcount-1)%5;
+				TBimageX[TBcount]=tbposx[tbin]-ant*2;
 		        repaint();
 		        ant--;
-		        if(ant==0){
+		        if(ant==-1){
 		        	System.out.println("TBend");
-		        	timer.stop();
+		        	TBanimation.stop();
 		        	TBBound[TBcount]=new Rectangle(TBimageX[TBcount], TBimageY[TBcount],TB[TBcount].getWidth(null), TB[TBcount].getHeight(null));
+		        	ant=10;
+		        }
+		    }
+		});	
+		MOanimation = new Timer(10, new ActionListener() {
+			int ant=10;
+			int[] moposx={665, 690, 715, 740, 765};
+		    @Override
+		    public void actionPerformed(ActionEvent ae) {
+		    	int moin=(MOcount-1)%5;
+				MOimageX[MOcount]=moposx[moin]-ant*2;
+		        repaint();
+		        ant--;
+		        if(ant==-1){
+		        	MOanimation.stop();
+		        	MOBound[MOcount]=new Rectangle(MOimageX[MOcount], MOimageY[MOcount],MO[MOcount].getWidth(null), MO[MOcount].getHeight(null));
 		        	ant=10;
 		        }
 		    }
@@ -395,16 +416,9 @@ class myPanel extends JPanel implements MouseMotionListener{
     			int x = evt.getX();
     			int y = evt.getY();
     			if (contains(x,y)){
-    				TBcount++;	 			
-    				pos= ((TBcount-1)%63);
-    				TBimageX[TBcount]=TBposX[pos];
-    				TBimageY[TBcount]=TBposY[pos];					
-       				timer.start();	
-       				/* 
-    				TBimageX[TBcount]=250;
-    				TBimageY[TBcount]=120;	
-		        	TBBound[TBcount]=new Rectangle(TBimageX[TBcount], TBimageY[TBcount],TB[TBcount].getWidth(null), TB[TBcount].getHeight(null));
-		        	repaint();*/
+    				TBcount++;				
+    				TBimageY[TBcount]=200;					
+    				TBanimation.start();	
     			}		
     		}
     	});  
@@ -416,15 +430,14 @@ class myPanel extends JPanel implements MouseMotionListener{
     			int y = evt.getY();
     			if (contains(x,y)){
     				MOcount++;
-    				MOimageX[MOcount]=MOimageX_int;
-    				MOimageY[MOcount]=MOimageY_int+100*(MOcount-1);		
-    				MOBound[MOcount]=new Rectangle(MOimageX[MOcount], MOimageY[MOcount],MO[MOcount].getWidth(null), MO[MOcount].getHeight(null));
-    				repaint();
+    				System.out.println(MOcount);
+    				MOimageY[MOcount]=200;
+    				MOanimation.start();
     			}		
     		}
-    	}); 
-		
+    	}); 	
 		this.addMouseListener(new MouseAdapter(){
+			
 			@Override
 			public void mousePressed(MouseEvent ee){
 				int move_x=ee.getX();
@@ -432,6 +445,42 @@ class myPanel extends JPanel implements MouseMotionListener{
     			COindex=-1;
 				TBindex=0;
     			MOindex=0;
+    			
+    			if(!in){
+    				Intro= new Timer(20, new ActionListener(){
+    					int t=10;
+    					float f=0f;
+    					@Override
+    					public void actionPerformed(ActionEvent ani) {	
+    						if(insub){				
+    							if(f<1f){
+    								TBButton.setAlpha(f);		
+        							TBButton.setBounds(new Rectangle((Wide/2)-182, 90-(t*2), 80, 60)); 
+    							} 							
+    							if(f>0.3f){
+    								MOButton.setAlpha(f-0.3f);		
+        							MOButton.setBounds(new Rectangle((Wide/2)+107, 90-((t+3)*2), 80, 60)); 
+    							}
+    							
+    							MOButton.setVisible(true);
+    							TBButton.setVisible(true);
+    							setBackground(black[10-t]);
+	    				    	f=f+0.1f;
+	    				    	t--;
+	    				    	if(f-0.3f>1f){
+	    				    		Intro.stop();
+	    				    		setBackground(Color.WHITE);
+	    				    		f=0f;
+	    				    		insub=false;
+	    				    	}	
+    						}					
+    					}	
+    				});
+    				insub=true;
+    				Intro.start();
+    				in=true;
+    			}
+    			
     			if (TBcount>0){			
     				for (int i=1; i<=TBcount;i++){
     					if (TBBound[i].contains(move_x, move_y)){
@@ -444,7 +493,7 @@ class myPanel extends JPanel implements MouseMotionListener{
     	    					  	iconchange(i); 
     	    					  	TBimageH[TBindex]=TB[i].getHeight(null);
     	    					  	TBimageW[TBindex]=TB[i].getHeight(null);
-    	    						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+    	    						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
     	    						TBname[i].setSize(200,15);
     	    						TBname[i].setText(selectedfile.getName());
     	    						TBindex=0;
@@ -485,7 +534,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 			}	
 				
 			@Override
-			public void mouseReleased(MouseEvent ee){
+			public void mouseReleased(MouseEvent ee){				
 				int x=ee.getX();
 				int y=ee.getY();		
 				System.out.println("TBLable[1]: "+TBname[1].getText()+"  TBnamepos: "+TBname[1].getLocation());
@@ -543,6 +592,32 @@ class myPanel extends JPanel implements MouseMotionListener{
 							COimageH[COcount]=Y1+H1-Y2;
 						}
 						COBound[COcount]=new Rectangle(COimageX[COcount], COimageY[COcount], COimageW[COcount], COimageH[COcount]);		
+						
+						CDAindex=COcount;
+						CombinedDeleteAnimation= new Timer(10, new ActionListener() {
+							int t=12;
+					    	int CX=COimageX[CDAindex];
+					    	int CY=COimageY[CDAindex];
+						    @Override
+						    public void actionPerformed(ActionEvent ani) {	
+						    	COimageX[CDAindex]=(int)(CX+t);
+						    	COimageY[CDAindex]=(int)(CY+t);
+						    	CDAW=(int)((12-t)*2);
+						    	CDAH=(int)((12-t)*2);
+						    	t--;
+						    	repaint();
+						    	if(t==0){
+						    		CDAindex=-1;
+						    	} 
+						    	/*
+						    	 g.fillOval((int)(COimageX[i]-12.5+COimageW[i]*.5), (int)(COimageY[i]-12.5 +COimageH[i]*.5),
+					    				 	25, 25);
+						    	 g.fillOval((int)(COimageX[i]-12.5+COimageW[i]*.5), (int)(COimageY[i]-12.5 +COimageH[i]*.5),
+					    				 	CDAW, CDAH);
+						    	 */
+						    }
+						});   	
+						CombinedDeleteAnimation.start();
 						COcount++;	
 				}
 				
@@ -592,7 +667,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 							}
 						}
 					}
-    				trashl.setBounds(new Rectangle(-1000, -50, 550, 300));  				
+    				trashl.setBounds(new Rectangle(-1000, -50, Wide, 300));  				
 					trashl.setVisible(true);
 					removeornot=false;
 	    		}
@@ -606,23 +681,142 @@ class myPanel extends JPanel implements MouseMotionListener{
 					}
 				}
 				
+				Fadein1= new Timer(10, new ActionListener(){
+					int t=0;
+					int[] thread={9,8,7,6,5,4,3,2,1,0,1,2,3,4,5,6,7,8,9};
+					@Override
+					public void actionPerformed(ActionEvent ani) {	
+						whitel.setBounds(0, 0, Wide, Heigth);
+						whitel.setIcon(new ImageIcon(White[thread[t]]));
+						whitel.setVisible(true);
+						preshowl.setIcon(new ImageIcon(Preshow1[9]));
+						if(t==10){getPreference(pref1);}
+				    	t++;		    			    	
+				    	if(t==19){
+				    		Fadein1.stop();	
+				    		whitel.setBounds(Wide, 0, Wide, Heigth);
+				    		prefindex=1;
+				    		t=0;
+				    	}	
+					}	
+				});
+				Fadein2= new Timer(10, new ActionListener(){
+					int t=0;
+					int[] thread={9,8,7,6,5,4,3,2,1,0,1,2,3,4,5,6,7,8,9};
+					@Override
+					public void actionPerformed(ActionEvent ani) {	
+						whitel.setBounds(0, 0, Wide, Heigth);
+						whitel.setIcon(new ImageIcon(White[thread[t]]));
+						whitel.setVisible(true);
+						preshowl.setIcon(new ImageIcon(Preshow2[9]));
+						if(t==10){getPreference(pref2);}
+				    	t++;		    			    	
+				    	if(t==19){
+				    		Fadein2.stop();	
+				    		whitel.setBounds(Wide, 0, Wide, Heigth);
+		    				prefindex=2;
+				    		t=0;
+				    	}	
+					}	
+				});
+
+				Fadein3= new Timer(10, new ActionListener(){
+					int t=0;
+					int[] thread={9,8,7,6,5,4,3,2,1,0,1,2,3,4,5,6,7,8,9};
+					@Override
+					public void actionPerformed(ActionEvent ani) {	
+						whitel.setBounds(0, 0, Wide, Heigth);
+						whitel.setIcon(new ImageIcon(White[thread[t]]));
+						whitel.setVisible(true);
+						preshowl.setIcon(new ImageIcon(Preshow3[9]));
+						if(t==10){getPreference(pref3);}
+				    	t++;		    			    	
+				    	if(t==19){
+				    		Fadein3.stop();	
+				    		whitel.setBounds(Wide, 0, Wide, Heigth);
+				    		prefindex=3;
+				    		t=0;
+				    	}	
+					}	
+				});
+				Fadein4= new Timer(10, new ActionListener(){
+					int t=0;
+					int[] thread={9,8,7,6,5,4,3,2,1,0,1,2,3,4,5,6,7,8,9};
+					@Override
+					public void actionPerformed(ActionEvent ani) {	
+						whitel.setBounds(0, 0, Wide, Heigth);
+						whitel.setIcon(new ImageIcon(White[thread[t]]));
+						whitel.setVisible(true);
+						preshowl.setIcon(new ImageIcon(Preshow4[9]));
+						if(t==10){getPreference(pref4);}
+				    	t++;		    			    	
+				    	if(t==19){
+				    		Fadein4.stop();	
+				    		whitel.setBounds(Wide, 0, Wide, Heigth);
+				    		prefindex=4;
+				    		t=0;
+				    	}	
+					}	
+				});
+				Fadesave= new Timer(30, new ActionListener(){
+					int t=0;	
+					int[] thread={0,2,4,6,8,
+								  0,0,0,0,0,1,1,2,2,3,
+								  3,4,4,5,5,6,6,7,7,8,
+								  8,9,9};
+					@Override
+					public void actionPerformed(ActionEvent ani) {	
+						whitel.setBounds(0, 0, Wide, Heigth);
+						whitel.setIcon(new ImageIcon(White[thread[t]]));
+						whitel.setVisible(true);
+				    	t++;		    			    	
+				    	if(t==28){
+				    		Fadesave.stop();	
+				    		whitel.setBounds(Wide, 0, Wide, Heigth);
+				    		t=0;
+				    	}	
+					}	
+				});
+				
+				Wipe= new Timer(20, new ActionListener(){
+					int t=0;
+					@Override
+					public void actionPerformed(ActionEvent ani) {	
+						whitel.setBounds(Wide*(t-50)/50, 0, Wide, Heigth);
+				    	t++;		    			    	
+				    	System.out.println(whitel.getLocation());
+				    	System.out.println(t);
+				    	if(t==50){
+				    		Wipe.stop();
+				    		if(prefindex==1){
+		    					removePreference(pref1);
+		    					getPreference(pref1);
+		    				}else if (prefindex==2){
+		    					removePreference(pref2);
+		    					getPreference(pref2);
+		    				}else if (prefindex==3){
+		    					removePreference(pref3);
+		    					getPreference(pref3);
+		    				}else if (prefindex==4){
+		    					removePreference(pref4);
+		    					getPreference(pref4);
+		    				}
+				    		whitel.setBounds(Wide, 0, Wide, Heigth);
+				    		t=0;
+				    	}	
+					}	
+				});
+				
 				if(prefBound1.contains(x, y)){
-    				System.out.println("pref1");
-    				getPreference(pref1);
-    				prefindex=1;
+					Fadein1.start();
     			}else if(prefBound2.contains(x, y)){
-    				System.out.println("pref2");
-    				getPreference(pref2);
-    				prefindex=2;
+    				Fadein2.start();
     			}else if(prefBound3.contains(x, y)){
-    				System.out.println("pref3");
-    				getPreference(pref3);
-    				prefindex=3;
+    				Fadein3.start();
     			}else if(prefBound4.contains(x, y)){
-    				System.out.println("pref4");
-    				getPreference(pref4);
-    				prefindex=4;
+    				Fadein4.start();
     			}else if(saveBound.contains(x, y)){
+    				Fadesave.start();
     				System.out.println("save");
     				if(prefindex==1){
     					setPreference(pref1);
@@ -638,20 +832,9 @@ class myPanel extends JPanel implements MouseMotionListener{
     					getPreference(pref4);
     				}
     			}else if(restoreBound.contains(x, y)){
-    				if(prefindex==1){
-    					removePreference(pref1);
-    					getPreference(pref1);
-    					System.out.println("remove1");
-    				}else if (prefindex==2){
-    					removePreference(pref2);
-    					getPreference(pref2);
-    				}else if (prefindex==3){
-    					removePreference(pref3);
-    					getPreference(pref3);
-    				}else if (prefindex==4){
-    					removePreference(pref4);
-    					getPreference(pref4);
-    				}
+    				whitel.setIcon(new ImageIcon(White[0]));
+					whitel.setVisible(true);
+    				Wipe.start();
     			}
 				
 				linex[0]=0;
@@ -729,30 +912,29 @@ class myPanel extends JPanel implements MouseMotionListener{
     				}
     			}
     		}
-			
 		});	
-	prefindex=4;
-	getPreference(pref4);
+	prefindex=1;
+	getPreference(pref1);
 	addMouseMotionListener(this);
-	}	
+}
 	
 	@Override
 	protected void paintComponent(Graphics g) {	
 	     super.paintComponent(g);
 	     if (prefselect!=0){
-		     g.setColor(Color.CYAN);
+		     g.setColor(lightred);
 		     if(prefselect==1){
-		    	 g.fill3DRect(57,Heigth-40 , 5, 5, false);
+		    	 g.fill3DRect(66,Heigth-48 , 5, 5, false);
 		     }else if(prefselect==2){
-		    	 g.fill3DRect(87,Heigth-40 , 5, 5, false);
+		    	 g.fill3DRect(149,Heigth-48 , 5, 5, false);
 		     }else if(prefselect==3){
-		    	 g.fill3DRect(117,Heigth-40 , 5, 5, false);
+		    	 g.fill3DRect(234,Heigth-48 , 5, 5, false);
 		     }else if(prefselect==4){
-		    	 g.fill3DRect(147,Heigth-40 , 5, 5, false);
+		    	 g.fill3DRect(317,Heigth-48 , 5, 5, false);
 		     }else if(prefselect==5){
-		    	 g.fill3DRect(217,Heigth-40 , 5, 5, false);
+		    	 g.fill3DRect(434,Heigth-48 , 5, 5, false);
 		     }else if(prefselect==-1){
-		    	 g.fill3DRect(1100, Heigth-40, 5, 5, false);
+		    	 g.fill3DRect(1140, Heigth-48, 5, 5, false);
 		     }
 	     }
 	     g.setColor(ovalcolor);
@@ -786,12 +968,12 @@ class myPanel extends JPanel implements MouseMotionListener{
 		int imY = e.getY();
 		int boundN=0; //205
 		int boundS=Heigth-20;
-		int boundE=Wide-10;
+		int boundE=Wide;
 		if(TBindex!=0){
 			CombinedorNot(TBindex, TBimageX, TBimageY, TBimageW, TBimageH, 1);
 			KeepInPanel (imX, imY, TBindex, TBimageW, TBimageH, TBimageX, TBimageY,
 						 boundN,  boundS,  boundE, TBBound);
-		 	TBname[TBindex].setLocation(TBimageX[TBindex],TBimageY[TBindex]+TBimageH[TBindex]-185);
+		 	TBname[TBindex].setLocation(TBimageX[TBindex],TBimageY[TBindex]+TBimageH[TBindex]-panelHeigth+15);
 			TBBound[TBindex]=new Rectangle(TBimageX[TBindex], TBimageY[TBindex], TB[TBindex].getWidth(null), TB[TBindex].getHeight(null));
 			repaint();
 			
@@ -799,7 +981,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 			CombinedorNot(MOindex, MOimageX, MOimageY, MOimageW, MOimageH, 2);
 			KeepInPanel (imX, imY, MOindex, MOimageW, MOimageH, MOimageX, MOimageY,
 						 boundN,  boundS,  boundE, MOBound);
-			MOname[MOindex].setLocation(MOimageX[MOindex],MOimageY[MOindex]+MOimageH[MOindex]-185);
+			MOname[MOindex].setLocation(MOimageX[MOindex],MOimageY[MOindex]+MOimageH[MOindex]-panelHeigth+15);
 			MOBound[MOindex]=new Rectangle(MOimageX[MOindex], MOimageY[MOindex], MO[MOindex].getWidth(null), MO[MOindex].getHeight(null));
 			repaint();
 		}
@@ -827,56 +1009,137 @@ class myPanel extends JPanel implements MouseMotionListener{
 			repaint();
 		}	
 	
-		TrashAnimation = new Timer(15, new ActionListener() {
-			int i=0;
-			Boolean quit=true;
-		    @Override
-		    public void actionPerformed(ActionEvent ae) {
-		    	if(i<10&TA){
-		    		System.out.println("x: "+imX +" y: "+ imY);
-		    		trashl.setBounds(new Rectangle(0, -50, 550, 300));
-					trashl.setIcon(new ImageIcon(Trash[i]));
-					startPanel.setLayer(trashl, new Integer(200));
-					trashl.setVisible(true);
-					startPanel.revalidate();    	
-			        repaint();
-			        i++;
-		    	}else{
-		    		TrashAnimation.stop();
-		    		i=0;
-		    		TA=false;
-		    	}
-		    }
-		});		//47,682
+			
 		if ((TBindex!=0|MOindex!=0|COindex!=-1)&&imY<=(delbbound)&&!removeornot){
+			TrashAnimation = new Timer(15, new ActionListener() {
+				int i=0;
+			    @Override
+			    public void actionPerformed(ActionEvent ae) {
+			    	if(i<10&TA){
+			    		System.out.println("this is "+i);
+			    		trashl.setBounds(new Rectangle(0, -50, Wide, 300));
+						trashl.setIcon(new ImageIcon(Trash[i]));
+						startPanel.setLayer(trashl, new Integer(200));
+						trashl.setVisible(true);
+						startPanel.revalidate();  
+				        i++;
+			    	}else{
+			    		TrashAnimation.stop();
+			    		i=0;
+			    		TA=false;
+			    	}
+			    }
+			});	
 			TA=true;
 			TrashAnimation.start();
 			removeornot=true;		
 		}else if(imY>delbbound){
-			trashl.setBounds(new Rectangle(-1000, -50, 550, 300));
+			trashl.setBounds(new Rectangle(Wide, -50, Wide, 300));
 			startPanel.setLayer(trashl, new Integer(1));
 			trashl.setVisible(true);
 			removeornot=false;				
 		}		
-
 	}
-
 	
 	@Override
 	public void mouseMoved(MouseEvent ev) {
 		int y= ev.getY();
 		int x= ev.getX();
+		System.out.println("x= "+x+"y= "+y);
 		if(y>delbbound){
-			trashl.setBounds(new Rectangle(-1000, -50, 550, 300));
+			trashl.setBounds(new Rectangle(Wide, -50, Wide, 300));
 			startPanel.setLayer(trashl, new Integer(1));
 			trashl.setVisible(true);
 			removeornot=false;				
-		}	
+		}			
 		
-		if(y>Heigth-40){
-			prefbarl.setBounds(0, Heigth-240, Wide, 40);
-		}else if(y<=Heigth-40){
-			prefbarl.setBounds(Wide, Heigth-240, Wide, 40);
+		if(y>Heigth-80&!showornot){		
+			preshow1= new Timer(20, new ActionListener(){
+				int t=0;
+				@Override
+				public void actionPerformed(ActionEvent ani) {			
+					if(pre){
+						System.out.println(t);
+						preshowl.setBounds(0, Heigth-panelHeigth-40, Wide, 40);
+						preshowl.setIcon(new ImageIcon(Preshow1[t]));
+						preshowl.setVisible(true);
+				    	t++;
+				    	if(t==10){
+				    		preshow1.stop();
+				    		t=0;
+				    		pre=false;
+				    	}   	
+				    }		    			    			    		
+				}	
+			});	
+			preshow2= new Timer(20, new ActionListener(){
+				int t=0;
+				@Override
+				public void actionPerformed(ActionEvent ani) {			
+					if(pre){
+						System.out.println(t);
+						preshowl.setBounds(0, Heigth-panelHeigth-40, Wide, 40);
+						preshowl.setIcon(new ImageIcon(Preshow2[t]));
+						preshowl.setVisible(true);
+				    	t++;
+				    	if(t==10){
+				    		preshow2.stop();
+				    		t=0;
+				    		pre=false;
+				    	}   	
+				    }		    			    			    		
+				}	
+			});	
+			preshow3= new Timer(20, new ActionListener(){
+				int t=0;
+				@Override
+				public void actionPerformed(ActionEvent ani) {			
+					if(pre){
+						System.out.println(t);
+						preshowl.setBounds(0, Heigth-panelHeigth-40, Wide, 40);
+						preshowl.setIcon(new ImageIcon(Preshow3[t]));
+						preshowl.setVisible(true);
+				    	t++;
+				    	if(t==10){
+				    		preshow3.stop();
+				    		t=0;
+				    		pre=false;
+				    	}   	
+				    }		    			    			    		
+				}	
+			});	
+			preshow4= new Timer(20, new ActionListener(){
+				int t=0;
+				@Override
+				public void actionPerformed(ActionEvent ani) {			
+					if(pre){
+						System.out.println(t);
+						preshowl.setBounds(0, Heigth-panelHeigth-40, Wide, 40);
+						preshowl.setIcon(new ImageIcon(Preshow4[t]));
+						preshowl.setVisible(true);
+				    	t++;
+				    	if(t==10){
+				    		preshow4.stop();
+				    		t=0;
+				    		pre=false;
+				    	}   	
+				    }		    			    			    		
+				}	
+			});	
+			pre=true;
+			if(prefindex==1){
+				preshow1.start();
+			}else if(prefindex==2){
+				preshow2.start();
+			}else if(prefindex==3){
+				preshow3.start();
+			}else if(prefindex==4){
+				preshow4.start();
+			}
+			showornot=true;
+		}else if(y<=Heigth-80){		
+			showornot=false;
+			preshowl.setBounds(Wide, Heigth-panelHeigth-40, Wide, 40);
 		}
 		
 		if(prefBound1.contains(x, y)){
@@ -893,9 +1156,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 			prefselect=-1;repaint();
 		}else{
 			prefselect=0;repaint();
-		}
-		
-		//System.out.println("("+x+", "+y+")");		
+		}		
 	}
 	
 	public void TBopenfile(int i){
@@ -990,7 +1251,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 			for (int i=1; i<=MOcount; i++){
 				if(MOdist[i]==minvalue){					
 					if(MOco[i][0]==-1){
-						System.out.println("link to M individual");
 						COco[COcount][0]= TorM;//
 						COco[COcount][1]= 2;
 						COco[COcount][2]= index;
@@ -1087,7 +1347,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 		Y[index]=Y[index]+dy;
 		bound[index]= new Rectangle(X[index], Y[index], 
 									  image[index].getWidth(null), image[index].getHeight(null));
-		name[index].setLocation(X[index], Y[index]+H[index]-185);
+		name[index].setLocation(X[index], Y[index]+H[index]-panelHeigth+15);
 	}
 	
 	public void DragandKeepCombinedinPanel (int x, int y, int dx, int dy, int boundE, int boundS, 
@@ -1138,7 +1398,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						TBimageX[i]=COimageX[COindex]+tbx[i];
 						TBimageY[i]=COimageY[COindex]+tby[i];
 						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
 					}
 				}
 				for (int i=1; i<=MOcount; i++){
@@ -1148,7 +1408,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						MOimageX[i]=COimageX[COindex]+mox[i];
 						MOimageY[i]=COimageY[COindex]+moy[i];
 						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
 					}
 				}
 			}else if(y+(COimageH[COindex]/2)>boundS){
@@ -1167,7 +1427,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						TBimageX[i]=COimageX[COindex]+tbx[i];
 						TBimageY[i]=COimageY[COindex]+tby[i];
 						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
 					}
 				}
 				for (int i=1; i<=MOcount; i++){
@@ -1177,7 +1437,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						MOimageX[i]=COimageX[COindex]+mox[i];
 						MOimageY[i]=COimageY[COindex]+moy[i];
 						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
 					}
 				}
 			}else {
@@ -1191,7 +1451,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						TBimageX[i]=COimageX[COindex]+tbx[i];
 						TBimageY[i]=TBimageY[i]+dy;
 						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
 					}
 				}
 				for (int i=1; i<=MOcount; i++){
@@ -1201,7 +1461,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						MOimageX[i]=COimageX[COindex]+mox[i];
 						MOimageY[i]=MOimageY[i]+dy;
 						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
 					}
 				}	
 			}	
@@ -1230,7 +1490,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						TBimageX[i]=COimageX[COindex]+tbx[i];
 						TBimageY[i]=COimageY[COindex]+tby[i];
 						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
 					}
 				}
 				for (int i=1; i<=MOcount; i++){
@@ -1240,7 +1500,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						MOimageX[i]=COimageX[COindex]+mox[i];
 						MOimageY[i]=COimageY[COindex]+moy[i];
 						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
 					}
 				}
 			}else if(y+(COimageH[COindex]/2)>boundS){
@@ -1259,7 +1519,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						TBimageX[i]=COimageX[COindex]+tbx[i];
 						TBimageY[i]=COimageY[COindex]+tby[i];
 						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
 					}
 				}
 				for (int i=1; i<=MOcount; i++){
@@ -1269,7 +1529,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						MOimageX[i]=COimageX[COindex]+mox[i];
 						MOimageY[i]=COimageY[COindex]+moy[i];
 						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
 					}
 				}
 			}else {
@@ -1283,7 +1543,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						TBimageX[i]=COimageX[COindex]+tbx[i];
 						TBimageY[i]=TBimageY[i]+dy;
 						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
 					}
 				}
 				for (int i=1; i<=MOcount; i++){
@@ -1293,7 +1553,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						MOimageX[i]=COimageX[COindex]+mox[i];
 						MOimageY[i]=MOimageY[i]+dy;
 						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
 					}
 				}	
 			}	
@@ -1322,7 +1582,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						TBimageX[i]=COimageX[COindex]+tbx[i];
 						TBimageY[i]=COimageY[COindex]+tby[i];
 						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
 					}
 				}
 				for (int i=1; i<=MOcount; i++){
@@ -1332,7 +1592,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						MOimageX[i]=COimageX[COindex]+mox[i];
 						MOimageY[i]=COimageY[COindex]+moy[i];
 						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
 					}
 				}
 			}else if(x+(COimageW[COindex]/2)>boundE){
@@ -1351,7 +1611,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						TBimageX[i]=COimageX[COindex]+tbx[i];
 						TBimageY[i]=COimageY[COindex]+tby[i];
 						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
 					}
 				}
 				for (int i=1; i<=MOcount; i++){
@@ -1361,7 +1621,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						MOimageX[i]=COimageX[COindex]+mox[i];
 						MOimageY[i]=COimageY[COindex]+moy[i];
 						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
 					}
 				}
 			}else{
@@ -1375,7 +1635,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						TBimageX[i]=TBimageX[i]+dx;
 						TBimageY[i]=COimageY[COindex]+tby[i];
 						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
 					}
 				}
 				for (int i=1; i<=MOcount; i++){
@@ -1385,7 +1645,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						MOimageX[i]=MOimageX[i]+dx;
 						MOimageY[i]=COimageY[COindex]+moy[i];
 						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
 					}
 				}
 			}	
@@ -1414,7 +1674,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						TBimageX[i]=COimageX[COindex]+tbx[i];
 						TBimageY[i]=COimageY[COindex]+tby[i];
 						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
 					}
 				}
 				for (int i=1; i<=MOcount; i++){
@@ -1424,7 +1684,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						MOimageX[i]=COimageX[COindex]+mox[i];
 						MOimageY[i]=COimageY[COindex]+moy[i];
 						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
 					}
 				}
 			}else if(x+(COimageW[COindex]/2)>boundE){
@@ -1443,7 +1703,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						TBimageX[i]=COimageX[COindex]+tbx[i];
 						TBimageY[i]=COimageY[COindex]+tby[i];
 						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
 					}
 				}
 				for (int i=1; i<=MOcount; i++){
@@ -1453,7 +1713,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						MOimageX[i]=COimageX[COindex]+mox[i];
 						MOimageY[i]=COimageY[COindex]+moy[i];
 						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
 					}
 				}
 			}else{
@@ -1467,7 +1727,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						TBimageX[i]=TBimageX[i]+dx;
 						TBimageY[i]=COimageY[COindex]+tby[i];
 						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
 					}
 				}
 				for (int i=1; i<=MOcount; i++){
@@ -1477,7 +1737,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						MOimageX[i]=MOimageX[i]+dx;
 						MOimageY[i]=COimageY[COindex]+moy[i];
 						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
 					}
 				}
 			}
@@ -1495,7 +1755,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 					TBimageX[i]=TBimageX[i]+dx;
 					TBimageY[i]=TBimageY[i]+dy;
 					TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-					TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+					TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
 				}
 			}
 			for (int i=1; i<=MOcount; i++){
@@ -1505,14 +1765,14 @@ class myPanel extends JPanel implements MouseMotionListener{
 					MOimageX[i]=MOimageX[i]+dx;
 					MOimageY[i]=MOimageY[i]+dy;
 					MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-					MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-185);
+					MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
 				}
 			}
 		}
 		Bound1[index1]= new Rectangle(X1[index1], Y1[index1], W1[index1], H1[index1]);
 		Bound2[index2]= new Rectangle(X2[index2], Y2[index2], W2[index2], H2[index2]);
-		name1[index1].setLocation(X1[index1], Y1[index1]+H1[index1]-185);
-		name2[index2].setLocation(X2[index2], Y2[index2]+H2[index2]-185);
+		name1[index1].setLocation(X1[index1], Y1[index1]+H1[index1]-panelHeigth+15);
+		name2[index2].setLocation(X2[index2], Y2[index2]+H2[index2]-panelHeigth+15);
 		COBound[COindex]=new Rectangle(COimageX[COindex], COimageY[COindex], COimageW[COindex], COimageH[COindex]);	
 	}
 	
@@ -1706,7 +1966,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 				TBimageW[i]=TB[i].getWidth(null);
 			}
 			TBname[i].setText(pre.get("TBname"+i, ""));
-			TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-185);
+			TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
 			TBname[i].setSize(200,15);
 			if(!TBfile[i].isEmpty()){
 				iconchange(i);	
@@ -1809,4 +2069,28 @@ class myPanel extends JPanel implements MouseMotionListener{
         }
     }
     */
+	
+	/*
+	final Timer fade = new Timer(40, new ActionListener() {
+         @Override
+         public void actionPerformed(ActionEvent e) {
+             if (startTime < 0) {
+                 startTime = System.currentTimeMillis();
+             } else {
+                 long time = System.currentTimeMillis();
+                 long duration = time - startTime;
+                 if (duration >= RT) {
+                     startTime = -1;
+                     ((Timer) e.getSource()).stop();
+                     alpha = 1f;
+                 } else {
+                     alpha = 1f - ((float) duration / (float) RT);
+                 }
+                 repaint();
+             }
+         }
+     });
+	*/
+	
+
 }
