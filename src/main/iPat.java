@@ -38,8 +38,6 @@ public class iPat {
 				System.out.println("componentResized");
 	            Component c = (Component)evt.getSource();
 	            System.out.println("H: "+c.getHeight()+" W: "+c.getWidth()); 
-	         
-	            
 	        }	
 		});	
 	}	
@@ -157,38 +155,23 @@ class myPanel extends JPanel implements MouseMotionListener{
 	//line
 	int[] linex=new int[2],
 		  liney=new int[2];
+	int[][] linkline= new int[500][4];
+	int linklineindex=0, lineselected=-1;
+    Stroke dashed = new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,10}, 0);
+    Stroke solid = new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,0}, 0);
+    
 	
 	//Color
 	Color red = new Color(231,57,131, 100);
 	Color lightred = new Color(231,57,131, 80);
 	Color dlightred = new Color(255, 0, 0, 10);
-	Color ovalcolor = new Color(231,57,131, 150);
+	Color ovalcolor = new Color(0, 0, 0, 80);
 	Color themecolor = new Color(54, 164, 239, 150);
 	
 	//windows size
 	int Wide, Heigth, panelHeigth;
 	
-	//Preference
-	Preferences pref1 = Preferences.userRoot().node("/ipat1");  
-	Preferences pref2 = Preferences.userRoot().node("/ipat2");  
-	Preferences pref3 = Preferences.userRoot().node("/ipat3");  
-	Preferences pref4 = Preferences.userRoot().node("/ipat4");  
-	Rectangle prefBound1 = new Rectangle();
-	Rectangle prefBound2 = new Rectangle();
-	Rectangle prefBound3 = new Rectangle();
-	Rectangle prefBound4 = new Rectangle();
-	Rectangle saveBound = new Rectangle();
-	Rectangle restoreBound = new Rectangle();
-	JLabel whitel;
-	JLabel preshowl;
-	int prefselect =0;
-	int prefindex =0;
-	Timer preshow1, preshow2, preshow3, preshow4;
-	Image[] Preshow1= new Image[10];
-	Image[] Preshow2= new Image[10];
-	Image[] Preshow3= new Image[10];
-	Image[] Preshow4= new Image[10];
-	Boolean pre, showornot=false;
+
 	
 	//Intro
 	Timer Intro;
@@ -197,8 +180,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 	
 	//Button
 	Timer TBanimation, MOanimation;
-	
-
 	
 	public myPanel(int Wideint, int Heigthint, int pH){	
 		this.Wide=Wideint;
@@ -213,10 +194,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 			for(int i=0; i<10; i++){
 				Trash[i] = ImageIO.read(getClass().getResource("resources/trash"+i+".png"));
 				White[i] = ImageIO.read(getClass().getResource("resources/white"+i+".png"));
-				Preshow1[i] = ImageIO.read(getClass().getResource("resources/prefbar1"+i+".png"));
-				Preshow2[i] = ImageIO.read(getClass().getResource("resources/prefbar2"+i+".png"));
-				Preshow3[i] = ImageIO.read(getClass().getResource("resources/prefbar3"+i+".png"));
-				Preshow4[i] = ImageIO.read(getClass().getResource("resources/prefbar4"+i+".png"));
 			}
 		} catch (IOException ex){}		
 		try{
@@ -263,14 +240,11 @@ class myPanel extends JPanel implements MouseMotionListener{
 		//		
 		//		
 		
-		
 		iPat.setOpaque(false);			
 		trashl = new JLabel(new ImageIcon());
 			
 		startPanel = new JLayeredPane();
 		nullPanel= new JLayeredPane();
-		preshowl = new JLabel(new ImageIcon());
-		whitel = new JLabel(new ImageIcon());		
 		
 		startPanel.setPreferredSize(new Dimension(Wide, panelHeigth));	
 		startPanel.add(trashl, new Integer(1));
@@ -280,15 +254,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 		iPat.setBounds(new Rectangle(523, 10, 150, 80)); 
 		
 		nullPanel.setPreferredSize(new Dimension(Wide, Heigth-panelHeigth));
-		nullPanel.add(preshowl);
-		nullPanel.add(whitel);
 		
-		prefBound1= new Rectangle(30,Heigth-58,80,60);
-		prefBound2= new Rectangle(110,Heigth-58,80,60);
-		prefBound3= new Rectangle(195,Heigth-58,80,60);
-		prefBound4= new Rectangle(280,Heigth-58,80,60);
-		saveBound= new Rectangle(413,Heigth-58,43,60);
-		restoreBound= new Rectangle(1119,Heigth-58,48,60);
 		
 		this.setLayout(new MigLayout("fillx","[grow]","[grow]"));
 		this.add(startPanel," dock north");
@@ -358,32 +324,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 		    }
 		});	
 		
-		
-		TBButton.addMouseListener(new MouseAdapter() {
-    		@Override
-    		public void mousePressed(MouseEvent evt) {
-    			int x = evt.getX();
-    			int y = evt.getY();
-    			if (contains(x,y)){
-    				TBcount++;				
-    				TBimageY[TBcount]=200;					
-    				TBanimation.start();	
-    			}		
-    		}
-    	});  
-		
-		MOButton.addMouseListener(new MouseAdapter() {
-    		@Override
-    		public void mousePressed(MouseEvent evt) {
-    			int x = evt.getX();
-    			int y = evt.getY();
-    			if (contains(x,y)){
-    				MOcount++;
-    				System.out.println(MOcount);
-    				MOimageY[MOcount]=200;
-    				MOanimation.start();
-    			}		
-    		}
     	}); 
 		*/
 		
@@ -393,11 +333,12 @@ class myPanel extends JPanel implements MouseMotionListener{
 			public void mousePressed(MouseEvent ee){
 				int move_x=ee.getX();
     			int move_y=ee.getY();
+    			double x=ee.getX();
+    			double y=ee.getY();
     			COindex=-1;
 				TBindex=0;
     			MOindex=0;
     			
-    			 			
     			if (TBcount>0){	
     				for (int i=1; i<=TBcount;i++){
     					if (TBBound[i].contains(move_x, move_y)){
@@ -428,134 +369,128 @@ class myPanel extends JPanel implements MouseMotionListener{
     					}
     				}
     			} 
-    			if (COBound[0]!=null){
-    				for (int i=0; i<=COcount-1; i++){
-    					if(COBound[i].contains(move_x, move_y)){
-    						COindex=i;
-    						MOindex=0;
-    						TBindex=0;
-    						System.out.println("CO is selected");	
-    					}
-    				}
-    			}    			
+    			
+    			if (TBindex<=0&MOindex<=0){
+    				for (int i=0; i<linklineindex; i++){ // if(distance(A, C) + distance(B, C) == distance(A, B)) , to determine if pointer is on the line.				
+        				if(linkline[i][0]==1){
+        					if(linkline[i][2]==1){	
+        						if(Whether_On_Line(	TBimageX[linkline[i][1]]+(TBimageW[linkline[i][1]]/2), TBimageY[linkline[i][1]]+(TBimageH[linkline[i][1]]/2),
+        											TBimageX[linkline[i][3]]+(TBimageW[linkline[i][3]]/2), TBimageY[linkline[i][3]]+(TBimageH[linkline[i][3]]/2),
+        											x,y)){
+        							if(lineselected!=i){lineselected=i;}else{lineselected=-1;}	
+        							System.out.println("hit!");
+        							break;
+        						}
+        					}else if(linkline[i][2]==2){
+        						if(Whether_On_Line(	TBimageX[linkline[i][1]]+(TBimageW[linkline[i][1]]/2), TBimageY[linkline[i][1]]+(TBimageH[linkline[i][1]]/2),
+    												MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
+    												x,y)){
+        						   if(lineselected!=i){lineselected=i;}else{lineselected=-1;}
+        						   System.out.println("hit!");	
+        						   break;
+        						}
+        					}
+        				}else if(linkline[i][0]==2){
+        					if(linkline[i][2]==1){
+        						if(Whether_On_Line(	MOimageX[linkline[i][1]]+(MOimageW[linkline[i][1]]/2), MOimageY[linkline[i][1]]+(MOimageH[linkline[i][1]]/2),
+    												TBimageX[linkline[i][3]]+(TBimageW[linkline[i][3]]/2), TBimageY[linkline[i][3]]+(TBimageH[linkline[i][3]]/2),
+    												x,y)){
+        						   if(lineselected!=i){lineselected=i;}else{lineselected=-1;}
+        						   System.out.println("hit!");	
+        						   break;
+        						}
+        					}else if(linkline[i][2]==2){
+        						if(Whether_On_Line(	MOimageX[linkline[i][1]]+(MOimageW[linkline[i][1]]/2), MOimageY[linkline[i][1]]+(MOimageH[linkline[i][1]]/2),
+        											MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
+        											x,y)){
+        						   if(lineselected!=i){lineselected=i;}else{lineselected=-1;}
+        						   System.out.println("hit!");
+        						   break;
+        						}
+        					}
+        				}
+        			}
+    			}			
+    			System.out.println(linklineindex);	
+    			repaint();
 			}	
 				
 			@Override
 			public void mouseReleased(MouseEvent ee){				
 				int x=ee.getX();
 				int y=ee.getY();		
-
-    			boolean empty=false;
-    			for (int i=0; i<=TBcount; i++){
-    				if(i==0){break;};
-    				if (TBBound[i].contains(x, y)){
-    					empty=true;
+				boolean empty=false;
+				
+				//Create new objects (Tables or Models)
+    				for (int i=0; i<=TBcount; i++){
+    					if(i==0){break;};
+    					if (TBBound[i].contains(x, y)){
+    						empty=true;
+    					}
     				}
-    			}
-    			for (int i=0; i<=MOcount; i++){
-    				if(i==0){break;};
-    				if (MOBound[i].contains(x, y)){
-    					empty=true;
+    				for (int i=0; i<=MOcount; i++){
+    					if(i==0){break;};
+    					if (MOBound[i].contains(x, y)){
+    						empty=true;
+    					}
     				}
-    			}
-    			if (empty==false&TBindex==0&MOindex==0&COindex==-1){
-    				if (SwingUtilities.isRightMouseButton(ee)){
-    					MOcount++;				
-    					MOimageX[MOcount]=x-MO[MOcount].getWidth(null)/2;
-        				MOimageY[MOcount]=y-5-MO[MOcount].getHeight(null);	
-        				MOBound[MOcount]=new Rectangle(MOimageX[MOcount], MOimageY[MOcount],MO[MOcount].getWidth(null), MO[MOcount].getHeight(null));
-    				}else if (SwingUtilities.isLeftMouseButton(ee)){
-    					TBcount++;				
-    					TBimageX[TBcount]=x-TB[TBcount].getWidth(null)/2;
-        				TBimageY[TBcount]=y-5-TB[TBcount].getHeight(null);	
-        				TBBound[TBcount]=new Rectangle(TBimageX[TBcount], TBimageY[TBcount],TB[TBcount].getWidth(null), TB[TBcount].getHeight(null));
+    				if (empty==false&TBindex==0&MOindex==0&COindex==-1){
+    					if (SwingUtilities.isRightMouseButton(ee)){		
+    						MOcount++;				
+    						MOimageX[MOcount]=x-MO[MOcount].getWidth(null)/2;
+    						MOimageY[MOcount]=y-5-MO[MOcount].getHeight(null);	
+    						MOBound[MOcount]=new Rectangle(MOimageX[MOcount], MOimageY[MOcount],MO[MOcount].getWidth(null), MO[MOcount].getHeight(null));
+    					  }/*else if (SwingUtilities.isLeftMouseButton(ee)){
+    					 	TBcount++;				
+    						TBimageX[TBcount]=x-TB[TBcount].getWidth(null)/2;
+    						TBimageY[TBcount]=y-5-TB[TBcount].getHeight(null);	
+    						TBBound[TBcount]=new Rectangle(TBimageX[TBcount], TBimageY[TBcount],TB[TBcount].getWidth(null), TB[TBcount].getHeight(null));
+    						
+    					}*/
     				}
-    			}
-    			
+   
+    			//To compute whether the objects should be created
 				System.out.println("TBLable[1]: "+TBname[1].getText()+"  TBnamepos: "+TBname[1].getLocation());
-				if( (COco[COcount][0]>0) &  //若這個新做的co有指定table或model了
-					(TBindex!=0|MOindex!=0) & 	 //且正在選某個物件
-					!link& !removeornot){
+				if( (TBindex!=0|MOindex!=0) & 	 //且正在選某個物件
+					 link& !removeornot){		//sure to link something
 						System.out.println("linked");
+						
+						//self sure
 						if (TBindex!=0){
-							TBco[TBindex][2]=1;			
+							TBco[TBindex][2]=1;
+							linkline[linklineindex][0]=1;
+							linkline[linklineindex][1]=TBindex;
+							System.out.println("TB1");
 						}else if(MOindex!=0){
 							MOco[MOindex][2]=1;	
-						}
-						if(COco[COcount][1]== 1){ //if link to table
-							TBco[COco[COcount][3]][0]=2;
-							TBco[COco[COcount][3]][1]=COcount;
-							TBco[COco[COcount][3]][2]=1;
-						}else if(COco[COcount][1]== 2){ //if link to model
-							MOco[COco[COcount][3]][0]=2;
-							MOco[COco[COcount][3]][1]=COcount;
-							MOco[COco[COcount][3]][2]=1;
+							linkline[linklineindex][0]=2;
+							linkline[linklineindex][1]=MOindex;
+							System.out.println("MO1");
 						}
 						
-						int X1=0, Y1=0, W1=0, H1=0, X2=0, Y2=0, W2=0, H2=0;
-						if(COco[COcount][0]+COco[COcount][1]==4){
-							X1=MOimageX[MOindex]; Y1=MOimageY[MOindex];
-							W1=MOimageW[MOindex]; H1=MOimageH[MOindex];
-							X2=MOimageX[COco[COcount][3]];	Y2=MOimageY[COco[COcount][3]];
-							W2=MOimageW[COco[COcount][3]];	H2=MOimageH[COco[COcount][3]];
-						}else if(COco[COcount][0]==1 &&COco[COcount][1]==2){
-							X1=TBimageX[TBindex]; Y1=TBimageY[TBindex];
-							W1=TBimageW[TBindex]; H1=TBimageH[TBindex];
-							X2=MOimageX[COco[COcount][3]]; Y2=MOimageY[COco[COcount][3]];
-							W2=MOimageW[COco[COcount][3]];	H2=MOimageH[COco[COcount][3]];
-						}else if(COco[COcount][0]==2 &&COco[COcount][1]==1){
-							X1=MOimageX[MOindex]; Y1=MOimageY[MOindex];
-							W1=MOimageW[MOindex]; H1=MOimageH[MOindex];
-							X2=TBimageX[COco[COcount][3]]; Y2=TBimageY[COco[COcount][3]];
-							W2=TBimageW[COco[COcount][3]];	H2=TBimageH[COco[COcount][3]];				
-						}else if(COco[COcount][0]+COco[COcount][1]==2){
-							X1=TBimageX[TBindex]; Y1=TBimageY[TBindex];
-							W1=TBimageW[TBindex]; H1=TBimageH[TBindex];
-							X2=TBimageX[COco[COcount][3]]; Y2=TBimageY[COco[COcount][3]];
-							W2=TBimageW[COco[COcount][3]];	H2=TBimageH[COco[COcount][3]];
+						//target sure
+						for(int i=1; i<=TBcount; i++){
+							if(TBco[i][1]==COcount& i!=TBindex){
+								TBco[i][2]=1;
+								linkline[linklineindex][2]=1;
+								linkline[linklineindex][3]=i;
+								System.out.println("TB2");
+								break;
+							}
 						}
-						COimageX[COcount]=Math.min(X1, X2);
-						COimageY[COcount]=Math.min(Y1, Y2);
-						if (X2>=X1){
-							COimageW[COcount]=X2+W2-X1;
-						}else{
-							COimageW[COcount]=X1+W1-X2;
+						for(int i=1; i<=MOcount; i++){
+							if(MOco[i][1]==COcount& i!=MOindex){
+								MOco[i][2]=1;
+								linkline[linklineindex][2]=2;
+								linkline[linklineindex][3]=i;
+								System.out.println("MO2");
+								break;
+							}
 						}
-						if (Y2>=Y1){
-							COimageH[COcount]=Y2+H2-Y1;
-						}else{
-							COimageH[COcount]=Y1+H1-Y2;
-						}
-						COBound[COcount]=new Rectangle(COimageX[COcount], COimageY[COcount], COimageW[COcount], COimageH[COcount]);		
-						
-						CDAindex=COcount;
-						CombinedDeleteAnimation= new Timer(10, new ActionListener() {
-							int t=12;
-					    	int CX=COimageX[CDAindex];
-					    	int CY=COimageY[CDAindex];
-						    @Override
-						    public void actionPerformed(ActionEvent ani) {	
-						    	COimageX[CDAindex]=(int)(CX+t);
-						    	COimageY[CDAindex]=(int)(CY+t);
-						    	CDAW=(int)((12-t)*2);
-						    	CDAH=(int)((12-t)*2);
-						    	t--;
-						    	repaint();
-						    	if(t==0){
-						    		CDAindex=-1;
-						    		CombinedDeleteAnimation.stop();
-						    	} 
-						    	/*
-						    	 g.fillOval((int)(COimageX[i]-12.5+COimageW[i]*.5), (int)(COimageY[i]-12.5 +COimageH[i]*.5),
-					    				 	25, 25);
-						    	 g.fillOval((int)(COimageX[i]-12.5+COimageW[i]*.5), (int)(COimageY[i]-12.5 +COimageH[i]*.5),
-					    				 	CDAW, CDAH);
-						    	 */
-						    }
-						});   	
-						CombinedDeleteAnimation.start();
+						linklineindex++;
 						COcount++;	
 				}
+				
 				
 				if (removeornot){
 					if (TBindex!=0&&y<delbbound){
@@ -608,170 +543,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 					removeornot=false;
 	    		}
 				
-				if(link){
-					System.out.println("link to mainstem");
-					if(TBindex!=0){
-						TBco[TBindex][2]=1;
-					}else if(MOindex!=0){
-						MOco[MOindex][2]=1;
-					}
-				}
-				
-				Fadein1= new Timer(10, new ActionListener(){
-					int t=0;
-					int[] thread={9,8,7,6,5,4,3,2,1,0,1,2,3,4,5,6,7,8,9};
-					@Override
-					public void actionPerformed(ActionEvent ani) {	
-						whitel.setBounds(0, 0, Wide, Heigth);
-						whitel.setIcon(new ImageIcon(White[thread[t]]));
-						whitel.setVisible(true);
-						preshowl.setIcon(new ImageIcon(Preshow1[9]));
-						if(t==10){getPreference(pref1);}
-				    	t++;		    			    	
-				    	if(t==19){
-				    		Fadein1.stop();	
-				    		whitel.setBounds(Wide, 0, Wide, Heigth);
-				    		prefindex=1;
-				    		t=0;
-				    	}	
-					}	
-				});
-				Fadein2= new Timer(10, new ActionListener(){
-					int t=0;
-					int[] thread={9,8,7,6,5,4,3,2,1,0,1,2,3,4,5,6,7,8,9};
-					@Override
-					public void actionPerformed(ActionEvent ani) {	
-						whitel.setBounds(0, 0, Wide, Heigth);
-						whitel.setIcon(new ImageIcon(White[thread[t]]));
-						whitel.setVisible(true);
-						preshowl.setIcon(new ImageIcon(Preshow2[9]));
-						if(t==10){getPreference(pref2);}
-				    	t++;		    			    	
-				    	if(t==19){
-				    		Fadein2.stop();	
-				    		whitel.setBounds(Wide, 0, Wide, Heigth);
-		    				prefindex=2;
-				    		t=0;
-				    	}	
-					}	
-				});
-
-				Fadein3= new Timer(10, new ActionListener(){
-					int t=0;
-					int[] thread={9,8,7,6,5,4,3,2,1,0,1,2,3,4,5,6,7,8,9};
-					@Override
-					public void actionPerformed(ActionEvent ani) {	
-						whitel.setBounds(0, 0, Wide, Heigth);
-						whitel.setIcon(new ImageIcon(White[thread[t]]));
-						whitel.setVisible(true);
-						preshowl.setIcon(new ImageIcon(Preshow3[9]));
-						if(t==10){getPreference(pref3);}
-				    	t++;		    			    	
-				    	if(t==19){
-				    		Fadein3.stop();	
-				    		whitel.setBounds(Wide, 0, Wide, Heigth);
-				    		prefindex=3;
-				    		t=0;
-				    	}	
-					}	
-				});
-				Fadein4= new Timer(10, new ActionListener(){
-					int t=0;
-					int[] thread={9,8,7,6,5,4,3,2,1,0,1,2,3,4,5,6,7,8,9};
-					@Override
-					public void actionPerformed(ActionEvent ani) {	
-						whitel.setBounds(0, 0, Wide, Heigth);
-						whitel.setIcon(new ImageIcon(White[thread[t]]));
-						whitel.setVisible(true);
-						preshowl.setIcon(new ImageIcon(Preshow4[9]));
-						if(t==10){getPreference(pref4);}
-				    	t++;		    			    	
-				    	if(t==19){
-				    		Fadein4.stop();	
-				    		whitel.setBounds(Wide, 0, Wide, Heigth);
-				    		prefindex=4;
-				    		t=0;
-				    	}	
-					}	
-				});
-				Fadesave= new Timer(30, new ActionListener(){
-					int t=0;	
-					int[] thread={0,2,4,6,8,
-								  0,0,0,0,0,1,1,2,2,3,
-								  3,4,4,5,5,6,6,7,7,8,
-								  8,9,9};
-					@Override
-					public void actionPerformed(ActionEvent ani) {	
-						whitel.setBounds(0, 0, Wide, Heigth);
-						whitel.setIcon(new ImageIcon(White[thread[t]]));
-						whitel.setVisible(true);
-				    	t++;		    			    	
-				    	if(t==28){
-				    		Fadesave.stop();	
-				    		whitel.setBounds(Wide, 0, Wide, Heigth);
-				    		t=0;
-				    	}	
-					}	
-				});
-				
-				Wipe= new Timer(20, new ActionListener(){
-					int t=0;
-					@Override
-					public void actionPerformed(ActionEvent ani) {	
-						whitel.setBounds(Wide*(t-50)/50, 0, Wide, Heigth);
-				    	t++;		    			    	
-				    	System.out.println(whitel.getLocation());
-				    	System.out.println(t);
-				    	if(t==50){
-				    		Wipe.stop();
-				    		if(prefindex==1){
-		    					removePreference(pref1);
-		    					getPreference(pref1);
-		    				}else if (prefindex==2){
-		    					removePreference(pref2);
-		    					getPreference(pref2);
-		    				}else if (prefindex==3){
-		    					removePreference(pref3);
-		    					getPreference(pref3);
-		    				}else if (prefindex==4){
-		    					removePreference(pref4);
-		    					getPreference(pref4);
-		    				}
-				    		whitel.setBounds(Wide, 0, Wide, Heigth);
-				    		t=0;
-				    	}	
-					}	
-				});
-				
-				if(prefBound1.contains(x, y)){
-					Fadein1.start();
-    			}else if(prefBound2.contains(x, y)){
-    				Fadein2.start();
-    			}else if(prefBound3.contains(x, y)){
-    				Fadein3.start();
-    			}else if(prefBound4.contains(x, y)){
-    				Fadein4.start();
-    			}else if(saveBound.contains(x, y)){
-    				Fadesave.start();
-    				System.out.println("save");
-    				if(prefindex==1){
-    					setPreference(pref1);
-    					getPreference(pref1);
-    				}else if (prefindex==2){
-    					setPreference(pref2);
-    					getPreference(pref2);
-    				}else if (prefindex==3){
-    					setPreference(pref3);
-    					getPreference(pref3);
-    				}else if (prefindex==4){
-    					setPreference(pref4);
-    					getPreference(pref4);
-    				}
-    			}else if(restoreBound.contains(x, y)){
-    				whitel.setIcon(new ImageIcon(White[0]));
-					whitel.setVisible(true);
-    				Wipe.start();
-    			}
 				
 				linex[0]=0;
 				linex[1]=0;
@@ -851,38 +622,12 @@ class myPanel extends JPanel implements MouseMotionListener{
 	@Override
 	protected void paintComponent(Graphics g) {	
 	     super.paintComponent(g);
-	     if (prefselect!=0){
-		     g.setColor(lightred);
-		     if(prefselect==1){
-		    	 g.fill3DRect(66,Heigth-48 , 5, 5, false);
-		     }else if(prefselect==2){
-		    	 g.fill3DRect(149,Heigth-48 , 5, 5, false);
-		     }else if(prefselect==3){
-		    	 g.fill3DRect(234,Heigth-48 , 5, 5, false);
-		     }else if(prefselect==4){
-		    	 g.fill3DRect(317,Heigth-48 , 5, 5, false);
-		     }else if(prefselect==5){
-		    	 g.fill3DRect(434,Heigth-48 , 5, 5, false);
-		     }else if(prefselect==-1){
-		    	 g.fill3DRect(1140, Heigth-48, 5, 5, false);
-		     }
-	     }
+	 
 	     g.setColor(ovalcolor);
-	     if (COcount>0){
-	    	 for (int i=0; i<COcount; i++){    	
-	    		 if(i==CDAindex){
-	    			 g.fillOval((int)(COimageX[i]-12.5+COimageW[i]*.5), (int)(COimageY[i]-12.5 +COimageH[i]*.5),
-		    				 	CDAW, CDAH);
-	    		 }else{
-	    			 g.fillOval((int)(COimageX[i]-12.5+COimageW[i]*.5), (int)(COimageY[i]-12.5 +COimageH[i]*.5),
-		    				 	25, 25);
-	    		 }
-	    		 
-	    	 }
-	     }	
-		 DrawDashedLine(g, linex[0], liney[0], linex[1], liney[1]);	
-		 DrawImageandLine(TBcount, TBdelete, TBco, g, TB, TBimageX, TBimageY, TBimageH, TBimageW);
-		 DrawImageandLine(MOcount, MOdelete, MOco, g, MO, MOimageX, MOimageY, MOimageH, MOimageW); 
+
+		 Draw_Lines(g, linex[0], liney[0], linex[1], liney[1], dashed);	
+		 DrawLinkedLine(g);
+		 
     	 for (int i=1; i<=TBcount; i++){
 		     g.drawImage(TB[i],TBimageX[i],TBimageY[i], this); 
     	 }
@@ -975,118 +720,13 @@ class myPanel extends JPanel implements MouseMotionListener{
 	public void mouseMoved(MouseEvent ev) {
 		int y= ev.getY();
 		int x= ev.getX();
-		System.out.println("x= "+x+"y= "+y);
+		//System.out.println("x= "+x+"y= "+y);
 		if(y>delbbound){
 			trashl.setBounds(new Rectangle(Wide, -50, Wide, 300));
 			startPanel.setLayer(trashl, new Integer(1));
 			trashl.setVisible(true);
 			removeornot=false;				
 		}			
-		
-		if(y>Heigth-80&!showornot){		
-			preshow1= new Timer(20, new ActionListener(){
-				int t=0;
-				@Override
-				public void actionPerformed(ActionEvent ani) {			
-					if(pre){
-						System.out.println(t);
-						preshowl.setBounds(0, Heigth-panelHeigth-40, Wide, 40);
-						preshowl.setIcon(new ImageIcon(Preshow1[t]));
-						preshowl.setVisible(true);
-				    	t++;
-				    	if(t==10){
-				    		preshow1.stop();
-				    		t=0;
-				    		pre=false;
-				    	}   	
-				    }		    			    			    		
-				}	
-			});	
-			preshow2= new Timer(20, new ActionListener(){
-				int t=0;
-				@Override
-				public void actionPerformed(ActionEvent ani) {			
-					if(pre){
-						System.out.println(t);
-						preshowl.setBounds(0, Heigth-panelHeigth-40, Wide, 40);
-						preshowl.setIcon(new ImageIcon(Preshow2[t]));
-						preshowl.setVisible(true);
-				    	t++;
-				    	if(t==10){
-				    		preshow2.stop();
-				    		t=0;
-				    		pre=false;
-				    	}   	
-				    }		    			    			    		
-				}	
-			});	
-			preshow3= new Timer(20, new ActionListener(){
-				int t=0;
-				@Override
-				public void actionPerformed(ActionEvent ani) {			
-					if(pre){
-						System.out.println(t);
-						preshowl.setBounds(0, Heigth-panelHeigth-40, Wide, 40);
-						preshowl.setIcon(new ImageIcon(Preshow3[t]));
-						preshowl.setVisible(true);
-				    	t++;
-				    	if(t==10){
-				    		preshow3.stop();
-				    		t=0;
-				    		pre=false;
-				    	}   	
-				    }		    			    			    		
-				}	
-			});	
-			preshow4= new Timer(20, new ActionListener(){
-				int t=0;
-				@Override
-				public void actionPerformed(ActionEvent ani) {			
-					if(pre){
-						System.out.println(t);
-						preshowl.setBounds(0, Heigth-panelHeigth-40, Wide, 40);
-						preshowl.setIcon(new ImageIcon(Preshow4[t]));
-						preshowl.setVisible(true);
-				    	t++;
-				    	if(t==10){
-				    		preshow4.stop();
-				    		t=0;
-				    		pre=false;
-				    	}   	
-				    }		    			    			    		
-				}	
-			});	
-			pre=true;
-			if(prefindex==1){
-				preshow1.start();
-			}else if(prefindex==2){
-				preshow2.start();
-			}else if(prefindex==3){
-				preshow3.start();
-			}else if(prefindex==4){
-				preshow4.start();
-			}
-			showornot=true;
-		}else if(y<=Heigth-80){		
-			showornot=false;
-			preshowl.setBounds(Wide, Heigth-panelHeigth-40, Wide, 40);
-		}
-		
-		if(prefBound1.contains(x, y)){
-			prefselect=1;repaint();
-		}else if(prefBound2.contains(x, y)){
-			prefselect=2;repaint();
-		}else if(prefBound3.contains(x, y)){
-			prefselect=3;repaint();
-		}else if(prefBound4.contains(x, y)){
-			prefselect=4;repaint();
-		}else if(saveBound.contains(x, y)){
-			prefselect=5;repaint();
-		}else if(restoreBound.contains(x, y)){
-			prefselect=-1;repaint();
-		}else{
-			prefselect=0;repaint();
-		}		
 	}
 	
 	public void TBopenfile(int i){
@@ -1159,8 +799,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 	        }else{
 	        	int x2= TBimageX[i]+(TBimageW[i]/2);
 				int y2= TBimageY[i]+(TBimageH[i]/2);
-				int dist= (int) Math.sqrt(Math.pow((x-x2), 2) + Math.pow((y-y2), 2));
-				System.out.println("TBdist"+i+" : "+dist);
+				int dist= (int)Distance(x, y, x2, y2);
 				TBdist[i]= dist;	
 	        }			
 		}
@@ -1170,8 +809,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 	        }else{
 	        	int x2= MOimageX[i]+(MOimageW[i]/2);
 				int y2= MOimageY[i]+(MOimageH[i]/2);
-				int dist= (int) Math.sqrt(Math.pow((x-x2), 2) + Math.pow((y-y2), 2));
-				System.out.println("MOdist"+i+" : "+dist);
+				int dist= (int)Distance(x, y, x2, y2);
 				MOdist[i]= dist;
 	        }	
 		}
@@ -1179,98 +817,93 @@ class myPanel extends JPanel implements MouseMotionListener{
 		System.arraycopy(TBdist, 1, newdist, 0 		   		, TBdist.length-1);
 		System.arraycopy(MOdist, 1, newdist, TBdist.length-1, MOdist.length-1);
 		int minvalue= MinValue(newdist);
-		System.out.println("minvalue= "+minvalue);
+		System.out.println("minvalue= "+minvalue);	
 		
-		if (minvalue<100& minvalue>50){
-			for (int i=1; i<=MOcount; i++){
-				if(MOdist[i]==minvalue){					
-					if(MOco[i][0]==-1){
-						COco[COcount][0]= TorM; //現在抓的是T or M?
-						COco[COcount][1]= 2; //連到T or M?
-						COco[COcount][2]= index; //現在抓幾號
-						COco[COcount][3]= i; //連到幾號										
-						if(TorM==1){
-							TBco[index][0]=2; //2 表示是主幹
-							TBco[index][1]=COcount;
-						}else if (TorM==2){
-							MOco[index][0]=2;
-							MOco[index][1]=COcount;
-						}
-					
-						link=false;						
-					}else if(MOco[i][0]!=-1){ //碰到已經有連的
-						if(TorM==1){
-							TBco[index][0]=1; //1 表示是枝幹
-							TBco[index][1]=MOco[i][1]; //連在co的哪一組
-						}else if (TorM==2){
-							MOco[index][0]=1;
-							MOco[index][1]=MOco[i][1];
-						}
-						link=true;
-					}
+		for (int i=1; i<=MOcount; i++){
+			if(MOdist[i]==minvalue){	// if the target is MO
+				if(((TorM==1& TBco[index][2]!=1)| (TorM==2& MOco[index][2]!=1))& 	//1. Self not linked, link to anything with minvalue<100
+						minvalue<100){
+					if(TorM==1){	//self assign
+						TBco[index][0]=1; 	
+						TBco[index][1]=COcount;
+					}else{
+						MOco[index][0]=1;
+						MOco[index][1]=COcount;
+					}	
+					//target assign
+					MOco[i][0]=1;
+					MOco[i][1]=COcount;
+					//link 
 					linex[0]= X[index]+(W[index]/2);
 					liney[0]= Y[index]+(H[index]/2);
 					linex[1]= MOimageX[i]+(MOimageW[i]/2);
 					liney[1]= MOimageY[i]+(MOimageH[i]/2);
-					repaint();
-					break;
-				}	
+					link=true;
+					System.out.println("model_ready_to_link");		
+				}else{		//if dist >100 but still the closest one
+					linex[0]=0;
+					linex[1]=0;
+					liney[0]=0;
+					liney[1]=0;
+					link=false;
+					System.out.println("model_lose");	
+				}			
+			}else if(MOco[i][1]==COcount){ //if dist >100 and not the closest one
+				MOco[i][0]=-1;
+				MOco[i][1]=-1;
+				if(TorM==1){	
+					TBco[index][0]=-1;
+					TBco[index][1]=-1;
+				}else{
+					MOco[index][0]=-1;
+					MOco[index][1]=-1;
+				}
 			}
-			for (int i=1; i<=TBcount; i++){
-				if(TBdist[i]==minvalue){
-					if(TBco[i][0]==-1&minvalue<100){
-						COco[COcount][0]= TorM;//
-						COco[COcount][1]= 1;
-						COco[COcount][2]= index;
-						COco[COcount][3]= i;			
-						if(TorM==1){
-							TBco[index][0]=2;
-							TBco[index][1]=COcount;
-						}else if (TorM==2){
-							MOco[index][0]=2;
-							MOco[index][1]=COcount;
-						}	
-						
-						link=false;
-					}else if (TBco[i][0]!=-1){	
-						if(TorM==1){
-							TBco[index][0]=1;
-							TBco[index][1]=TBco[i][1];
-						}else if (TorM==2){
-							MOco[index][0]=1;
-							MOco[index][1]=TBco[i][1];
-						}
-						link=true;
-					}
+		}
+		for (int i=1; i<=TBcount; i++){
+			if(TBdist[i]==minvalue){	// if the target is MO
+				if(((TorM==1& TBco[index][2]!=1)| (TorM==2& MOco[index][2]!=1))& 	//1. Self not linked, link to anything with minvalue<100
+						minvalue<100){
+					if(TorM==1){	//self assign
+						TBco[index][0]=1;
+						TBco[index][1]=COcount;
+					}else{
+						MOco[index][0]=1;
+						MOco[index][1]=COcount;
+					}	
+					//target assign
+					TBco[i][0]=1;
+					TBco[i][1]=COcount;
+					//link 
 					linex[0]= X[index]+(W[index]/2);
 					liney[0]= Y[index]+(H[index]/2);
 					linex[1]= TBimageX[i]+(TBimageW[i]/2);
 					liney[1]= TBimageY[i]+(TBimageH[i]/2);
-					repaint();
-					break;					
+					link=true;
+					System.out.println("table_ready_to_link");		
+				}else{
+					linex[0]=0;
+					linex[1]=0;
+					liney[0]=0;
+					liney[1]=0;
+					link=false;
+					System.out.println("table_lose");	
+				}		
+			}else if(TBco[i][1]==COcount){
+				TBco[i][0]=-1;
+				TBco[i][1]=-1;
+				if(TorM==1){	
+					TBco[index][0]=-1;
+					TBco[index][1]=-1;
+				}else{
+					MOco[index][0]=-1;
+					MOco[index][1]=-1;
 				}
-			}	
-		}else{
-			/*
-			COco[COcount][0]= -1;//
-			COco[COcount][1]= -1;
-			COco[COcount][2]= -1;
-			COco[COcount][3]= -1;
-			if(TorM==1){
-				TBco[index][0]=-1;
-				TBco[index][1]=-1;
-			}else if (TorM==2){
-				MOco[index][0]=-1;
-				MOco[index][1]=-1;
 			}
-			link=false; */
-			linex[0]=0;
-			linex[1]=0;
-			liney[0]=0;
-			liney[1]=0;
-			repaint();
-		}	
-	}
+		}
+	}		
+		
+		
 	
 	public void dragcombined (int dx, int dy, int index,
 							  int[] X, int[] Y, int[] W, int[] H, Image[] image, Rectangle[] bound, JLabel[] name){						
@@ -1765,261 +1398,59 @@ class myPanel extends JPanel implements MouseMotionListener{
 	     return minValue;  
 	}  
 	
-	public void DrawDashedLine(Graphics g, int x1, int y1, int x2, int y2){
+	public static double Distance(double x1, double y1, double x2, double y2){
+		double dist=0;
+		dist= Math.sqrt(Math.pow((x1-x2), 2) + Math.pow((y1-y2), 2));
+		dist= Math.round( (dist * 100.0 ) / 100.0);
+		return dist;
+	}
+	
+	public static boolean Whether_On_Line(double x1, double y1, double x2, double y2, double x, double y){
+		boolean online;
+		online= ( Distance(x1, y1, x, y)+Distance(x2, y2, x, y)<Distance(x1, y1, x2, y2)+5);
+		return online;
+	}
+	
+	public void Draw_Lines(Graphics g, int x1, int y1, int x2, int y2, Stroke s){
 		
         //creates a copy of the Graphics instance
         Graphics2D g2d = (Graphics2D) g.create();
-
         //set the stroke of the copy, not the original 
-        Stroke dashed = new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,6,3,6}, 0);
-        g2d.setStroke(dashed);
-        g2d.setColor(lightred);
+        g2d.setStroke(s);
         g2d.drawLine(x1, y1, x2, y2);
         //gets rid of the copy
-        
         g2d.dispose();
 	}
-	public void DrawSolidLine(Graphics g, int x1, int y1, int x2, int y2){
-        Graphics2D g2d = (Graphics2D) g.create();
-        Stroke solid = new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,0}, 0);
-        g2d.setStroke(solid);
-
-		g2d.setColor(dlightred);
-        g2d.drawLine(x1, y1, x2, y2);
-
-        g2d.dispose();
-	}
-
-	public void DrawImageandLine(int count, int[] delete, int[][] co, Graphics g, Image[] image, int[] X, int[] Y, int[] H, int[] W){
-		 if (count>0){	    	 
-	    	 for (int i=1; i<=count; i++){
-	    		 if(delete[i]==-1){
-	    			 continue;
-	    		 }else if(co[i][2]==1){
-	    		     for(int j=1; j<=TBcount; j++){
-	    		    	 if(TBdelete[j]==-1|TBco[j][0]==-1){
-	    		    		 continue;
-	    		    	 }else if( !(co[i][0]==2&TBco[j][0]==2) &
-	    		    			 	TBco[j][2]==1 &  //該個tb是有連的
-	    		    			 	!(TBco[j][1]!=co[i][1])
-	    		    			 	){ 
-	    		    		 DrawDashedLine(g, X[i]+(W[i]/2), Y[i]+(H[i]/2),
-		    				 		 TBimageX[j]+(TBimageW[j]/2), TBimageY[j]+(TBimageH[j]/2));    	
-    		 	
-    		    			 DrawSolidLine(g, X[i]+(W[i]/2), Y[i]+(H[i]/2),
-		    				 		 TBimageX[j]+(TBimageW[j]/2), TBimageY[j]+(TBimageH[j]/2));  	
-	    		    	 }	    			    		 		    	 
-	    		     } 
-	    		     for(int j=1; j<=MOcount; j++){
-	    		    	 if(MOdelete[j]==-1|MOco[j][0]==-1){
-	    		    		 continue;
-	    		    	 }else if( !(co[i][0]==2&MOco[j][0]==2) &
-	    		    			 	MOco[j][2]==1 & //該個mo是有連的
-	    		    			 	!(MOco[j][1]!=co[i][1])
-	    		    			 	){ 
-	    		    		 DrawDashedLine(g, X[i]+(W[i]/2), Y[i]+(H[i]/2),
- 		    					 	MOimageX[j]+(MOimageW[j]/2), MOimageY[j]+(MOimageH[j]/2));  	
-	    		    		 DrawSolidLine(g, X[i]+(W[i]/2), Y[i]+(H[i]/2),
- 		    				 		MOimageX[j]+(MOimageW[j]/2), MOimageY[j]+(MOimageH[j]/2));
-	    		    	 }
-	    		     } 
-	    		 }
-	    	 }
-		 }	
-	}
 	
-	public void setPreference(Preferences pre){
-		pre.putInt("TBcount", TBcount);
-		pre.putInt("MOcount", MOcount);
-		pre.putInt("COcount", COcount);
-		for (int i=1; i<=TBcount; i++){
-			String TBnametemp= TBname[i].getText();
-			pre.put("TBname"+i, TBnametemp);
-			pre.put("TBfile"+i, TBfile[i]);
-			pre.putInt("TBimageX"+i, TBimageX[i]);
-			pre.putInt("TBimageY"+i, TBimageY[i]);
-			TBname[i].setVisible(true);
-			pre.putInt("TBimageH"+i, TBimageH[i]);
-			pre.putInt("TBimageW"+i, TBimageW[i]);
-			pre.putInt("TBdelte"+i, TBdelete[i]);
-			pre.putInt("TBvalue"+i, TBvalue[i]);
-			for (int j=0; j<=2; j++){
-				pre.putInt("TBco"+i+j, TBco[i][j]);
-			}					
-		}
-		for (int i=1; i<=MOcount; i++){
-			String MOnametemp= MOname[i].getText();
-			pre.put("MOname"+i, MOnametemp);
-			pre.putInt("MOimageX"+i, MOimageX[i]);
-			pre.putInt("MOimageY"+i, MOimageY[i]);
-			pre.putInt("MOimageH"+i, MOimageH[i]);
-			pre.putInt("MOimageW"+i, MOimageW[i]);
-			pre.putInt("MOdelte"+i, MOdelete[i]);
-			for (int j=0; j<=2; j++){
-				pre.putInt("MOco"+i+j, MOco[i][j]);
-			}					
-		}
-		for (int i=0; i<=COcount-1; i++){
-			pre.putInt("COimageX"+i, COimageX[i]);
-			pre.putInt("COimageY"+i, COimageY[i]);
-			pre.putInt("COimageH"+i, COimageH[i]);
-			pre.putInt("COimageW"+i, COimageW[i]);
-			for (int j=0; j<=3; j++){
-				pre.putInt("COco"+i+j, COco[i][j]);
-			}	
-		}
-	}
-	
-	public void getPreference(Preferences pre){
-		TBcount= pre.getInt("TBcount", 0);
-		MOcount= pre.getInt("MOcount", 0);
-		COcount= pre.getInt("COcount", 0);
-		//problem here
-		for (int i=1; i<=TBMAX-1; i++){
-			TBfile[i]= pre.get("TBfile"+i, "");
-			TBimageX[i]= pre.getInt("TBimageX"+i, -100);
-			TBimageY[i]= pre.getInt("TBimageY"+i, -100);
-			TBimageH[i]= pre.getInt("TBimageH"+i, 0);
-			TBimageW[i]= pre.getInt("TBimageW"+i, 0);
-			TBdelete[i]= pre.getInt("TBdelete"+i, 0);
-			TBvalue[i]= pre.getInt("TBvalue"+i, 0);		
-			
-			for (int j=0; j<=2; j++){
-				if(j==2){
-					TBco[i][j]=pre.getInt("TBco"+i+j, 0);
-				}else{TBco[i][j]=pre.getInt("TBco"+i+j, -1);}
-			}	
-			TB[i]=TBimage;
-			if(TBimageH[i]==0|TBimageW[i]==0){
-				TBimageH[i]=TB[i].getHeight(null);
-				TBimageW[i]=TB[i].getWidth(null);
+	public void DrawLinkedLine(Graphics g){
+		Stroke temp_stroke;
+		for (int i=0; i<linklineindex; i++){
+			if(i==lineselected){
+				temp_stroke=solid;
+			}else{
+				temp_stroke=dashed;
 			}
-			TBname[i].setText(pre.get("TBname"+i, ""));
-			TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
-			TBname[i].setSize(200,15);
-			if(!TBfile[i].isEmpty()){
-				iconchange(i);	
+			if(linkline[i][0]==1){
+				if(linkline[i][2]==1){	
+					Draw_Lines(g, TBimageX[linkline[i][1]]+(TBimageW[linkline[i][1]]/2), TBimageY[linkline[i][1]]+(TBimageH[linkline[i][1]]/2),
+								  TBimageX[linkline[i][3]]+(TBimageW[linkline[i][3]]/2), TBimageY[linkline[i][3]]+(TBimageH[linkline[i][3]]/2),
+								  temp_stroke);
+				}else if(linkline[i][2]==2){
+					Draw_Lines(g, TBimageX[linkline[i][1]]+(TBimageW[linkline[i][1]]/2), TBimageY[linkline[i][1]]+(TBimageH[linkline[i][1]]/2),
+							  	  MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
+							  	  temp_stroke);
+				}
+			}else if(linkline[i][0]==2){
+				if(linkline[i][2]==1){
+					Draw_Lines(g, MOimageX[linkline[i][1]]+(MOimageW[linkline[i][1]]/2), MOimageY[linkline[i][1]]+(MOimageH[linkline[i][1]]/2),
+								  TBimageX[linkline[i][3]]+(TBimageW[linkline[i][3]]/2), TBimageY[linkline[i][3]]+(TBimageH[linkline[i][3]]/2),
+								  temp_stroke);
+				}else if(linkline[i][2]==2){
+					Draw_Lines(g, MOimageX[linkline[i][1]]+(MOimageW[linkline[i][1]]/2), MOimageY[linkline[i][1]]+(MOimageH[linkline[i][1]]/2),
+								  MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
+								  temp_stroke);
+				}
 			}
-			TBBound[i]=new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
 		}
-		for (int i=1; i<=MOMAX-1; i++){
-			MOname[i].setText(pre.get("MOname"+i, ""));
-			MOimageX[i]= pre.getInt("MOimageX"+i, -100);
-			MOimageY[i]= pre.getInt("MOimageY"+i, -100);
-			MOimageH[i]= pre.getInt("MOimageH"+i, 0);
-			MOimageW[i]= pre.getInt("MOimageW"+i, 0);
-			MOdelete[i]= pre.getInt("MOdelete"+i, 0);		
-			for (int j=0; j<=2; j++){
-				if(j==2){
-					MOco[i][j]=pre.getInt("MOco"+i+j, 0);
-				}else{MOco[i][j]=pre.getInt("MOco"+i+j, -1);}
-			}	
-			MO[i]=MOimage;
-			if(MOimageH[i]==0|MOimageW[i]==0){
-				MOimageH[i]=MO[i].getHeight(null);
-				MOimageW[i]=MO[i].getWidth(null);
-			}
-			MOBound[i]=new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-		}
-		for (int i=0; i<=COMAX-1; i++){
-			COimageX[i]= pre.getInt("COimageX"+i, -100);
-			COimageY[i]= pre.getInt("COimageY"+i, -100);
-			COimageH[i]= pre.getInt("COimageH"+i, 0);
-			COimageW[i]= pre.getInt("COimageW"+i, 0);
-			for (int j=0; j<=3; j++){
-				COco[i][j]= pre.getInt("COco"+i+j, 0);
-			}	
-			COBound[i]=new Rectangle(COimageX[i], COimageY[i], COimageW[i], COimageH[i]);
-		}
-		repaint();
 	}
-	
-	public void removePreference(Preferences pre){
-		int TBc=TBcount;
-		int MOc=MOcount;
-		int COc=COcount;
-		pre.remove("TBcount");
-		pre.remove("MOcount");
-		pre.remove("COcount");
-		for (int i=1; i<=TBc; i++){
-			System.out.println("TBremove "+i);
-			pre.remove("TBname"+i);
-			pre.remove("TBfile"+i);
-			System.out.println("TBimageX "+i+pre.getInt("TBimageX"+i,0));
-			pre.remove("TBimageX"+i);
-			pre.remove("TBimageY"+i);
-			pre.remove("TBimageH"+i);
-			pre.remove("TBimageW"+i);
-			pre.remove("TBdelte"+i);
-			pre.remove("TBvalue"+i);
-			for (int j=0; j<=2; j++){
-				pre.remove("TBco"+i+j);
-			}				
-			System.out.println("TBimageX "+i+pre.getInt("TBimageX"+i,0));
-		}
-		for (int i=1; i<=MOc; i++){
-			pre.remove("MOname"+i);
-			pre.remove("MOimageX"+i);
-			pre.remove("MOimageY"+i);
-			pre.remove("MOimageH"+i);
-			pre.remove("MOimageW"+i);
-			pre.remove("MOdelte"+i);
-			for (int j=0; j<=2; j++){
-				pre.remove("MOco"+i+j);
-			}					
-		}
-		for (int i=0; i<=COc-1; i++){
-			pre.remove("COimageX"+i);
-			pre.remove("COimageY"+i);
-			pre.remove("COimageH"+i);
-			pre.remove("COimageW"+i);
-			for (int j=0; j<=3; j++){
-				pre.remove("COco"+i+j);
-			}	
-		}
-		repaint();
-	}
-	
-	/*
-	static Image iconToImage(Icon icon) {
-        if (icon instanceof ImageIcon) {
-            return ((ImageIcon)icon).getImage();
-        } else {
-            int w = icon.getIconWidth();
-            int h = icon.getIconHeight();
-            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            GraphicsDevice gd = ge.getDefaultScreenDevice();
-            GraphicsConfiguration gc = gd.getDefaultConfiguration();
-            BufferedImage image = gc.createCompatibleImage(w, h);
-            Graphics2D g = image.createGraphics();
-            icon.paintIcon(null, g, 0, 0);
-            g.dispose();
-            return image;
-        }
-    }
-    */
-	
-	/*
-	final Timer fade = new Timer(40, new ActionListener() {
-         @Override
-         public void actionPerformed(ActionEvent e) {
-             if (startTime < 0) {
-                 startTime = System.currentTimeMillis();
-             } else {
-                 long time = System.currentTimeMillis();
-                 long duration = time - startTime;
-                 if (duration >= RT) {
-                     startTime = -1;
-                     ((Timer) e.getSource()).stop();
-                     alpha = 1f;
-                 } else {
-                     alpha = 1f - ((float) duration / (float) RT);
-                 }
-                 repaint();
-             }
-         }
-     });
-	*/
-	
-
 }
