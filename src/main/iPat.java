@@ -137,8 +137,8 @@ class myPanel extends JPanel implements MouseMotionListener{
 	
 	
 	 //combine 
-		int CDAindex=-1, CDAint=0, CDAi=0;
-		int CDAW, CDAH;
+	int CDAindex=-1, CDAint=0, CDAi=0;
+	int CDAW, CDAH;
 	int panH;
 	int panW;
 	
@@ -149,8 +149,10 @@ class myPanel extends JPanel implements MouseMotionListener{
 	
 	//removal zone
 	boolean removeornot=false;
-	int delbbound=170;
-	JLabel trashl;
+	JLabel trashl= new JLabel();
+	int trashH, trashW;
+	int delbboundx;
+	int delbboundy;
 	
 	//line
 	int[] linex=new int[2],
@@ -170,7 +172,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 	
 	//windows size
 	int Wide, Heigth, panelHeigth;
-	
 
 	
 	//Intro
@@ -179,13 +180,22 @@ class myPanel extends JPanel implements MouseMotionListener{
 	Boolean in=false, insub=false;
 	
 	//Button
+	JButton TBButton= new JButton();
+	JButton MOButton= new JButton();
+	Image addTB, addMO;
 	Timer TBanimation, MOanimation;
+	Boolean ifopenfile=false, ifproperty=false;
+	int openindex=-1;
+	int createX=-1, createY=-1;
 	
 	public myPanel(int Wideint, int Heigthint, int pH){	
 		this.Wide=Wideint;
 		this.Heigth=Heigthint;
 		this.panelHeigth=pH;
 			
+		delbboundx=Wide-50;
+		delbboundy=Heigth-70;
+		System.out.println(panelHeigth);
 		try{
 			Image iconIP = ImageIO.read(getClass().getResource("resources/iPat.png"));
 			iPat.setIcon(new ImageIcon(iconIP));
@@ -195,6 +205,8 @@ class myPanel extends JPanel implements MouseMotionListener{
 				Trash[i] = ImageIO.read(getClass().getResource("resources/trash"+i+".png"));
 				White[i] = ImageIO.read(getClass().getResource("resources/white"+i+".png"));
 			}
+			trashH= Trash[0].getHeight(null);
+			trashW= Trash[0].getWidth(null);	
 		} catch (IOException ex){}		
 		try{
 			Excel = ImageIO.read(this.getClass().getResourceAsStream("resources/Excel.png"));
@@ -207,9 +219,12 @@ class myPanel extends JPanel implements MouseMotionListener{
 		} catch (IOException ex){}
 		try{
 			TBimage = ImageIO.read(this.getClass().getResourceAsStream("resources/Table.png"));
+			addTB = ImageIO.read(this.getClass().getResourceAsStream("resources/add_Table.png"));
 			MOimage = ImageIO.read(this.getClass().getResourceAsStream("resources/Model.png"));
+			addMO = ImageIO.read(this.getClass().getResourceAsStream("resources/add_Model.png"));
+			TBButton.setIcon(new ImageIcon(addTB));
+			MOButton.setIcon(new ImageIcon(addMO));
 		} catch (IOException ex){}
-		
 		
 		for (int i=1; i<=TBMAX-1; i++){
 			TB[i] = TBimage;
@@ -240,21 +255,33 @@ class myPanel extends JPanel implements MouseMotionListener{
 		//		
 		//		
 		
-		iPat.setOpaque(false);			
-		trashl = new JLabel(new ImageIcon());
-			
+		TBButton.setOpaque(false);
+		TBButton.setContentAreaFilled(false);
+		TBButton.setBorderPainted(false);
+		MOButton.setOpaque(false);
+		MOButton.setContentAreaFilled(false);
+		MOButton.setBorderPainted(false);
+		
+		iPat.setOpaque(false);	
+
+		trashl = new JLabel(new ImageIcon(Trash[0]));	
 		startPanel = new JLayeredPane();
 		nullPanel= new JLayeredPane();
 		
 		startPanel.setPreferredSize(new Dimension(Wide, panelHeigth));	
-		startPanel.add(trashl, new Integer(1));
 		startPanel.add(iPat, new Integer(4));
+		nullPanel.add(trashl, new Integer(3));
+		nullPanel.add(TBButton, new Integer(1));
+		nullPanel.add(MOButton, new Integer(2));
 		
-		trashl.setBounds(new Rectangle(-1000, -50, Wide, panelHeigth));
+		trashl.setBounds(new Rectangle(-100,-100, trashW, trashH));
+		trashl.setVisible(true);
+		
+		
 		iPat.setBounds(new Rectangle(523, 10, 150, 80)); 
-		
+		TBButton.setBounds(new Rectangle(-10000, -10000, TBimage.getWidth(null), TBimage.getHeight(null)));
+		MOButton.setBounds(new Rectangle(-10000, -10000, MOimage.getWidth(null), MOimage.getHeight(null)));
 		nullPanel.setPreferredSize(new Dimension(Wide, Heigth-panelHeigth));
-		
 		
 		this.setLayout(new MigLayout("fillx","[grow]","[grow]"));
 		this.add(startPanel," dock north");
@@ -326,6 +353,34 @@ class myPanel extends JPanel implements MouseMotionListener{
 		
     	}); 
 		*/
+		TBButton.addMouseListener(new MouseAdapter() {
+    		@Override
+    		public void mousePressed(MouseEvent tm) {
+    			int xt = tm.getX();
+    			int yt = tm.getY();
+    			if (contains(xt,yt)){
+    				TBcount++;
+    				TBimageX[TBcount]=createX-TBimageW[TBcount]/2;
+    				TBimageY[TBcount]=createY-TBimageH[TBcount]-5;
+    				TBBound[TBcount]= new Rectangle(TBimageX[TBcount], TBimageY[TBcount], TBimage.getWidth(null), TBimage.getHeight(null));
+    				repaint();
+    			}		
+    		}
+		});
+		MOButton.addMouseListener(new MouseAdapter() {
+    		@Override
+    		public void mousePressed(MouseEvent mm) {
+    			int xm = mm.getX();
+    			int ym = mm.getY();
+    			if (contains(xm,ym)){
+    				MOcount++;
+    				MOimageX[MOcount]=createX-MOimageW[MOcount]/2;
+    				MOimageY[MOcount]=createY-MOimageH[MOcount]-5;
+    				MOBound[MOcount]= new Rectangle(MOimageX[MOcount], MOimageY[MOcount], MOimage.getWidth(null), MOimage.getHeight(null));
+    				repaint();
+    			}
+    		}
+		});	
 		
 		this.addMouseListener(new MouseAdapter(){
 			
@@ -338,6 +393,16 @@ class myPanel extends JPanel implements MouseMotionListener{
     			COindex=-1;
 				TBindex=0;
     			MOindex=0;
+    			if(ifproperty){
+    				TBButton.setBounds(new Rectangle(-1000,-1000, addTB.getWidth(null), addTB.getHeight(null)));
+    				MOButton.setBounds(new Rectangle(-1000,-1000, addMO.getWidth(null), addMO.getHeight(null)));
+    				ifproperty=false;
+    			}
+    			
+    			
+    			
+    			
+    			
     			
     			if (TBcount>0){	
     				for (int i=1; i<=TBcount;i++){
@@ -419,36 +484,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 			public void mouseReleased(MouseEvent ee){				
 				int x=ee.getX();
 				int y=ee.getY();		
-				boolean empty=false;
-				
-				//Create new objects (Tables or Models)
-    				for (int i=0; i<=TBcount; i++){
-    					if(i==0){break;};
-    					if (TBBound[i].contains(x, y)){
-    						empty=true;
-    					}
-    				}
-    				for (int i=0; i<=MOcount; i++){
-    					if(i==0){break;};
-    					if (MOBound[i].contains(x, y)){
-    						empty=true;
-    					}
-    				}
-    				if (empty==false&TBindex==0&MOindex==0&COindex==-1){
-    					if (SwingUtilities.isRightMouseButton(ee)){		
-    						MOcount++;				
-    						MOimageX[MOcount]=x-MO[MOcount].getWidth(null)/2;
-    						MOimageY[MOcount]=y-5-MO[MOcount].getHeight(null);	
-    						MOBound[MOcount]=new Rectangle(MOimageX[MOcount], MOimageY[MOcount],MO[MOcount].getWidth(null), MO[MOcount].getHeight(null));
-    					  }/*else if (SwingUtilities.isLeftMouseButton(ee)){
-    					 	TBcount++;				
-    						TBimageX[TBcount]=x-TB[TBcount].getWidth(null)/2;
-    						TBimageY[TBcount]=y-5-TB[TBcount].getHeight(null);	
-    						TBBound[TBcount]=new Rectangle(TBimageX[TBcount], TBimageY[TBcount],TB[TBcount].getWidth(null), TB[TBcount].getHeight(null));
-    						
-    					}*/
-    				}
-   
+			
     			//To compute whether the objects should be created
 				System.out.println("TBLable[1]: "+TBname[1].getText()+"  TBnamepos: "+TBname[1].getLocation());
 				if( (TBindex!=0|MOindex!=0) & 	 //且正在選某個物件
@@ -493,21 +529,21 @@ class myPanel extends JPanel implements MouseMotionListener{
 				
 				
 				if (removeornot){
-					if (TBindex!=0&&y<delbbound){
+					if (TBindex!=0&&(y>=(delbboundy)&&x>=(delbboundx))){
 						TBimageX[TBindex]=-1000;
 						TBimageY[TBindex]=-1000;
 						TBBound[TBindex]=new Rectangle(-100,-100,0,0);
 						TBname[TBindex].setLocation(-100,-100);
 						repaint();
 						TBdelete[TBindex]=-1;
-					}else if(MOindex!=0&&y<delbbound){
+					}else if(MOindex!=0&&(y>=(delbboundy)&&x>=(delbboundx))){
 						MOimageX[MOindex]=-1000;
 						MOimageY[MOindex]=-1000;
 						MOBound[MOindex]=new Rectangle(-100,-100,0,0);
 						MOname[MOindex].setLocation(-100,-100);
 						repaint();
 						MOdelete[MOindex]=-1;
-					}else if(COindex!=-1&&y<delbbound){
+					}else if(COindex!=-1&&(y>=(delbboundy)&&x>=(delbboundx))){
 						COimageX[COindex]=-1000;
 						COimageY[COindex]=-1000;
 						COBound[COindex]=new Rectangle(COimageX[COcount], COimageY[COcount], COimageW[COcount], COimageH[COcount]);	
@@ -561,13 +597,28 @@ class myPanel extends JPanel implements MouseMotionListener{
     		public void mouseClicked(MouseEvent evt) {
     			int x = evt.getX();
     			int y = evt.getY();
-    			if (evt.getClickCount() == 2 ) {
+    			createX=x;
+    			createY=y;
+    			if (evt.getClickCount() == 2 & SwingUtilities.isLeftMouseButton(evt)) {
     				for (int i=1; i<=TBcount-1; i++){
     					if (TBBound[i].contains(x,y)){
-        					TBopenfile(i);
+    						openindex=i;
+    						ifopenfile=true;
+        					break;
     					}
     				}
+    				if(ifopenfile == true){
+    					TBopenfile(openindex);
+    					ifopenfile=false;
+    				}else{
+    					ifproperty=true;
+    					TBButton.setBounds(new Rectangle(x-80, y-panelHeigth+10, addTB.getWidth(null), addTB.getHeight(null)));
+    					MOButton.setBounds(new Rectangle(x+40, y-panelHeigth+10, addMO.getWidth(null), addMO.getHeight(null)));
+    					System.out.println("x="+x+"y="+y);
+    				}
     			}
+    			
+    			
     			if (evt.getClickCount() == 2 & SwingUtilities.isRightMouseButton(evt)) {
     				for (CDAi=0; CDAi<=COcount-1; CDAi++){
     					if (COBound[CDAi].contains(x,y)){
@@ -685,15 +736,16 @@ class myPanel extends JPanel implements MouseMotionListener{
 		}	
 	
 			
-		if ((TBindex!=0|MOindex!=0|COindex!=-1)&&imY<=(delbbound)&&!removeornot){
+		if ((TBindex!=0|MOindex!=0|COindex!=-1)&&(imY>=(delbboundy)&&imX>=(delbboundx))&&!removeornot){
 			TrashAnimation = new Timer(15, new ActionListener() {
 				int i=0;
 			    @Override
 			    public void actionPerformed(ActionEvent ae) {
 			    	if(i<10&TA){
 			    		System.out.println("this is "+i);
-			    		trashl.setBounds(new Rectangle(0, -50, Wide, 300));
-						trashl.setIcon(new ImageIcon(Trash[i]));
+			    		trashl.setBounds(new Rectangle(Wide-trashW,  Heigth-panelHeigth-trashH-10, trashW, trashH));
+			    		//trashl.setBounds(new Rectangle(200,200,100,100));
+			    		trashl.setIcon(new ImageIcon(Trash[i]));
 						startPanel.setLayer(trashl, new Integer(200));
 						trashl.setVisible(true);
 						startPanel.revalidate();  
@@ -708,7 +760,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 			TA=true;
 			TrashAnimation.start();
 			removeornot=true;		
-		}else if(imY>delbbound){
+		}else if(imY>=(delbboundy)&&imX>=(delbboundx)){
 			trashl.setBounds(new Rectangle(Wide, -50, Wide, 300));
 			startPanel.setLayer(trashl, new Integer(1));
 			trashl.setVisible(true);
@@ -721,7 +773,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 		int y= ev.getY();
 		int x= ev.getX();
 		//System.out.println("x= "+x+"y= "+y);
-		if(y>delbbound){
+		if(y>=(delbboundy)&&x>=(delbboundx)){
 			trashl.setBounds(new Rectangle(Wide, -50, Wide, 300));
 			startPanel.setLayer(trashl, new Integer(1));
 			trashl.setVisible(true);
@@ -1453,4 +1505,21 @@ class myPanel extends JPanel implements MouseMotionListener{
 			}
 		}
 	}
+	
+	/*
+	public static void CreateObject(int count, int[] X, int[] Y, Rectangle[] bound, int setX, int setY, Image ig){
+		System.out.println("count+1");
+		count++;
+		
+		X[count]=setX;
+		Y[count]=setY;
+		bound[count]= new Rectangle(X[count], Y[count], ig.getWidth(null), ig.getHeight(null));
+		System.out.println("TBcount= "+count);
+		System.out.println("setX= "+setX);
+		System.out.println("setY= "+setY);
+		System.out.println("X[count]= "+X[count]);
+		System.out.println("Y[count]= "+Y[count]);
+	}*/
+	
+	
 }
