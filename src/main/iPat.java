@@ -1,8 +1,12 @@
 package main;
-//import org.rosuda.JRI.*;
+import org.rosuda.JRI.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.TimerTask;
 import java.util.prefs.Preferences;
 import java.awt.*;
@@ -60,7 +64,136 @@ class ipatButton extends JButton {
     }
 }
 
+class settingframe extends JFrame implements ActionListener{
+	JButton ok= new JButton("OK");
+	JButton cancel= new JButton("Cancel");
+	String[] model_names= {"GCM", "MLM", "CMLM", "ECMLM", "FarmCPU"};
+	JComboBox model= new JComboBox(model_names);
+	
+	String[] File_names = new String[2]; 
+	String[] File_path;
+	File[] list_2 = new File[30];
+	Rengine r;
+	
+	public settingframe(String[] File_names_in, File[] list_in, Rengine r){	
+		this.list_2 = list_in;
+		this.File_names = File_names_in;
+		this.r = r;
+		
+		
+		JPanel panel= new JPanel(new MigLayout());
+		panel.add(model, "wrap");
+		panel.add(ok);
+		panel.add(cancel);
 
+		ok.addActionListener(this);
+		cancel.addActionListener(this);
+	
+		this.setContentPane(panel);
+		this.pack();
+		this.setTitle("Model Setting Panel");
+		this.show();
+	}
+	public void actionPerformed(ActionEvent ae){
+	      Object source = ae.getSource();	
+	      if (source == ok){
+	   		System.out.println(list_2[0]==null);
+	  		System.out.println("running");
+	  		r.eval("ptm <- proc.time()");
+	  		r.eval("setwd('~/test')");
+	  		
+	  		r.eval("library(MASS)");
+	  		r.eval("library(multtest)");
+	  		r.eval("library(gplots)");
+	  		r.eval("library(compiler)");
+	  		r.eval("library(scatterplot3d)");
+
+	  		r.eval("source('http://www.zzlab.net/GAPIT/emma.txt')");
+	  		r.eval("source('http://www.zzlab.net/GAPIT/gapit_functions.txt')");
+	  			  		
+	  		r.eval("myY  <- read.table('mdp_traits.txt', head = TRUE)");
+	  		r.eval("myG <- read.delim('mdp_genotype_test.hmp.txt', head = FALSE)");
+	  		r.eval("myGAPIT <- GAPIT(Y=myY,	G=myG, PCA.total=3)");
+	  		r.eval("x= proc.time() - ptm ");
+	  		r.eval("print(x)");
+	  		/*
+	  		r.eval("File_name=list.files(pattern= 'GAPIT')");
+	  		r.eval("Rel_path= list.files(pattern= 'GAPIT', full.names=TRUE)");
+	  		r.eval("Abs_path= gsub(Rel_path, pattern='^\\\\.',replacement= getwd()) ");
+	  		//r.eval("print(Abs_path)");
+	  		*/
+	  		
+	  		File f = new File("/Users/Poissonfish/test");
+	  		list_2 = f.listFiles();
+	  		for(int i=0; i<list_2.length; i++){
+				System.out.println(list_2[i]);
+			}
+
+	   		System.out.println(list_2[0]==null);
+	   		
+	  		this.dispose();
+	      }else if (source == cancel){
+	    	this.dispose();  
+	      }
+	}	
+}
+
+class resultframe extends JFrame implements ActionListener{
+	JButton generate= new JButton("Generate");
+	JButton cancel= new JButton("Cancel");
+	JList list= new JList();
+	JScrollPane scrollpane= new JScrollPane(list);
+	
+	String[] model_names= {"GCM", "MLM", "CMLM", "ECMLM", "FarmCPU"};
+	JComboBox model= new JComboBox(model_names);
+	
+	public resultframe(){	
+		JPanel panel= new JPanel(new MigLayout());
+		panel.add(model, "wrap");
+		panel.add(ok);
+		panel.add(cancel);
+		
+		ok.addActionListener(this);
+		cancel.addActionListener(this);
+	
+		this.setContentPane(panel);
+		this.pack();
+		this.setTitle("Model Setting Panel");
+		this.show();
+	}
+	public void actionPerformed(ActionEvent ae){
+	      Object source = ae.getSource();	
+	      if (source == ok){
+	  		r.eval("print('hello')");
+	  		System.out.println("running");
+	  		r.eval("setwd('~/test')");
+	  	
+	  		/*
+	  		r.eval("library(MASS)");
+	  		r.eval("library(multtest)");
+	  		r.eval("library(gplots)");
+	  		r.eval("library(compiler)");
+	  		r.eval("library(scatterplot3d)");
+
+	  		r.eval("source('http://www.zzlab.net/GAPIT/emma.txt')");
+	  		r.eval("source('http://www.zzlab.net/GAPIT/gapit_functions.txt')");
+
+	  		r.eval("myY  <- read.table('./test/mdp_traits.txt', head = TRUE)");
+	  		r.eval("myG <- read.delim('./test/mdp_genotype_test.hmp.txt', head = FALSE)");
+	  		r.eval("myGAPIT <- GAPIT(Y=myY,	G=myG, PCA.total=3)");
+	  		*/
+	  		r.eval("File_name=list.files(pattern= 'GAPIT')");
+	  		r.eval("Rel_path= list.files(pattern= 'GAPIT', full.names=TRUE)");
+	  		r.eval("Abs_path= gsub(Rel_path, pattern='^\\\\.',replacement= getwd()) ");
+	  		r.eval("print(Abs_path)");
+	  		
+	  		
+	  		this.dispose();
+	      }else if (source == cancel){
+	    	this.dispose();  
+	      }
+	}	
+}
 
 class myPanel extends JPanel implements MouseMotionListener{	
 	//  private static class ipatButton extends JButton {
@@ -91,8 +224,8 @@ class myPanel extends JPanel implements MouseMotionListener{
 	
 	Boolean link=false;
 	
-	int TBindex =0;
-	int MOindex =0;
+	int TBindex =0, TBindex_temp=0;
+	int MOindex =0, MOindex_temp=0;
 	int COindex =-1;
 	
 	int TBcount =0;
@@ -156,13 +289,18 @@ class myPanel extends JPanel implements MouseMotionListener{
 	
 	//line
 	int[] linex=new int[2],
-		  liney=new int[2];
+		  liney=new int[2],
+		  line_drag_x=new int[2],
+		  line_drag_y=new int[2];
+	
 	int[][] linkline= new int[500][4];
-	int linklineindex=0, lineselected=-1;
+	int[] linedelete= new int[500];
+	int linklineindex=0, lineselected=-1, lineselected_temp=-1, 
+		lineindex=-1;	
+	boolean ableselect=false, linktolink=false;
     Stroke dashed = new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,10}, 0);
     Stroke solid = new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,0}, 0);
-    
-	
+    	
 	//Color
 	Color red = new Color(231,57,131, 100);
 	Color lightred = new Color(231,57,131, 80);
@@ -173,7 +311,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 	//windows size
 	int Wide, Heigth, panelHeigth;
 
-	
 	//Intro
 	Timer Intro;
 	Color[] black= new Color[13];
@@ -184,18 +321,22 @@ class myPanel extends JPanel implements MouseMotionListener{
 	JButton MOButton= new JButton();
 	Image addTB, addMO;
 	Timer TBanimation, MOanimation;
-	Boolean ifopenfile=false, ifproperty=false;
+	Boolean ifopenfile=false, ifproperty=false, ifproperty_tb=false, ifproperty_mo=false;
 	int openindex=-1;
 	int createX=-1, createY=-1;
+	
+	//iPat
+	String[] File_names;
+	File[] File_paths = new File[30];
+	Rengine r = new Rengine(new String[]{"--no-save"}, true, new TextConsole());
 	
 	public myPanel(int Wideint, int Heigthint, int pH){	
 		this.Wide=Wideint;
 		this.Heigth=Heigthint;
 		this.panelHeigth=pH;
-			
 		delbboundx=Wide-50;
 		delbboundy=Heigth-70;
-		System.out.println(panelHeigth);
+		
 		try{
 			Image iconIP = ImageIO.read(getClass().getResource("resources/iPat.png"));
 			iPat.setIcon(new ImageIcon(iconIP));
@@ -352,7 +493,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 		});	
 		
     	}); 
-		*/
+		
 		TBButton.addMouseListener(new MouseAdapter() {
     		@Override
     		public void mousePressed(MouseEvent tm) {
@@ -381,6 +522,7 @@ class myPanel extends JPanel implements MouseMotionListener{
     			}
     		}
 		});	
+		*/
 		
 		this.addMouseListener(new MouseAdapter(){
 			
@@ -393,90 +535,47 @@ class myPanel extends JPanel implements MouseMotionListener{
     			COindex=-1;
 				TBindex=0;
     			MOindex=0;
-    			if(ifproperty){
-    				TBButton.setBounds(new Rectangle(-1000,-1000, addTB.getWidth(null), addTB.getHeight(null)));
-    				MOButton.setBounds(new Rectangle(-1000,-1000, addMO.getWidth(null), addMO.getHeight(null)));
-    				ifproperty=false;
+    			lineindex=-1;
+    			
+ 
+    			TBindex= TBindex_temp;
+    			MOindex= MOindex_temp;
+    			if (ableselect){
+        			lineindex= lineselected_temp;
+        			System.out.println("lineindex:"+lineindex);	
     			}
     			
+    			if(TBindex!=0 & SwingUtilities.isRightMouseButton(ee)){
+					 TBvalue[TBindex]= TBchooser[TBindex].showOpenDialog(null);
+					 if (TBvalue[TBindex] == JFileChooser.APPROVE_OPTION){
+					    File selectedfile = TBchooser[TBindex].getSelectedFile();  	    					    
+					  	TBfile[TBindex]= selectedfile.getAbsolutePath();
+					  	iconchange(TBindex); 
+					  	TBimageH[TBindex]=TB[TBindex].getHeight(null);
+					  	TBimageW[TBindex]=TB[TBindex].getHeight(null);
+						TBname[TBindex].setLocation(TBimageX[TBindex], TBimageY[TBindex]+TBimageH[TBindex]-panelHeigth+15);
+						TBname[TBindex].setSize(200,15);
+						TBname[TBindex].setText(selectedfile.getName());
+						TBindex=0;
+						COindex=-1;
+						repaint();
+					 }
+			   	}else if(MOindex!=0 & SwingUtilities.isRightMouseButton(ee)){
+			   		JFrame model_frame= new settingframe(File_names, File_paths, r);
+			   		model_frame.setLocation(450, 250);
+			   		model_frame.setResizable(false);
+			   	}else if(MOindex!=0 & SwingUtilities.isLeftMouseButton(ee)){
+				   	/*
+			   		for(int i=0; i<File_paths.length; i++){
+						System.out.println(File_paths[i]);
+					}*/
+			   		//System.out.println(File_paths[0]==null);
+			   		System.out.println(File_names[0]);
+			   	}
     			
-    			
-    			
-    			
-    			
-    			if (TBcount>0){	
-    				for (int i=1; i<=TBcount;i++){
-    					if (TBBound[i].contains(move_x, move_y)){
-    						TBindex=i;			
-    						if (SwingUtilities.isRightMouseButton(ee)){
-    							 TBvalue[i]= TBchooser[i].showOpenDialog(null);
-    	    					 if (TBvalue[i] == JFileChooser.APPROVE_OPTION){
-    	    					    File selectedfile = TBchooser[i].getSelectedFile();  	    					    
-    	    					  	TBfile[i]= selectedfile.getAbsolutePath();
-    	    					  	iconchange(i); 
-    	    					  	TBimageH[TBindex]=TB[i].getHeight(null);
-    	    					  	TBimageW[TBindex]=TB[i].getHeight(null);
-    	    						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
-    	    						TBname[i].setSize(200,15);
-    	    						TBname[i].setText(selectedfile.getName());
-    	    						TBindex=0;
-    	    						COindex=-1;
-    	    						repaint();
-    	    					 }
-    					   	};
-    					}
-    				}
-    			}     	
-    			if (MOcount>0&&TBindex==0){			
-    				for (int i=1; i<=MOcount; i++){
-    					if (MOBound[i].contains(move_x, move_y)){
-    						MOindex=i;
-    					}
-    				}
-    			} 
-    			
-    			if (TBindex<=0&MOindex<=0){
-    				for (int i=0; i<linklineindex; i++){ // if(distance(A, C) + distance(B, C) == distance(A, B)) , to determine if pointer is on the line.				
-        				if(linkline[i][0]==1){
-        					if(linkline[i][2]==1){	
-        						if(Whether_On_Line(	TBimageX[linkline[i][1]]+(TBimageW[linkline[i][1]]/2), TBimageY[linkline[i][1]]+(TBimageH[linkline[i][1]]/2),
-        											TBimageX[linkline[i][3]]+(TBimageW[linkline[i][3]]/2), TBimageY[linkline[i][3]]+(TBimageH[linkline[i][3]]/2),
-        											x,y)){
-        							if(lineselected!=i){lineselected=i;}else{lineselected=-1;}	
-        							System.out.println("hit!");
-        							break;
-        						}
-        					}else if(linkline[i][2]==2){
-        						if(Whether_On_Line(	TBimageX[linkline[i][1]]+(TBimageW[linkline[i][1]]/2), TBimageY[linkline[i][1]]+(TBimageH[linkline[i][1]]/2),
-    												MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
-    												x,y)){
-        						   if(lineselected!=i){lineselected=i;}else{lineselected=-1;}
-        						   System.out.println("hit!");	
-        						   break;
-        						}
-        					}
-        				}else if(linkline[i][0]==2){
-        					if(linkline[i][2]==1){
-        						if(Whether_On_Line(	MOimageX[linkline[i][1]]+(MOimageW[linkline[i][1]]/2), MOimageY[linkline[i][1]]+(MOimageH[linkline[i][1]]/2),
-    												TBimageX[linkline[i][3]]+(TBimageW[linkline[i][3]]/2), TBimageY[linkline[i][3]]+(TBimageH[linkline[i][3]]/2),
-    												x,y)){
-        						   if(lineselected!=i){lineselected=i;}else{lineselected=-1;}
-        						   System.out.println("hit!");	
-        						   break;
-        						}
-        					}else if(linkline[i][2]==2){
-        						if(Whether_On_Line(	MOimageX[linkline[i][1]]+(MOimageW[linkline[i][1]]/2), MOimageY[linkline[i][1]]+(MOimageH[linkline[i][1]]/2),
-        											MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
-        											x,y)){
-        						   if(lineselected!=i){lineselected=i;}else{lineselected=-1;}
-        						   System.out.println("hit!");
-        						   break;
-        						}
-        					}
-        				}
-        			}
-    			}			
-    			System.out.println(linklineindex);	
+    			if(ableselect&&TBindex<=0&&MOindex<=0){
+					if(lineselected!=lineselected_temp){lineselected=lineselected_temp;}else{lineselected=-1;}	
+    			}				
     			repaint();
 			}	
 				
@@ -489,13 +588,13 @@ class myPanel extends JPanel implements MouseMotionListener{
 				System.out.println("TBLable[1]: "+TBname[1].getText()+"  TBnamepos: "+TBname[1].getLocation());
 				if( (TBindex!=0|MOindex!=0) & 	 //且正在選某個物件
 					 link& !removeornot){		//sure to link something
-						System.out.println("linked");
+						System.out.println("linked, linkindex="+ linklineindex);
 						
 						//self sure
 						if (TBindex!=0){
 							TBco[TBindex][2]=1;
-							linkline[linklineindex][0]=1;
-							linkline[linklineindex][1]=TBindex;
+							linkline[linklineindex][0]=1; 			//draw line from a table	
+							linkline[linklineindex][1]=TBindex;		//draw line from which table
 							System.out.println("TB1");
 						}else if(MOindex!=0){
 							MOco[MOindex][2]=1;	
@@ -524,7 +623,46 @@ class myPanel extends JPanel implements MouseMotionListener{
 							}
 						}
 						linklineindex++;
-						COcount++;	
+						COcount++;
+							
+				}else if((TBindex!=0|MOindex!=0) & 	 //且正在選某個物件
+						 linktolink& !removeornot){
+					
+					//self sure
+					if (TBindex!=0){
+						TBco[TBindex][2]=1;
+						linkline[linklineindex][0]=1; 			//draw line from a table	
+						linkline[linklineindex][1]=TBindex;		//draw line from which table
+						System.out.println("TB1");
+					}else if(MOindex!=0){
+						MOco[MOindex][2]=1;	
+						linkline[linklineindex][0]=2;
+						linkline[linklineindex][1]=MOindex;
+						System.out.println("MO1");
+					}
+					
+					//target sure
+					for(int i=1; i<=TBcount; i++){
+						if( ((TBindex!=0&&TBco[i][1]==TBco[TBindex][1])||(MOindex!=0&&TBco[i][1]==MOco[MOindex][1])) && //determine which target get the same group as self
+							(i!=TBindex)){
+							TBco[i][2]=1;
+							linkline[linklineindex][2]=1;
+							linkline[linklineindex][3]=i;
+							System.out.println("TB2");
+							break;
+						}
+					}
+					for(int i=1; i<=MOcount; i++){
+						if( ((TBindex!=0&&MOco[i][1]==TBco[TBindex][1])||(MOindex!=0&&MOco[i][1]==MOco[MOindex][1])) &&
+								(i!=MOindex)){
+							MOco[i][2]=1;
+							linkline[linklineindex][2]=2;
+							linkline[linklineindex][3]=i;
+							System.out.println("MO2");
+							break;
+						}
+					}
+					linklineindex++;			
 				}
 				
 				
@@ -543,6 +681,10 @@ class myPanel extends JPanel implements MouseMotionListener{
 						MOname[MOindex].setLocation(-100,-100);
 						repaint();
 						MOdelete[MOindex]=-1;
+					}else if(lineindex!=0&&(y>=(delbboundy)&&x>=(delbboundx))){
+						System.out.println("lineindex:"+lineindex);
+						linedelete[lineindex]=-1;
+						repaint();
 					}else if(COindex!=-1&&(y>=(delbboundy)&&x>=(delbboundx))){
 						COimageX[COindex]=-1000;
 						COimageY[COindex]=-1000;
@@ -578,7 +720,11 @@ class myPanel extends JPanel implements MouseMotionListener{
 					trashl.setVisible(true);
 					removeornot=false;
 	    		}
-				
+
+				line_drag_x[0]=0;
+				line_drag_y[0]=0;
+				line_drag_x[1]=0;
+				line_drag_y[1]=0;
 				
 				linex[0]=0;
 				linex[1]=0;
@@ -600,21 +746,30 @@ class myPanel extends JPanel implements MouseMotionListener{
     			createX=x;
     			createY=y;
     			if (evt.getClickCount() == 2 & SwingUtilities.isLeftMouseButton(evt)) {
-    				for (int i=1; i<=TBcount-1; i++){
+    				for (int i=1; i<=TBcount; i++){
     					if (TBBound[i].contains(x,y)){
+    						ifproperty_tb=true;
     						openindex=i;
     						ifopenfile=true;
         					break;
     					}
     				}
+    				
     				if(ifopenfile == true){
-    					TBopenfile(openindex);
     					ifopenfile=false;
-    				}else{
-    					ifproperty=true;
-    					TBButton.setBounds(new Rectangle(x-80, y-panelHeigth+10, addTB.getWidth(null), addTB.getHeight(null)));
-    					MOButton.setBounds(new Rectangle(x+40, y-panelHeigth+10, addMO.getWidth(null), addMO.getHeight(null)));
-    					System.out.println("x="+x+"y="+y);
+    					TBopenfile(openindex);
+    				}else if ( x<(Wide/2) ){
+    					TBcount++;
+        				TBimageX[TBcount]=createX-TBimageW[TBcount]/2;
+        				TBimageY[TBcount]=createY-TBimageH[TBcount]-5;
+        				TBBound[TBcount]= new Rectangle(TBimageX[TBcount], TBimageY[TBcount], TBimage.getWidth(null), TBimage.getHeight(null));
+        				repaint();
+    				}else if( x>(Wide/2)){
+    					MOcount++;
+        				MOimageX[MOcount]=createX-MOimageW[MOcount]/2;
+        				MOimageY[MOcount]=createY-MOimageH[MOcount]-5;
+        				MOBound[MOcount]= new Rectangle(MOimageX[MOcount], MOimageY[MOcount], MOimage.getWidth(null), MOimage.getHeight(null));
+        				repaint();
     				}
     			}
     			
@@ -668,7 +823,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 		});	
 	
 	addMouseMotionListener(this);
-}
+	}	
 	
 	@Override
 	protected void paintComponent(Graphics g) {	
@@ -676,6 +831,10 @@ class myPanel extends JPanel implements MouseMotionListener{
 	 
 	     g.setColor(ovalcolor);
 
+	     if(lineindex!=-1){
+			 Draw_Lines(g, line_drag_x[0], line_drag_y[0], line_drag_x[1], line_drag_y[1], dashed);	
+	     }
+	     
 		 Draw_Lines(g, linex[0], liney[0], linex[1], liney[1], dashed);	
 		 DrawLinkedLine(g);
 		 
@@ -702,13 +861,21 @@ class myPanel extends JPanel implements MouseMotionListener{
 		 	TBname[TBindex].setLocation(TBimageX[TBindex],TBimageY[TBindex]+TBimageH[TBindex]-panelHeigth+15);
 			TBBound[TBindex]=new Rectangle(TBimageX[TBindex], TBimageY[TBindex], TB[TBindex].getWidth(null), TB[TBindex].getHeight(null));
 			repaint();
-			
 		}else if(MOindex!=0){
 			CombinedorNot(MOindex, MOimageX, MOimageY, MOimageW, MOimageH, 2);
 			KeepInPanel (imX, imY, MOindex, MOimageW, MOimageH, MOimageX, MOimageY,
 						 boundN,  boundS,  boundE, MOBound);
 			MOname[MOindex].setLocation(MOimageX[MOindex],MOimageY[MOindex]+MOimageH[MOindex]-panelHeigth+15);
 			MOBound[MOindex]=new Rectangle(MOimageX[MOindex], MOimageY[MOindex], MO[MOindex].getWidth(null), MO[MOindex].getHeight(null));
+			repaint();
+		}
+		
+		if((TBindex==0&&MOindex==0)&&lineindex!=-1){ //prevent from creating line when draging objects
+			System.out.println("lineindex="+ lineindex);
+			line_drag_x[0]=imX-30+10;
+			line_drag_y[0]=imY-30;
+			line_drag_x[1]=imX+30+10;
+			line_drag_y[1]=imY+30;
 			repaint();
 		}
 		
@@ -736,13 +903,12 @@ class myPanel extends JPanel implements MouseMotionListener{
 		}	
 	
 			
-		if ((TBindex!=0|MOindex!=0|COindex!=-1)&&(imY>=(delbboundy)&&imX>=(delbboundx))&&!removeornot){
+		if ((TBindex!=0|MOindex!=0|lineindex!=-1|COindex!=-1)&&(imY>=(delbboundy)&&imX>=(delbboundx))&&!removeornot){
 			TrashAnimation = new Timer(15, new ActionListener() {
 				int i=0;
 			    @Override
 			    public void actionPerformed(ActionEvent ae) {
 			    	if(i<10&TA){
-			    		System.out.println("this is "+i);
 			    		trashl.setBounds(new Rectangle(Wide-trashW,  Heigth-panelHeigth-trashH-10, trashW, trashH));
 			    		//trashl.setBounds(new Rectangle(200,200,100,100));
 			    		trashl.setIcon(new ImageIcon(Trash[i]));
@@ -760,7 +926,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 			TA=true;
 			TrashAnimation.start();
 			removeornot=true;		
-		}else if(imY>=(delbboundy)&&imX>=(delbboundx)){
+		}else if(imY<(delbboundy)||imX<(delbboundx)){
 			trashl.setBounds(new Rectangle(Wide, -50, Wide, 300));
 			startPanel.setLayer(trashl, new Integer(1));
 			trashl.setVisible(true);
@@ -773,12 +939,108 @@ class myPanel extends JPanel implements MouseMotionListener{
 		int y= ev.getY();
 		int x= ev.getX();
 		//System.out.println("x= "+x+"y= "+y);
-		if(y>=(delbboundy)&&x>=(delbboundx)){
+		if(y<(delbboundy)||x<(delbboundx)){
 			trashl.setBounds(new Rectangle(Wide, -50, Wide, 300));
 			startPanel.setLayer(trashl, new Integer(1));
 			trashl.setVisible(true);
 			removeornot=false;				
-		}			
+		}
+		lineindex=-1;
+		
+		if (TBindex<=0&MOindex<=0){
+			for (int i=0; i<linklineindex; i++){ // if(distance(A, C) + distance(B, C) == distance(A, B)) , to determine if pointer is on the line.
+				if(linedelete[i]==-1){
+					continue;
+				}
+				TBindex_temp=0;
+				MOindex_temp=0;				
+				if(linkline[i][0]==1){
+					if(linkline[i][2]==1){	
+						if(Whether_On_Line(	TBimageX[linkline[i][1]]+(TBimageW[linkline[i][1]]/2), TBimageY[linkline[i][1]]+(TBimageH[linkline[i][1]]/2),
+											TBimageX[linkline[i][3]]+(TBimageW[linkline[i][3]]/2), TBimageY[linkline[i][3]]+(TBimageH[linkline[i][3]]/2),
+											x,y)){
+							lineselected_temp=i;
+							System.out.println("hit!");
+							ableselect=true;
+							break;
+						}else{
+							ableselect=false;
+						}
+					}else if(linkline[i][2]==2){
+						if(Whether_On_Line(	TBimageX[linkline[i][1]]+(TBimageW[linkline[i][1]]/2), TBimageY[linkline[i][1]]+(TBimageH[linkline[i][1]]/2),
+											MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
+											x,y)){
+							lineselected_temp=i;
+						   System.out.println("hit!");	
+						   ableselect=true;
+						   break;
+						}else{
+							ableselect=false;
+						}
+					}
+				}else if(linkline[i][0]==2){
+					if(linkline[i][2]==1){
+						if(Whether_On_Line(	MOimageX[linkline[i][1]]+(MOimageW[linkline[i][1]]/2), MOimageY[linkline[i][1]]+(MOimageH[linkline[i][1]]/2),
+											TBimageX[linkline[i][3]]+(TBimageW[linkline[i][3]]/2), TBimageY[linkline[i][3]]+(TBimageH[linkline[i][3]]/2),
+											x,y)){
+							lineselected_temp=i;
+						   System.out.println("hit!");	
+						   ableselect=true;
+						   break;
+						}else{
+							ableselect=false;
+						}
+					}else if(linkline[i][2]==2){
+						if(Whether_On_Line(	MOimageX[linkline[i][1]]+(MOimageW[linkline[i][1]]/2), MOimageY[linkline[i][1]]+(MOimageH[linkline[i][1]]/2),
+											MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
+											x,y)){
+							lineselected_temp=i;
+						   System.out.println("hit!");
+						   ableselect=true;		   
+						   break;
+						}else{
+							ableselect=false;					
+						}
+					}
+				}
+			}
+			
+		}	
+		if(ableselect){
+			this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		}else{
+			this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		}
+		
+		if(TBcount>0){
+			for (int i=1; i<=TBcount; i++){
+				if (TBBound[i].contains(x, y)){
+					this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+					TBindex_temp=i;
+					//System.out.println("tindex: "+TBindex_temp);
+					break;
+				}else if(!ableselect){	//not select on object and not select a line
+					this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+					//System.out.println("tindex: 0");
+					TBindex_temp=0;
+				}
+			}
+		}
+		if(MOcount>0&&TBindex_temp==0){
+			for (int i=1; i<=MOcount; i++){
+				if(MOBound[i].contains(x,y)){
+					this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+					MOindex_temp=i;
+					//System.out.println("mindex: "+MOindex_temp);
+					break;
+				}else if(!ableselect){
+					this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+					//System.out.println("mindex: 0");
+					MOindex_temp=0;
+				}
+			}
+		}
+		
 	}
 	
 	public void TBopenfile(int i){
@@ -873,7 +1135,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 		
 		for (int i=1; i<=MOcount; i++){
 			if(MOdist[i]==minvalue){	// if the target is MO
-				if(((TorM==1& TBco[index][2]!=1)| (TorM==2& MOco[index][2]!=1))& 	//1. Self not linked, link to anything with minvalue<100
+				if( ((TorM==1& TBco[index][2]!=1)| (TorM==2& MOco[index][2]!=1))& 	//1. Self not linked, link to anything with minvalue<100
 						minvalue<100){
 					if(TorM==1){	//self assign
 						TBco[index][0]=1; 	
@@ -892,7 +1154,23 @@ class myPanel extends JPanel implements MouseMotionListener{
 					liney[1]= MOimageY[i]+(MOimageH[i]/2);
 					link=true;
 					System.out.println("model_ready_to_link");		
-				}else{		//if dist >100 but still the closest one
+						
+				}else if (((TorM==1& TBco[index][2]==1& TBco[index][1]!=MOco[i][1])| (TorM==2& MOco[index][2]==1& MOco[index][1]!=MOco[i][1]))& 	//2. Self linked, link to anything with minvalue<100, and not link to itself
+						(minvalue<100)){		
+					if(TorM==1){	//self assign
+						TBco[index][0]=1; 	
+						TBco[index][1]=MOco[i][1]; // self group still need to be change, not only the link
+					}else{
+						MOco[index][0]=1;
+						MOco[index][1]=MOco[i][1];
+					}	
+					//link 
+					linex[0]= X[index]+(W[index]/2);
+					liney[0]= Y[index]+(H[index]/2);
+					linex[1]= MOimageX[i]+(MOimageW[i]/2);
+					liney[1]= MOimageY[i]+(MOimageH[i]/2);
+					linktolink=true;
+				}else{			
 					linex[0]=0;
 					linex[1]=0;
 					liney[0]=0;
@@ -933,6 +1211,21 @@ class myPanel extends JPanel implements MouseMotionListener{
 					liney[1]= TBimageY[i]+(TBimageH[i]/2);
 					link=true;
 					System.out.println("table_ready_to_link");		
+				}else if (((TorM==1& TBco[index][2]==1& TBco[index][1]!=TBco[i][1])| (TorM==2& MOco[index][2]==1& MOco[index][1]!=TBco[i][1]))& 	//2. Self linked, link to anything with minvalue<100, and not link to itself
+						minvalue<100){		
+					if(TorM==1){	//self assign
+						TBco[index][0]=1; 	
+						TBco[index][1]=TBco[i][1]; // self group still need to be change, not only the link
+					}else{
+						MOco[index][0]=1;
+						MOco[index][1]=TBco[i][1];
+					}	
+					//link 
+					linex[0]= X[index]+(W[index]/2);
+					liney[0]= Y[index]+(H[index]/2);
+					linex[1]= TBimageX[i]+(TBimageW[i]/2);
+					liney[1]= TBimageY[i]+(TBimageH[i]/2);
+					linktolink=true;
 				}else{
 					linex[0]=0;
 					linex[1]=0;
@@ -1459,7 +1752,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 	
 	public static boolean Whether_On_Line(double x1, double y1, double x2, double y2, double x, double y){
 		boolean online;
-		online= ( Distance(x1, y1, x, y)+Distance(x2, y2, x, y)<Distance(x1, y1, x2, y2)+5);
+		online= ( Distance(x1, y1, x, y)+Distance(x2, y2, x, y)<Distance(x1, y1, x2, y2)+2);
 		return online;
 	}
 	
@@ -1477,30 +1770,43 @@ class myPanel extends JPanel implements MouseMotionListener{
 	public void DrawLinkedLine(Graphics g){
 		Stroke temp_stroke;
 		for (int i=0; i<linklineindex; i++){
+			if(linedelete[i]==-1){
+				continue;
+			}
+			System.out.println("this is link"+ i);
 			if(i==lineselected){
 				temp_stroke=solid;
 			}else{
 				temp_stroke=dashed;
 			}
 			if(linkline[i][0]==1){
-				if(linkline[i][2]==1){	
-					Draw_Lines(g, TBimageX[linkline[i][1]]+(TBimageW[linkline[i][1]]/2), TBimageY[linkline[i][1]]+(TBimageH[linkline[i][1]]/2),
+				if(linkline[i][2]==1){
+					if(TBdelete[linkline[i][1]]!=-1 & TBdelete[linkline[i][3]]!=-1 ){		//not drawing deleted objects
+						Draw_Lines(g, TBimageX[linkline[i][1]]+(TBimageW[linkline[i][1]]/2), TBimageY[linkline[i][1]]+(TBimageH[linkline[i][1]]/2),
 								  TBimageX[linkline[i][3]]+(TBimageW[linkline[i][3]]/2), TBimageY[linkline[i][3]]+(TBimageH[linkline[i][3]]/2),
 								  temp_stroke);
+					}		
 				}else if(linkline[i][2]==2){
-					Draw_Lines(g, TBimageX[linkline[i][1]]+(TBimageW[linkline[i][1]]/2), TBimageY[linkline[i][1]]+(TBimageH[linkline[i][1]]/2),
-							  	  MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
-							  	  temp_stroke);
+					if(TBdelete[linkline[i][1]]!=-1 & MOdelete[linkline[i][3]]!=-1 ){	
+						Draw_Lines(g, TBimageX[linkline[i][1]]+(TBimageW[linkline[i][1]]/2), TBimageY[linkline[i][1]]+(TBimageH[linkline[i][1]]/2),
+								  	  MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
+								  	  temp_stroke);
+					}
 				}
 			}else if(linkline[i][0]==2){
 				if(linkline[i][2]==1){
-					Draw_Lines(g, MOimageX[linkline[i][1]]+(MOimageW[linkline[i][1]]/2), MOimageY[linkline[i][1]]+(MOimageH[linkline[i][1]]/2),
-								  TBimageX[linkline[i][3]]+(TBimageW[linkline[i][3]]/2), TBimageY[linkline[i][3]]+(TBimageH[linkline[i][3]]/2),
-								  temp_stroke);
+					if(MOdelete[linkline[i][1]]!=-1 & TBdelete[linkline[i][3]]!=-1 ){
+						Draw_Lines(g, MOimageX[linkline[i][1]]+(MOimageW[linkline[i][1]]/2), MOimageY[linkline[i][1]]+(MOimageH[linkline[i][1]]/2),
+								  	  TBimageX[linkline[i][3]]+(TBimageW[linkline[i][3]]/2), TBimageY[linkline[i][3]]+(TBimageH[linkline[i][3]]/2),
+								  	  temp_stroke);
+					}			
 				}else if(linkline[i][2]==2){
-					Draw_Lines(g, MOimageX[linkline[i][1]]+(MOimageW[linkline[i][1]]/2), MOimageY[linkline[i][1]]+(MOimageH[linkline[i][1]]/2),
-								  MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
-								  temp_stroke);
+					if(MOdelete[linkline[i][1]]!=-1 & MOdelete[linkline[i][3]]!=-1 ){
+						Draw_Lines(g, MOimageX[linkline[i][1]]+(MOimageW[linkline[i][1]]/2), MOimageY[linkline[i][1]]+(MOimageH[linkline[i][1]]/2),
+									  MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
+									  temp_stroke);
+					
+					}	
 				}
 			}
 		}
@@ -1522,4 +1828,49 @@ class myPanel extends JPanel implements MouseMotionListener{
 	}*/
 	
 	
+}
+
+
+class TextConsole implements RMainLoopCallbacks{
+    public void rWriteConsole(Rengine re, String text, int oType) {
+        System.out.print(text);
+    }
+    
+    public void rBusy(Rengine re, int which) {
+        System.out.println("rBusy("+which+")");
+    }
+    
+    public String rReadConsole(Rengine re, String prompt, int addToHistory) {
+        System.out.print(prompt);
+        try {
+            BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
+            String s=br.readLine();
+            return (s==null||s.length()==0)?s:s+"\n";
+        } catch (Exception e) {
+            System.out.println("jriReadConsole exception: "+e.getMessage());
+        }
+        return null;
+    }
+    
+    public void rShowMessage(Rengine re, String message) {
+        System.out.println("rShowMessage \""+message+"\"");
+    }
+	
+    public String rChooseFile(Rengine re, int newFile) {
+	FileDialog fd = new FileDialog(new Frame(), (newFile==0)?"Select a file":"Select a new file", (newFile==0)?FileDialog.LOAD:FileDialog.SAVE);
+	fd.show();
+	String res=null;
+	if (fd.getDirectory()!=null) res=fd.getDirectory();
+	if (fd.getFile()!=null) res=(res==null)?fd.getFile():(res+fd.getFile());
+	return res;
+    }
+    
+    public void   rFlushConsole (Rengine re) {
+    }
+	
+    public void   rLoadHistory  (Rengine re, String filename) {
+    }			
+    
+    public void   rSaveHistory  (Rengine re, String filename) {
+    }			
 }
