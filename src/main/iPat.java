@@ -23,7 +23,8 @@ public class iPat {
 	static int Wide=1200;
 	static int Heigth=700;
 	static int PHeight=190;
-	
+	static String folder_path = new String("path");
+
 	public static void main(String[] args){    	
 		JFrame main = new JFrame();
 		main.setLocation(200, 0); 
@@ -47,174 +48,25 @@ public class iPat {
 	}	
 }
 
-class ipatButton extends JButton {
-    private float alpha = 1f;        
-    public float getAlpha() {
-        return alpha;
-    }
-    public void setAlpha(float alpha) {
-        this.alpha = alpha;
-        repaint();
-    }
-    @Override
-    public void paintComponent(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));          
-        super.paintComponent(g2);
-    }
-}
-
-class settingframe extends JFrame implements ActionListener{
-	JButton ok= new JButton("OK");
-	JButton cancel= new JButton("Cancel");
-	String[] model_names= {"GCM", "MLM", "CMLM", "ECMLM", "FarmCPU"};
-	JComboBox model= new JComboBox(model_names);
-	
-	String[] File_names = new String[2]; 
-	String[] File_path;
-	File[] list_2 = new File[30];
-	Rengine r;
-	
-	public settingframe(String[] File_names_in, File[] list_in, Rengine r){	
-		this.list_2 = list_in;
-		this.File_names = File_names_in;
-		this.r = r;
-		
-		
-		JPanel panel= new JPanel(new MigLayout());
-		panel.add(model, "wrap");
-		panel.add(ok);
-		panel.add(cancel);
-
-		ok.addActionListener(this);
-		cancel.addActionListener(this);
-	
-		this.setContentPane(panel);
-		this.pack();
-		this.setTitle("Model Setting Panel");
-		this.show();
-	}
-	public void actionPerformed(ActionEvent ae){
-	      Object source = ae.getSource();	
-	      if (source == ok){
-	   		System.out.println(list_2[0]==null);
-	  		System.out.println("running");
-	  		r.eval("ptm <- proc.time()");
-	  		r.eval("setwd('~/test')");
-	  		
-	  		r.eval("library(MASS)");
-	  		r.eval("library(multtest)");
-	  		r.eval("library(gplots)");
-	  		r.eval("library(compiler)");
-	  		r.eval("library(scatterplot3d)");
-
-	  		r.eval("source('http://www.zzlab.net/GAPIT/emma.txt')");
-	  		r.eval("source('http://www.zzlab.net/GAPIT/gapit_functions.txt')");
-	  			  		
-	  		r.eval("myY  <- read.table('mdp_traits.txt', head = TRUE)");
-	  		r.eval("myG <- read.delim('mdp_genotype_test.hmp.txt', head = FALSE)");
-	  		r.eval("myGAPIT <- GAPIT(Y=myY,	G=myG, PCA.total=3)");
-	  		r.eval("x= proc.time() - ptm ");
-	  		r.eval("print(x)");
-	  		/*
-	  		r.eval("File_name=list.files(pattern= 'GAPIT')");
-	  		r.eval("Rel_path= list.files(pattern= 'GAPIT', full.names=TRUE)");
-	  		r.eval("Abs_path= gsub(Rel_path, pattern='^\\\\.',replacement= getwd()) ");
-	  		//r.eval("print(Abs_path)");
-	  		*/
-	  		
-	  		File f = new File("/Users/Poissonfish/test");
-	  		list_2 = f.listFiles();
-	  		for(int i=0; i<list_2.length; i++){
-				System.out.println(list_2[i]);
-			}
-
-	   		System.out.println(list_2[0]==null);
-	   		
-	  		this.dispose();
-	      }else if (source == cancel){
-	    	this.dispose();  
-	      }
-	}	
-}
-
-class resultframe extends JFrame implements ActionListener{
-	JButton generate= new JButton("Generate");
-	JButton cancel= new JButton("Cancel");
-	JList list= new JList();
-	JScrollPane scrollpane= new JScrollPane(list);
-	
-	String[] model_names= {"GCM", "MLM", "CMLM", "ECMLM", "FarmCPU"};
-	JComboBox model= new JComboBox(model_names);
-	
-	public resultframe(){	
-		JPanel panel= new JPanel(new MigLayout());
-		panel.add(model, "wrap");
-		panel.add(ok);
-		panel.add(cancel);
-		
-		ok.addActionListener(this);
-		cancel.addActionListener(this);
-	
-		this.setContentPane(panel);
-		this.pack();
-		this.setTitle("Model Setting Panel");
-		this.show();
-	}
-	public void actionPerformed(ActionEvent ae){
-	      Object source = ae.getSource();	
-	      if (source == ok){
-	  		r.eval("print('hello')");
-	  		System.out.println("running");
-	  		r.eval("setwd('~/test')");
-	  	
-	  		/*
-	  		r.eval("library(MASS)");
-	  		r.eval("library(multtest)");
-	  		r.eval("library(gplots)");
-	  		r.eval("library(compiler)");
-	  		r.eval("library(scatterplot3d)");
-
-	  		r.eval("source('http://www.zzlab.net/GAPIT/emma.txt')");
-	  		r.eval("source('http://www.zzlab.net/GAPIT/gapit_functions.txt')");
-
-	  		r.eval("myY  <- read.table('./test/mdp_traits.txt', head = TRUE)");
-	  		r.eval("myG <- read.delim('./test/mdp_genotype_test.hmp.txt', head = FALSE)");
-	  		r.eval("myGAPIT <- GAPIT(Y=myY,	G=myG, PCA.total=3)");
-	  		*/
-	  		r.eval("File_name=list.files(pattern= 'GAPIT')");
-	  		r.eval("Rel_path= list.files(pattern= 'GAPIT', full.names=TRUE)");
-	  		r.eval("Abs_path= gsub(Rel_path, pattern='^\\\\.',replacement= getwd()) ");
-	  		r.eval("print(Abs_path)");
-	  		
-	  		
-	  		this.dispose();
-	      }else if (source == cancel){
-	    	this.dispose();  
-	      }
-	}	
-}
-
 class myPanel extends JPanel implements MouseMotionListener{	
 	//  private static class ipatButton extends JButton {
-	
 	private static final int TBMAX=20;
 	private static final int MOMAX=20;
 	private static final int COMAX=10;	
 	
-	int[] TBimageX= new int[TBMAX];
-	int[] TBimageY= new int[TBMAX];
-	int[] TBimageH= new int[TBMAX];
-	int[] TBimageW= new int[TBMAX];
-	int[][] TBco= new int[TBMAX][3];  //1=combined or not(-1,1,2), 2= coindex, 3=subcombined or not (-1,1)
-	int[] TBdelete= new int[TBMAX];
+	static int[] TBimageX= new int[TBMAX];
+	static int[] TBimageY= new int[TBMAX];
+	static 	int[] TBimageH= new int[TBMAX];
+	static int[] TBimageW= new int[TBMAX];
+	static int[][] TBco= new int[TBMAX][3];  //1=combined or not(-1,1,2), 2= coindex, 3=subcombined or not (-1,1)
+	static int[] TBdelete= new int[TBMAX];
 	
-	int[] MOimageX= new int[MOMAX];
-	int[] MOimageY= new int[MOMAX];
-	int[] MOimageH= new int[MOMAX];
-	int[] MOimageW= new int[MOMAX];
-	int[][] MOco= new int[MOMAX][3];
-	int[] MOdelete= new int[MOMAX];
+	static int[] MOimageX= new int[MOMAX];
+	static int[] MOimageY= new int[MOMAX];
+	static int[] MOimageH= new int[MOMAX];
+	static int[] MOimageW= new int[MOMAX];
+	static int[][] MOco= new int[MOMAX][3];
+	static int[] MOdelete= new int[MOMAX];
 	
 	int[] COimageX= new int[COMAX];
 	int[] COimageY= new int[COMAX];
@@ -224,17 +76,17 @@ class myPanel extends JPanel implements MouseMotionListener{
 	
 	Boolean link=false;
 	
-	int TBindex =0, TBindex_temp=0;
-	int MOindex =0, MOindex_temp=0;
+	static int TBindex =0, TBindex_temp=0;
+	static int MOindex =0, MOindex_temp=0;
 	int COindex =-1;
 	
-	int TBcount =0;
-	int MOcount =0;
-	int COcount =0;
+	static int TBcount =0;
+	static int MOcount =0;
+	static int COcount =0;
 	
-	Rectangle[] TBBound= new Rectangle[TBMAX];
-	Rectangle[] MOBound= new Rectangle[MOMAX];
-	Rectangle[] COBound= new Rectangle[COMAX];
+	static Rectangle[] TBBound= new Rectangle[TBMAX];
+	static Rectangle[] MOBound= new Rectangle[MOMAX];
+	static Rectangle[] COBound= new Rectangle[COMAX];
 	
 	int MOimageX_int=430;
 	int MOimageY_int=200;
@@ -256,11 +108,11 @@ class myPanel extends JPanel implements MouseMotionListener{
 	JLabel iPat = new JLabel();
 
 	JFileChooser[] TBchooser= new JFileChooser[TBMAX];
-	String[] TBfile= new String[TBMAX];
+	static String[] TBfile= new String[TBMAX];
 	int[] TBvalue= new int[TBMAX];
 	
-	JLabel[] TBname= new JLabel[TBMAX];	
-	JLabel[] MOname= new JLabel[MOMAX];		
+	static JLabel[] TBname= new JLabel[TBMAX];	
+	static JLabel[] MOname= new JLabel[MOMAX];		
 
 	//animation
 	Timer TrashAnimation, DashLineAnimation, CombinedDeleteAnimation, 
@@ -293,10 +145,12 @@ class myPanel extends JPanel implements MouseMotionListener{
 		  line_drag_x=new int[2],
 		  line_drag_y=new int[2];
 	
-	int[][] linkline= new int[500][4];
+	static int[][] linkline= new int[500][4];
 	int[] linedelete= new int[500];
-	int linklineindex=0, lineselected=-1, lineselected_temp=-1, 
-		lineindex=-1;	
+	static int linklineindex=0;
+	int lineselected=-1;
+	int lineselected_temp=-1;
+	int lineindex=-1;	
 	boolean ableselect=false, linktolink=false;
     Stroke dashed = new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,10}, 0);
     Stroke solid = new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,0}, 0);
@@ -309,7 +163,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 	Color themecolor = new Color(54, 164, 239, 150);
 	
 	//windows size
-	int Wide, Heigth, panelHeigth;
+	static int Wide, Heigth, panelHeigth;
 
 	//Intro
 	Timer Intro;
@@ -325,10 +179,15 @@ class myPanel extends JPanel implements MouseMotionListener{
 	int openindex=-1;
 	int createX=-1, createY=-1;
 	
-	//iPat
+	//Gapit
 	String[] File_names;
 	File[] File_paths = new File[30];
+	JFileChooser folder_chooser = new JFileChooser(); 
+	iPat_chooser chooser; 
+	
 	Rengine r = new Rengine(new String[]{"--no-save"}, true, new TextConsole());
+	//settingframe model_frame;
+	Preferences pref = Preferences.userRoot().node("/iPat"); 
 	
 	public myPanel(int Wideint, int Heigthint, int pH){	
 		this.Wide=Wideint;
@@ -416,8 +275,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 		nullPanel.add(MOButton, new Integer(2));
 		
 		trashl.setBounds(new Rectangle(-100,-100, trashW, trashH));
-		trashl.setVisible(true);
-		
+		trashl.setVisible(true);	
 		
 		iPat.setBounds(new Rectangle(523, 10, 150, 80)); 
 		TBButton.setBounds(new Rectangle(-10000, -10000, TBimage.getWidth(null), TBimage.getHeight(null)));
@@ -455,77 +313,9 @@ class myPanel extends JPanel implements MouseMotionListener{
 		//LAYOUT.END
 		////////////
 		////////////
-		////////////	
+		////////////
 		
-		/*
-		TBanimation = new Timer(10, new ActionListener() {
-			int ant=10;
-			int[] tbposx={365, 390, 415, 440, 465};
-		    @Override
-		    public void actionPerformed(ActionEvent ae) {
-		    	int tbin=(TBcount-1)%5;
-				TBimageX[TBcount]=tbposx[tbin]-ant*2;
-		        repaint();
-		        ant--;
-		        if(ant==-1){
-		        	System.out.println("TBend");
-		        	TBanimation.stop();
-		        	TBBound[TBcount]=new Rectangle(TBimageX[TBcount], TBimageY[TBcount],TB[TBcount].getWidth(null), TB[TBcount].getHeight(null));
-		        	ant=10;
-		        }
-		    }
-		});	
-		MOanimation = new Timer(10, new ActionListener() {
-			int ant=10;
-			int[] moposx={665, 690, 715, 740, 765};
-		    @Override
-		    public void actionPerformed(ActionEvent ae) {
-		    	int moin=(MOcount-1)%5;
-				MOimageX[MOcount]=moposx[moin]-ant*2;
-		        repaint();
-		        ant--;
-		        if(ant==-1){
-		        	MOanimation.stop();
-		        	MOBound[MOcount]=new Rectangle(MOimageX[MOcount], MOimageY[MOcount],MO[MOcount].getWidth(null), MO[MOcount].getHeight(null));
-		        	ant=10;
-		        }
-		    }
-		});	
-		
-    	}); 
-		
-		TBButton.addMouseListener(new MouseAdapter() {
-    		@Override
-    		public void mousePressed(MouseEvent tm) {
-    			int xt = tm.getX();
-    			int yt = tm.getY();
-    			if (contains(xt,yt)){
-    				TBcount++;
-    				TBimageX[TBcount]=createX-TBimageW[TBcount]/2;
-    				TBimageY[TBcount]=createY-TBimageH[TBcount]-5;
-    				TBBound[TBcount]= new Rectangle(TBimageX[TBcount], TBimageY[TBcount], TBimage.getWidth(null), TBimage.getHeight(null));
-    				repaint();
-    			}		
-    		}
-		});
-		MOButton.addMouseListener(new MouseAdapter() {
-    		@Override
-    		public void mousePressed(MouseEvent mm) {
-    			int xm = mm.getX();
-    			int ym = mm.getY();
-    			if (contains(xm,ym)){
-    				MOcount++;
-    				MOimageX[MOcount]=createX-MOimageW[MOcount]/2;
-    				MOimageY[MOcount]=createY-MOimageH[MOcount]-5;
-    				MOBound[MOcount]= new Rectangle(MOimageX[MOcount], MOimageY[MOcount], MOimage.getWidth(null), MOimage.getHeight(null));
-    				repaint();
-    			}
-    		}
-		});	
-		*/
-		
-		this.addMouseListener(new MouseAdapter(){
-			
+		this.addMouseListener(new MouseAdapter(){		
 			@Override
 			public void mousePressed(MouseEvent ee){
 				int move_x=ee.getX();
@@ -536,8 +326,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 				TBindex=0;
     			MOindex=0;
     			lineindex=-1;
-    			
- 
     			TBindex= TBindex_temp;
     			MOindex= MOindex_temp;
     			if (ableselect){
@@ -545,7 +333,9 @@ class myPanel extends JPanel implements MouseMotionListener{
         			System.out.println("lineindex:"+lineindex);	
     			}
     			
-    			if(TBindex!=0 & SwingUtilities.isRightMouseButton(ee)){
+    			String folder_path = null;
+				if(TBindex!=0 & SwingUtilities.isRightMouseButton(ee)){
+					 TBchooser[TBindex].setApproveButtonText("Link!");
 					 TBvalue[TBindex]= TBchooser[TBindex].showOpenDialog(null);
 					 if (TBvalue[TBindex] == JFileChooser.APPROVE_OPTION){
 					    File selectedfile = TBchooser[TBindex].getSelectedFile();  	    					    
@@ -560,22 +350,20 @@ class myPanel extends JPanel implements MouseMotionListener{
 						COindex=-1;
 						repaint();
 					 }
-			   	}else if(MOindex!=0 & SwingUtilities.isRightMouseButton(ee)){
-			   		JFrame model_frame= new settingframe(File_names, File_paths, r);
-			   		model_frame.setLocation(450, 250);
+			   	}else if(MOindex!=0 & SwingUtilities.isRightMouseButton(ee)){ 	
+			   		chooser = new iPat_chooser();
+			   		settingframe model_frame = new settingframe(chooser.getPath(), r, MOindex);
+			  		model_frame.setLocation(450, 250);
 			   		model_frame.setResizable(false);
+			   		model_frame.initial();
+			   		
 			   	}else if(MOindex!=0 & SwingUtilities.isLeftMouseButton(ee)){
-				   	/*
-			   		for(int i=0; i<File_paths.length; i++){
-						System.out.println(File_paths[i]);
-					}*/
-			   		//System.out.println(File_paths[0]==null);
-			   		System.out.println(File_names[0]);
-			   	}
-    			
+			   		System.out.println("folder_path:"+pref.get("path", ""));
+			   		System.out.println("TBimageX[TBcount] "+TBimageX[TBcount]);
+			   	} 			
     			if(ableselect&&TBindex<=0&&MOindex<=0){
 					if(lineselected!=lineselected_temp){lineselected=lineselected_temp;}else{lineselected=-1;}	
-    			}				
+    			}		
     			repaint();
 			}	
 				
@@ -583,7 +371,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 			public void mouseReleased(MouseEvent ee){				
 				int x=ee.getX();
 				int y=ee.getY();		
-			
+
     			//To compute whether the objects should be created
 				System.out.println("TBLable[1]: "+TBname[1].getText()+"  TBnamepos: "+TBname[1].getLocation());
 				if( (TBindex!=0|MOindex!=0) & 	 //且正在選某個物件
@@ -663,8 +451,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						}
 					}
 					linklineindex++;			
-				}
-				
+				}			
 				
 				if (removeornot){
 					if (TBindex!=0&&(y>=(delbboundy)&&x>=(delbboundx))){
@@ -753,8 +540,7 @@ class myPanel extends JPanel implements MouseMotionListener{
     						ifopenfile=true;
         					break;
     					}
-    				}
-    				
+    				}			
     				if(ifopenfile == true){
     					ifopenfile=false;
     					TBopenfile(openindex);
@@ -770,53 +556,6 @@ class myPanel extends JPanel implements MouseMotionListener{
         				MOimageY[MOcount]=createY-MOimageH[MOcount]-5;
         				MOBound[MOcount]= new Rectangle(MOimageX[MOcount], MOimageY[MOcount], MOimage.getWidth(null), MOimage.getHeight(null));
         				repaint();
-    				}
-    			}
-    			
-    			
-    			if (evt.getClickCount() == 2 & SwingUtilities.isRightMouseButton(evt)) {
-    				for (CDAi=0; CDAi<=COcount-1; CDAi++){
-    					if (COBound[CDAi].contains(x,y)){
-    						CDAindex=CDAi;
-    						CombinedDeleteAnimation= new Timer(5, new ActionListener() {
-    							int t=0;
-    					    	int CX=COimageX[CDAindex];
-    					    	int CY=COimageY[CDAindex];
-    						    @Override
-    						    public void actionPerformed(ActionEvent ani) {	
-    						    	COimageX[CDAindex]=(int)(CX+(t/2));
-    						    	COimageY[CDAindex]=(int)(CY+(t/2));
-    						    	CDAW=(int)(25-t);
-    						    	CDAH=(int)(25-t);
-    						    	repaint();
-    						    	t++;
-    						    	if(t==26){
-    						    		CombinedDeleteAnimation.stop();
-    						    		t=0;
-    						        	COimageX[CDAindex]=-1000;
-    									COimageY[CDAindex]=-1000;
-    									COBound[CDAindex]=new Rectangle(COimageX[CDAindex], COimageY[CDAindex], COimageW[CDAindex], COimageH[CDAindex]);	
-    									CDAindex=-1;
-    									repaint();	
-    						    	}
-    						    }      					    
-    						});
-    						CombinedDeleteAnimation.start();	
-    						for (int t=1; t<=TBcount; t++){
-    							if(TBco[t][1]==CDAi){
-    								TBco[t][0]=-1;
-    								TBco[t][1]=-1;
-    								TBco[t][2]=-1;
-    							}
-    						}
-    						for (int m=1; m<=MOcount; m++){
-    							if(MOco[m][1]==CDAi){
-    								MOco[m][0]=-1;
-    								MOco[m][1]=-1;
-    								MOco[m][2]=-1;
-    							}
-    						}
-    					}  					
     				}
     			}
     		}
@@ -878,31 +617,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 			line_drag_y[1]=imY+30;
 			repaint();
 		}
-		
-		if(COindex!=-1){	
-			int dx= imX- (COimageX[COindex]+(COimageW[COindex]/2));
-			int dy= imY- (COimageY[COindex]+(COimageH[COindex]/2));
-			if(COco[COindex][0]==1&COco[COindex][1]==1){
-					DragandKeepCombinedinPanel (imX, imY, dx, dy, boundE, boundS,
-							COco[COindex][2], TBimageX, TBimageY, TBimageW, TBimageH, TBBound, TBname, 1,
-							COco[COindex][3], TBimageX, TBimageY, TBimageW, TBimageH, TBBound, TBname, 1);
-			}else if(COco[COindex][0]==1&COco[COindex][1]==2){
-					DragandKeepCombinedinPanel (imX, imY, dx, dy, boundE, boundS,
-							COco[COindex][2], TBimageX, TBimageY, TBimageW, TBimageH, TBBound, TBname, 1,
-							COco[COindex][3], MOimageX, MOimageY, MOimageW, MOimageH, MOBound, MOname, 2);		
-			}else if (COco[COindex][0]==2&COco[COindex][1]==1){
-					DragandKeepCombinedinPanel (imX, imY, dx, dy, boundE, boundS,
-							COco[COindex][2], MOimageX, MOimageY, MOimageW, MOimageH, MOBound, MOname, 2,
-							COco[COindex][3], TBimageX, TBimageY, TBimageW, TBimageH, TBBound, TBname, 1);
-			}else if(COco[COindex][0]==2&COco[COindex][1]==2){
-					DragandKeepCombinedinPanel (imX, imY, dx, dy, boundE, boundS,
-							COco[COindex][2], MOimageX, MOimageY, MOimageW, MOimageH, MOBound, MOname, 2,
-							COco[COindex][3], MOimageX, MOimageY, MOimageW, MOimageH, MOBound, MOname, 2);
-			}
-			repaint();
-		}	
 	
-			
 		if ((TBindex!=0|MOindex!=0|lineindex!=-1|COindex!=-1)&&(imY>=(delbboundy)&&imX>=(delbboundx))&&!removeornot){
 			TrashAnimation = new Timer(15, new ActionListener() {
 				int i=0;
@@ -1811,66 +1526,12 @@ class myPanel extends JPanel implements MouseMotionListener{
 			}
 		}
 	}
-	
-	/*
-	public static void CreateObject(int count, int[] X, int[] Y, Rectangle[] bound, int setX, int setY, Image ig){
-		System.out.println("count+1");
-		count++;
-		
-		X[count]=setX;
-		Y[count]=setY;
-		bound[count]= new Rectangle(X[count], Y[count], ig.getWidth(null), ig.getHeight(null));
-		System.out.println("TBcount= "+count);
-		System.out.println("setX= "+setX);
-		System.out.println("setY= "+setY);
-		System.out.println("X[count]= "+X[count]);
-		System.out.println("Y[count]= "+Y[count]);
-	}*/
-	
-	
 }
 
 
-class TextConsole implements RMainLoopCallbacks{
-    public void rWriteConsole(Rengine re, String text, int oType) {
-        System.out.print(text);
-    }
-    
-    public void rBusy(Rengine re, int which) {
-        System.out.println("rBusy("+which+")");
-    }
-    
-    public String rReadConsole(Rengine re, String prompt, int addToHistory) {
-        System.out.print(prompt);
-        try {
-            BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
-            String s=br.readLine();
-            return (s==null||s.length()==0)?s:s+"\n";
-        } catch (Exception e) {
-            System.out.println("jriReadConsole exception: "+e.getMessage());
-        }
-        return null;
-    }
-    
-    public void rShowMessage(Rengine re, String message) {
-        System.out.println("rShowMessage \""+message+"\"");
-    }
-	
-    public String rChooseFile(Rengine re, int newFile) {
-	FileDialog fd = new FileDialog(new Frame(), (newFile==0)?"Select a file":"Select a new file", (newFile==0)?FileDialog.LOAD:FileDialog.SAVE);
-	fd.show();
-	String res=null;
-	if (fd.getDirectory()!=null) res=fd.getDirectory();
-	if (fd.getFile()!=null) res=(res==null)?fd.getFile():(res+fd.getFile());
-	return res;
-    }
-    
-    public void   rFlushConsole (Rengine re) {
-    }
-	
-    public void   rLoadHistory  (Rengine re, String filename) {
-    }			
-    
-    public void   rSaveHistory  (Rengine re, String filename) {
-    }			
-}
+
+
+
+
+
+
