@@ -58,21 +58,15 @@ class myPanel extends JPanel implements MouseMotionListener{
 	static int[] TBimageY= new int[TBMAX];
 	static 	int[] TBimageH= new int[TBMAX];
 	static int[] TBimageW= new int[TBMAX];
-	static int[][] TBco= new int[TBMAX][3];  //1=combined or not(-1,1,2), 2= coindex, 3=subcombined or not (-1,1)
+	static int[][] TBco= new int[TBMAX][4];  //1=combined or not(-1,1,2), 2= coindex, 3=subcombined or not (-1,1)
 	static int[] TBdelete= new int[TBMAX];
 	
 	static int[] MOimageX= new int[MOMAX];
 	static int[] MOimageY= new int[MOMAX];
 	static int[] MOimageH= new int[MOMAX];
 	static int[] MOimageW= new int[MOMAX];
-	static int[][] MOco= new int[MOMAX][3];
+	static int[][] MOco= new int[MOMAX][4];
 	static int[] MOdelete= new int[MOMAX];
-	
-	int[] COimageX= new int[COMAX];
-	int[] COimageY= new int[COMAX];
-	int[] COimageH= new int[COMAX];
-	int[] COimageW= new int[COMAX];
-	int[][] COco= new int[COMAX][4];
 	
 	Boolean link=false;
 	
@@ -298,6 +292,8 @@ class myPanel extends JPanel implements MouseMotionListener{
 			TBimageW[i]=TB[i].getWidth(null);	
 			TBco[i][0]=-1;
 			TBco[i][1]=-1;
+			TBco[i][2]=-1;
+			TBco[i][3]=-1;
 		}	
 		for (int i=1; i<=MOMAX-1; i++){
 			MOname[i]= new JLabel();		
@@ -306,12 +302,12 @@ class myPanel extends JPanel implements MouseMotionListener{
 			MOimageW[i]=MO[i].getWidth(null);
 			MOco[i][0]=-1;
 			MOco[i][1]=-1;
+			MOco[i][2]=-1;
+			MOco[i][3]=-1;			
 		}	
 		////////////
 		////////////
-		////////////
 		//LAYOUT.END
-		////////////
 		////////////
 		////////////
 		
@@ -323,11 +319,17 @@ class myPanel extends JPanel implements MouseMotionListener{
     			double x=ee.getX();
     			double y=ee.getY();
     			COindex=-1;
-				TBindex=0;
-    			MOindex=0;
     			lineindex=-1;
-    			TBindex= TBindex_temp;
+    			TBindex= TBindex_temp;  // catcth the mouse_move result
     			MOindex= MOindex_temp;
+    			
+    			//Debug section
+    			if(TBindex!=0){
+        			System.out.println("COgroup: "+TBco[TBindex][3]);        				
+    			}else if(MOindex!=0){
+    				System.out.println("COgourp: "+MOco[MOindex][3]);
+    			}
+    			//  			
     			if (ableselect){
         			lineindex= lineselected_temp;
         			System.out.println("lineindex:"+lineindex);	
@@ -358,8 +360,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 			   		model_frame.initial();
 			   		
 			   	}else if(MOindex!=0 & SwingUtilities.isLeftMouseButton(ee)){
-			   		System.out.println("folder_path:"+pref.get("path", ""));
-			   		System.out.println("TBimageX[TBcount] "+TBimageX[TBcount]);
+			   
 			   	} 			
     			if(ableselect&&TBindex<=0&&MOindex<=0){
 					if(lineselected!=lineselected_temp){lineselected=lineselected_temp;}else{lineselected=-1;}	
@@ -373,28 +374,28 @@ class myPanel extends JPanel implements MouseMotionListener{
 				int y=ee.getY();		
 
     			//To compute whether the objects should be created
-				System.out.println("TBLable[1]: "+TBname[1].getText()+"  TBnamepos: "+TBname[1].getLocation());
 				if( (TBindex!=0|MOindex!=0) & 	 //且正在選某個物件
 					 link& !removeornot){		//sure to link something
-						System.out.println("linked, linkindex="+ linklineindex);
-						
 						//self sure
 						if (TBindex!=0){
-							TBco[TBindex][2]=1;
+							TBco[TBindex][2] = TBco[TBindex][0];
+							TBco[TBindex][3] = TBco[TBindex][1];
 							linkline[linklineindex][0]=1; 			//draw line from a table	
 							linkline[linklineindex][1]=TBindex;		//draw line from which table
 							System.out.println("TB1");
 						}else if(MOindex!=0){
-							MOco[MOindex][2]=1;	
-							linkline[linklineindex][0]=2;
-							linkline[linklineindex][1]=MOindex;
+							MOco[MOindex][2] = MOco[MOindex][0];
+							MOco[MOindex][3] = MOco[MOindex][1];	
+							linkline[linklineindex][0]=2;		  	//draw line from a model	
+							linkline[linklineindex][1]=MOindex;		//draw line from which model
 							System.out.println("MO1");
 						}
 						
 						//target sure
 						for(int i=1; i<=TBcount; i++){
-							if(TBco[i][1]==COcount& i!=TBindex){
-								TBco[i][2]=1;
+							if(TBco[i][1] == COcount && i != TBindex){
+								TBco[i][2] = TBco[i][0];
+								TBco[i][3] = TBco[i][1];
 								linkline[linklineindex][2]=1;
 								linkline[linklineindex][3]=i;
 								System.out.println("TB2");
@@ -402,8 +403,9 @@ class myPanel extends JPanel implements MouseMotionListener{
 							}
 						}
 						for(int i=1; i<=MOcount; i++){
-							if(MOco[i][1]==COcount& i!=MOindex){
-								MOco[i][2]=1;
+							if(MOco[i][1] == COcount && i != MOindex){
+								MOco[i][2] = MOco[i][0];
+								MOco[i][3] = MOco[i][1];
 								linkline[linklineindex][2]=2;
 								linkline[linklineindex][3]=i;
 								System.out.println("MO2");
@@ -412,28 +414,31 @@ class myPanel extends JPanel implements MouseMotionListener{
 						}
 						linklineindex++;
 						COcount++;
-							
+						
 				}else if((TBindex!=0|MOindex!=0) & 	 //且正在選某個物件
-						 linktolink& !removeornot){
-					
+						 linktolink& !removeornot){					
 					//self sure
 					if (TBindex!=0){
-						TBco[TBindex][2]=1;
+						TBco[TBindex][2] = TBco[TBindex][0];
+						TBco[TBindex][3] = TBco[TBindex][1];
 						linkline[linklineindex][0]=1; 			//draw line from a table	
 						linkline[linklineindex][1]=TBindex;		//draw line from which table
 						System.out.println("TB1");
 					}else if(MOindex!=0){
-						MOco[MOindex][2]=1;	
-						linkline[linklineindex][0]=2;
-						linkline[linklineindex][1]=MOindex;
+						MOco[MOindex][2] = MOco[MOindex][0];
+						MOco[MOindex][3] = MOco[MOindex][1];	
+						linkline[linklineindex][0]=2;		  	//draw line from a model
+						linkline[linklineindex][1]=MOindex;		//draw line from which model
 						System.out.println("MO1");
 					}
 					
 					//target sure
 					for(int i=1; i<=TBcount; i++){
-						if( ((TBindex!=0&&TBco[i][1]==TBco[TBindex][1])||(MOindex!=0&&TBco[i][1]==MOco[MOindex][1])) && //determine which target get the same group as self
-							(i!=TBindex)){
-							TBco[i][2]=1;
+						if( ((TBindex != 0 && TBco[i][1] == TBco[TBindex][3]) ||
+							 (MOindex != 0 && TBco[i][1] == MOco[MOindex][3])) && //determine which target get the same group as self
+							(i != TBindex)){
+							TBco[i][2]=TBco[i][0];
+							TBco[i][3]=TBco[i][1];
 							linkline[linklineindex][2]=1;
 							linkline[linklineindex][3]=i;
 							System.out.println("TB2");
@@ -441,9 +446,11 @@ class myPanel extends JPanel implements MouseMotionListener{
 						}
 					}
 					for(int i=1; i<=MOcount; i++){
-						if( ((TBindex!=0&&MOco[i][1]==TBco[TBindex][1])||(MOindex!=0&&MOco[i][1]==MOco[MOindex][1])) &&
-								(i!=MOindex)){
-							MOco[i][2]=1;
+						if( ((TBindex != 0 && MOco[i][1] == TBco[TBindex][3]) || 
+							 (MOindex != 0 && MOco[i][1] == MOco[MOindex][3])) &&
+							(i != MOindex)){
+							MOco[i][2]=MOco[i][0];
+							MOco[i][3]=MOco[i][1];
 							linkline[linklineindex][2]=2;
 							linkline[linklineindex][3]=i;
 							System.out.println("MO2");
@@ -472,42 +479,11 @@ class myPanel extends JPanel implements MouseMotionListener{
 						System.out.println("lineindex:"+lineindex);
 						linedelete[lineindex]=-1;
 						repaint();
-					}else if(COindex!=-1&&(y>=(delbboundy)&&x>=(delbboundx))){
-						COimageX[COindex]=-1000;
-						COimageY[COindex]=-1000;
-						COBound[COindex]=new Rectangle(COimageX[COcount], COimageY[COcount], COimageW[COcount], COimageH[COcount]);	
-						for (int t=1; t<=TBcount; t++){
-							if(TBco[t][1]==COindex){
-								TBco[t][0]=-1;
-								TBco[t][1]=-1;
-								TBco[t][2]=-1;
-								TBimageX[t]=-1000;
-								TBimageY[t]=-1000;
-								TBBound[t]=new Rectangle(-100,-100,0,0);
-								TBname[t].setLocation(-100,-100);
-								repaint();
-								TBdelete[t]=-1;
-							}
-						}
-						for (int m=1; m<=MOcount; m++){
-							if(MOco[m][1]==COindex){
-								MOco[m][0]=-1;
-								MOco[m][1]=-1;
-								MOco[m][2]=-1;
-								MOimageX[m]=-1000;
-								MOimageY[m]=-1000;
-								MOBound[m]=new Rectangle(-100,-100,0,0);
-								MOname[m].setLocation(-100,-100);
-								repaint();
-								MOdelete[m]=-1;
-							}
-						}
 					}
     				trashl.setBounds(new Rectangle(-1000, -50, Wide, 300));  				
 					trashl.setVisible(true);
 					removeornot=false;
 	    		}
-
 				line_drag_x[0]=0;
 				line_drag_y[0]=0;
 				line_drag_x[1]=0;
@@ -523,6 +499,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 				MOindex=0;
 				COindex=-1;
 				link=false;
+				linktolink=false;
 			}
 			
 			
@@ -572,8 +549,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 
 	     if(lineindex!=-1){
 			 Draw_Lines(g, line_drag_x[0], line_drag_y[0], line_drag_x[1], line_drag_y[1], dashed);	
-	     }
-	     
+	     }     
 		 Draw_Lines(g, linex[0], liney[0], linex[1], liney[1], dashed);	
 		 DrawLinkedLine(g);
 		 
@@ -610,7 +586,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 		}
 		
 		if((TBindex==0&&MOindex==0)&&lineindex!=-1){ //prevent from creating line when draging objects
-			System.out.println("lineindex="+ lineindex);
 			line_drag_x[0]=imX-30+10;
 			line_drag_y[0]=imY-30;
 			line_drag_x[1]=imX+30+10;
@@ -653,7 +628,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 	public void mouseMoved(MouseEvent ev) {
 		int y= ev.getY();
 		int x= ev.getX();
-		//System.out.println("x= "+x+"y= "+y);
 		if(y<(delbboundy)||x<(delbboundx)){
 			trashl.setBounds(new Rectangle(Wide, -50, Wide, 300));
 			startPanel.setLayer(trashl, new Integer(1));
@@ -675,7 +649,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 											TBimageX[linkline[i][3]]+(TBimageW[linkline[i][3]]/2), TBimageY[linkline[i][3]]+(TBimageH[linkline[i][3]]/2),
 											x,y)){
 							lineselected_temp=i;
-							System.out.println("hit!");
 							ableselect=true;
 							break;
 						}else{
@@ -686,7 +659,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 											MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
 											x,y)){
 							lineselected_temp=i;
-						   System.out.println("hit!");	
 						   ableselect=true;
 						   break;
 						}else{
@@ -699,7 +671,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 											TBimageX[linkline[i][3]]+(TBimageW[linkline[i][3]]/2), TBimageY[linkline[i][3]]+(TBimageH[linkline[i][3]]/2),
 											x,y)){
 							lineselected_temp=i;
-						   System.out.println("hit!");	
 						   ableselect=true;
 						   break;
 						}else{
@@ -710,7 +681,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 											MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
 											x,y)){
 							lineselected_temp=i;
-						   System.out.println("hit!");
 						   ableselect=true;		   
 						   break;
 						}else{
@@ -732,11 +702,9 @@ class myPanel extends JPanel implements MouseMotionListener{
 				if (TBBound[i].contains(x, y)){
 					this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 					TBindex_temp=i;
-					//System.out.println("tindex: "+TBindex_temp);
 					break;
 				}else if(!ableselect){	//not select on object and not select a line
 					this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-					//System.out.println("tindex: 0");
 					TBindex_temp=0;
 				}
 			}
@@ -746,11 +714,9 @@ class myPanel extends JPanel implements MouseMotionListener{
 				if(MOBound[i].contains(x,y)){
 					this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 					MOindex_temp=i;
-					//System.out.println("mindex: "+MOindex_temp);
 					break;
 				}else if(!ableselect){
 					this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-					//System.out.println("mindex: 0");
 					MOindex_temp=0;
 				}
 			}
@@ -817,9 +783,24 @@ class myPanel extends JPanel implements MouseMotionListener{
 	  	else{TB[i]=Unknown;}	  	
 	}
 	
-	public void CombinedorNot(int index, int[] X, int[] Y, int[] W, int[] H, int TorM){
+	public void CombinedorNot(int index, int[] Xs, int[] Ys, int[] Ws, int[] Hs, int TorM_s){
 		int[] TBdist= new int[TBcount+1];
 		int[] MOdist= new int[MOcount+1];
+		int minvalue= min_dist(index, Xs, Ys, Ws, Hs, TBdist, MOdist);
+		System.out.println("----------log start-------------");
+		System.out.println("minvalue="+minvalue);
+		System.out.println("check model");
+		combine_type_determined(MOdist, minvalue, TorM_s, 
+								Xs, Ys, Ws, Hs, index,
+								MOimageX, MOimageY, MOimageW, MOimageH, MOcount, MOco, 2);
+		System.out.println("check table");
+		combine_type_determined(TBdist, minvalue, TorM_s, 
+								Xs, Ys, Ws, Hs, index,
+								TBimageX, TBimageY, TBimageW, TBimageH, TBcount, TBco, 1);						
+		System.out.println("----------log end-------------");
+	}		
+		
+	public int min_dist(int index, int[] X, int[] Y, int[] W, int[] H, int[] TBdist, int[] MOdist){
 		int x= X[index]+(W[index]/2);
 		int y= Y[index]+(H[index]/2);	
 		for (int i=1; i<=TBcount; i++){
@@ -845,561 +826,118 @@ class myPanel extends JPanel implements MouseMotionListener{
 		int[] newdist = new int[TBdist.length + MOdist.length-2];
 		System.arraycopy(TBdist, 1, newdist, 0 		   		, TBdist.length-1);
 		System.arraycopy(MOdist, 1, newdist, TBdist.length-1, MOdist.length-1);
-		int minvalue= MinValue(newdist);
-		System.out.println("minvalue= "+minvalue);	
-		
-		for (int i=1; i<=MOcount; i++){
-			if(MOdist[i]==minvalue){	// if the target is MO
-				if( ((TorM==1& TBco[index][2]!=1)| (TorM==2& MOco[index][2]!=1))& 	//1. Self not linked, link to anything with minvalue<100
-						minvalue<100){
-					if(TorM==1){	//self assign
+		return MinValue(newdist);
+	}	
+	
+	
+	// target_specify
+	public void combine_type_determined(int[] dist, int minvalue, int TorM_s,
+										int[] Xs, int[] Ys, int[] Ws, int[] Hs, int index, 
+										int[] Xt, int[] Yt, int[] Wt, int[] Ht, int count_t, int[][] co_t, int TorM_t){
+		for (int i=1; i<=count_t; i++){
+			if(TorM_s == TorM_t && index == i){ return;} //skip determined self object 
+			if(dist[i]==minvalue && minvalue < 100){		//1. target object, <100
+				if(((TorM_s==1 && TBco[index][2]==-1) || (TorM_s==2 && MOco[index][2]==-1)) &&  //1-1. unlink-unlink
+				   (co_t[i][2]==-1)){
+					//self
+					if(TorM_s==1){	
 						TBco[index][0]=1; 	
 						TBco[index][1]=COcount;
-					}else{
+					}else if (TorM_s==2){
 						MOco[index][0]=1;
 						MOco[index][1]=COcount;
 					}	
-					//target assign
-					MOco[i][0]=1;
-					MOco[i][1]=COcount;
+				  	//target
+					co_t[i][0]=1;
+					co_t[i][1]=COcount;
 					//link 
-					linex[0]= X[index]+(W[index]/2);
-					liney[0]= Y[index]+(H[index]/2);
-					linex[1]= MOimageX[i]+(MOimageW[i]/2);
-					liney[1]= MOimageY[i]+(MOimageH[i]/2);
+					linex[0]= Xs[index]+(Ws[index]/2);
+					liney[0]= Ys[index]+(Hs[index]/2);
+					linex[1]= Xt[i]+(Wt[i]/2);
+					liney[1]= Yt[i]+(Ht[i]/2);
 					link=true;
-					System.out.println("model_ready_to_link");		
-						
-				}else if (((TorM==1& TBco[index][2]==1& TBco[index][1]!=MOco[i][1])| (TorM==2& MOco[index][2]==1& MOco[index][1]!=MOco[i][1]))& 	//2. Self linked, link to anything with minvalue<100, and not link to itself
-						(minvalue<100)){		
-					if(TorM==1){	//self assign
+					System.out.println("linex[0]="+ linex[0]);
+					System.out.println("case 1-1");
+				}else if(((TorM_s==1 && TBco[index][2]==-1) || (TorM_s==2 && MOco[index][2]==-1)) &&  //1-2. unlink-link
+				   (co_t[i][2]!=-1)){
+					//self 
+					if(TorM_s==1){	
 						TBco[index][0]=1; 	
-						TBco[index][1]=MOco[i][1]; // self group still need to be change, not only the link
-					}else{
+						TBco[index][1]=co_t[i][1]; // self group still need to be change, not only the link
+					}else if (TorM_s==2){
 						MOco[index][0]=1;
-						MOco[index][1]=MOco[i][1];
+						MOco[index][1]=co_t[i][1];
 					}	
 					//link 
-					linex[0]= X[index]+(W[index]/2);
-					liney[0]= Y[index]+(H[index]/2);
-					linex[1]= MOimageX[i]+(MOimageW[i]/2);
-					liney[1]= MOimageY[i]+(MOimageH[i]/2);
+					linex[0]= Xs[index]+(Ws[index]/2);
+					liney[0]= Ys[index]+(Hs[index]/2);
+					linex[1]= Xt[i]+(Wt[i]/2);
+					liney[1]= Yt[i]+(Ht[i]/2);
 					linktolink=true;
-				}else{			
-					linex[0]=0;
-					linex[1]=0;
-					liney[0]=0;
-					liney[1]=0;
-					link=false;
-					System.out.println("model_lose");	
-				}			
-			}else if(MOco[i][1]==COcount){ //if dist >100 and not the closest one
-				MOco[i][0]=-1;
-				MOco[i][1]=-1;
-				if(TorM==1){	
-					TBco[index][0]=-1;
-					TBco[index][1]=-1;
-				}else{
-					MOco[index][0]=-1;
-					MOco[index][1]=-1;
+					System.out.println("case 1-2");
+				}else if(((TorM_s==1 && TBco[index][2]!=-1) || (TorM_s==2 && MOco[index][2]!=-1)) &&  //1-3. link-link
+				   (co_t[i][2]!=-1)){
+					//self 
+					if(TorM_s==1){	
+						TBco[index][0]=1; 	
+						TBco[index][1]=co_t[i][1]; // self group still need to be change, not only the link
+					}else if (TorM_s==2){
+						MOco[index][0]=1;
+						MOco[index][1]=co_t[i][1];
+					}	
+					//link 
+					linex[0]= Xs[index]+(Ws[index]/2);
+					liney[0]= Ys[index]+(Hs[index]/2);
+					linex[1]= Xt[i]+(Wt[i]/2);
+					liney[1]= Yt[i]+(Ht[i]/2);
+					linktolink=true;
+					System.out.println("case 1-3");
+				}else if(((TorM_s==1 && TBco[index][2]==-1) || (TorM_s==2 && MOco[index][2]==-1)) &&  //1-4. link-unlink
+				   (co_t[i][2]==1)){
+					//self 
+					if(TorM_s==1){	
+						TBco[index][0]=1; 	
+						TBco[index][1]=co_t[i][1]; // self group still need to be change, not only the link
+					}else if (TorM_s==2){
+						MOco[index][0]=1;
+						MOco[index][1]=co_t[i][1];
+					}	
+					//link 
+					linex[0]= Xs[index]+(Ws[index]/2);
+					liney[0]= Ys[index]+(Hs[index]/2);
+					linex[1]= Xt[i]+(Wt[i]/2);
+					liney[1]= Yt[i]+(Ht[i]/2);
+					linktolink=true;
+					System.out.println("case 1-4");
 				}
+			}else if(dist[i]==minvalue && minvalue >= 100){ //2. target object, >=100
+				linex[0]=0;
+				linex[1]=0;
+				liney[0]=0;
+				liney[1]=0;
+				link=false;
+				linktolink=false;
+				System.out.println("case 2");
+			}else{ 											//3. other remain (not closest)
+				co_t[i][0]=-1;
+				co_t[i][1]=-1;
+				System.out.println("case 3");
 			}
 		}
-		for (int i=1; i<=TBcount; i++){
-			if(TBdist[i]==minvalue){	// if the target is MO
-				if(((TorM==1& TBco[index][2]!=1)| (TorM==2& MOco[index][2]!=1))& 	//1. Self not linked, link to anything with minvalue<100
-						minvalue<100){
-					if(TorM==1){	//self assign
-						TBco[index][0]=1;
-						TBco[index][1]=COcount;
-					}else{
-						MOco[index][0]=1;
-						MOco[index][1]=COcount;
-					}	
-					//target assign
-					TBco[i][0]=1;
-					TBco[i][1]=COcount;
-					//link 
-					linex[0]= X[index]+(W[index]/2);
-					liney[0]= Y[index]+(H[index]/2);
-					linex[1]= TBimageX[i]+(TBimageW[i]/2);
-					liney[1]= TBimageY[i]+(TBimageH[i]/2);
-					link=true;
-					System.out.println("table_ready_to_link");		
-				}else if (((TorM==1& TBco[index][2]==1& TBco[index][1]!=TBco[i][1])| (TorM==2& MOco[index][2]==1& MOco[index][1]!=TBco[i][1]))& 	//2. Self linked, link to anything with minvalue<100, and not link to itself
-						minvalue<100){		
-					if(TorM==1){	//self assign
-						TBco[index][0]=1; 	
-						TBco[index][1]=TBco[i][1]; // self group still need to be change, not only the link
-					}else{
-						MOco[index][0]=1;
-						MOco[index][1]=TBco[i][1];
-					}	
-					//link 
-					linex[0]= X[index]+(W[index]/2);
-					liney[0]= Y[index]+(H[index]/2);
-					linex[1]= TBimageX[i]+(TBimageW[i]/2);
-					liney[1]= TBimageY[i]+(TBimageH[i]/2);
-					linktolink=true;
-				}else{
-					linex[0]=0;
-					linex[1]=0;
-					liney[0]=0;
-					liney[1]=0;
-					link=false;
-					System.out.println("table_lose");	
-				}		
-			}else if(TBco[i][1]==COcount){
-				TBco[i][0]=-1;
-				TBco[i][1]=-1;
-				if(TorM==1){	
-					TBco[index][0]=-1;
-					TBco[index][1]=-1;
-				}else{
-					MOco[index][0]=-1;
-					MOco[index][1]=-1;
-				}
-			}
-		}
-	}		
-		
-		
+	}	
+///// remember to add 4. linked group link to unlink objects !!!
+				///// !!!!remember to modify 2. that the group's number cant be same as unlink target!
+
 	
 	public void dragcombined (int dx, int dy, int index,
-							  int[] X, int[] Y, int[] W, int[] H, Image[] image, Rectangle[] bound, JLabel[] name){						
+			  				  int[] X, int[] Y, int[] W, int[] H, Image[] image, Rectangle[] bound, JLabel[] name){						
 		X[index]=X[index]+dx;
 		Y[index]=Y[index]+dy;
 		bound[index]= new Rectangle(X[index], Y[index], 
-									  image[index].getWidth(null), image[index].getHeight(null));
+									image[index].getWidth(null), image[index].getHeight(null));
 		name[index].setLocation(X[index], Y[index]+H[index]-panelHeigth+15);
 	}
-	
-	public void DragandKeepCombinedinPanel (int x, int y, int dx, int dy, int boundE, int boundS, 
-											int index1, int[] X1, int[] Y1, int[] W1, int[] H1, Rectangle[] Bound1, JLabel[] name1, int TBMO1,
-											int index2, int[] X2, int[] Y2, int[] W2, int[] H2, Rectangle[] Bound2, JLabel[] name2,int TBMO2){	
-		int[] tbx=new int[TBcount+1];
-		int[] tby=new int[TBcount+1];
-		int[] mox=new int[MOcount+1];
-		int[] moy=new int[MOcount+1];
-		for (int i=1; i<=TBcount; i++){
-			if(TBMO1==1&i==index1){continue;}
-			if(TBMO2==1&i==index2){continue;}
-			if(TBco[i][1]==COindex){
-				tbx[i]=TBimageX[i]-COimageX[COindex];
-				tby[i]=TBimageY[i]-COimageY[COindex];
-			}
-		}
-		for (int i=1; i<=MOcount; i++){
-			if(TBMO1==2&i==index1){continue;}
-			if(TBMO2==2&i==index2){continue;}
-			if(MOco[i][1]==COindex){
-				mox[i]=MOimageX[i]-COimageX[COindex];
-				moy[i]=MOimageY[i]-COimageY[COindex];	
-			}
-		}
-		if (x-(COimageW[COindex]/2)<0){
-			COimageX[COindex]=0;								
-			if(X1[index1]>X2[index2]){
-				X1[index1]=0+COimageW[COindex]-W1[index1];
-				X2[index2]=0;
-			}else{
-				X1[index1]=0;
-				X2[index2]=0+COimageW[COindex]-W2[index2];			
-			}		
-			if(y-(COimageH[COindex]/2)<0){
-				COimageY[COindex]=0;
-				if(Y1[index1]>Y2[index2]){
-					Y1[index1]=0+COimageH[COindex]-H1[index1];
-					Y2[index2]=0;		
-				}else{
-					Y1[index1]=0;
-					Y2[index2]=0+COimageH[COindex]-H2[index2];
-				}
-				for (int i=1; i<=TBcount; i++){
-					if(TBMO1==1&i==index1){continue;}
-					if(TBMO2==1&i==index2){continue;}
-					if(TBco[i][1]==COindex){
-						TBimageX[i]=COimageX[COindex]+tbx[i];
-						TBimageY[i]=COimageY[COindex]+tby[i];
-						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
-					}
-				}
-				for (int i=1; i<=MOcount; i++){
-					if(TBMO1==2&i==index1){continue;}
-					if(TBMO2==2&i==index2){continue;}
-					if(MOco[i][1]==COindex){
-						MOimageX[i]=COimageX[COindex]+mox[i];
-						MOimageY[i]=COimageY[COindex]+moy[i];
-						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
-					}
-				}
-			}else if(y+(COimageH[COindex]/2)>boundS){
-				COimageY[COindex]=boundS-COimageH[COindex];
-				if(Y1[index1]>Y2[index2]){
-					Y1[index1]=boundS-H1[index1];
-					Y2[index2]=boundS-COimageH[COindex];
-				}else{
-					Y1[index1]=boundS-COimageH[COindex];
-					Y2[index2]=boundS-H1[index2];
-				}
-				for (int i=1; i<=TBcount; i++){
-					if(TBMO1==1&i==index1){continue;}
-					if(TBMO2==1&i==index2){continue;}
-					if(TBco[i][1]==COindex){
-						TBimageX[i]=COimageX[COindex]+tbx[i];
-						TBimageY[i]=COimageY[COindex]+tby[i];
-						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
-					}
-				}
-				for (int i=1; i<=MOcount; i++){
-					if(TBMO1==2&i==index1){continue;}
-					if(TBMO2==2&i==index2){continue;}
-					if(MOco[i][1]==COindex){
-						MOimageX[i]=COimageX[COindex]+mox[i];
-						MOimageY[i]=COimageY[COindex]+moy[i];
-						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
-					}
-				}
-			}else {
-				COimageY[COindex]=COimageY[COindex]+dy;
-				Y1[index1]=Y1[index1]+dy;
-				Y2[index2]=Y2[index2]+dy;
-				for (int i=1; i<=TBcount; i++){
-					if(TBMO1==1&i==index1){continue;}
-					if(TBMO2==1&i==index2){continue;}
-					if(TBco[i][1]==COindex){
-						TBimageX[i]=COimageX[COindex]+tbx[i];
-						TBimageY[i]=TBimageY[i]+dy;
-						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
-					}
-				}
-				for (int i=1; i<=MOcount; i++){
-					if(TBMO1==2&i==index1){continue;}
-					if(TBMO2==2&i==index2){continue;}
-					if(MOco[i][1]==COindex){
-						MOimageX[i]=COimageX[COindex]+mox[i];
-						MOimageY[i]=MOimageY[i]+dy;
-						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
-					}
-				}	
-			}	
-		}else if(x+(COimageW[COindex]/2)>boundE){
-			COimageX[COindex]=boundE-COimageW[COindex];								
-			if(X1[index1]>X2[index2]){
-				X1[index1]=boundE-W1[index1];
-				X2[index2]=boundE-COimageW[COindex];
-			}else{
-				X1[index1]=boundE-COimageW[COindex];
-				X2[index2]=boundE-W2[index2];		
-			}		
-			if(y-(COimageH[COindex]/2)<0){
-				COimageY[COindex]=0;
-				if(Y1[index1]>Y2[index2]){
-					Y1[index1]=0+COimageH[COindex]-H1[index1];
-					Y2[index2]=0;		
-				}else{
-					Y1[index1]=0;
-					Y2[index2]=0+COimageH[COindex]-H2[index2];
-				}
-				for (int i=1; i<=TBcount; i++){
-					if(TBMO1==1&i==index1){continue;}
-					if(TBMO2==1&i==index2){continue;}
-					if(TBco[i][1]==COindex){
-						TBimageX[i]=COimageX[COindex]+tbx[i];
-						TBimageY[i]=COimageY[COindex]+tby[i];
-						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
-					}
-				}
-				for (int i=1; i<=MOcount; i++){
-					if(TBMO1==2&i==index1){continue;}
-					if(TBMO2==2&i==index2){continue;}
-					if(MOco[i][1]==COindex){
-						MOimageX[i]=COimageX[COindex]+mox[i];
-						MOimageY[i]=COimageY[COindex]+moy[i];
-						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
-					}
-				}
-			}else if(y+(COimageH[COindex]/2)>boundS){
-				COimageY[COindex]=boundS-COimageH[COindex];
-				if(Y1[index1]>Y2[index2]){
-					Y1[index1]=boundS-H1[index1];
-					Y2[index2]=boundS-COimageH[COindex];
-				}else{
-					Y1[index1]=boundS-COimageH[COindex];
-					Y2[index2]=boundS-H1[index2];
-				}
-				for (int i=1; i<=TBcount; i++){
-					if(TBMO1==1&i==index1){continue;}
-					if(TBMO2==1&i==index2){continue;}
-					if(TBco[i][1]==COindex){
-						TBimageX[i]=COimageX[COindex]+tbx[i];
-						TBimageY[i]=COimageY[COindex]+tby[i];
-						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
-					}
-				}
-				for (int i=1; i<=MOcount; i++){
-					if(TBMO1==2&i==index1){continue;}
-					if(TBMO2==2&i==index2){continue;}
-					if(MOco[i][1]==COindex){
-						MOimageX[i]=COimageX[COindex]+mox[i];
-						MOimageY[i]=COimageY[COindex]+moy[i];
-						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
-					}
-				}
-			}else {
-				COimageY[COindex]=COimageY[COindex]+dy;
-				Y1[index1]=Y1[index1]+dy;
-				Y2[index2]=Y2[index2]+dy;
-				for (int i=1; i<=TBcount; i++){
-					if(TBMO1==1&i==index1){continue;}
-					if(TBMO2==1&i==index2){continue;}
-					if(TBco[i][1]==COindex){
-						TBimageX[i]=COimageX[COindex]+tbx[i];
-						TBimageY[i]=TBimageY[i]+dy;
-						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
-					}
-				}
-				for (int i=1; i<=MOcount; i++){
-					if(TBMO1==2&i==index1){continue;}
-					if(TBMO2==2&i==index2){continue;}
-					if(MOco[i][1]==COindex){
-						MOimageX[i]=COimageX[COindex]+mox[i];
-						MOimageY[i]=MOimageY[i]+dy;
-						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
-					}
-				}	
-			}	
-		}else if(y-(COimageH[COindex]/2)<0){
-			COimageY[COindex]=0;						
-			if(Y1[index1]>Y2[index2]){
-				Y1[index1]=0+COimageH[COindex]-H1[index1];
-				Y2[index2]=0;		
-			}else{
-				Y1[index1]=0;
-				Y2[index2]=0+COimageH[COindex]-H2[index2];
-			}			
-			if (x-(COimageW[COindex]/2)<0){
-				COimageX[COindex]=0;								
-				if(X1[index1]>X2[index2]){
-					X1[index1]=0+COimageW[COindex]-W1[index1];
-					X2[index2]=0;
-				}else{
-					X1[index1]=0;
-					X2[index2]=0+COimageW[COindex]-W2[index2];			
-				}
-				for (int i=1; i<=TBcount; i++){
-					if(TBMO1==1&i==index1){continue;}
-					if(TBMO2==1&i==index2){continue;}
-					if(TBco[i][1]==COindex){
-						TBimageX[i]=COimageX[COindex]+tbx[i];
-						TBimageY[i]=COimageY[COindex]+tby[i];
-						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
-					}
-				}
-				for (int i=1; i<=MOcount; i++){
-					if(TBMO1==2&i==index1){continue;}
-					if(TBMO2==2&i==index2){continue;}
-					if(MOco[i][1]==COindex){
-						MOimageX[i]=COimageX[COindex]+mox[i];
-						MOimageY[i]=COimageY[COindex]+moy[i];
-						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
-					}
-				}
-			}else if(x+(COimageW[COindex]/2)>boundE){
-				COimageX[COindex]=boundE-COimageW[COindex];								
-				if(X1[index1]>X2[index2]){
-					X1[index1]=boundE-W1[index1];
-					X2[index2]=boundE-COimageW[COindex];
-				}else{
-					X1[index1]=boundE-COimageW[COindex];
-					X2[index2]=boundE-W2[index2];		
-				}
-				for (int i=1; i<=TBcount; i++){
-					if(TBMO1==1&i==index1){continue;}
-					if(TBMO2==1&i==index2){continue;}
-					if(TBco[i][1]==COindex){
-						TBimageX[i]=COimageX[COindex]+tbx[i];
-						TBimageY[i]=COimageY[COindex]+tby[i];
-						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
-					}
-				}
-				for (int i=1; i<=MOcount; i++){
-					if(TBMO1==2&i==index1){continue;}
-					if(TBMO2==2&i==index2){continue;}
-					if(MOco[i][1]==COindex){
-						MOimageX[i]=COimageX[COindex]+mox[i];
-						MOimageY[i]=COimageY[COindex]+moy[i];
-						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
-					}
-				}
-			}else{
-				COimageX[COindex]=COimageX[COindex]+dx;
-				X1[index1]=X1[index1]+dx;
-				X2[index2]=X2[index2]+dx;
-				for (int i=1; i<=TBcount; i++){
-					if(TBMO1==1&i==index1){continue;}
-					if(TBMO2==1&i==index2){continue;}
-					if(TBco[i][1]==COindex){
-						TBimageX[i]=TBimageX[i]+dx;
-						TBimageY[i]=COimageY[COindex]+tby[i];
-						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
-					}
-				}
-				for (int i=1; i<=MOcount; i++){
-					if(TBMO1==2&i==index1){continue;}
-					if(TBMO2==2&i==index2){continue;}
-					if(MOco[i][1]==COindex){
-						MOimageX[i]=MOimageX[i]+dx;
-						MOimageY[i]=COimageY[COindex]+moy[i];
-						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
-					}
-				}
-			}	
-		}else if(y+(COimageH[COindex]/2)>boundS){
-			COimageY[COindex]=boundS-COimageH[COindex];
-			if(Y1[index1]>Y2[index2]){
-				Y1[index1]=boundS-H1[index1];
-				Y2[index2]=boundS-COimageH[COindex];
-			}else{
-				Y1[index1]=boundS-COimageH[COindex];
-				Y2[index2]=boundS-H1[index2];
-			}	
-			if (x-(COimageW[COindex]/2)<0){
-				COimageX[COindex]=0;								
-				if(X1[index1]>X2[index2]){
-					X1[index1]=0+COimageW[COindex]-W1[index1];
-					X2[index2]=0;
-				}else{
-					X1[index1]=0;
-					X2[index2]=0+COimageW[COindex]-W2[index2];			
-				}
-				for (int i=1; i<=TBcount; i++){
-					if(TBMO1==1&i==index1){continue;}
-					if(TBMO2==1&i==index2){continue;}
-					if(TBco[i][1]==COindex){
-						TBimageX[i]=COimageX[COindex]+tbx[i];
-						TBimageY[i]=COimageY[COindex]+tby[i];
-						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
-					}
-				}
-				for (int i=1; i<=MOcount; i++){
-					if(TBMO1==2&i==index1){continue;}
-					if(TBMO2==2&i==index2){continue;}
-					if(MOco[i][1]==COindex){
-						MOimageX[i]=COimageX[COindex]+mox[i];
-						MOimageY[i]=COimageY[COindex]+moy[i];
-						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
-					}
-				}
-			}else if(x+(COimageW[COindex]/2)>boundE){
-				COimageX[COindex]=boundE-COimageW[COindex];								
-				if(X1[index1]>X2[index2]){
-					X1[index1]=boundE-W1[index1];
-					X2[index2]=boundE-COimageW[COindex];
-				}else{
-					X1[index1]=boundE-COimageW[COindex];
-					X2[index2]=boundE-W2[index2];		
-				}
-				for (int i=1; i<=TBcount; i++){
-					if(TBMO1==1&i==index1){continue;}
-					if(TBMO2==1&i==index2){continue;}
-					if(TBco[i][1]==COindex){
-						TBimageX[i]=COimageX[COindex]+tbx[i];
-						TBimageY[i]=COimageY[COindex]+tby[i];
-						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
-					}
-				}
-				for (int i=1; i<=MOcount; i++){
-					if(TBMO1==2&i==index1){continue;}
-					if(TBMO2==2&i==index2){continue;}
-					if(MOco[i][1]==COindex){
-						MOimageX[i]=COimageX[COindex]+mox[i];
-						MOimageY[i]=COimageY[COindex]+moy[i];
-						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
-					}
-				}
-			}else{
-				COimageX[COindex]=COimageX[COindex]+dx;
-				X1[index1]=X1[index1]+dx;
-				X2[index2]=X2[index2]+dx;
-				for (int i=1; i<=TBcount; i++){
-					if(TBMO1==1&i==index1){continue;}
-					if(TBMO2==1&i==index2){continue;}
-					if(TBco[i][1]==COindex){
-						TBimageX[i]=TBimageX[i]+dx;
-						TBimageY[i]=COimageY[COindex]+tby[i];
-						TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-						TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
-					}
-				}
-				for (int i=1; i<=MOcount; i++){
-					if(TBMO1==2&i==index1){continue;}
-					if(TBMO2==2&i==index2){continue;}
-					if(MOco[i][1]==COindex){
-						MOimageX[i]=MOimageX[i]+dx;
-						MOimageY[i]=COimageY[COindex]+moy[i];
-						MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-						MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
-					}
-				}
-			}
-		}else{
-			COimageX[COindex]=COimageX[COindex]+dx;
-			COimageY[COindex]=COimageY[COindex]+dy;
-			X1[index1]=X1[index1]+dx;
-			X2[index2]=X2[index2]+dx;
-			Y1[index1]=Y1[index1]+dy;
-			Y2[index2]=Y2[index2]+dy;
-			for (int i=1; i<=TBcount; i++){
-				if(TBMO1==1&i==index1){continue;}
-				if(TBMO2==1&i==index2){continue;}
-				if(TBco[i][1]==COindex){
-					TBimageX[i]=TBimageX[i]+dx;
-					TBimageY[i]=TBimageY[i]+dy;
-					TBBound[i]= new Rectangle(TBimageX[i], TBimageY[i], TB[i].getWidth(null), TB[i].getHeight(null));
-					TBname[i].setLocation(TBimageX[i], TBimageY[i]+TBimageH[i]-panelHeigth+15);
-				}
-			}
-			for (int i=1; i<=MOcount; i++){
-				if(TBMO1==2&i==index1){continue;}
-				if(TBMO2==2&i==index2){continue;}
-				if(MOco[i][1]==COindex){
-					MOimageX[i]=MOimageX[i]+dx;
-					MOimageY[i]=MOimageY[i]+dy;
-					MOBound[i]= new Rectangle(MOimageX[i], MOimageY[i], MO[i].getWidth(null), MO[i].getHeight(null));
-					MOname[i].setLocation(MOimageX[i], MOimageY[i]+MOimageH[i]-panelHeigth+15);
-				}
-			}
-		}
-		Bound1[index1]= new Rectangle(X1[index1], Y1[index1], W1[index1], H1[index1]);
-		Bound2[index2]= new Rectangle(X2[index2], Y2[index2], W2[index2], H2[index2]);
-		name1[index1].setLocation(X1[index1], Y1[index1]+H1[index1]-panelHeigth+15);
-		name2[index2].setLocation(X2[index2], Y2[index2]+H2[index2]-panelHeigth+15);
-		COBound[COindex]=new Rectangle(COimageX[COindex], COimageY[COindex], COimageW[COindex], COimageH[COindex]);	
-	}
-	
+				
 	public void KeepInPanel (int x, int y, int index, int[] imageW, int[] imageH, int[] imageX, int[] imageY,
 							 int boundN, int boundS, int boundE, Rectangle[] Bound){			
 		if(x<(0+(imageW[index]/2))){
@@ -1457,6 +995,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 	     }  
 	     return minValue;  
 	}  
+		
 	
 	public static double Distance(double x1, double y1, double x2, double y2){
 		double dist=0;
@@ -1488,7 +1027,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 			if(linedelete[i]==-1){
 				continue;
 			}
-			System.out.println("this is link"+ i);
 			if(i==lineselected){
 				temp_stroke=solid;
 			}else{
@@ -1527,11 +1065,3 @@ class myPanel extends JPanel implements MouseMotionListener{
 		}
 	}
 }
-
-
-
-
-
-
-
-

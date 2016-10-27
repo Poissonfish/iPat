@@ -1,1 +1,1 @@
-wd <- "/Users/Poissonfish/git/iPat"
+setwd('~')
