@@ -60,6 +60,8 @@ class myPanel extends JPanel implements MouseMotionListener{
 	static int[] TBimageW= new int[TBMAX];
 	static int[][] TBco= new int[TBMAX][4];  //1=combined or not(-1,1,2), 2= coindex, 3=subcombined or not (-1,1)
 	static int[] TBdelete= new int[TBMAX];
+	boolean link_to_TB = false;
+	int link_to_TB_index = -1;
 	
 	static int[] MOimageX= new int[MOMAX];
 	static int[] MOimageY= new int[MOMAX];
@@ -67,8 +69,11 @@ class myPanel extends JPanel implements MouseMotionListener{
 	static int[] MOimageW= new int[MOMAX];
 	static int[][] MOco= new int[MOMAX][4];
 	static int[] MOdelete= new int[MOMAX];
+	boolean link_to_MO = false;
+	int link_to_MO_index = -1;
 	
 	Boolean link=false;
+	int link_case = -1;
 	
 	static int TBindex =0, TBindex_temp=0;
 	static int MOindex =0, MOindex_temp=0;
@@ -325,7 +330,7 @@ class myPanel extends JPanel implements MouseMotionListener{
     			
     			//Debug section
     			if(TBindex!=0){
-        			System.out.println("COgroup: "+TBco[TBindex][3]);        				
+        			System.out.println("COgroup: "+TBco[TBindex][3]+" index= "+TBindex);        				
     			}else if(MOindex!=0){
     				System.out.println("COgourp: "+MOco[MOindex][3]);
     			}
@@ -374,8 +379,9 @@ class myPanel extends JPanel implements MouseMotionListener{
 				int y=ee.getY();		
 
     			//To compute whether the objects should be created
-				if( (TBindex!=0|MOindex!=0) & 	 //且正在選某個物件
-					 link& !removeornot){		//sure to link something
+				if( (TBindex!=0|MOindex!=0) && 	 //且正在選某個物件
+					 link_case == 1 && !removeornot){		//sure to link something		
+					System.out.println("unlink-unlink");
 						//self sure
 						if (TBindex!=0){
 							TBco[TBindex][2] = TBco[TBindex][0];
@@ -414,9 +420,11 @@ class myPanel extends JPanel implements MouseMotionListener{
 						}
 						linklineindex++;
 						COcount++;
+						link_case = -1;
 						
-				}else if((TBindex!=0|MOindex!=0) & 	 //且正在選某個物件
-						 linktolink& !removeornot){					
+				}else if((TBindex!=0|MOindex!=0) && 	 //且正在選某個物件
+						  link_case == 2 && !removeornot){			
+					System.out.println("unlink-link");
 					//self sure
 					if (TBindex!=0){
 						TBco[TBindex][2] = TBco[TBindex][0];
@@ -430,35 +438,60 @@ class myPanel extends JPanel implements MouseMotionListener{
 						linkline[linklineindex][0]=2;		  	//draw line from a model
 						linkline[linklineindex][1]=MOindex;		//draw line from which model
 						System.out.println("MO1");
-					}
-					
+					}				
 					//target sure
-					for(int i=1; i<=TBcount; i++){
-						if( ((TBindex != 0 && TBco[i][1] == TBco[TBindex][3]) ||
-							 (MOindex != 0 && TBco[i][1] == MOco[MOindex][3])) && //determine which target get the same group as self
-							(i != TBindex)){
-							TBco[i][2]=TBco[i][0];
-							TBco[i][3]=TBco[i][1];
-							linkline[linklineindex][2]=1;
-							linkline[linklineindex][3]=i;
-							System.out.println("TB2");
-							break;
-						}
-					}
-					for(int i=1; i<=MOcount; i++){
-						if( ((TBindex != 0 && MOco[i][1] == TBco[TBindex][3]) || 
-							 (MOindex != 0 && MOco[i][1] == MOco[MOindex][3])) &&
-							(i != MOindex)){
-							MOco[i][2]=MOco[i][0];
-							MOco[i][3]=MOco[i][1];
-							linkline[linklineindex][2]=2;
-							linkline[linklineindex][3]=i;
-							System.out.println("MO2");
-							break;
-						}
-					}
-					linklineindex++;			
-				}			
+					if(link_to_TB_index != -1){
+						linkline[linklineindex][2]=1;
+						linkline[linklineindex][3]=link_to_TB_index;
+						link_to_TB_index = -1;
+						System.out.println("TB2");
+					}else if(link_to_MO_index != -1){
+						linkline[linklineindex][2]=2;
+						linkline[linklineindex][3]=link_to_MO_index;
+						link_to_MO_index = -1;
+						System.out.println("MO2");
+					}				
+					linklineindex++;
+					link_case = -1;
+					
+				}else if((TBindex!=0|MOindex!=0) && 	 //且正在選某個物件
+						  link_case == 3 && !removeornot){			
+					System.out.println("link-link");
+					link_case = -1;
+					
+				}else if((TBindex!=0|MOindex!=0) && 	 //且正在選某個物件
+						  link_case == 4 && !removeornot){			
+					System.out.println("link-unlink");
+					//self sure
+					if (TBindex!=0){
+						linkline[linklineindex][0]=1; 			//draw line from a table	
+						linkline[linklineindex][1]=TBindex;		//draw line from which table
+						System.out.println("TB1");
+					}else if(MOindex!=0){
+						linkline[linklineindex][0]=2;		  	//draw line from a model
+						linkline[linklineindex][1]=MOindex;		//draw line from which model
+						System.out.println("MO1");
+					}	
+					//target sure
+					if(link_to_TB_index != -1){
+						TBco[link_to_TB_index][2] = 1;
+						TBco[link_to_TB_index][3] = TBco[link_to_TB_index][1];
+						linkline[linklineindex][2] = 1;
+						linkline[linklineindex][3] = link_to_TB_index;
+						link_to_TB_index = -1;
+						System.out.println("TB2");
+					}else if(link_to_MO_index != -1){
+						MOco[link_to_MO_index][2] = 1;
+						MOco[link_to_MO_index][3] = MOco[link_to_MO_index][1];
+						linkline[linklineindex][2] = 2;
+						linkline[linklineindex][3] = link_to_MO_index;
+						link_to_MO_index = -1;
+						System.out.println("MO2");
+					}						
+					linklineindex++;
+					link_case = -1;
+					
+				}				
 				
 				if (removeornot){
 					if (TBindex!=0&&(y>=(delbboundy)&&x>=(delbboundx))){
@@ -789,13 +822,16 @@ class myPanel extends JPanel implements MouseMotionListener{
 		int minvalue= min_dist(index, Xs, Ys, Ws, Hs, TBdist, MOdist);
 		System.out.println("----------log start-------------");
 		System.out.println("minvalue="+minvalue);
-		System.out.println("check model");
-		combine_type_determined(MOdist, minvalue, TorM_s, 
-								Xs, Ys, Ws, Hs, index,
-								MOimageX, MOimageY, MOimageW, MOimageH, MOcount, MOco, 2);
+		int case3_count = 0;
+		if(TBindex!=0){
+			System.out.println("check model");
+			combine_type_determined(MOdist, minvalue, case3_count,
+									Xs, Ys, Ws, Hs, index, TorM_s, 
+									MOimageX, MOimageY, MOimageW, MOimageH, MOcount, MOco, 2);
+		}
 		System.out.println("check table");
-		combine_type_determined(TBdist, minvalue, TorM_s, 
-								Xs, Ys, Ws, Hs, index,
+		combine_type_determined(TBdist, minvalue, case3_count,
+								Xs, Ys, Ws, Hs, index, TorM_s, 
 								TBimageX, TBimageY, TBimageW, TBimageH, TBcount, TBco, 1);						
 		System.out.println("----------log end-------------");
 	}		
@@ -831,11 +867,14 @@ class myPanel extends JPanel implements MouseMotionListener{
 	
 	
 	// target_specify
-	public void combine_type_determined(int[] dist, int minvalue, int TorM_s,
-										int[] Xs, int[] Ys, int[] Ws, int[] Hs, int index, 
+	public void combine_type_determined(int[] dist, int minvalue, int case3_count,
+										int[] Xs, int[] Ys, int[] Ws, int[] Hs, int index, int TorM_s,
 										int[] Xt, int[] Yt, int[] Wt, int[] Ht, int count_t, int[][] co_t, int TorM_t){
-		for (int i=1; i<=count_t; i++){
-			if(TorM_s == TorM_t && index == i){ return;} //skip determined self object 
+		for (int i= 1; i<=count_t; i++){
+			System.out.println(" i="+i+" count= "+count_t);
+			if(TorM_s == TorM_t && index == i){ 
+				System.out.println("  return");
+				continue;} //skip determined self object 
 			if(dist[i]==minvalue && minvalue < 100){		//1. target object, <100
 				if(((TorM_s==1 && TBco[index][2]==-1) || (TorM_s==2 && MOco[index][2]==-1)) &&  //1-1. unlink-unlink
 				   (co_t[i][2]==-1)){
@@ -855,73 +894,93 @@ class myPanel extends JPanel implements MouseMotionListener{
 					liney[0]= Ys[index]+(Hs[index]/2);
 					linex[1]= Xt[i]+(Wt[i]/2);
 					liney[1]= Yt[i]+(Ht[i]/2);
-					link=true;
-					System.out.println("linex[0]="+ linex[0]);
-					System.out.println("case 1-1");
+					link_case = 1;
+					System.out.println("  case 1-1");
 				}else if(((TorM_s==1 && TBco[index][2]==-1) || (TorM_s==2 && MOco[index][2]==-1)) &&  //1-2. unlink-link
 				   (co_t[i][2]!=-1)){
 					//self 
 					if(TorM_s==1){	
 						TBco[index][0]=1; 	
-						TBco[index][1]=co_t[i][1]; // self group still need to be change, not only the link
+						TBco[index][1]=co_t[i][3]; // self group still need to be change, not only the link
 					}else if (TorM_s==2){
 						MOco[index][0]=1;
-						MOco[index][1]=co_t[i][1];
+						MOco[index][1]=co_t[i][3];
 					}	
-					//link 
+					//target
+					if(TorM_t==1){
+						link_to_TB_index = i;
+					}else if (TorM_t==2){
+						link_to_MO_index = i;
+					}
+					//link
 					linex[0]= Xs[index]+(Ws[index]/2);
 					liney[0]= Ys[index]+(Hs[index]/2);
 					linex[1]= Xt[i]+(Wt[i]/2);
 					liney[1]= Yt[i]+(Ht[i]/2);
-					linktolink=true;
-					System.out.println("case 1-2");
+					link_case = 2;
+					System.out.println("  case 1-2");
 				}else if(((TorM_s==1 && TBco[index][2]!=-1) || (TorM_s==2 && MOco[index][2]!=-1)) &&  //1-3. link-link
 				   (co_t[i][2]!=-1)){
-					//self 
-					if(TorM_s==1){	
-						TBco[index][0]=1; 	
-						TBco[index][1]=co_t[i][1]; // self group still need to be change, not only the link
-					}else if (TorM_s==2){
-						MOco[index][0]=1;
-						MOco[index][1]=co_t[i][1];
-					}	
-					//link 
+					linex[0]=0;
+					linex[1]=0;
+					liney[0]=0;
+					liney[1]=0;
+					link_case = 3;
+					System.out.println("  case 1-3");
+				}else if(((TorM_s==1 && TBco[index][2]!=-1) || (TorM_s==2 && MOco[index][2]!=-1)) &&  //1-4. link-unlink
+				   (co_t[i][2]==-1)){
+					//target 
+					if(TorM_t==1){
+						link_to_TB_index = i;
+					}else if (TorM_t==2){
+						link_to_MO_index = i;
+					}
+					co_t[i][0]=1;
+					if(TorM_s==1){
+						co_t[i][1]=TBco[index][3];
+					}else if(TorM_s==2){
+						co_t[i][1]=MOco[index][3];
+					}
+					//link
 					linex[0]= Xs[index]+(Ws[index]/2);
 					liney[0]= Ys[index]+(Hs[index]/2);
 					linex[1]= Xt[i]+(Wt[i]/2);
 					liney[1]= Yt[i]+(Ht[i]/2);
-					linktolink=true;
-					System.out.println("case 1-3");
-				}else if(((TorM_s==1 && TBco[index][2]==-1) || (TorM_s==2 && MOco[index][2]==-1)) &&  //1-4. link-unlink
-				   (co_t[i][2]==1)){
-					//self 
-					if(TorM_s==1){	
-						TBco[index][0]=1; 	
-						TBco[index][1]=co_t[i][1]; // self group still need to be change, not only the link
-					}else if (TorM_s==2){
-						MOco[index][0]=1;
-						MOco[index][1]=co_t[i][1];
-					}	
-					//link 
-					linex[0]= Xs[index]+(Ws[index]/2);
-					liney[0]= Ys[index]+(Hs[index]/2);
-					linex[1]= Xt[i]+(Wt[i]/2);
-					liney[1]= Yt[i]+(Ht[i]/2);
-					linktolink=true;
-					System.out.println("case 1-4");
+					link_case = 4;
+					System.out.println("  case 1-4");
 				}
 			}else if(dist[i]==minvalue && minvalue >= 100){ //2. target object, >=100
 				linex[0]=0;
 				linex[1]=0;
 				liney[0]=0;
 				liney[1]=0;
-				link=false;
-				linktolink=false;
-				System.out.println("case 2");
+				link_case = -1;
+				System.out.println("  case 2");
 			}else{ 											//3. other remain (not closest)
+				if(TorM_t==1 && link_to_TB_index == i){
+					link_to_TB_index = -1;
+				}else if (TorM_t==2 && link_to_MO_index == i){
+					link_to_MO_index = -1;
+				}
 				co_t[i][0]=-1;
 				co_t[i][1]=-1;
-				System.out.println("case 3");
+				System.out.println("  case 3");
+				++case3_count;
+				if(TBindex!=0 && case3_count == MOcount + TBcount -1){  // to catch all case 3
+					linex[0]=0;
+					linex[1]=0;
+					liney[0]=0;
+					liney[1]=0;
+					link_case = -1;
+					System.out.println("*** ALL case 3 ***");
+				}else if (MOindex!=0 && case3_count == TBcount){
+					linex[0]=0;
+					linex[1]=0;
+					liney[0]=0;
+					liney[1]=0;
+					link_case = -1;
+					System.out.println("*** ALL case 3 ***");
+				}
 			}
 		}
 	}	

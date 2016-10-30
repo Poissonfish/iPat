@@ -1,1 +1,12 @@
-setwd('~')
+setwd('/Users/Poissonfish/all demofile')
+file1= read.csv("mdp_genotype_test.hmp.txt", sep = '\t')
+file2= read.csv("mdp_numeric.txt", sep = '\t')
+file3= read.csv("mdp_SNP_information.txt", sep = '\t')
+file4= read.csv("mdp_traits_validation.txt", sep = '\t')
+file5= read.csv("mdp_traits.txt", sep = '\t')
+
+head(file1)
+head(file2)
+head(file3)
+head(file4)
+head(file5)
