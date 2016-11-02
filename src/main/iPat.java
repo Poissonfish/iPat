@@ -58,7 +58,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 	static int[] TBimageY= new int[TBMAX];
 	static 	int[] TBimageH= new int[TBMAX];
 	static int[] TBimageW= new int[TBMAX];
-	static int[][] TBco= new int[TBMAX][4];  //1=combined or not(-1,1,2), 2= coindex, 3=subcombined or not (-1,1)
+	static int[][] TBco= new int[TBMAX][5];  //1=combined or not(-1,1), 2= coindex, 3=subcombined or not (-1,1) 4= coindex, 5= if include model
 	static int[] TBdelete= new int[TBMAX];
 	boolean link_to_TB = false;
 	int link_to_TB_index = -1;
@@ -67,7 +67,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 	static int[] MOimageY= new int[MOMAX];
 	static int[] MOimageH= new int[MOMAX];
 	static int[] MOimageW= new int[MOMAX];
-	static int[][] MOco= new int[MOMAX][4];
+	static int[][] MOco= new int[MOMAX][5];
 	static int[] MOdelete= new int[MOMAX];
 	boolean link_to_MO = false;
 	int link_to_MO_index = -1;
@@ -299,6 +299,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 			TBco[i][1]=-1;
 			TBco[i][2]=-1;
 			TBco[i][3]=-1;
+			TBco[i][4]=-1;
 		}	
 		for (int i=1; i<=MOMAX-1; i++){
 			MOname[i]= new JLabel();		
@@ -308,7 +309,8 @@ class myPanel extends JPanel implements MouseMotionListener{
 			MOco[i][0]=-1;
 			MOco[i][1]=-1;
 			MOco[i][2]=-1;
-			MOco[i][3]=-1;			
+			MOco[i][3]=-1;	
+			MOco[i][4]=-1;
 		}	
 		////////////
 		////////////
@@ -392,6 +394,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						}else if(MOindex!=0){
 							MOco[MOindex][2] = MOco[MOindex][0];
 							MOco[MOindex][3] = MOco[MOindex][1];	
+							MOco[MOindex][4] = 1;
 							linkline[linklineindex][0]=2;		  	//draw line from a model	
 							linkline[linklineindex][1]=MOindex;		//draw line from which model
 							System.out.println("MO1");
@@ -402,6 +405,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 							if(TBco[i][1] == COcount && i != TBindex){
 								TBco[i][2] = TBco[i][0];
 								TBco[i][3] = TBco[i][1];
+								if(MOindex!=0){TBco[i][4] = 1;}
 								linkline[linklineindex][2]=1;
 								linkline[linklineindex][3]=i;
 								System.out.println("TB2");
@@ -412,6 +416,8 @@ class myPanel extends JPanel implements MouseMotionListener{
 							if(MOco[i][1] == COcount && i != MOindex){
 								MOco[i][2] = MOco[i][0];
 								MOco[i][3] = MOco[i][1];
+								MOco[i][4] = 1;
+								if(TBindex!=0){TBco[TBindex][4] = 1;}
 								linkline[linklineindex][2]=2;
 								linkline[linklineindex][3]=i;
 								System.out.println("MO2");
@@ -435,6 +441,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 					}else if(MOindex!=0){
 						MOco[MOindex][2] = MOco[MOindex][0];
 						MOco[MOindex][3] = MOco[MOindex][1];	
+						MOco[MOindex][4] = 1;
 						linkline[linklineindex][0]=2;		  	//draw line from a model
 						linkline[linklineindex][1]=MOindex;		//draw line from which model
 						System.out.println("MO1");
@@ -443,11 +450,19 @@ class myPanel extends JPanel implements MouseMotionListener{
 					if(link_to_TB_index != -1){
 						linkline[linklineindex][2]=1;
 						linkline[linklineindex][3]=link_to_TB_index;
+						if(MOindex!=0){
+							for(int i=1; i<=TBcount; i++){
+								if(TBco[i][3] == MOco[MOindex][3]){
+									TBco[i][4] = 1;
+								}
+							}
+						}
 						link_to_TB_index = -1;
 						System.out.println("TB2");
 					}else if(link_to_MO_index != -1){
 						linkline[linklineindex][2]=2;
 						linkline[linklineindex][3]=link_to_MO_index;
+						if(TBindex!=0){TBco[TBindex][4] = 1;}
 						link_to_MO_index = -1;
 						System.out.println("MO2");
 					}				
@@ -476,6 +491,10 @@ class myPanel extends JPanel implements MouseMotionListener{
 					if(link_to_TB_index != -1){
 						TBco[link_to_TB_index][2] = 1;
 						TBco[link_to_TB_index][3] = TBco[link_to_TB_index][1];
+						if((TBindex != 0 && TBco[TBindex][4] == 1)||	//TBLinkgroup - TB
+						   (MOindex != 0)){								//MOgroup - TB
+							TBco[link_to_TB_index][4] = 1;
+						}
 						linkline[linklineindex][2] = 1;
 						linkline[linklineindex][3] = link_to_TB_index;
 						link_to_TB_index = -1;
@@ -483,6 +502,14 @@ class myPanel extends JPanel implements MouseMotionListener{
 					}else if(link_to_MO_index != -1){
 						MOco[link_to_MO_index][2] = 1;
 						MOco[link_to_MO_index][3] = MOco[link_to_MO_index][1];
+						MOco[link_to_MO_index][4] = 1;
+						if(TBindex!=1){
+							for(int i=1; i<=TBcount; i++){
+								if(TBco[i][3] == MOco[link_to_MO_index][3]){
+									TBco[i][4] = 1;
+								}
+							}
+						}
 						linkline[linklineindex][2] = 2;
 						linkline[linklineindex][3] = link_to_MO_index;
 						link_to_MO_index = -1;
@@ -874,7 +901,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 			System.out.println(" i="+i+" count= "+count_t);
 			if(TorM_s == TorM_t && index == i){ 
 				System.out.println("  return");
-				continue;} //skip determined self object 
+				continue;} //skip target to itself and model-link object
 			if(dist[i]==minvalue && minvalue < 100){		//1. target object, <100
 				if(((TorM_s==1 && TBco[index][2]==-1) || (TorM_s==2 && MOco[index][2]==-1)) &&  //1-1. unlink-unlink
 				   (co_t[i][2]==-1)){
@@ -888,7 +915,8 @@ class myPanel extends JPanel implements MouseMotionListener{
 					}	
 				  	//target
 					co_t[i][0]=1;
-					co_t[i][1]=COcount;
+					co_t[i][1]=COcount;				
+					
 					//link 
 					linex[0]= Xs[index]+(Ws[index]/2);
 					liney[0]= Ys[index]+(Hs[index]/2);
@@ -898,6 +926,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 					System.out.println("  case 1-1");
 				}else if(((TorM_s==1 && TBco[index][2]==-1) || (TorM_s==2 && MOco[index][2]==-1)) &&  //1-2. unlink-link
 				   (co_t[i][2]!=-1)){
+					if(co_t[i][4]==1 && TorM_s==2){continue;} //skip model-link group
 					//self 
 					if(TorM_s==1){	
 						TBco[index][0]=1; 	
@@ -928,7 +957,11 @@ class myPanel extends JPanel implements MouseMotionListener{
 					link_case = 3;
 					System.out.println("  case 1-3");
 				}else if(((TorM_s==1 && TBco[index][2]!=-1) || (TorM_s==2 && MOco[index][2]!=-1)) &&  //1-4. link-unlink
-				   (co_t[i][2]==-1)){
+				   (co_t[i][2]==-1)){				
+					if((TorM_s==1 && TBco[index][4] == 1 && TorM_t == 2) ||  //skip TBgroup - model
+					   (TorM_s==2 && TorM_t == 2)){  	//skip MOgroup - model
+						continue;
+					}
 					//target 
 					if(TorM_t==1){
 						link_to_TB_index = i;
