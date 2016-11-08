@@ -361,7 +361,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 					 }
 			   	}else if(MOindex!=0 & SwingUtilities.isRightMouseButton(ee)){ 	
 			   		chooser = new iPat_chooser();
-			   		settingframe model_frame = new settingframe(chooser.getPath(), r, MOindex);
+			   		Configuration model_frame = new Configuration(chooser.getPath(), r, MOindex);
 			  		model_frame.setLocation(450, 250);
 			   		model_frame.setResizable(false);
 			   		model_frame.initial();
@@ -473,7 +473,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 						  link_case == 3 && !removeornot){			
 					System.out.println("link-link");
 					link_case = -1;
-					
+							
 				}else if((TBindex!=0|MOindex!=0) && 	 //且正在選某個物件
 						  link_case == 4 && !removeornot){			
 					System.out.println("link-unlink");
@@ -517,7 +517,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 					}						
 					linklineindex++;
 					link_case = -1;
-					
 				}				
 				
 				if (removeornot){
@@ -535,8 +534,94 @@ class myPanel extends JPanel implements MouseMotionListener{
 						MOname[MOindex].setLocation(-100,-100);
 						repaint();
 						MOdelete[MOindex]=-1;
-					}else if(lineindex!=0&&(y>=(delbboundy)&&x>=(delbboundx))){
-						System.out.println("lineindex:"+lineindex);
+					}else if(lineindex!=-1&&(y>=(delbboundy)&&x>=(delbboundx))){
+						int[][] traceback = new int[linklineindex][3]; //class, class_index, which link
+						int[][] traceback_temp = new int[linklineindex][3]; //class, class_index, which link
+
+						int trace_index = 0, trace_max = 1;		
+						// linkline[][2]   class, class index 
+						// traceback[][3]  class, class index, which link  				
+						for (int i=0; i<linklineindex; i++){
+							traceback[i][0] = -1;
+							traceback[i][1] = -1;
+							traceback[i][2] = -1;
+							traceback_temp[i][0] = -1;
+							traceback_temp[i][1] = -1;
+							traceback_temp[i][2] = -1;
+						}
+						traceback[0][0] = linkline[lineindex][2];
+						traceback[0][1] = linkline[lineindex][3];
+						traceback[0][2] = lineindex;
+						
+						//modified the first one
+						if(linkline[lineindex][2] == 1){
+							TBco[linkline[lineindex][3]][1] = COcount;
+							TBco[linkline[lineindex][3]][3] = COcount;
+						}else if(linkline[lineindex][2] == 2){
+							MOco[linkline[lineindex][3]][1] = COcount;
+							MOco[linkline[lineindex][3]][3] = COcount;							
+						}
+						
+						for(int i=0; i<linklineindex; i++){
+							System.out.println(linkline[i][0]+" "+linkline[i][1]+"--"+linkline[i][2]+" "+linkline[i][3]);
+						}
+						for (int ex=0; ex<10; ex++){
+							trace_index = 0;
+							for (int t=0; t<linklineindex; t++){  //search index
+								System.out.println("traceback: "+traceback[t][0]+", "+traceback[t][1]);
+								if(traceback[t][0] == -1){
+									System.out.println("break");
+									break;
+								} //no more layer need to be searched
+								for (int i=0; i<linklineindex; i++){
+									System.out.println(linkline[i][0]+" "+linkline[i][1]+"--"+linkline[i][2]+" "+linkline[i][3]);
+									System.out.println("traceback(new):"+traceback[t][0]+", "+traceback[t][1]);
+									if(i == traceback[t][2]){
+										System.out.println("comtinue");
+										continue;} //skip the last round pair
+									if(linkline[i][0] == traceback[t][0] && linkline[i][1] == traceback[t][1]){
+										if(linkline[i][2]==1){ //table
+											TBco[linkline[i][3]][1] = COcount;
+											TBco[linkline[i][3]][3] = COcount;
+											traceback_temp[trace_index][0] = linkline[i][2];
+											traceback_temp[trace_index][1] = linkline[i][3];
+											traceback_temp[trace_index][2] = i;
+											trace_index++;
+											System.out.println("Layer:"+ex+" , trace: "+trace_index+ " ["+linkline[i][2]+", "+linkline[i][3]+"]");
+										}else if(linkline[i][2]==2){  //model
+											MOco[linkline[i][3]][1] = COcount;
+											MOco[linkline[i][3]][3] = COcount;
+											traceback_temp[trace_index][0] = linkline[i][2];
+											traceback_temp[trace_index][1] = linkline[i][3];
+											traceback_temp[trace_index][2] = i;
+											trace_index++;
+											System.out.println("Layer:"+ex+" , trace: "+trace_index+ " ["+linkline[i][2]+", "+linkline[i][3]+"]");
+										}
+									}else if(linkline[i][2] == traceback[t][0] && linkline[i][3] == traceback[t][1]){
+										if(linkline[i][0]==1){ //table
+											TBco[linkline[i][1]][1] = COcount;
+											TBco[linkline[i][1]][3] = COcount;
+											traceback_temp[trace_index][0] = linkline[i][0];
+											traceback_temp[trace_index][1] = linkline[i][1];
+											traceback_temp[trace_index][2] = i;
+											trace_index++;
+											System.out.println("Layer:"+ex+" , trace: "+trace_index+ " ["+linkline[i][0]+", "+linkline[i][1]+"]");
+										}else if(linkline[i][0]==2){  //model
+											MOco[linkline[i][1]][1] = COcount;
+											MOco[linkline[i][1]][3] = COcount;
+											traceback_temp[trace_index][0] = linkline[i][0];
+											traceback_temp[trace_index][1] = linkline[i][1];
+											traceback_temp[trace_index][2] = i;
+											trace_index++;
+											System.out.println("Layer:"+ex+" , trace: "+trace_index+ " ["+linkline[i][0]+", "+linkline[i][1]+"]");
+										}
+									}
+								}
+							}
+							traceback = traceback_temp;
+							traceback[trace_index][0] =-1;
+						}
+						COcount ++;
 						linedelete[lineindex]=-1;
 						repaint();
 					}
@@ -999,7 +1084,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 				co_t[i][1]=-1;
 				System.out.println("  case 3");
 				++case3_count;
-				if(TBindex!=0 && case3_count == MOcount + TBcount -1){  // to catch all case 3
+				if(TBindex!=0 && case3_count == MOcount + TBcount -1){  // to catch all case 3, make line disappear
 					linex[0]=0;
 					linex[1]=0;
 					liney[0]=0;
@@ -1017,9 +1102,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 			}
 		}
 	}	
-///// remember to add 4. linked group link to unlink objects !!!
-				///// !!!!remember to modify 2. that the group's number cant be same as unlink target!
-
 	
 	public void dragcombined (int dx, int dy, int index,
 			  				  int[] X, int[] Y, int[] W, int[] H, Image[] image, Rectangle[] bound, JLabel[] name){						
