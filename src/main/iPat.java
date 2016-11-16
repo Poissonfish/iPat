@@ -406,8 +406,8 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			public void mouseReleased(MouseEvent ee){				
 				int x=ee.getX();
 				int y=ee.getY();		
-
     			//To compute whether the objects should be created
+				 								 //case 1
 				if( (TBindex!=0|MOindex!=0) && 	 //且正在選某個物件
 					 link_case == 1 && !removeornot){		//sure to link something		
 					System.out.println("unlink-unlink");
@@ -453,8 +453,8 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 						}
 						linklineindex++;
 						COcount++;
-						link_case = -1;
-						
+						link_case = -1;						
+														 //case 2
 				}else if((TBindex!=0|MOindex!=0) && 	 //且正在選某個物件
 						  link_case == 2 && !removeornot){			
 					System.out.println("unlink-link");
@@ -483,6 +483,8 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 									TBco[i][4] = 1;
 								}
 							}
+						}else if(TBindex!=0 && TBco[link_to_TB_index][4]==1){
+							TBco[TBindex][4] =1;
 						}
 						link_to_TB_index = -1;
 						System.out.println("TB2");
@@ -494,13 +496,13 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 						System.out.println("MO2");
 					}				
 					linklineindex++;
-					link_case = -1;
-					
+					link_case = -1;				
+														 //case 3
 				}else if((TBindex!=0|MOindex!=0) && 	 //且正在選某個物件
 						  link_case == 3 && !removeornot){			
 					System.out.println("link-link");
 					link_case = -1;
-							
+														 //case 4		
 				}else if((TBindex!=0|MOindex!=0) && 	 //且正在選某個物件
 						  link_case == 4 && !removeornot){			
 					System.out.println("link-unlink");
@@ -562,134 +564,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 						repaint();
 						MOdelete[MOindex]=-1;
 					}else if(lineindex!=-1&&(y>=(delbboundy)&&x>=(delbboundx))){
-						int[][] traceback = new int[linklineindex][3]; //class, class_index, which link
-						int[][] traceback_temp = new int[linklineindex][3]; //class, class_index, which link
-						int trace_index = 0, trace_max = 1, group_ori= 0;
-						// linkline[][2]   class, class index 
-						// traceback[][3]  class, class index, which link  				
-						for (int i=0; i<linklineindex; i++){
-							traceback[i][0] = -1;
-							traceback[i][1] = -1;
-							traceback[i][2] = -1;
-							traceback_temp[i][0] = -1;
-							traceback_temp[i][1] = -1;
-							traceback_temp[i][2] = -1;
-						}
-						traceback[0][0] = linkline[lineindex][2];
-						traceback[0][1] = linkline[lineindex][3];
-						traceback[0][2] = lineindex;
-						//modified the first one
-						if(linkline[lineindex][2] == 1){
-							group_ori= TBco[linkline[lineindex][3]][1]; //catch original group
-							TBco[linkline[lineindex][3]][1] = COcount;
-							TBco[linkline[lineindex][3]][3] = COcount;
-						}else if(linkline[lineindex][2] == 2){
-							group_ori= MOco[linkline[lineindex][3]][1]; //catch original group
-							MOco[linkline[lineindex][3]][1] = COcount;
-							MOco[linkline[lineindex][3]][3] = COcount;							
-						}	
-						for(int i=0; i<linklineindex; i++){
-							System.out.println(linkline[i][0]+" "+linkline[i][1]+")--("+linkline[i][2]+" "+linkline[i][3]);
-						}
-						for (int ex=0; ex<10; ex++){
-							trace_index = 0;
-							for (int t=0; t<linklineindex; t++){  //search index
-								if(traceback[t][0] == -1){break;} //no more layer need to be searched
-								for (int i=0; i<linklineindex; i++){
-									if(i == traceback[t][2]){continue;} //skip the last round pair
-									if(linkline[i][0] == traceback[t][0] && linkline[i][1] == traceback[t][1]){
-										if(linkline[i][2]==1){ //table
-											TBco[linkline[i][3]][1] = COcount;
-											TBco[linkline[i][3]][3] = COcount;
-											traceback_temp[trace_index][0] = linkline[i][2];
-											traceback_temp[trace_index][1] = linkline[i][3];
-											traceback_temp[trace_index][2] = i;
-											trace_index++;
-										}else if(linkline[i][2]==2){  //model
-											MOco[linkline[i][3]][1] = COcount;
-											MOco[linkline[i][3]][3] = COcount;
-											traceback_temp[trace_index][0] = linkline[i][2];
-											traceback_temp[trace_index][1] = linkline[i][3];
-											traceback_temp[trace_index][2] = i;
-											trace_index++;
-										}
-									}else if(linkline[i][2] == traceback[t][0] && linkline[i][3] == traceback[t][1]){
-										if(linkline[i][0]==1){ //table
-											TBco[linkline[i][1]][1] = COcount;
-											TBco[linkline[i][1]][3] = COcount;
-											traceback_temp[trace_index][0] = linkline[i][0];
-											traceback_temp[trace_index][1] = linkline[i][1];
-											traceback_temp[trace_index][2] = i;
-											trace_index++;
-										}else if(linkline[i][0]==2){  //model
-											MOco[linkline[i][1]][1] = COcount;
-											MOco[linkline[i][1]][3] = COcount;
-											traceback_temp[trace_index][0] = linkline[i][0];
-											traceback_temp[trace_index][1] = linkline[i][1];
-											traceback_temp[trace_index][2] = i;
-											trace_index++;
-										}
-									}
-								}
-							}
-							for (int repo = 0; repo<linklineindex; repo++){
-								traceback[repo][0] = traceback_temp[repo][0];
-								traceback[repo][1] = traceback_temp[repo][1];
-								traceback[repo][2] = traceback_temp[repo][2];
-							}
-							traceback[trace_index][0] =-1;
-						}
-						//to check if remain object is only one
-						int count_A = 0, count_B = 0, 
-							TB_A = 0, TB_B = 0, MO_A = 0, MO_B = 0;
-						for (int i=1; i<TBMAX; i++){
-							if(TBco[i][3] == group_ori){
-								count_A ++;
-								TB_A = i;
-							}else if(TBco[i][3] == COcount){
-								count_B ++;
-								TB_B = i;
-							}
-						}
-						for (int i=1; i<MOMAX; i++){
-							if(MOco[i][3] == group_ori){
-								count_A ++;
-								MO_A = i;
-							}else if(MOco[i][3] == COcount){
-								count_B ++;
-								MO_B = i;
-							}
-						}
-
-						if (count_A == 1){ //if one of these 2 group is only one object
-							if(TB_A != 0){
-								TBco[TB_A][2] = -1;
-								TBco[TB_A][3] = -1;
-								TBco[TB_A][4] = -1;
-							}else if (MO_A != 0){
-								MOco[MO_A][2] = -1;
-								MOco[MO_A][3] = -1;
-								MOco[MO_A][4] = -1;				
-							}
-						}	
-						if (count_B ==1){
-							if(TB_B != 0){
-								TBco[TB_B][2] = -1;
-								TBco[TB_B][3] = -1;
-								TBco[TB_B][4] = -1;
-							}else if (MO_B != 0){
-								MOco[MO_B][2] = -1;
-								MOco[MO_B][3] = -1;
-								MOco[MO_B][4] = -1;
-							}
-						}
-						COcount ++;
-						linedelete[lineindex]=-1;
-						linkline[lineindex][0] = -1;
-						linkline[lineindex][1] = -1;
-						linkline[lineindex][2] = -1;
-						linkline[lineindex][3] = -1;
-						repaint();
+						break_linkage();
 					}
     				trashl.setBounds(new Rectangle(-1000, -50, Wide, 300));  				
 					trashl.setVisible(true);
@@ -997,6 +872,156 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	  	
 	  	else{TB[i]=Unknown;}	  	
 	}
+	
+	void break_linkage(){
+		int[][] traceback = new int[linklineindex][3]; //class, class_index, which link
+		int[][] traceback_temp = new int[linklineindex][3]; //class, class_index, which link
+		int trace_index = 0, trace_max = 1, group_ori= 0;
+		// linkline[][2]   class, class index 
+		// traceback[][3]  class, class index, which link  				
+		for (int i=0; i<linklineindex; i++){
+			traceback[i][0] = -1;
+			traceback[i][1] = -1;
+			traceback[i][2] = -1;
+			traceback_temp[i][0] = -1;
+			traceback_temp[i][1] = -1;
+			traceback_temp[i][2] = -1;
+		}
+		traceback[0][0] = linkline[lineindex][2];
+		traceback[0][1] = linkline[lineindex][3];
+		traceback[0][2] = lineindex;
+		//modified the first one
+		if(linkline[lineindex][2] == 1){
+			group_ori= TBco[linkline[lineindex][3]][3]; //catch original group
+			TBco[linkline[lineindex][3]][1] = COcount;
+			TBco[linkline[lineindex][3]][3] = COcount;
+		}else if(linkline[lineindex][2] == 2){
+			group_ori= MOco[linkline[lineindex][3]][3]; //catch original group
+			MOco[linkline[lineindex][3]][1] = COcount;
+			MOco[linkline[lineindex][3]][3] = COcount;							
+		}	
+		for(int i=0; i<linklineindex; i++){
+			System.out.println(linkline[i][0]+" "+linkline[i][1]+")--("+linkline[i][2]+" "+linkline[i][3]);
+		}
+		// should be able to do recursive function
+		for (int ex=0; ex<10; ex++){
+			trace_index = 0;
+			for (int t=0; t<linklineindex; t++){  //search index
+				if(traceback[t][0] == -1){break;} //no more layer need to be searched
+				for (int i=0; i<linklineindex; i++){
+					if(i == traceback[t][2]){continue;} //skip the last round pair
+					if(linkline[i][0] == traceback[t][0] && linkline[i][1] == traceback[t][1]){
+						if(linkline[i][2]==1){ //table
+							TBco[linkline[i][3]][1] = COcount;
+							TBco[linkline[i][3]][3] = COcount;
+							traceback_temp[trace_index][0] = linkline[i][2];
+							traceback_temp[trace_index][1] = linkline[i][3];
+							traceback_temp[trace_index][2] = i;
+							trace_index++;
+						}else if(linkline[i][2]==2){  //model
+							MOco[linkline[i][3]][1] = COcount;
+							MOco[linkline[i][3]][3] = COcount;
+							traceback_temp[trace_index][0] = linkline[i][2];
+							traceback_temp[trace_index][1] = linkline[i][3];
+							traceback_temp[trace_index][2] = i;
+							trace_index++;
+						}
+					}else if(linkline[i][2] == traceback[t][0] && linkline[i][3] == traceback[t][1]){
+						if(linkline[i][0]==1){ //table
+							TBco[linkline[i][1]][1] = COcount;
+							TBco[linkline[i][1]][3] = COcount;
+							traceback_temp[trace_index][0] = linkline[i][0];
+							traceback_temp[trace_index][1] = linkline[i][1];
+							traceback_temp[trace_index][2] = i;
+							trace_index++;
+						}else if(linkline[i][0]==2){  //model
+							MOco[linkline[i][1]][1] = COcount;
+							MOco[linkline[i][1]][3] = COcount;
+							traceback_temp[trace_index][0] = linkline[i][0];
+							traceback_temp[trace_index][1] = linkline[i][1];
+							traceback_temp[trace_index][2] = i;
+							trace_index++;
+						}
+					}
+				}
+			}
+			for (int repo = 0; repo<linklineindex; repo++){
+				traceback[repo][0] = traceback_temp[repo][0];
+				traceback[repo][1] = traceback_temp[repo][1];
+				traceback[repo][2] = traceback_temp[repo][2];
+			}
+			traceback[trace_index][0] =-1;
+		}
+		//////
+		
+		//to check if remain object is only one
+		int count_A = 0, count_B = 0, 
+			TB_A = 0, TB_B = 0, MO_A = 0, MO_B = 0;
+		for (int i=1; i<TBMAX; i++){
+			if(TBco[i][3] == group_ori){
+				count_A ++;
+				TB_A = i;
+			}else if(TBco[i][3] == COcount){
+				count_B ++;
+				TB_B = i;
+			}
+		}
+		for (int i=1; i<MOMAX; i++){
+			if(MOco[i][3] == group_ori){
+				count_A ++;
+				MO_A = i;
+			}else if(MOco[i][3] == COcount){
+				count_B ++;
+				MO_B = i;
+			}
+		}
+		System.out.println("countA: "+count_A+" group:"+ group_ori);
+		System.out.println("countB: "+count_B+" group:"+ COcount);
+		
+		if (count_A == 1){ //if one of these 2 group is only one object
+			if(TB_A != 0){
+				TBco[TB_A][2] = -1;
+				TBco[TB_A][3] = -1;
+				TBco[TB_A][4] = -1;
+			}else if (MO_A != 0){
+				MOco[MO_A][2] = -1;
+				MOco[MO_A][3] = -1;
+				MOco[MO_A][4] = -1;				
+			}
+		}	
+		if (count_B ==1){
+			if(TB_B != 0){
+				TBco[TB_B][2] = -1;
+				TBco[TB_B][3] = -1;
+				TBco[TB_B][4] = -1;
+			}else if (MO_B != 0){
+				MOco[MO_B][2] = -1;
+				MOco[MO_B][3] = -1;
+				MOco[MO_B][4] = -1;
+			}
+		}
+		
+		//to check if group able to link model
+		int no_mo_index = 0;
+		if(MO_A == 0){ // indecate "group_ori" doesn't have model
+			for(int i = 1; i<TBMAX; i++){
+				if(TBco[i][3]== group_ori){TBco[i][4] = -1;}
+			}
+		}else if(MO_B == 0){
+			for(int i = 1; i<TBMAX; i++){
+				if(TBco[i][3]== COcount){TBco[i][4] = -1;}
+			}
+		}
+		
+		COcount ++;
+		linedelete[lineindex]=-1;
+		linkline[lineindex][0] = -1;
+		linkline[lineindex][1] = -1;
+		linkline[lineindex][2] = -1;
+		linkline[lineindex][3] = -1;
+		repaint();
+	}
+	
 	
 	public void CombinedorNot(int index, int[] Xs, int[] Ys, int[] Ws, int[] Hs, int TorM_s){
 		int[] TBdist= new int[TBcount+1];
@@ -1333,9 +1358,8 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			System.out.println("del");
 			if(lineselected!=-1){
 				System.out.println("delT");
-				  linedelete[lineselected]=-1;
-				  repaint();
-			  }
+				break_linkage();
+			}
 		}
 	}
 
