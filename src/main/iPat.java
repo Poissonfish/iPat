@@ -35,6 +35,8 @@ public class iPat {
 		Wide= main.getWidth();
 		Heigth= main.getHeight();
 		myPanel ipat = new myPanel(Wide, Heigth, PHeight);
+		ipat.setFocusable(true); // for keylistener
+		ipat.requestFocusInWindow(); // for keylistener
 		cPane.add(ipat);	
 		main.setVisible(true);
 		main.addComponentListener(new ComponentAdapter() {
@@ -48,17 +50,23 @@ public class iPat {
 	}	
 }
 
-class myPanel extends JPanel implements MouseMotionListener{	
+class myPanel extends JPanel implements MouseMotionListener, KeyListener{	
 	//  private static class ipatButton extends JButton {
-	private static final int TBMAX=20;
-	private static final int MOMAX=20;
-	private static final int COMAX=10;	
+	private static final int TBMAX=40;
+	private static final int MOMAX=40;
+	private static final int COMAX=20;	
 	
 	static int[] TBimageX= new int[TBMAX];
 	static int[] TBimageY= new int[TBMAX];
 	static 	int[] TBimageH= new int[TBMAX];
 	static int[] TBimageW= new int[TBMAX];
-	static int[][] TBco= new int[TBMAX][5];  //1=combined or not(-1,1), 2= coindex, 3=subcombined or not (-1,1) 4= coindex, 5= if include model
+	
+	//1=combined or not(-1,1), 
+	//2= coindex, 
+	//3=subcombined or not (-1,1) 
+	//4= coindex, 
+	//5= if include model
+	static int[][] TBco= new int[TBMAX][5];
 	static int[] TBdelete= new int[TBMAX];
 	boolean link_to_TB = false;
 	int link_to_TB_index = -1;
@@ -153,7 +161,9 @@ class myPanel extends JPanel implements MouseMotionListener{
 	boolean ableselect=false, linktolink=false;
     Stroke dashed = new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,10}, 0);
     Stroke solid = new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,0}, 0);
-    	
+    Stroke select = new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,10}, 0);
+
+    
 	//Color
 	Color red = new Color(231,57,131, 100);
 	Color lightred = new Color(231,57,131, 80);
@@ -187,6 +197,13 @@ class myPanel extends JPanel implements MouseMotionListener{
 	Rengine r = new Rengine(new String[]{"--no-save"}, true, new TextConsole());
 	//settingframe model_frame;
 	Preferences pref = Preferences.userRoot().node("/iPat"); 
+	
+    //object select
+	int TBindex_select = -1;
+	int MOindex_select = -1;
+
+    int object_selected = -1;   //1 table, 2 model
+	int select_intex= -1;
 	
 	public myPanel(int Wideint, int Heigthint, int pH){	
 		this.Wide=Wideint;
@@ -317,6 +334,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 		//LAYOUT.END
 		////////////
 		////////////
+	
 		
 		this.addMouseListener(new MouseAdapter(){		
 			@Override
@@ -329,6 +347,16 @@ class myPanel extends JPanel implements MouseMotionListener{
     			lineindex=-1;
     			TBindex= TBindex_temp;  // catcth the mouse_move result
     			MOindex= MOindex_temp;
+    			if(TBindex_select != TBindex_temp){
+        			TBindex_select = TBindex_temp;
+    			}else{
+    				TBindex_select = -1;
+    			}
+    			if(MOindex_select != MOindex_temp){
+        			MOindex_select = MOindex_temp;
+    			}else{
+    				MOindex_select = -1;
+    			}
     			
     			//Debug section
     			if(TBindex!=0){
@@ -340,7 +368,7 @@ class myPanel extends JPanel implements MouseMotionListener{
     			if (ableselect){
         			lineindex= lineselected_temp;
         			System.out.println("lineindex:"+lineindex);	
-    			}
+    			} 
     			
     			String folder_path = null;
 				if(TBindex!=0 & SwingUtilities.isRightMouseButton(ee)){
@@ -351,7 +379,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 					  	TBfile[TBindex]= selectedfile.getAbsolutePath();
 					  	iconchange(TBindex); 
 					  	TBimageH[TBindex]=TB[TBindex].getHeight(null);
-					  	TBimageW[TBindex]=TB[TBindex].getHeight(null);
+					  	TBimageW[TBindex]=TB[TBindex].getWidth(null);
 						TBname[TBindex].setLocation(TBimageX[TBindex], TBimageY[TBindex]+TBimageH[TBindex]-panelHeigth+15);
 						TBname[TBindex].setSize(200,15);
 						TBname[TBindex].setText(selectedfile.getName());
@@ -360,18 +388,17 @@ class myPanel extends JPanel implements MouseMotionListener{
 						repaint();
 					 }
 			   	}else if(MOindex!=0 & SwingUtilities.isRightMouseButton(ee)){ 	
-			   		chooser = new iPat_chooser();
-			   		Configuration model_frame = new Configuration(chooser.getPath(), r, MOindex);
-			  		model_frame.setLocation(450, 250);
-			   		model_frame.setResizable(false);
-			   		model_frame.initial();
-			   		
-			   	}else if(MOindex!=0 & SwingUtilities.isLeftMouseButton(ee)){
-			   
-			   	} 			
+			   		Configuration model_frame = new Configuration(r, MOindex);
+			   		model_frame.configuration_initial();
+			  		model_frame.setBounds(300, 100, 350, 500);
+			   		model_frame.setResizable(true);
+			   		model_frame.setVisible(true);
+			   	}			
     			if(ableselect&&TBindex<=0&&MOindex<=0){
 					if(lineselected!=lineselected_temp){lineselected=lineselected_temp;}else{lineselected=-1;}	
-    			}		
+    			}else{
+    				lineselected = -1;
+    			}
     			repaint();
 			}	
 				
@@ -537,8 +564,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 					}else if(lineindex!=-1&&(y>=(delbboundy)&&x>=(delbboundx))){
 						int[][] traceback = new int[linklineindex][3]; //class, class_index, which link
 						int[][] traceback_temp = new int[linklineindex][3]; //class, class_index, which link
-
-						int trace_index = 0, trace_max = 1;		
+						int trace_index = 0, trace_max = 1, group_ori= 0;
 						// linkline[][2]   class, class index 
 						// traceback[][3]  class, class index, which link  				
 						for (int i=0; i<linklineindex; i++){
@@ -552,33 +578,25 @@ class myPanel extends JPanel implements MouseMotionListener{
 						traceback[0][0] = linkline[lineindex][2];
 						traceback[0][1] = linkline[lineindex][3];
 						traceback[0][2] = lineindex;
-						
 						//modified the first one
 						if(linkline[lineindex][2] == 1){
+							group_ori= TBco[linkline[lineindex][3]][1]; //catch original group
 							TBco[linkline[lineindex][3]][1] = COcount;
 							TBco[linkline[lineindex][3]][3] = COcount;
 						}else if(linkline[lineindex][2] == 2){
+							group_ori= MOco[linkline[lineindex][3]][1]; //catch original group
 							MOco[linkline[lineindex][3]][1] = COcount;
 							MOco[linkline[lineindex][3]][3] = COcount;							
-						}
-						
+						}	
 						for(int i=0; i<linklineindex; i++){
-							System.out.println(linkline[i][0]+" "+linkline[i][1]+"--"+linkline[i][2]+" "+linkline[i][3]);
+							System.out.println(linkline[i][0]+" "+linkline[i][1]+")--("+linkline[i][2]+" "+linkline[i][3]);
 						}
 						for (int ex=0; ex<10; ex++){
 							trace_index = 0;
 							for (int t=0; t<linklineindex; t++){  //search index
-								System.out.println("traceback: "+traceback[t][0]+", "+traceback[t][1]);
-								if(traceback[t][0] == -1){
-									System.out.println("break");
-									break;
-								} //no more layer need to be searched
+								if(traceback[t][0] == -1){break;} //no more layer need to be searched
 								for (int i=0; i<linklineindex; i++){
-									System.out.println(linkline[i][0]+" "+linkline[i][1]+"--"+linkline[i][2]+" "+linkline[i][3]);
-									System.out.println("traceback(new):"+traceback[t][0]+", "+traceback[t][1]);
-									if(i == traceback[t][2]){
-										System.out.println("comtinue");
-										continue;} //skip the last round pair
+									if(i == traceback[t][2]){continue;} //skip the last round pair
 									if(linkline[i][0] == traceback[t][0] && linkline[i][1] == traceback[t][1]){
 										if(linkline[i][2]==1){ //table
 											TBco[linkline[i][3]][1] = COcount;
@@ -587,7 +605,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 											traceback_temp[trace_index][1] = linkline[i][3];
 											traceback_temp[trace_index][2] = i;
 											trace_index++;
-											System.out.println("Layer:"+ex+" , trace: "+trace_index+ " ["+linkline[i][2]+", "+linkline[i][3]+"]");
 										}else if(linkline[i][2]==2){  //model
 											MOco[linkline[i][3]][1] = COcount;
 											MOco[linkline[i][3]][3] = COcount;
@@ -595,7 +612,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 											traceback_temp[trace_index][1] = linkline[i][3];
 											traceback_temp[trace_index][2] = i;
 											trace_index++;
-											System.out.println("Layer:"+ex+" , trace: "+trace_index+ " ["+linkline[i][2]+", "+linkline[i][3]+"]");
 										}
 									}else if(linkline[i][2] == traceback[t][0] && linkline[i][3] == traceback[t][1]){
 										if(linkline[i][0]==1){ //table
@@ -605,7 +621,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 											traceback_temp[trace_index][1] = linkline[i][1];
 											traceback_temp[trace_index][2] = i;
 											trace_index++;
-											System.out.println("Layer:"+ex+" , trace: "+trace_index+ " ["+linkline[i][0]+", "+linkline[i][1]+"]");
 										}else if(linkline[i][0]==2){  //model
 											MOco[linkline[i][1]][1] = COcount;
 											MOco[linkline[i][1]][3] = COcount;
@@ -613,16 +628,67 @@ class myPanel extends JPanel implements MouseMotionListener{
 											traceback_temp[trace_index][1] = linkline[i][1];
 											traceback_temp[trace_index][2] = i;
 											trace_index++;
-											System.out.println("Layer:"+ex+" , trace: "+trace_index+ " ["+linkline[i][0]+", "+linkline[i][1]+"]");
 										}
 									}
 								}
 							}
-							traceback = traceback_temp;
+							for (int repo = 0; repo<linklineindex; repo++){
+								traceback[repo][0] = traceback_temp[repo][0];
+								traceback[repo][1] = traceback_temp[repo][1];
+								traceback[repo][2] = traceback_temp[repo][2];
+							}
 							traceback[trace_index][0] =-1;
+						}
+						//to check if remain object is only one
+						int count_A = 0, count_B = 0, 
+							TB_A = 0, TB_B = 0, MO_A = 0, MO_B = 0;
+						for (int i=1; i<TBMAX; i++){
+							if(TBco[i][3] == group_ori){
+								count_A ++;
+								TB_A = i;
+							}else if(TBco[i][3] == COcount){
+								count_B ++;
+								TB_B = i;
+							}
+						}
+						for (int i=1; i<MOMAX; i++){
+							if(MOco[i][3] == group_ori){
+								count_A ++;
+								MO_A = i;
+							}else if(MOco[i][3] == COcount){
+								count_B ++;
+								MO_B = i;
+							}
+						}
+
+						if (count_A == 1){ //if one of these 2 group is only one object
+							if(TB_A != 0){
+								TBco[TB_A][2] = -1;
+								TBco[TB_A][3] = -1;
+								TBco[TB_A][4] = -1;
+							}else if (MO_A != 0){
+								MOco[MO_A][2] = -1;
+								MOco[MO_A][3] = -1;
+								MOco[MO_A][4] = -1;				
+							}
+						}	
+						if (count_B ==1){
+							if(TB_B != 0){
+								TBco[TB_B][2] = -1;
+								TBco[TB_B][3] = -1;
+								TBco[TB_B][4] = -1;
+							}else if (MO_B != 0){
+								MOco[MO_B][2] = -1;
+								MOco[MO_B][3] = -1;
+								MOco[MO_B][4] = -1;
+							}
 						}
 						COcount ++;
 						linedelete[lineindex]=-1;
+						linkline[lineindex][0] = -1;
+						linkline[lineindex][1] = -1;
+						linkline[lineindex][2] = -1;
+						linkline[lineindex][3] = -1;
 						repaint();
 					}
     				trashl.setBounds(new Rectangle(-1000, -50, Wide, 300));  				
@@ -641,7 +707,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 				
 				repaint();
 				TBindex=0;
-				MOindex=0;
+				MOindex=0;	
 				COindex=-1;
 				link=false;
 				linktolink=false;
@@ -666,46 +732,55 @@ class myPanel extends JPanel implements MouseMotionListener{
     				if(ifopenfile == true){
     					ifopenfile=false;
     					TBopenfile(openindex);
-    				}else if ( x<(Wide/2) ){
+    				}else if (x<(Wide/2)&&TBindex_temp==0){
     					TBcount++;
         				TBimageX[TBcount]=createX-TBimageW[TBcount]/2;
         				TBimageY[TBcount]=createY-TBimageH[TBcount]-5;
         				TBBound[TBcount]= new Rectangle(TBimageX[TBcount], TBimageY[TBcount], TBimage.getWidth(null), TBimage.getHeight(null));
         				repaint();
-    				}else if( x>(Wide/2)){
+    				}else if(x>(Wide/2)&&MOindex_temp==0){
     					MOcount++;
         				MOimageX[MOcount]=createX-MOimageW[MOcount]/2;
         				MOimageY[MOcount]=createY-MOimageH[MOcount]-5;
         				MOBound[MOcount]= new Rectangle(MOimageX[MOcount], MOimageY[MOcount], MOimage.getWidth(null), MOimage.getHeight(null));
+        				MOimageH[MOcount]=MO[MOcount].getHeight(null);
+					  	MOimageW[MOcount]=MO[MOcount].getHeight(null);
+						MOname[MOcount].setLocation(MOimageX[MOcount], MOimageY[MOcount]+MOimageH[MOcount]-panelHeigth+15);
+						MOname[MOcount].setSize(200,15);
+						MOname[MOcount].setText("Project "+MOcount);
         				repaint();
     				}
     			}
     		}
 		});	
-	
+	addKeyListener(this);
 	addMouseMotionListener(this);
 	}	
 	
 	@Override
 	protected void paintComponent(Graphics g) {	
-	     super.paintComponent(g);
-	 
+	     super.paintComponent(g);	 
 	     g.setColor(ovalcolor);
-
+	     
 	     if(lineindex!=-1){
 			 Draw_Lines(g, line_drag_x[0], line_drag_y[0], line_drag_x[1], line_drag_y[1], dashed);	
 	     }     
-		 Draw_Lines(g, linex[0], liney[0], linex[1], liney[1], dashed);	
-		 DrawLinkedLine(g);
+		 Draw_Lines(g, linex[0], liney[0], linex[1], liney[1], dashed); //temp_link 
+		 DrawLinkedLine(g); //object_link
 		 
     	 for (int i=1; i<=TBcount; i++){
 		     g.drawImage(TB[i],TBimageX[i],TBimageY[i], this); 
+		     if(TBindex_select == i){
+		    	Draw_Rects(g, TBimageX[i]-5, TBimageY[i]-3, TBimageW[i]+10, TBimageH[i]+6, select); //temp_link 
+		     }
     	 }
     	 for (int i=1; i<=MOcount; i++){
 		     g.drawImage(MO[i],MOimageX[i],MOimageY[i], this); 
+		     if(MOindex_select == i){
+			     Draw_Rects(g, MOimageX[i]-5, MOimageY[i]-3, MOimageW[i]+10, MOimageH[i]+6, select); //temp_link 
+		     }
     	 }
-    	 
-	}
+    }
 	
 	@Override
 	 public void mouseDragged(MouseEvent e) {
@@ -714,7 +789,9 @@ class myPanel extends JPanel implements MouseMotionListener{
 		int boundN=0; //205
 		int boundS=Heigth-20;
 		int boundE=Wide;
+		
 		if(TBindex!=0){
+			TBindex_select = TBindex;
 			CombinedorNot(TBindex, TBimageX, TBimageY, TBimageW, TBimageH, 1);
 			KeepInPanel (imX, imY, TBindex, TBimageW, TBimageH, TBimageX, TBimageY,
 						 boundN,  boundS,  boundE, TBBound);
@@ -722,6 +799,7 @@ class myPanel extends JPanel implements MouseMotionListener{
 			TBBound[TBindex]=new Rectangle(TBimageX[TBindex], TBimageY[TBindex], TB[TBindex].getWidth(null), TB[TBindex].getHeight(null));
 			repaint();
 		}else if(MOindex!=0){
+			MOindex_select = MOindex;
 			CombinedorNot(MOindex, MOimageX, MOimageY, MOimageW, MOimageH, 2);
 			KeepInPanel (imX, imY, MOindex, MOimageW, MOimageH, MOimageX, MOimageY,
 						 boundN,  boundS,  boundE, MOBound);
@@ -729,7 +807,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 			MOBound[MOindex]=new Rectangle(MOimageX[MOindex], MOimageY[MOindex], MO[MOindex].getWidth(null), MO[MOindex].getHeight(null));
 			repaint();
 		}
-		
 		if((TBindex==0&&MOindex==0)&&lineindex!=-1){ //prevent from creating line when draging objects
 			line_drag_x[0]=imX-30+10;
 			line_drag_y[0]=imY-30;
@@ -780,6 +857,8 @@ class myPanel extends JPanel implements MouseMotionListener{
 			removeornot=false;				
 		}
 		lineindex=-1;
+		lineselected_temp=-1;
+		ableselect=false;
 		
 		if (TBindex<=0&MOindex<=0){
 			for (int i=0; i<linklineindex; i++){ // if(distance(A, C) + distance(B, C) == distance(A, B)) , to determine if pointer is on the line.
@@ -796,18 +875,14 @@ class myPanel extends JPanel implements MouseMotionListener{
 							lineselected_temp=i;
 							ableselect=true;
 							break;
-						}else{
-							ableselect=false;
 						}
 					}else if(linkline[i][2]==2){
 						if(Whether_On_Line(	TBimageX[linkline[i][1]]+(TBimageW[linkline[i][1]]/2), TBimageY[linkline[i][1]]+(TBimageH[linkline[i][1]]/2),
 											MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
 											x,y)){
 							lineselected_temp=i;
-						   ableselect=true;
-						   break;
-						}else{
-							ableselect=false;
+							ableselect=true;
+							break;
 						}
 					}
 				}else if(linkline[i][0]==2){
@@ -816,26 +891,22 @@ class myPanel extends JPanel implements MouseMotionListener{
 											TBimageX[linkline[i][3]]+(TBimageW[linkline[i][3]]/2), TBimageY[linkline[i][3]]+(TBimageH[linkline[i][3]]/2),
 											x,y)){
 							lineselected_temp=i;
-						   ableselect=true;
-						   break;
-						}else{
-							ableselect=false;
+							ableselect=true;
+							break;
 						}
 					}else if(linkline[i][2]==2){
 						if(Whether_On_Line(	MOimageX[linkline[i][1]]+(MOimageW[linkline[i][1]]/2), MOimageY[linkline[i][1]]+(MOimageH[linkline[i][1]]/2),
 											MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
 											x,y)){
 							lineselected_temp=i;
-						   ableselect=true;		   
-						   break;
-						}else{
-							ableselect=false;					
+							ableselect=true;		   
+							break;				
 						}
 					}
 				}
-			}
-			
+			}			
 		}	
+		
 		if(ableselect){
 			this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		}else{
@@ -866,7 +937,6 @@ class myPanel extends JPanel implements MouseMotionListener{
 				}
 			}
 		}
-		
 	}
 	
 	public void TBopenfile(int i){
@@ -1183,17 +1253,27 @@ class myPanel extends JPanel implements MouseMotionListener{
 		online= ( Distance(x1, y1, x, y)+Distance(x2, y2, x, y)<Distance(x1, y1, x2, y2)+2);
 		return online;
 	}
-	
-	public void Draw_Lines(Graphics g, int x1, int y1, int x2, int y2, Stroke s){
-		
+
+	public void Draw_Lines(Graphics g, int x1, int y1, int x2, int y2, Stroke s){	
         //creates a copy of the Graphics instance
         Graphics2D g2d = (Graphics2D) g.create();
         //set the stroke of the copy, not the original 
         g2d.setStroke(s);
         g2d.drawLine(x1, y1, x2, y2);
         //gets rid of the copy
-        g2d.dispose();
+        g2d.dispose();        
 	}
+	
+	public void Draw_Rects(Graphics g, int x1, int y1, int x2, int y2, Stroke s){	
+        //creates a copy of the Graphics instance
+        Graphics2D g2d = (Graphics2D) g.create();
+        //set the stroke of the copy, not the original 
+        g2d.setStroke(s);
+        g2d.drawRect(x1, y1, x2, y2);
+        //gets rid of the copy
+        g2d.dispose();        
+	}
+	
 	
 	public void DrawLinkedLine(Graphics g){
 		Stroke temp_stroke;
@@ -1237,5 +1317,30 @@ class myPanel extends JPanel implements MouseMotionListener{
 				}
 			}
 		}
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		// TODO Auto-generated method stub
+		int key = e.getKeyCode();  //获取按键码
+		System.out.println(key);
+		if(key==8){
+			System.out.println("del");
+			if(lineselected!=-1){
+				System.out.println("delT");
+				  linedelete[lineselected]=-1;
+				  repaint();
+			  }
+		}
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		
 	}
 }

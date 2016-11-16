@@ -29,19 +29,27 @@ class iPat_chooser{
 
 	public iPat_chooser(){
 		int value;
-    	JFileChooser folder_chooser = new JFileChooser();
-
-    	folder_chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-    	folder_chooser.setApproveButtonText("Link!");
-    	folder_chooser.setDialogTitle("Choose your working directory");
-
-    	folder_chooser.setApproveButtonToolTipText("New Approve Tool Tip");
-       
-    	value = folder_chooser.showOpenDialog(null);
-    	if (value == JFileChooser.APPROVE_OPTION){
-    		selectedfile = folder_chooser.getSelectedFile();
-    	} 
-    	selectedfile.getAbsolutePath();
+    		JFileChooser folder_chooser = new JFileChooser(){
+    			public void approveSelection()
+    		    {
+    		        if (getSelectedFile().isFile())
+    		        {
+    		            // beep
+    		            return;
+    		        }
+    		        else
+    		            super.approveSelection();
+    		    }
+    		};
+    		folder_chooser.setAcceptAllFileFilterUsed(false);
+    		folder_chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+    		folder_chooser.setDialogTitle("Choose your working directory");	
+    		folder_chooser.setApproveButtonToolTipText("New Approve Tool Tip");
+    		value = folder_chooser.showOpenDialog(null);
+    		if (value == JFileChooser.APPROVE_OPTION){
+    			selectedfile = folder_chooser.getSelectedFile();
+    		}	 	
+    		selectedfile.getAbsolutePath();
 	}
 	
 	String getPath(){
