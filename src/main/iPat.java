@@ -159,8 +159,8 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	int lineselected_temp=-1;
 	int lineindex=-1;	
 	boolean ableselect=false, linktolink=false;
-    Stroke dashed = new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,10}, 0);
-    Stroke solid = new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,0}, 0);
+    Stroke dashed = new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,10}, 0);
+    Stroke solid = new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,0}, 0);
     Stroke select = new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,10}, 0);
 
     
@@ -549,20 +549,8 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 				}				
 				
 				if (removeornot){
-					if (TBindex!=0&&(y>=(delbboundy)&&x>=(delbboundx))){
-						TBimageX[TBindex]=-1000;
-						TBimageY[TBindex]=-1000;
-						TBBound[TBindex]=new Rectangle(-100,-100,0,0);
-						TBname[TBindex].setLocation(-100,-100);
-						repaint();
-						TBdelete[TBindex]=-1;
-					}else if(MOindex!=0&&(y>=(delbboundy)&&x>=(delbboundx))){
-						MOimageX[MOindex]=-1000;
-						MOimageY[MOindex]=-1000;
-						MOBound[MOindex]=new Rectangle(-100,-100,0,0);
-						MOname[MOindex].setLocation(-100,-100);
-						repaint();
-						MOdelete[MOindex]=-1;
+					if (y>=delbboundy && x>=delbboundx){
+						break_object();
 					}else if(lineindex!=-1&&(y>=(delbboundy)&&x>=(delbboundx))){
 						break_linkage();
 					}
@@ -1012,7 +1000,6 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 				if(TBco[i][3]== COcount){TBco[i][4] = -1;}
 			}
 		}
-		
 		COcount ++;
 		linedelete[lineindex]=-1;
 		linkline[lineindex][0] = -1;
@@ -1022,6 +1009,176 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		repaint();
 	}
 	
+	void mark_break_iteration(int[]traceback, int brench){
+		int[] traceback_temp = new int[3];
+		traceback_temp[0] = -1;
+		traceback_temp[1] = -1;
+		traceback_temp[2] = -1;		
+		for (int i = 0; i<linklineindex; i++){
+			if(i == traceback[2]){continue;} //skip the last round pair
+			if(linkline[i][0] == traceback[0] && linkline[i][1] == traceback[1]){
+				if(linkline[i][2]==1){ //table
+					TBco[linkline[i][3]][1] = COcount+brench;
+					TBco[linkline[i][3]][3] = COcount+brench;
+					traceback_temp[0] = linkline[i][2];
+					traceback_temp[1] = linkline[i][3];
+					traceback_temp[2] = i;
+					mark_break_iteration(traceback_temp, brench);
+				}else if(linkline[i][2]==2){  //model
+					MOco[linkline[i][3]][1] = COcount+brench;
+					MOco[linkline[i][3]][3] = COcount+brench;
+					traceback_temp[0] = linkline[i][2];
+					traceback_temp[1] = linkline[i][3];
+					traceback_temp[2] = i;
+					mark_break_iteration(traceback_temp, brench);
+				}
+			}else if(linkline[i][2] == traceback[0] && linkline[i][3] == traceback[1]){
+				if(linkline[i][0]==1){ //table
+					TBco[linkline[i][1]][1] = COcount+brench;
+					TBco[linkline[i][1]][3] = COcount+brench;
+					traceback_temp[0] = linkline[i][0];
+					traceback_temp[1] = linkline[i][1];
+					traceback_temp[2] = i;
+					mark_break_iteration(traceback_temp, brench);
+				}else if(linkline[i][0]==2){  //model
+					MOco[linkline[i][1]][1] = COcount+brench;
+					MOco[linkline[i][1]][3] = COcount+brench;
+					traceback_temp[0] = linkline[i][0];
+					traceback_temp[1] = linkline[i][1];
+					traceback_temp[2] = i;
+					mark_break_iteration(traceback_temp, brench);
+				}
+			}	
+		}
+	}
+	void check_alone_and_model(){
+		int catch_t, catch_m, count;
+		System.out.println("cocount="+COcount);
+		for (int i = 0; i< COcount; i++){
+			catch_t = 0; catch_m = 0; count = 0;
+			for (int t = 1; t<TBMAX; t++){
+				if(TBco[t][3] == i){
+					count ++;
+					catch_t = t;
+				}
+			}
+			for (int m = 1; m<MOMAX; m++){
+				if(MOco[m][3] == i){
+					count ++;
+					catch_m = m;
+				}
+			}
+			System.out.println("count: "+count+" catch_t= "+catch_t+" catch_m= "+catch_m+" group= "+ i);
+			if(count == 1){
+				if(catch_t != 0){
+					TBco[catch_t][2] = -1;
+					TBco[catch_t][3] = -1;
+					TBco[catch_t][4] = -1;
+				}else if(catch_m != 0){
+					MOco[catch_m][2] = -1;
+					MOco[catch_m][3] = -1;
+					MOco[catch_m][4] = -1;
+				}
+			}
+			if(catch_m == 0){ // indecate "group_ori" doesn't have model
+				for(int e = 1; e<TBMAX; e++){
+					if(TBco[e][3]== i){TBco[e][4] = -1;}
+				}
+			}
+		}
+	}
+	
+	
+	
+	void break_object(){
+		int[] traceback = new int[3];
+		int trace_index = 0, trace_max = 1, group_ori= 0;
+		// linkline[][2]   class, class index 
+		// traceback[][3]  class, class index, which link  				
+		traceback[0] = -1;
+		traceback[1] = -1;
+		traceback[2] = -1;	
+		int brench = 0;
+		for (int i=0; i<linklineindex; i++){
+			if(TBindex!= 0){
+				if(linkline[i][0]==1 && linkline[i][1]==TBindex){
+					traceback[0] = linkline[i][2];
+					traceback[1] = linkline[i][3];
+					traceback[2] = i;
+					if(linkline[i][2]==1){
+						TBco[linkline[i][3]][1] = COcount+brench;
+						TBco[linkline[i][3]][3] = COcount+brench;
+					}else if(linkline[i][2]==2){
+						MOco[linkline[i][3]][1] = COcount+brench;
+						MOco[linkline[i][3]][3] = COcount+brench;
+					}		
+					mark_break_iteration(traceback, brench);
+					brench++;
+					System.out.println(traceback[0]+"-"+traceback[1]+";"+ COcount+brench+", case1");
+				}else if(linkline[i][2]==1 && linkline[i][3]==TBindex){
+					traceback[0] = linkline[i][0];
+					traceback[1] = linkline[i][1];
+					traceback[2] = i;
+					if(linkline[i][0]==1){
+						TBco[linkline[i][1]][1] = COcount+brench;
+						TBco[linkline[i][1]][3] = COcount+brench;
+					}else if(linkline[i][0]==2){
+						MOco[linkline[i][1]][1] = COcount+brench;
+						MOco[linkline[i][1]][3] = COcount+brench;
+					}
+					mark_break_iteration(traceback, brench);
+					brench++;
+					System.out.println(traceback[0]+"-"+traceback[1]+";"+ COcount+brench+", case2");
+				}
+			}else if(MOindex!= 0){
+				if(linkline[i][0]==2 && linkline[i][1]==MOindex){
+					traceback[0] = linkline[i][2];
+					traceback[1] = linkline[i][3];
+					traceback[2] = i;
+					if(linkline[i][2]==1){
+						TBco[linkline[i][3]][1] = COcount+brench;
+						TBco[linkline[i][3]][3] = COcount+brench;
+					}else if(linkline[i][2]==2){
+						MOco[linkline[i][3]][1] = COcount+brench;
+						MOco[linkline[i][3]][3] = COcount+brench;
+					}
+					mark_break_iteration(traceback, brench);
+					brench++;
+					System.out.println(traceback[0]+"-"+traceback[1]+";"+ COcount+brench+", case3");
+				}else if(linkline[i][2]==2 && linkline[i][3]==MOindex){
+					traceback[0] = linkline[i][0];
+					traceback[1] = linkline[i][1];
+					traceback[2] = i;
+					if(linkline[i][0]==1){
+						TBco[linkline[i][1]][1] = COcount+brench;
+						TBco[linkline[i][1]][3] = COcount+brench;
+					}else if(linkline[i][0]==2){
+						MOco[linkline[i][1]][1] = COcount+brench;
+						MOco[linkline[i][1]][3] = COcount+brench;
+					}
+					mark_break_iteration(traceback, brench);
+					brench++;
+					System.out.println(traceback[0]+"-"+traceback[1]+";"+ COcount+brench+", case4");
+				}		
+			}
+		}
+		COcount += brench+1;
+		check_alone_and_model();
+		if(TBindex!=0){
+			TBimageX[TBindex]=-1000;
+			TBimageY[TBindex]=-1000;
+			TBBound[TBindex]=new Rectangle(-100,-100,0,0);
+			TBname[TBindex].setLocation(-100,-100);
+			TBdelete[TBindex]=-1;
+		}else if(MOindex!=0){
+			MOimageX[MOindex]=-1000;
+			MOimageY[MOindex]=-1000;
+			MOBound[MOindex]=new Rectangle(-100,-100,0,0);
+			MOname[MOindex].setLocation(-100,-100);
+			MOdelete[MOindex]=-1;
+		}
+		repaint();
+	}	
 	
 	public void CombinedorNot(int index, int[] Xs, int[] Ys, int[] Ws, int[] Hs, int TorM_s){
 		int[] TBdist= new int[TBcount+1];
@@ -1353,12 +1510,18 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	public void keyPressed(KeyEvent e) {
 		// TODO Auto-generated method stub
 		int key = e.getKeyCode();  //获取按键码
-		System.out.println(key);
+		System.out.println("key input: "+key);
 		if(key==8){
-			System.out.println("del");
 			if(lineselected!=-1){
-				System.out.println("delT");
 				break_linkage();
+			}else if(TBindex_select != 0){
+				TBindex = TBindex_select;
+				break_object();
+				TBindex = 0;	
+			}else if(MOindex_select != 0){
+				MOindex = MOindex_select;
+				break_object();
+				MOindex =0;
 			}
 		}
 	}

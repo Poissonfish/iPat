@@ -181,7 +181,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JCheckBox SNP_P3D = new JCheckBox("P3D");
 	JCheckBox SNP_permutation = new JCheckBox("permutation");
 	String[] SNP_robust_names= {"GLM"};
-	JComboBox SNP_robust_input = new JComboBox(SNP_impute_names);
+	JComboBox SNP_robust_input = new JComboBox(SNP_robust_names);
 	JLabel SNP_robust_text = new JLabel("robust");
 	JCheckBox SNP_test = new JCheckBox("test");
 	
@@ -235,7 +235,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	Runnable back_run = new Runnable(){
 		@Override
 		public void run(){
-			
+			GAPIT();
+			// remember!!!!! foler path !!! get text!
 		}
 	};
 	int test_run = 0;
@@ -248,7 +249,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	public Configuration(Rengine r, int MOindex){	
 		this.r = r;
 		this.MOindex = MOindex;
-		pref = Preferences.userRoot().node("/ipat");  
+		pref = Preferences.userRoot().node("/ipat"); 
 		load();
 		addWindowListener(this);
 	}
@@ -474,6 +475,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		JScrollPane pane = new JScrollPane(main_panel,  
 					ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,  
 					ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		pane.getVerticalScrollBar().setUnitIncrement(16); //scrolling sensitive
 		go.addActionListener(this);
 		browse.addActionListener(this);
 		this.setContentPane(pane);
@@ -485,13 +487,15 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	public void actionPerformed(ActionEvent ip){
 	      Object source = ip.getSource();	
 	      if (source == go){
-	  		save();
-	  		this.dispose();
+	    	  	save();
+	    	  	new Thread(back_run).start();
+	    	  	this.dispose();
 	      }else if(source == browse){
 	    	  	chooser = new iPat_chooser();
 	    	  	wd_input.setText(chooser.getPath());
 	      }
 	}
+	
 	void remove(){
 		pref.remove("wd");
 		
@@ -543,52 +547,53 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		pref.remove("output_geno");
 		pref.remove("output_iteration");
 		pref.remove("output_maxout");
-		pref.removeBoolean("output_hapmap", output_hapmap.isSelected());
-		pref.removeBoolean("output_numeric", output_numerical.isSelected());
-		pref.remove("output_plot", (String) output_plot_style_input.getSelectedItem());
-		pref.remove("output_threshold", output_threshold_input.getText());
+		pref.remove("output_hapmap");
+		pref.remove("output_numeric");
+		pref.remove("output_plot");
+		pref.remove("output_threshold");
 
-		pref.remove("pca_total", PCA_total_input.getText());
-		pref.removeBoolean("pca_view", PCA_View_input.isSelected());
+		pref.remove("pca_total");
+		pref.remove("pca_view");
 
-		pref.remove("qtn_prior", QTN_prior_input.getText());
-		pref.remove("qtn", QTN_input.getText());
-		pref.remove("qtn_limit", QTN_limit_input.getText());
-		pref.remove("qtn_method", (String) QTN_method_input.getSelectedItem());
-		pref.remove("qtn_position", QTN_position_input.getText());
-		pref.remove("qtn_round", QTN_position_input.getText());
-		pref.removeBoolean("qtn_update", QTN_update.isSelected());
+		pref.remove("qtn_prior");
+		pref.remove("qtn");
+		pref.remove("qtn_limit");
+		pref.remove("qtn_method");
+		pref.remove("qtn_position");
+		pref.remove("qtn_round");
+		pref.remove("qtn_update");
 
-		pref.removeBoolean("snp_create", SNP_create_indicater.isSelected());
-		pref.removeBoolean("snp_major", SNP_major_allele_zero.isSelected());
-		pref.remove("snp_cv", SNP_CV_input.getText());
-		pref.remove("snp_effect", (String) SNP_effect_input.getSelectedItem());
-		pref.remove("snp_fdr", SNP_FDR_input.getText());
-		pref.remove("snp_fraction", SNP_fraction_input.getText());
-		pref.remove("snp_impute", (String) SNP_impute_input.getSelectedItem());
-		pref.remove("snp_maf", SNP_MAF_input.getText());
-		pref.removeBoolean("snp_p3d", SNP_P3D.isSelected());
-		pref.removeBoolean("snp_permuation", SNP_permutation.isSelected());
-		pref.remove("snp_robust", (String) SNP_robust_input.getSelectedItem());
-		pref.removeBoolean("snp_test", SNP_test.isSelected());
+		pref.remove("snp_create");
+		pref.remove("snp_major");
+		pref.remove("snp_cv");
+		pref.remove("snp_effect");
+		pref.remove("snp_fdr");
+		pref.remove("snp_fraction");
+		pref.remove("snp_impute");
+		pref.remove("snp_maf");
+		pref.remove("snp_p3d");
+		pref.remove("snp_permuation");
+		pref.remove("snp_robust");
+		pref.remove("snp_test");
 		
-		pref.remove("super_bin_by", SUPER_bin_by_input.getText());
-		pref.remove("super_bin_from", SUPER_bin_from_input.getText());
-		pref.remove("super_bin_to", SUPER_bin_to_input.getText());
-		pref.remove("super_bin_selection", SUPER_bin_selection_input.getText());
-		pref.remove("super_bin_size", SUPER_bin_size_input.getText());
-		pref.remove("super_bin", SUPER_BINS_input.getText());
-		pref.remove("super_fdr", SUPER_FDR_rate_input.getText());
-		pref.remove("super_gt", SUPER_GT_index_input.getText());
-		pref.remove("super_inclosure_by", SUPER_inclosure_by_input.getText());
-		pref.remove("super_inclosure_from", SUPER_inclosure_from_input.getText());
-		pref.remove("super_inclosure_to", SUPER_inclosure_to_input.getText());
-		pref.remove("super_ld", SUPER_LD_input.getText());
-		pref.remove("super_bottom", SUPER_sanawich_bottom_input.getText());
-		pref.remove("super_top", SUPER_sanawich_top_input.getText());
-		pref.remove("super_gd", SUPER_GD_input.getText());
-		pref.removeBoolean("super_gs", SUPER_GS.isSelected());
+		pref.remove("super_bin_by");
+		pref.remove("super_bin_from");
+		pref.remove("super_bin_to");
+		pref.remove("super_bin_selection");
+		pref.remove("super_bin_size");
+		pref.remove("super_bin");
+		pref.remove("super_fdr");
+		pref.remove("super_gt");
+		pref.remove("super_inclosure_by");
+		pref.remove("super_inclosure_from");
+		pref.remove("super_inclosure_to");
+		pref.remove("super_ld");
+		pref.remove("super_bottom");
+		pref.remove("super_top");
+		pref.remove("super_gd");
+		pref.remove("super_gs");
 	}
+	
 	void load(){
 		wd_input.setText(pref.get("wd", " "));
 		n_input.setText(myPanel.MOname[MOindex].getText());
@@ -753,7 +758,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		pref.put("qtn_limit", QTN_limit_input.getText());
 		pref.put("qtn_method", (String) QTN_method_input.getSelectedItem());
 		pref.put("qtn_position", QTN_position_input.getText());
-		pref.put("qtn_round", QTN_position_input.getText());
+		pref.put("qtn_round", QTN_round_input.getText());
 		pref.putBoolean("qtn_update", QTN_update.isSelected());
 
 		pref.putBoolean("snp_create", SNP_create_indicater.isSelected());
@@ -787,32 +792,190 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		pref.putBoolean("super_gs", SUPER_GS.isSelected());
 	}
 	
-	void add_folder(String folder_name){
-	myPanel.TBcount++;
-    	myPanel.TBimageX[myPanel.TBcount] = myPanel.MOimageX[MOindex]+ (myPanel.MOimageW[MOindex]/2)-(myPanel.TBimageW[myPanel.TBcount]/2);
-    	myPanel.TBimageY[myPanel.TBcount] = myPanel.MOimageY[MOindex]+ 80;
-    	myPanel.TBBound[myPanel.TBcount] = new Rectangle(myPanel.TBimageX[myPanel.TBcount], myPanel.TBimageY[myPanel.TBcount], 60, 60);
-    	myPanel.TBfile[myPanel.TBcount] = folder_path;
-    	myPanel.TBname[myPanel.TBcount].setLocation(myPanel.TBimageX[myPanel.TBcount], 
-    												myPanel.TBimageY[myPanel.TBcount]+myPanel.TBimageH[myPanel.TBcount]- myPanel.panelHeigth+15);
-    	myPanel.TBname[myPanel.TBcount].setSize(200, 15);
-    	myPanel.TBname[myPanel.TBcount].setText(folder_name);
-    	
-    	myPanel.MOco[MOindex][0] = 1;
-	    myPanel.MOco[MOindex][1] = myPanel.COcount;
-    	myPanel.MOco[MOindex][2] = 1;
-
-    	myPanel.TBco[myPanel.TBcount][0] = 1;
-    	myPanel.TBco[myPanel.TBcount][1] = myPanel.COcount;
-    	myPanel.TBco[myPanel.TBcount][2] = 1;
-    	
-    	myPanel.linkline[myPanel.linklineindex][0] = 2;
-    	myPanel.linkline[myPanel.linklineindex][1] = MOindex;
-    	myPanel.linkline[myPanel.linklineindex][2] = 1;
-    	myPanel.linkline[myPanel.linklineindex][3] = myPanel.TBcount;
-
-    	myPanel.linklineindex++;
-    	myPanel.COcount++;
+	void GAPIT(){
+		String file_output_string, model_string, genoe_view_string, iteration_string,
+		hapmap_string, numerical_string, pca_string, qtn_string, snp_create_string, 
+		snp_major_string, p3d_string, permutation_string, test_string, super_string;
+		
+		if(file_output.isSelected()){
+			file_output_string = "TRUE";
+		}else{
+			file_output_string = "FALSE";
+		}
+		if(model_selection.isSelected()){
+			model_string = "TRUE";
+		}else{
+			model_string = "FALSE";
+		}
+		if(output_Geno_View_output.isSelected()){
+			genoe_view_string = "TRUE";
+		}else{
+			genoe_view_string = "FALSE";
+		}
+		if(output_iteration_output.isSelected()){
+			iteration_string = "TRUE";
+		}else{
+			iteration_string = "FALSE";
+		}
+		if(output_hapmap.isSelected()){
+			hapmap_string = "TRUE";
+		}else{
+			hapmap_string = "FALSE";
+		}
+		if(output_numerical.isSelected()){
+			numerical_string = "TRUE";
+		}else{
+			numerical_string = "FALSE";
+		}
+		if(PCA_View_input.isSelected()){
+			pca_string = "TRUE";
+		}else{
+			pca_string = "FALSE";
+		}
+		if(QTN_update.isSelected()){
+			qtn_string = "TRUE";
+		}else{
+			qtn_string = "FALSE";
+		}
+		if(SNP_create_indicater.isSelected()){
+			snp_create_string = "TRUE";
+		}else{
+			snp_create_string = "FALSE";
+		}
+		if(SNP_major_allele_zero.isSelected()){
+			snp_major_string = "TRUE";
+		}else{
+			snp_major_string = "FALSE";
+		}
+		if(SNP_P3D.isSelected()){
+			p3d_string = "TRUE";
+		}else{
+			p3d_string = "FALSE";
+		}
+		if(SNP_permutation.isSelected()){
+			permutation_string = "TRUE";
+		}else{
+			permutation_string = "FALSE";
+		}
+		if(SNP_test.isSelected()){
+			test_string = "TRUE";
+		}else{
+			test_string = "FALSE";
+		}
+		if(SUPER_GS.isSelected()){
+			super_string = "TRUE";
+		}else{
+			super_string = "FALSE";
+		}
+		
+		r.eval("library('MASS')");
+		r.eval("library('multtest')");
+		r.eval("library('gplots')");
+		r.eval("library('compiler')");
+		r.eval("library('scatterplot3d')");
+		r.eval("source('http://www.zzlab.net/GAPIT/emma.txt')");
+		r.eval("source('http://www.zzlab.net/GAPIT/gapit_functions.txt')");
+		r.eval("setwd('"+wd_input.getText()+"')");
+		
+		r.eval("x=proc.time()");
+		r.eval("myGAPIT <- GAPIT(Y=read.table('mdp_traits.txt', head = TRUE),"
+				+ "G=read.delim('mdp_genotype_test.hmp.txt', head = FALSE),"
+				+"esp="+esp_input.getText()+"," 
+				+"llim="+llim_input.getText()+"," 
+				+"ngrid="+ngrid_input.getText()+"," 
+				+"ulim="+ulim_input.getText()+"," 
+		
+				+"acceleration="+acceleration_input.getText()+"," 
+				+"converge="+converge_input.getText()+"," 
+				+"maxLoop="+maxLoop_input.getText()+"," 
+				
+				+"file.Ext.G="+ file_Ext_G_input.getText()+"," 
+				+"file.Ext.GD="+ file_Ext_GD_input.getText()+"," 
+				+"file.Ext.GM="+ file_Ext_GM_input.getText()+"," 
+				+"file.fragment="+ file_fragment_input.getText()+"," 
+				+"file.from="+ file_from_input.getText()+"," 
+				+"file.to="+ file_to_input.getText()+"," 
+				+"file.total="+ file_total_input.getText()+"," 
+				+"file.G="+ file_G_input.getText()+"," 
+				+"file.GD="+ file_GD_input.getText()+"," 
+				+"file.GM="+ file_GM_input.getText()+"," 
+				+"file.output="+  file_output_string+","
+				+"file.path="+ file_path_input.getText()+"," 
+				
+				+"group.by="+ group_by_input.getText()+"," 
+				+"group.from="+ group_from_input.getText()+"," 
+				+"group.to="+ group_to_input.getText()+"," 
+				
+				+"kinship.algorithm='"+ (String) kinship_algorithm_input.getSelectedItem()+"'," 
+				+"kinship.cluster='"+ (String) kinship_cluster_input.getSelectedItem()+"'," 
+				+"kinship.group='"+ (String) kinship_group_input.getSelectedItem()+"',"
+				
+				+"LD.chromosome="+ LD_chromosome_input.getText()+"," 
+				+"LD.location="+ LD_location_input.getText()+"," 
+				+"LD.range="+ LD_range_input.getText()+"," 
+		
+				+"iteration.method='"+ (String) method_iteration_input.getSelectedItem()+"'," 
+				+"method.bin='"+ (String) method_bin_input.getSelectedItem()+"'," 
+				+"method.GLM='"+ (String) method_GLM_input.getSelectedItem()+"'," 
+				+"method.sub='"+ (String) method_sub_input.getSelectedItem()+"'," 
+				+"method.sub.final='"+ (String) method_sub_final_input.getSelectedItem()+"'," 
+				
+				+"Model.selection="+ model_string+","
+				
+				+"cutOff="+ output_cutOff_input.getText()+"," 
+				+"CV.Inheritance="+ output_CV_Inheritance_input.getText()+"," 
+				+"DPP="+ output_DPP_input.getText()+"," 
+				+"Geno.View.output="+ genoe_view_string+","
+				+"iteration.output="+ iteration_string+","
+				+"maxOut="+ output_maxOut_input.getText()+"," 
+				+"output.hapmap="+ hapmap_string+","
+				+"output.numerical="+ numerical_string+","
+				+"plot.style='"+ (String) output_plot_style_input.getSelectedItem()+"'," 
+				+"threshold.output="+ output_threshold_input.getText()+"," 
+		
+				+"PCA.total="+ PCA_total_input.getText()+ ","
+				+"PCA.View.output="+ pca_string+ ","
+				
+				+"Prior="+QTN_prior_input.getText() +","
+				+"QTN="+QTN_input.getText() +","
+				+"QTN.limit="+QTN_limit_input.getText() +","
+				+"QTN.method='"+ (String) QTN_method_input.getSelectedItem()+"'," 
+				+"QTN.position="+QTN_position_input.getText() +","
+				+"QTN.round="+QTN_round_input.getText() +","
+				+"QTN.update="+ qtn_string +","
+				
+				+"Create.indicator="+ snp_create_string+ ","
+				+"Major.allele.zero="+ snp_major_string+ ","
+				+"SNP.CV="+SNP_CV_input.getText()+ ","
+				+"SNP.effect='"+(String) SNP_effect_input.getSelectedItem()+"'," 
+				+"SNP.FDR="+SNP_FDR_input.getText() 	+ ","	
+				+"SNP.fraction="+SNP_fraction_input.getText() + ","
+				+"SNP.impute='"+(String) SNP_impute_input.getSelectedItem()+"'," 
+				+"SNP.MAF="+SNP_MAF_input.getText() + ","
+				+"SNP.P3D="+p3d_string+ ","
+				+"SNP.permutation="+permutation_string+ ","
+				+"SNP.robust='"+(String) SNP_robust_input.getSelectedItem()+"'," 
+				+"SNP.test="+test_string+ ","				
+		
+				+"bin.by="+SUPER_bin_by_input.getText ()+ "," 
+				+"bin.from="+SUPER_bin_from_input.getText ()+ "," 
+				+"bin.to="+SUPER_bin_to_input.getText ()+ "," 
+				+"bin.selection="+SUPER_bin_selection_input.getText ()+ "," 
+				+"bin.size="+SUPER_bin_size_input.getText ()+ "," 
+		
+				+"BINS="+SUPER_BINS_input.getText ()+ "," 
+				+"FDR.Rate="+SUPER_FDR_rate_input.getText ()+ "," 
+				+"GTindex="+SUPER_GT_index_input.getText ()+ "," 
+				+"inclosure.by="+SUPER_inclosure_by_input.getText ()+ "," 
+				+"inclosure.from="+SUPER_inclosure_from_input.getText ()+ "," 
+				+"inclosure.to="+SUPER_inclosure_to_input.getText ()+ "," 
+				+"LD="+SUPER_LD_input.getText ()+ "," 
+				+"sangwich.bottom="+SUPER_sanawich_bottom_input.getText ()+ "," 
+				+"sangwich.top="+SUPER_sanawich_top_input.getText ()+ "," 
+				+"SUPER_GD="+SUPER_GD_input.getText ()+ "," 
+				+"SUPER_GS="+super_string+ ")");
+		
+		r.eval("print( (proc.time()-x)[3] )");
 	}
 
 	@Override
