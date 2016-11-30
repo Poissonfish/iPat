@@ -11,6 +11,7 @@ import java.util.TimerTask;
 import java.util.prefs.Preferences;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.*;
 import javax.imageio.*;
 import javax.swing.*;
@@ -24,8 +25,9 @@ public class iPat {
 	static int Heigth=700;
 	static int PHeight=190;
 	static String folder_path = new String("path");
+	public static myPanel ipat;
 
-	public static void main(String[] args){    	
+	public static void main(String[] args){    
 		JFrame main = new JFrame();
 		main.setLocation(200, 0); 
 		main.setSize(Wide, Heigth);
@@ -34,7 +36,7 @@ public class iPat {
 		Container cPane = main.getContentPane();
 		Wide= main.getWidth();
 		Heigth= main.getHeight();
-		myPanel ipat = new myPanel(Wide, Heigth, PHeight);
+		ipat = new myPanel(Wide, Heigth, PHeight);
 		ipat.setFocusable(true); // for keylistener
 		ipat.requestFocusInWindow(); // for keylistener
 		cPane.add(ipat);	
@@ -100,12 +102,12 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	
 	int pos;
 	
-	Image[] TB= new Image[TBMAX];
-	Image[] MO= new Image[MOMAX];
+	static Image[] TB= new Image[TBMAX];
+	static Image[] MO= new Image[MOMAX];
 	Image[] Trash= new Image[10];
 	Image[] White= new Image[10];
-	Image Excel, Powerpoint, Word, Music, Video, Unknown, Text, 
-		  TBimage, MOimage, Prefbar;
+	static Image Excel, Powerpoint, Word, Music, Video, Unknown, Text, 
+		  TBimage, MOimage, Prefbar, MO_suc, MO_fal;
 	
 	JLayeredPane startPanel;
 	JPanel mainPanel;	
@@ -117,17 +119,17 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	JFileChooser[] TBchooser= new JFileChooser[TBMAX];
 	static String[] TBfile= new String[TBMAX];
 	int[] TBvalue= new int[TBMAX];
-	
+	static String[] MOfile= new String[MOMAX];
+
 	static JLabel[] TBname= new JLabel[TBMAX];	
 	static JLabel[] MOname= new JLabel[MOMAX];		
 
 	//animation
 	Timer TrashAnimation, DashLineAnimation, CombinedDeleteAnimation, 
-		Fadein1, Fadein2, Fadein3, Fadein4, Fadesave, Wipe;
+		  Fadein1, Fadein2, Fadein3, Fadein4, Fadesave, Wipe;
 	
 	Boolean TA;
-	
-	
+		
 	 //combine 
 	int CDAindex=-1, CDAint=0, CDAi=0;
 	int CDAW, CDAH;
@@ -162,8 +164,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
     Stroke dashed = new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,10}, 0);
     Stroke solid = new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,0}, 0);
     Stroke select = new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,10}, 0);
-
-    
+  
 	//Color
 	Color red = new Color(231,57,131, 100);
 	Color lightred = new Color(231,57,131, 80);
@@ -199,19 +200,67 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	Preferences pref = Preferences.userRoot().node("/iPat"); 
 	
     //object select
-	int TBindex_select = -1;
-	int MOindex_select = -1;
+	int TBindex_select = 0;
+	int MOindex_select = 0;
 
     int object_selected = -1;   //1 table, 2 model
 	int select_intex= -1;
+	
+	//Gear rotate
+	static double rotate = Math.toRadians(0);
+	static int[] rotate_index = new int[MOMAX];
+	static Boolean[] permit = new Boolean[MOMAX];
+	static Boolean running = false;
+
+	public static boolean all_true(Boolean[] array){
+	    for(boolean b : array) if(!b) return false;
+	    return true;
+	}
+	public static boolean all_false(Boolean[] array){
+	    for(boolean b : array) if(b) return false;
+	    return true;
+	}
+	public static boolean partial_true(Boolean[] array){
+	    for(boolean b : array) if(b) return true;
+	    return false;
+	}
+	
+	Timer gear_rotate = new Timer(50, new ActionListener() {
+		int i=0;
+	    @Override
+	    public void actionPerformed(ActionEvent ae) {
+	    	if(all_false(permit)){
+	    		running = false;
+		    	rotate = Math.toRadians(0);
+	    		gear_rotate.stop();
+	    	}
+	    	rotate = Math.toRadians(i*36);
+	    	repaint();
+	    	i++;	    	
+	    }
+	});	
+	
+	//periodically repaint (delcare after fill value in permit)
+	Timer periodically_repaint = new Timer(1000, new ActionListener() {
+	    @Override
+	    public void actionPerformed(ActionEvent ae) {
+	    	repaint(); 
+	    	if(partial_true(permit) && !running){ // avoid running it again over again
+	    		running = true;
+	    		gear_rotate.start();
+	    	}
+	    }
+	});
+	
+	//Multi-thread
+	static Thread[] gapit_run = new Thread[MOMAX]; 
 	
 	public myPanel(int Wideint, int Heigthint, int pH){	
 		this.Wide=Wideint;
 		this.Heigth=Heigthint;
 		this.panelHeigth=pH;
 		delbboundx=Wide-50;
-		delbboundy=Heigth-70;
-		
+		delbboundy=Heigth-70;	
 		try{
 			Image iconIP = ImageIO.read(getClass().getResource("resources/iPat.png"));
 			iPat.setIcon(new ImageIcon(iconIP));
@@ -237,6 +286,8 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			TBimage = ImageIO.read(this.getClass().getResourceAsStream("resources/Table.png"));
 			addTB = ImageIO.read(this.getClass().getResourceAsStream("resources/add_Table.png"));
 			MOimage = ImageIO.read(this.getClass().getResourceAsStream("resources/Model.png"));
+			MO_suc = ImageIO.read(this.getClass().getResourceAsStream("resources/Model_suc.png"));
+			MO_fal = ImageIO.read(this.getClass().getResourceAsStream("resources/Model_fal.png"));
 			addMO = ImageIO.read(this.getClass().getResourceAsStream("resources/add_Model.png"));
 			TBButton.setIcon(new ImageIcon(addTB));
 			MOButton.setIcon(new ImageIcon(addMO));
@@ -247,7 +298,8 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		}
 		for (int i=1; i<=MOMAX-1; i++){
 			MO[i] = MOimage;
-		}	
+		}
+		
 		
 		for (int i=1; i<14; i++){
 			black[i-1]= new Color(228+2*i,228+2*i,228+2*i, 255);
@@ -328,13 +380,17 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			MOco[i][2]=-1;
 			MOco[i][3]=-1;	
 			MOco[i][4]=-1;
+			rotate_index[i]=0;
 		}	
+		Arrays.fill(permit, false);	
+		
 		////////////
 		////////////
 		//LAYOUT.END
 		////////////
 		////////////
 	
+		periodically_repaint.start();
 		
 		this.addMouseListener(new MouseAdapter(){		
 			@Override
@@ -357,7 +413,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
     			}else{
     				MOindex_select = -1;
     			}
-    			
+
     			//Debug section
     			if(TBindex!=0){
         			System.out.println("COgroup: "+TBco[TBindex][3]+" index= "+TBindex);        				
@@ -387,12 +443,19 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 						COindex=-1;
 						repaint();
 					 }
-			   	}else if(MOindex!=0 & SwingUtilities.isRightMouseButton(ee)){ 	
-			   		Configuration model_frame = new Configuration(r, MOindex);
-			   		model_frame.configuration_initial();
-			  		model_frame.setBounds(300, 100, 350, 500);
-			   		model_frame.setResizable(true);
-			   		model_frame.setVisible(true);
+			   	}else if(MOindex!=0 & SwingUtilities.isRightMouseButton(ee)){ 
+			   		Configuration model_frame;
+					try {
+						model_frame = new Configuration(r, MOindex);
+						model_frame.configuration_initial();
+				  		model_frame.setBounds(300, 100, 350, 500);
+				   		model_frame.setResizable(true);
+				   		model_frame.setVisible(true);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			   		
 			   	}			
     			if(ableselect&&TBindex<=0&&MOindex<=0){
 					if(lineselected!=lineselected_temp){lineselected=lineselected_temp;}else{lineselected=-1;}	
@@ -584,17 +647,29 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
     			createX=x;
     			createY=y;
     			if (evt.getClickCount() == 2 & SwingUtilities.isLeftMouseButton(evt)) {
+    				int open_MO = 0;
+    				boolean ifopenMO = false;
     				for (int i=1; i<=TBcount; i++){
     					if (TBBound[i].contains(x,y)){
-    						ifproperty_tb=true;
     						openindex=i;
     						ifopenfile=true;
         					break;
     					}
-    				}			
-    				if(ifopenfile == true){
+    				}
+    				for (int i=1; i<=MOcount; i++){
+    					if (MOBound[i].contains(x,y)){
+    						open_MO=i;
+    						ifopenMO=true;
+        					break;
+    					}
+    				}
+  
+    				if(ifopenfile){
     					ifopenfile=false;
     					TBopenfile(openindex);
+    				}else if(ifopenMO){
+    					ifopenMO=false;
+    					MOopenfile(open_MO);
     				}else if (x<(Wide/2)&&TBindex_temp==0){
     					TBcount++;
         				TBimageX[TBcount]=createX-TBimageW[TBcount]/2;
@@ -638,7 +713,13 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		     }
     	 }
     	 for (int i=1; i<=MOcount; i++){
-		     g.drawImage(MO[i],MOimageX[i],MOimageY[i], this); 
+    		 if(rotate_index[i] == 1){
+    			 AffineTransform tx = AffineTransform.getRotateInstance(rotate, MO[i].getWidth(null)/2,MO[i].getHeight(null)/2);
+        		 AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+       		  	 g.drawImage(op.filter((BufferedImage) MO[i], null),MOimageX[i],MOimageY[i], this); 	     
+    		 }else{
+    		     g.drawImage(MO[i],MOimageX[i],MOimageY[i], this); 
+    		 }
 		     if(MOindex_select == i){
 			     Draw_Rects(g, MOimageX[i]-5, MOimageY[i]-3, MOimageW[i]+10, MOimageH[i]+6, select); //temp_link 
 		     }
@@ -804,6 +885,15 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	
 	public void TBopenfile(int i){
 		File openfile= new File(TBfile[i]);
+			try{
+				Desktop.getDesktop().open(openfile);
+			} catch(IOException e) {
+				e.printStackTrace();
+			}
+	}	
+	
+	public void MOopenfile(int i){
+		File openfile= new File(MOfile[i]);
 			try{
 				Desktop.getDesktop().open(openfile);
 			} catch(IOException e) {
@@ -1199,7 +1289,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 								TBimageX, TBimageY, TBimageW, TBimageH, TBcount, TBco, 1);						
 		System.out.println("----------log end-------------");
 	}		
-		
+	
 	public int min_dist(int index, int[] X, int[] Y, int[] W, int[] H, int[] TBdist, int[] MOdist){
 		int x= X[index]+(W[index]/2);
 		int y= Y[index]+(H[index]/2);	
@@ -1494,22 +1584,23 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 						Draw_Lines(g, MOimageX[linkline[i][1]]+(MOimageW[linkline[i][1]]/2), MOimageY[linkline[i][1]]+(MOimageH[linkline[i][1]]/2),
 									  MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
 									  temp_stroke);
-					
 					}	
 				}
 			}
 		}
 	}
 
+    public void hello(){
+    	System.out.println("done");
+    }
+    
 	@Override
-	public void keyTyped(KeyEvent e) {
-		
-	}
+	public void keyTyped(KeyEvent e) {}
 
 	@Override
 	public void keyPressed(KeyEvent e) {
 		// TODO Auto-generated method stub
-		int key = e.getKeyCode();  //获取按键码
+		int key = e.getKeyCode(); 
 		System.out.println("key input: "+key);
 		if(key==8){
 			if(lineselected!=-1){
@@ -1522,12 +1613,12 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 				MOindex = MOindex_select;
 				break_object();
 				MOindex =0;
+			}else{
+				gear_rotate.start();
 			}
 		}
 	}
 
 	@Override
-	public void keyReleased(KeyEvent e) {
-		
-	}
+	public void keyReleased(KeyEvent e) {}
 }
