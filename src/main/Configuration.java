@@ -8,8 +8,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.prefs.Preferences;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -20,9 +25,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.Timer;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
+import org.rosuda.JRI.REXP;
 import org.rosuda.JRI.Rengine;
 
 import net.miginfocom.swing.MigLayout;
@@ -235,8 +242,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	Runnable back_run = new Runnable(){
 		@Override
 		public void run(){
-			GAPIT();
-			// remember!!!!! foler path !!! get text!
+			GAPIT(MOindex);
 		}
 	};
 	int test_run = 0;
@@ -245,13 +251,55 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
     String folder_path = new String();
 	Rengine r;
 	int  MOindex;
+	///////////////////////////////////////////////////////////////////////////////////////
+	int[][] file_index = new int[10][2]; //tbindex; filetype: 1=G, 2=P
 	
-	public Configuration(Rengine r, int MOindex){	
+	public Configuration(Rengine r, int MOindex) throws FileNotFoundException, IOException{	
 		this.r = r;
 		this.MOindex = MOindex;
+		catch_files(file_index);	
 		pref = Preferences.userRoot().node("/ipat"); 
 		load();
 		addWindowListener(this);
+	}	
+
+	void catch_files(int[][] file_index) throws IOException{
+		for(int i=0;i<10;i++){
+			file_index[i][0] = 0; //default to TBindex = 0, which is null
+			file_index[i][1] = 0; //default to P
+		}
+		FileReader fr;
+		BufferedReader br;
+		String file_lines = new String();
+		int index = 0;
+		for (int i = 1; i<=myPanel.TBcount; i++){
+			if(myPanel.TBco[i][3]==myPanel.MOco[MOindex][3] && myPanel.TBco[i][3]!=-1){
+				System.out.println(myPanel.TBfile[i]);
+				file_index[index][0] = i;
+				index++;
+			}
+		}
+		for(int i = 0; i<10; i++){
+			if(file_index[i][0] == 0){ break;}
+			fr = new FileReader(myPanel.TBfile[file_index[i][0]]);
+			br = new BufferedReader(fr);
+			int t = 0;
+			while (br.ready() && t<2) {
+				file_lines = br.readLine();
+				System.out.println(file_lines);
+				t++;
+			}
+            String[] splite = file_lines.split("\t");
+            if(splite.length>11){
+            	if(splite[11].contains("AA")||splite[11].contains("GG")||
+                   splite[11].contains("TT")||splite[11].contains("CC")){
+                     	file_index[i][1] = 1;
+                }
+            }else{
+            	file_index[i][1] = 2;
+            }
+			fr.close();	
+		}
 	}
 	
 	public void configuration_initial(){
@@ -488,12 +536,233 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	      Object source = ip.getSource();	
 	      if (source == go){
 	    	  	save();
-	    	  	new Thread(back_run).start();
+	    	  	myPanel.MOfile[MOindex] = wd_input.getText();
+	    	  	myPanel.gapit_run[MOindex] = new Thread(back_run);
+	    	  	myPanel.gapit_run[MOindex].start();
 	    	  	this.dispose();
 	      }else if(source == browse){
 	    	  	chooser = new iPat_chooser();
-	    	  	wd_input.setText(chooser.getPath());
+	    	  	wd_input.setText(chooser.getPath());	    	  	
 	      }
+	}
+	
+	void GAPIT(int MOindex){
+		String file_output_string, model_string, genoe_view_string, iteration_string,
+		hapmap_string, numerical_string, pca_string, qtn_string, snp_create_string, 
+		snp_major_string, p3d_string, permutation_string, test_string, super_string;
+		
+		if(file_output.isSelected()){
+			file_output_string = "TRUE";
+		}else{
+			file_output_string = "FALSE";
+		}
+		if(model_selection.isSelected()){
+			model_string = "TRUE";
+		}else{
+			model_string = "FALSE";
+		}
+		if(output_Geno_View_output.isSelected()){
+			genoe_view_string = "TRUE";
+		}else{
+			genoe_view_string = "FALSE";
+		}
+		if(output_iteration_output.isSelected()){
+			iteration_string = "TRUE";
+		}else{
+			iteration_string = "FALSE";
+		}
+		if(output_hapmap.isSelected()){
+			hapmap_string = "TRUE";
+		}else{
+			hapmap_string = "FALSE";
+		}
+		if(output_numerical.isSelected()){
+			numerical_string = "TRUE";
+		}else{
+			numerical_string = "FALSE";
+		}
+		if(PCA_View_input.isSelected()){
+			pca_string = "TRUE";
+		}else{
+			pca_string = "FALSE";
+		}
+		if(QTN_update.isSelected()){
+			qtn_string = "TRUE";
+		}else{
+			qtn_string = "FALSE";
+		}
+		if(SNP_create_indicater.isSelected()){
+			snp_create_string = "TRUE";
+		}else{
+			snp_create_string = "FALSE";
+		}
+		if(SNP_major_allele_zero.isSelected()){
+			snp_major_string = "TRUE";
+		}else{
+			snp_major_string = "FALSE";
+		}
+		if(SNP_P3D.isSelected()){
+			p3d_string = "TRUE";
+		}else{
+			p3d_string = "FALSE";
+		}
+		if(SNP_permutation.isSelected()){
+			permutation_string = "TRUE";
+		}else{
+			permutation_string = "FALSE";
+		}
+		if(SNP_test.isSelected()){
+			test_string = "TRUE";
+		}else{
+			test_string = "FALSE";
+		}
+		if(SUPER_GS.isSelected()){
+			super_string = "TRUE";
+		}else{
+			super_string = "FALSE";
+		}		
+		
+		System.out.println("start");
+		myPanel.permit[MOindex] = true;
+		myPanel.rotate_index[MOindex] = 1;
+		
+		r.eval("x=proc.time()");
+		r.eval("library('MASS')");
+		r.eval("library('multtest')");
+		r.eval("library('gplots')");
+		r.eval("library('compiler')");
+		r.eval("library('scatterplot3d')");
+		r.eval("source('http://www.zzlab.net/GAPIT/emma.txt')");
+		r.eval("source('http://www.zzlab.net/GAPIT/gapit_functions.txt')");
+		r.eval("setwd('"+wd_input.getText()+"')");
+		String G = new String(""), P = new String("");
+		for(int i=0;i<10;i++){
+			if(file_index[i][1] == 1){
+				G = myPanel.TBfile[file_index[i][0]];
+				System.out.println("G="+G);
+			}else if(file_index[i][1] == 2){
+				P = myPanel.TBfile[file_index[i][0]];
+				System.out.println("P="+P);
+			}
+		}
+		
+		if(G==""||P==""){
+			System.out.println("Wrong File Format");
+		}
+		
+		r.eval("catch= tryCatch( {"
+				+"myGAPIT <- GAPIT(Y=read.table('"+P+"', head = TRUE),"
+				+ "G=read.delim('"+G+"', head = FALSE),"
+				+"esp="+esp_input.getText()+"," 
+				+"llim="+llim_input.getText()+"," 
+				+"ngrid="+ngrid_input.getText()+"," 
+				+"ulim="+ulim_input.getText()+"," 
+		
+				+"acceleration="+acceleration_input.getText()+"," 
+				+"converge="+converge_input.getText()+"," 
+				+"maxLoop="+maxLoop_input.getText()+"," 
+				
+				+"file.Ext.G="+ file_Ext_G_input.getText()+"," 
+				+"file.Ext.GD="+ file_Ext_GD_input.getText()+"," 
+				+"file.Ext.GM="+ file_Ext_GM_input.getText()+"," 
+				+"file.fragment="+ file_fragment_input.getText()+"," 
+				+"file.from="+ file_from_input.getText()+"," 
+				+"file.to="+ file_to_input.getText()+"," 
+				+"file.total="+ file_total_input.getText()+"," 
+				+"file.G="+ file_G_input.getText()+"," 
+				+"file.GD="+ file_GD_input.getText()+"," 
+				+"file.GM="+ file_GM_input.getText()+"," 
+				+"file.output="+  file_output_string+","
+				+"file.path="+ file_path_input.getText()+"," 
+				
+				+"group.by="+ group_by_input.getText()+"," 
+				+"group.from="+ group_from_input.getText()+"," 
+				+"group.to="+ group_to_input.getText()+"," 
+				
+				+"kinship.algorithm='"+ (String) kinship_algorithm_input.getSelectedItem()+"'," 
+				+"kinship.cluster='"+ (String) kinship_cluster_input.getSelectedItem()+"'," 
+				+"kinship.group='"+ (String) kinship_group_input.getSelectedItem()+"',"
+				
+				+"LD.chromosome="+ LD_chromosome_input.getText()+"," 
+				+"LD.location="+ LD_location_input.getText()+"," 
+				+"LD.range="+ LD_range_input.getText()+"," 
+		
+				+"iteration.method='"+ (String) method_iteration_input.getSelectedItem()+"'," 
+				+"method.bin='"+ (String) method_bin_input.getSelectedItem()+"'," 
+				+"method.GLM='"+ (String) method_GLM_input.getSelectedItem()+"'," 
+				+"method.sub='"+ (String) method_sub_input.getSelectedItem()+"'," 
+				+"method.sub.final='"+ (String) method_sub_final_input.getSelectedItem()+"'," 
+				
+				+"Model.selection="+ model_string+","
+				
+				+"cutOff="+ output_cutOff_input.getText()+"," 
+				+"CV.Inheritance="+ output_CV_Inheritance_input.getText()+"," 
+				+"DPP="+ output_DPP_input.getText()+"," 
+				+"Geno.View.output="+ genoe_view_string+","
+				+"iteration.output="+ iteration_string+","
+				+"maxOut="+ output_maxOut_input.getText()+"," 
+				+"output.hapmap="+ hapmap_string+","
+				+"output.numerical="+ numerical_string+","
+				+"plot.style='"+ (String) output_plot_style_input.getSelectedItem()+"'," 
+				+"threshold.output="+ output_threshold_input.getText()+"," 
+		
+				+"PCA.total="+ PCA_total_input.getText()+ ","
+				+"PCA.View.output="+ pca_string+ ","
+				
+				+"Prior="+QTN_prior_input.getText() +","
+				+"QTN="+QTN_input.getText() +","
+				+"QTN.limit="+QTN_limit_input.getText() +","
+				+"QTN.method='"+ (String) QTN_method_input.getSelectedItem()+"'," 
+				+"QTN.position="+QTN_position_input.getText() +","
+				+"QTN.round="+QTN_round_input.getText() +","
+				+"QTN.update="+ qtn_string +","
+				
+				+"Create.indicator="+ snp_create_string+ ","
+				+"Major.allele.zero="+ snp_major_string+ ","
+				+"SNP.CV="+SNP_CV_input.getText()+ ","
+				+"SNP.effect='"+(String) SNP_effect_input.getSelectedItem()+"'," 
+				+"SNP.FDR="+SNP_FDR_input.getText() 	+ ","	
+				+"SNP.fraction="+SNP_fraction_input.getText() + ","
+				+"SNP.impute='"+(String) SNP_impute_input.getSelectedItem()+"'," 
+				+"SNP.MAF="+SNP_MAF_input.getText() + ","
+				+"SNP.P3D="+p3d_string+ ","
+				+"SNP.permutation="+permutation_string+ ","
+				+"SNP.robust='"+(String) SNP_robust_input.getSelectedItem()+"'," 
+				+"SNP.test="+test_string+ ","				
+		
+				+"bin.by="+SUPER_bin_by_input.getText ()+ "," 
+				+"bin.from="+SUPER_bin_from_input.getText ()+ "," 
+				+"bin.to="+SUPER_bin_to_input.getText ()+ "," 
+				+"bin.selection="+SUPER_bin_selection_input.getText ()+ "," 
+				+"bin.size="+SUPER_bin_size_input.getText ()+ "," 
+		
+				+"BINS="+SUPER_BINS_input.getText ()+ "," 
+				+"FDR.Rate="+SUPER_FDR_rate_input.getText ()+ "," 
+				+"GTindex="+SUPER_GT_index_input.getText ()+ "," 
+				+"inclosure.by="+SUPER_inclosure_by_input.getText ()+ "," 
+				+"inclosure.from="+SUPER_inclosure_from_input.getText ()+ "," 
+				+"inclosure.to="+SUPER_inclosure_to_input.getText ()+ "," 
+				+"LD="+SUPER_LD_input.getText ()+ "," 
+				+"sangwich.bottom="+SUPER_sanawich_bottom_input.getText ()+ "," 
+				+"sangwich.top="+SUPER_sanawich_top_input.getText ()+ "," 
+				+"SUPER_GD="+SUPER_GD_input.getText ()+ "," 
+				+"SUPER_GS="+super_string+ ")},"
+				+"error=function(e){e} )");
+		
+	    REXP rcatch= r.eval("as.character(catch)");
+	    String rcatchs=((REXP)rcatch).asString();
+	    if(rcatchs.indexOf("Error")>=0){
+			myPanel.MO[MOindex] = myPanel.MO_fal;
+	    }else{
+			myPanel.MO[MOindex] = myPanel.MO_suc;
+	    }
+		myPanel.permit[MOindex] = false;
+		myPanel.rotate_index[MOindex] = 0;
+		myPanel.MOimageH[MOindex]=myPanel.MO[MOindex].getHeight(null);
+		myPanel.MOimageW[MOindex]=myPanel.MO[MOindex].getWidth(null);
+		myPanel.MOname[MOindex].setLocation(myPanel.MOimageX[MOindex], myPanel.MOimageY[MOindex]+ myPanel.MOimageH[MOindex]- myPanel.panelHeigth+15);	
+		r.eval("print( (proc.time()-x)[3] )");		
+		System.out.println("done");	
 	}
 	
 	void remove(){
@@ -792,191 +1061,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		pref.putBoolean("super_gs", SUPER_GS.isSelected());
 	}
 	
-	void GAPIT(){
-		String file_output_string, model_string, genoe_view_string, iteration_string,
-		hapmap_string, numerical_string, pca_string, qtn_string, snp_create_string, 
-		snp_major_string, p3d_string, permutation_string, test_string, super_string;
-		
-		if(file_output.isSelected()){
-			file_output_string = "TRUE";
-		}else{
-			file_output_string = "FALSE";
-		}
-		if(model_selection.isSelected()){
-			model_string = "TRUE";
-		}else{
-			model_string = "FALSE";
-		}
-		if(output_Geno_View_output.isSelected()){
-			genoe_view_string = "TRUE";
-		}else{
-			genoe_view_string = "FALSE";
-		}
-		if(output_iteration_output.isSelected()){
-			iteration_string = "TRUE";
-		}else{
-			iteration_string = "FALSE";
-		}
-		if(output_hapmap.isSelected()){
-			hapmap_string = "TRUE";
-		}else{
-			hapmap_string = "FALSE";
-		}
-		if(output_numerical.isSelected()){
-			numerical_string = "TRUE";
-		}else{
-			numerical_string = "FALSE";
-		}
-		if(PCA_View_input.isSelected()){
-			pca_string = "TRUE";
-		}else{
-			pca_string = "FALSE";
-		}
-		if(QTN_update.isSelected()){
-			qtn_string = "TRUE";
-		}else{
-			qtn_string = "FALSE";
-		}
-		if(SNP_create_indicater.isSelected()){
-			snp_create_string = "TRUE";
-		}else{
-			snp_create_string = "FALSE";
-		}
-		if(SNP_major_allele_zero.isSelected()){
-			snp_major_string = "TRUE";
-		}else{
-			snp_major_string = "FALSE";
-		}
-		if(SNP_P3D.isSelected()){
-			p3d_string = "TRUE";
-		}else{
-			p3d_string = "FALSE";
-		}
-		if(SNP_permutation.isSelected()){
-			permutation_string = "TRUE";
-		}else{
-			permutation_string = "FALSE";
-		}
-		if(SNP_test.isSelected()){
-			test_string = "TRUE";
-		}else{
-			test_string = "FALSE";
-		}
-		if(SUPER_GS.isSelected()){
-			super_string = "TRUE";
-		}else{
-			super_string = "FALSE";
-		}
-		
-		r.eval("library('MASS')");
-		r.eval("library('multtest')");
-		r.eval("library('gplots')");
-		r.eval("library('compiler')");
-		r.eval("library('scatterplot3d')");
-		r.eval("source('http://www.zzlab.net/GAPIT/emma.txt')");
-		r.eval("source('http://www.zzlab.net/GAPIT/gapit_functions.txt')");
-		r.eval("setwd('"+wd_input.getText()+"')");
-		
-		r.eval("x=proc.time()");
-		r.eval("myGAPIT <- GAPIT(Y=read.table('mdp_traits.txt', head = TRUE),"
-				+ "G=read.delim('mdp_genotype_test.hmp.txt', head = FALSE),"
-				+"esp="+esp_input.getText()+"," 
-				+"llim="+llim_input.getText()+"," 
-				+"ngrid="+ngrid_input.getText()+"," 
-				+"ulim="+ulim_input.getText()+"," 
-		
-				+"acceleration="+acceleration_input.getText()+"," 
-				+"converge="+converge_input.getText()+"," 
-				+"maxLoop="+maxLoop_input.getText()+"," 
-				
-				+"file.Ext.G="+ file_Ext_G_input.getText()+"," 
-				+"file.Ext.GD="+ file_Ext_GD_input.getText()+"," 
-				+"file.Ext.GM="+ file_Ext_GM_input.getText()+"," 
-				+"file.fragment="+ file_fragment_input.getText()+"," 
-				+"file.from="+ file_from_input.getText()+"," 
-				+"file.to="+ file_to_input.getText()+"," 
-				+"file.total="+ file_total_input.getText()+"," 
-				+"file.G="+ file_G_input.getText()+"," 
-				+"file.GD="+ file_GD_input.getText()+"," 
-				+"file.GM="+ file_GM_input.getText()+"," 
-				+"file.output="+  file_output_string+","
-				+"file.path="+ file_path_input.getText()+"," 
-				
-				+"group.by="+ group_by_input.getText()+"," 
-				+"group.from="+ group_from_input.getText()+"," 
-				+"group.to="+ group_to_input.getText()+"," 
-				
-				+"kinship.algorithm='"+ (String) kinship_algorithm_input.getSelectedItem()+"'," 
-				+"kinship.cluster='"+ (String) kinship_cluster_input.getSelectedItem()+"'," 
-				+"kinship.group='"+ (String) kinship_group_input.getSelectedItem()+"',"
-				
-				+"LD.chromosome="+ LD_chromosome_input.getText()+"," 
-				+"LD.location="+ LD_location_input.getText()+"," 
-				+"LD.range="+ LD_range_input.getText()+"," 
-		
-				+"iteration.method='"+ (String) method_iteration_input.getSelectedItem()+"'," 
-				+"method.bin='"+ (String) method_bin_input.getSelectedItem()+"'," 
-				+"method.GLM='"+ (String) method_GLM_input.getSelectedItem()+"'," 
-				+"method.sub='"+ (String) method_sub_input.getSelectedItem()+"'," 
-				+"method.sub.final='"+ (String) method_sub_final_input.getSelectedItem()+"'," 
-				
-				+"Model.selection="+ model_string+","
-				
-				+"cutOff="+ output_cutOff_input.getText()+"," 
-				+"CV.Inheritance="+ output_CV_Inheritance_input.getText()+"," 
-				+"DPP="+ output_DPP_input.getText()+"," 
-				+"Geno.View.output="+ genoe_view_string+","
-				+"iteration.output="+ iteration_string+","
-				+"maxOut="+ output_maxOut_input.getText()+"," 
-				+"output.hapmap="+ hapmap_string+","
-				+"output.numerical="+ numerical_string+","
-				+"plot.style='"+ (String) output_plot_style_input.getSelectedItem()+"'," 
-				+"threshold.output="+ output_threshold_input.getText()+"," 
-		
-				+"PCA.total="+ PCA_total_input.getText()+ ","
-				+"PCA.View.output="+ pca_string+ ","
-				
-				+"Prior="+QTN_prior_input.getText() +","
-				+"QTN="+QTN_input.getText() +","
-				+"QTN.limit="+QTN_limit_input.getText() +","
-				+"QTN.method='"+ (String) QTN_method_input.getSelectedItem()+"'," 
-				+"QTN.position="+QTN_position_input.getText() +","
-				+"QTN.round="+QTN_round_input.getText() +","
-				+"QTN.update="+ qtn_string +","
-				
-				+"Create.indicator="+ snp_create_string+ ","
-				+"Major.allele.zero="+ snp_major_string+ ","
-				+"SNP.CV="+SNP_CV_input.getText()+ ","
-				+"SNP.effect='"+(String) SNP_effect_input.getSelectedItem()+"'," 
-				+"SNP.FDR="+SNP_FDR_input.getText() 	+ ","	
-				+"SNP.fraction="+SNP_fraction_input.getText() + ","
-				+"SNP.impute='"+(String) SNP_impute_input.getSelectedItem()+"'," 
-				+"SNP.MAF="+SNP_MAF_input.getText() + ","
-				+"SNP.P3D="+p3d_string+ ","
-				+"SNP.permutation="+permutation_string+ ","
-				+"SNP.robust='"+(String) SNP_robust_input.getSelectedItem()+"'," 
-				+"SNP.test="+test_string+ ","				
-		
-				+"bin.by="+SUPER_bin_by_input.getText ()+ "," 
-				+"bin.from="+SUPER_bin_from_input.getText ()+ "," 
-				+"bin.to="+SUPER_bin_to_input.getText ()+ "," 
-				+"bin.selection="+SUPER_bin_selection_input.getText ()+ "," 
-				+"bin.size="+SUPER_bin_size_input.getText ()+ "," 
-		
-				+"BINS="+SUPER_BINS_input.getText ()+ "," 
-				+"FDR.Rate="+SUPER_FDR_rate_input.getText ()+ "," 
-				+"GTindex="+SUPER_GT_index_input.getText ()+ "," 
-				+"inclosure.by="+SUPER_inclosure_by_input.getText ()+ "," 
-				+"inclosure.from="+SUPER_inclosure_from_input.getText ()+ "," 
-				+"inclosure.to="+SUPER_inclosure_to_input.getText ()+ "," 
-				+"LD="+SUPER_LD_input.getText ()+ "," 
-				+"sangwich.bottom="+SUPER_sanawich_bottom_input.getText ()+ "," 
-				+"sangwich.top="+SUPER_sanawich_top_input.getText ()+ "," 
-				+"SUPER_GD="+SUPER_GD_input.getText ()+ "," 
-				+"SUPER_GS="+super_string+ ")");
-		
-		r.eval("print( (proc.time()-x)[3] )");
-	}
+	
 
 	@Override
 	public void windowClosing(WindowEvent e) {
