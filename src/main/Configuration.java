@@ -1,37 +1,19 @@
 package main;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Scanner;
 import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.Timer;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.TitledBorder;
+import javax.swing.*;
+import javax.swing.border.*;
 
-import org.rosuda.JRI.REXP;
-import org.rosuda.JRI.Rengine;
-
+import org.rosuda.JRI.*;
 import net.miginfocom.swing.MigLayout;
 
 
@@ -63,8 +45,11 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JTextField file_Ext_GD_input= new JTextField(5);
 	JLabel file_Ext_GM_text = new JLabel("Ext.GM");
 	JTextField file_Ext_GM_input= new JTextField(5);
+	
+	String[] file_fragment_names = {"512", "256", "128", "64"};
 	JLabel file_fragment_text = new JLabel("Fragment");
-	JTextField file_fragment_input= new JTextField(5);
+	JComboBox file_fragment_input= new JComboBox(file_fragment_names);
+	
 	JLabel file_from_text = new JLabel("From");
 	JTextField file_from_input= new JTextField(5);
 	JLabel file_to_text = new JLabel("To");
@@ -93,12 +78,14 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	String[] kinship_algorithm_names= {"VanRaden"};
 	JComboBox kinship_algorithm_input= new JComboBox(kinship_algorithm_names);
 	JLabel kinship_algorithm_text = new JLabel("Algorithm");
-	String[] kinship_cluster_names= {"average"};
+	String[] kinship_cluster_names= {"'average', 'complete', 'ward'", "'average'"};
 	JComboBox kinship_cluster_input= new JComboBox(kinship_cluster_names);
 	JLabel kinship_cluster_text = new JLabel("Cluster");
-	String[] kinship_group_names= {"Mean"};
+	String[] kinship_group_names= {"'Mean', 'Max'", "'Mean"};
 	JComboBox kinship_group_input= new JComboBox(kinship_group_names);
 	JLabel kinship_group_text = new JLabel("Group");
+	//
+	JPanel panel_CMLM;
 	///////////////////////////////////////////////////////////////////////////////////////
 	JPanel panel_LD;
 	JLabel LD_chromosome_text = new JLabel("Chromosome");
@@ -148,8 +135,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JTextField output_threshold_input= new JTextField(5);
 	///////////////////////////////////////////////////////////////////////////////////////
 	JPanel panel_PCA;
-	JLabel PCA_total_text = new JLabel("total");
-	JTextField PCA_total_input= new JTextField(5);
+
 	JCheckBox PCA_View_input = new JCheckBox("View output");
 	///////////////////////////////////////////////////////////////////////////////////////
 	JPanel panel_QTN;
@@ -190,8 +176,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	String[] SNP_robust_names= {"GLM"};
 	JComboBox SNP_robust_input = new JComboBox(SNP_robust_names);
 	JLabel SNP_robust_text = new JLabel("robust");
-	JCheckBox SNP_test = new JCheckBox("test");
-	
+	JCheckBox SNP_test = new JCheckBox("SNP_test");
 	///////////////////////////////////////////////////////////////////////////////////////
 	JPanel panel_super;
 	JLabel SUPER_bin_by_text = new JLabel("bin by");
@@ -228,12 +213,43 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JTextField SUPER_GD_input= new JTextField(5);
 	JCheckBox SUPER_GS = new JCheckBox("GS");
 	///////////////////////////////////////////////////////////////////////////////////////
+	JPanel panel_co;
+	ButtonGroup CO_group = new ButtonGroup();
+	JRadioButton CO_gapit = new JRadioButton("Calculate within GAPIT");
+	JLabel PCA_total_text = new JLabel("PCA.total");
+	JTextField PCA_total_input= new JTextField(3);
+	JRadioButton CO_user = new JRadioButton("User input");
+	JButton CO_browse = new JButton("Browse");
+	JTextField CO_path = new JTextField(15);
+	iPat_chooser CO_chooser;	
+	///////////////////////////////////////////////////////////////////////////////////////
+	JPanel panel_ki;
+	ButtonGroup KI_group = new ButtonGroup();
+	JRadioButton KI_gapit = new JRadioButton("Calculate within GAPIT");
+	JRadioButton KI_user = new JRadioButton("User input");
+	JCheckBox Prediction = new JCheckBox("GS only");
+	JButton KI_browse = new JButton("Browse");
+	JTextField KI_path = new JTextField(15);
+	iPat_chooser KI_chooser;	
+	///////////////////////////////////////////////////////////////////////////////////////
+	JPanel panel_phenotype;
+	JLabel P_filename = new JLabel("File:\tNA");
+	///////////////////////////////////////////////////////////////////////////////////////
+	JPanel panel_genotype;
+	JLabel G_filename = new JLabel("File:\tNA");
+	JLabel G_format = new JLabel("Format: HapMap");
+	///////////////////////////////////////////////////////////////////////////////////////
 	JPanel main_panel;
 	JButton go = new JButton("GO");
+	JButton go_2 = new JButton("GO");
+	JButton go_3 = new JButton("GO");
+	JPanel panel_advance;
+	JCheckBox CMLM_enable = new JCheckBox("Enable");
+	Boolean CMLM_open = false;
 	///////////////////////////////////////////////////////////////////////////////////////
 	JPanel wd_panel;
 	JButton browse = new JButton("Browse");
-	iPat_chooser chooser;
+	iPat_chooser chooser;	
 	JLabel wd_text = new JLabel("Working Directory");
 	JTextField wd_input = new JTextField(15);
 	JLabel n_text = new JLabel("Project Name");
@@ -242,9 +258,24 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	Runnable back_run = new Runnable(){
 		@Override
 		public void run(){
-			GAPIT(MOindex);
+			try {
+				GAPIT(MOindex);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
 		}
 	};
+	Runnable back_run_2 = new Runnable(){
+		@Override
+		public void run(){
+			try {
+				GAPIT_two(MOindex);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
+	};
+	
 	int test_run = 0;
 	///////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////
@@ -257,51 +288,261 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	public Configuration(Rengine r, int MOindex) throws FileNotFoundException, IOException{	
 		this.r = r;
 		this.MOindex = MOindex;
-		catch_files(file_index);	
+		
+		int index = 0;
+		index = catch_files(file_index);	
+		String P_name = "", G_name = "", GD_name = "", GM_name = "";
+		for (int i = 0; i<4;i++){
+			if(file_index[i][1] == 0){
+				Path p = Paths.get(myPanel.TBfile[file_index[i][0]]);
+				P_name = p.getFileName().toString();
+			}else if(file_index[i][1] == 1){
+				Path p = Paths.get(myPanel.TBfile[file_index[i][0]]);
+				G_name = p.getFileName().toString();
+			}else if(file_index[i][1] == 2){
+				Path p = Paths.get(myPanel.TBfile[file_index[i][0]]);
+				GD_name = p.getFileName().toString();
+			}else if(file_index[i][1] == 3){
+				Path p = Paths.get(myPanel.TBfile[file_index[i][0]]);
+				GM_name = p.getFileName().toString();
+			}
+		}
+		switch(index){
+			case 1:
+				configuration_initial();
+				break;
+			case 2:
+				config_two(P_name, G_name);
+				break;
+			case 3:
+				configuration_initial();
+				break;
+		}	
 		pref = Preferences.userRoot().node("/ipat"); 
 		load();
+//		config_two();
+//		configuration_initial();
 		addWindowListener(this);
 	}	
-
-	void catch_files(int[][] file_index) throws IOException{
-		for(int i=0;i<10;i++){
+	
+	int catch_files(int[][] file_index) throws IOException{
+		for(int i=0;i<5;i++){
 			file_index[i][0] = 0; //default to TBindex = 0, which is null
-			file_index[i][1] = 0; //default to P
+			file_index[i][1] = -1; //default to -1; 0:P, 1:G, 2:GD, 3:GM, 4:KI, 5:CO
 		}
-		FileReader fr;
-		BufferedReader br;
-		String file_lines = new String();
 		int index = 0;
 		for (int i = 1; i<=myPanel.TBcount; i++){
+			if(index>3){break;}
 			if(myPanel.TBco[i][3]==myPanel.MOco[MOindex][3] && myPanel.TBco[i][3]!=-1){
 				System.out.println(myPanel.TBfile[i]);
 				file_index[index][0] = i;
 				index++;
 			}
 		}
-		for(int i = 0; i<10; i++){
-			if(file_index[i][0] == 0){ break;}
-			fr = new FileReader(myPanel.TBfile[file_index[i][0]]);
-			br = new BufferedReader(fr);
-			int t = 0;
-			while (br.ready() && t<2) {
-				file_lines = br.readLine();
-				System.out.println(file_lines);
-				t++;
-			}
-            String[] splite = file_lines.split("\t");
-            if(splite.length>11){
-            	if(splite[11].contains("AA")||splite[11].contains("GG")||
-                   splite[11].contains("TT")||splite[11].contains("CC")){
-                     	file_index[i][1] = 1;
-                }
-            }else{
-            	file_index[i][1] = 2;
-            }
-			fr.close();	
+		switch (index){
+			case 1:
+				file_index[0][1] = 0;
+				break;
+			case 2:
+				r.eval("file1 = read.csv('"+myPanel.TBfile[file_index[0][0]]+"', "
+						+ "sep = '\t', header= FALSE, stringsAsFactors=FALSE)");
+				r.eval("file2 = read.csv('"+myPanel.TBfile[file_index[1][0]]+"', "
+						+ "sep = '\t', header= FALSE, stringsAsFactors=FALSE)");
+				r.eval("if(all(file1[2:6, 5]%in%c('+', '-')) && any(file1[2:6, 5]%in%c('+', '-'))){one = 1;two = 0}else{one = 0;two = 1}");									
+				file_index[0][1] = (int)r.eval("one").asDouble();
+				file_index[1][1] = (int)r.eval("two").asDouble();				
+				break;
+			case 3:
+				r.eval("file1 = read.csv('"+myPanel.TBfile[file_index[0][0]]+"', "
+						+ "sep = '\t', header= FALSE, stringsAsFactors=FALSE)");
+				r.eval("file2 = read.csv('"+myPanel.TBfile[file_index[1][0]]+"', "
+						+ "sep = '\t', header= FALSE, stringsAsFactors=FALSE)");
+				r.eval("file3 = read.csv('"+myPanel.TBfile[file_index[2][0]]+"', "
+						+ "sep = '\t', header= FALSE, stringsAsFactors=FALSE)");
+				r.eval("max = max(dim(file1)[2], dim(file2)[2], dim(file3)[2])");
+				r.eval("if(dim(file1)[2] == max){one = 2;if(all(file1[1,2:6]==file2[2:6, 1])){two = 3;three = 0}else{two = 0;three = 3}}else if(dim(file2)[2] == max){two = 2;if(all(file2[1,2:6]==file1[2:6, 1])){one = 3;three = 0}else{one = 0;three = 3}}else{three = 2;if(all(file3[1,2:6]==file2[2:6, 1])){one = 0;two = 3}else{one = 3;two = 0}}");
+				file_index[0][1] = (int)r.eval("one").asDouble();
+				file_index[1][1] = (int)r.eval("two").asDouble();
+				file_index[2][1] = (int)r.eval("three").asDouble();
+				break;
 		}
+		return index;		
 	}
 	
+	public void config_one(){
+		
+	}
+	
+	public void config_two(String P_name, String G_name){
+		go_2.setFont(new Font("Ariashowpril", Font.BOLD, 40));		///////////////////////////////////////////////////////////////////////////////////////
+		wd_panel = new JPanel(new MigLayout("fillx"));
+		wd_panel.add(n_text, "wrap");
+		wd_panel.add(n_input, "wrap");
+		wd_panel.add(wd_text, "wrap");
+		wd_panel.add(wd_input);
+		wd_panel.add(browse, "wrap");
+		wd_panel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
+		///////////////////////////////////////////////////////////////////////////////////////
+		panel_genotype = new JPanel(new MigLayout("fillx"));
+		panel_genotype.add(G_filename, "wrap");
+		G_filename.setText("File:\t"+G_name);
+		panel_genotype.add(G_format);
+		panel_genotype.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Genotype", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
+		///////////////////////////////////////////////////////////////////////////////////////
+		panel_phenotype = new JPanel(new MigLayout("fillx"));
+		panel_phenotype.add(P_filename);
+		P_filename.setText("File:\t"+P_name);
+		panel_phenotype.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Phenotype", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
+		///////////////////////////////////////////////////////////////////////////////////////
+		panel_ki = new JPanel(new MigLayout("fillx"));
+		KI_group.add(KI_gapit);
+		KI_gapit.setToolTipText("<html>" + "The kinship matrix or covariates (e.g., PCs) <br>"
+				+ "may be calculated previously or from third party software. <br>"
+				+ "When the PCs are input in this way, <br>"
+				+ "the parameter “PCA.total” should be set to 0 (default). <br>"
+				+ "Otherwise, PCs will be calculated within GAPIT"+ "</html>");
+		KI_gapit.setSelected(true);
+		KI_group.add(KI_user);
+		KI_user.setToolTipText("<html>" + "The kinship matrix or covariates (e.g., PCs) <br>"
+				+ "may be calculated previously or from third party software. <br>"
+				+ "When the PCs are input in this way, <br>"
+				+ "the parameter “PCA.total” should be set to 0 (default). <br>"
+				+ "Otherwise, PCs will be calculated within GAPIT"+ "</html>");
+		panel_ki.add(KI_gapit, "wrap");
+		KI_gapit.isSelected();
+		panel_ki.add(KI_user);
+		panel_ki.add(Prediction, "wrap");
+		Prediction.setToolTipText("Genomic prediction can be performed without running GWAS");
+		Prediction.setEnabled(false);
+		panel_ki.add(KI_path);
+		KI_path.setEnabled(false);
+		panel_ki.add(KI_browse);
+		KI_browse.setEnabled(false);
+		panel_ki.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Kinship", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
+		///////////////////////////////////////////////////////////////////////////////////////
+		panel_co = new JPanel(new MigLayout("fillx"));
+		CO_group.add(CO_gapit);
+		CO_gapit.setToolTipText("<html>" + "The kinship matrix or covariates (e.g., PCs) <br>"
+				+ "may be calculated previously or from third party software. <br>"
+				+ "When the PCs are input in this way, <br>"
+				+ "the parameter “PCA.total” should be set to 0 (default). <br>"
+				+ "Otherwise, PCs will be calculated within GAPIT"+ "</html>");
+		CO_gapit.setSelected(true);
+		CO_group.add(CO_user);
+		CO_user.setToolTipText("<html>" + "The kinship matrix or covariates (e.g., PCs) <br>"
+				+ "may be calculated previously or from third party software. <br>"
+				+ "When the PCs are input in this way, <br>"
+				+ "the parameter “PCA.total” should be set to 0 (default). <br>"
+				+ "Otherwise, PCs will be calculated within GAPIT"+ "</html>");
+		panel_co.add(CO_gapit, "wrap");
+		panel_co.add(PCA_total_text);
+		PCA_total_text.setToolTipText("Total Number of PCs as Covariates");
+		panel_co.add(PCA_total_input, "wrap");
+		PCA_total_input.setText("3");
+		panel_co.add(CO_user, "wrap");
+		panel_co.add(CO_path);
+		CO_path.setEnabled(false);
+		panel_co.add(CO_browse);
+		CO_browse.setEnabled(false);
+		panel_co.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Covariates", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
+		///////////////////////////////////////////////////////////////////////////////////////
+		panel_CMLM = new JPanel(new MigLayout("fillx"));
+		panel_CMLM.add(CMLM_enable, "wrap");
+		CMLM_enable.setSelected(false);
+		CMLM_enable.setToolTipText("Users can specify additional clustering algorithms and kinship summary statistic."
+				+ "The default method of cluster is 'average', and kinship.group is 'Mean'. "
+				+ "Additionally, a specific range group numbers (i.e., dimension of the kinship matrix) can be specified. "
+				+ "This range is controlled by the “group.from”, “group.to”, and “group.by” parameters.");
+		panel_CMLM.add(kinship_cluster_text);
+		kinship_cluster_text.setToolTipText("Users can specify additional clustering algorithms and kinship summary statistic."
+				+ "The default method of cluster is 'average', and kinship.group is 'Mean'. "
+				+ "Additionally, a specific range group numbers (i.e., dimension of the kinship matrix) can be specified. "
+				+ "This range is controlled by the “group.from”, “group.to”, and “group.by” parameters.");
+		panel_CMLM.add(kinship_cluster_input, "wrap");
+		kinship_cluster_input.setEnabled(false);
+		panel_CMLM.add(kinship_group_text);
+		kinship_group_text.setToolTipText("Users can specify additional clustering algorithms and kinship summary statistic."
+				+ "The default method of cluster is 'average', and kinship.group is 'Mean'. "
+				+ "Additionally, a specific range group numbers (i.e., dimension of the kinship matrix) can be specified. "
+				+ "This range is controlled by the “group.from”, “group.to”, and “group.by” parameters.");
+		panel_CMLM.add(kinship_group_input, "wrap");
+		kinship_group_input.setEnabled(false);
+		panel_CMLM.add(group_from_text);
+		group_from_text.setToolTipText("Users can specify additional clustering algorithms and kinship summary statistic."
+				+ "The default method of cluster is 'average', and kinship.group is 'Mean'. "
+				+ "Additionally, a specific range group numbers (i.e., dimension of the kinship matrix) can be specified. "
+				+ "This range is controlled by the “group.from”, “group.to”, and “group.by” parameters.");
+		panel_CMLM.add(group_from_input, "wrap");
+		group_from_input.setEnabled(false);
+		panel_CMLM.add(group_to_text);
+		group_to_text.setToolTipText("Users can specify additional clustering algorithms and kinship summary statistic."
+				+ "The default method of cluster is 'average', and kinship.group is 'Mean'. "
+				+ "Additionally, a specific range group numbers (i.e., dimension of the kinship matrix) can be specified. "
+				+ "This range is controlled by the “group.from”, “group.to”, and “group.by” parameters.");
+		panel_CMLM.add(group_to_input, "wrap");
+		group_to_input.setEnabled(false);
+		panel_CMLM.add(group_by_text);
+		group_by_text.setToolTipText("Users can specify additional clustering algorithms and kinship summary statistic."
+				+ "The default method of cluster is 'average', and kinship.group is 'Mean'. "
+				+ "Additionally, a specific range group numbers (i.e., dimension of the kinship matrix) can be specified. "
+				+ "This range is controlled by the “group.from”, “group.to”, and “group.by” parameters.");
+		panel_CMLM.add(group_by_input, "wrap");		
+		group_by_input.setEnabled(false);
+		panel_CMLM.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "CMLM", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
+		///////////////////////////////////////////////////////////////////////////////////////
+		panel_advance = new JPanel(new MigLayout("fillx"));
+		panel_advance.add(SNP_fraction_text);
+		SNP_fraction_text.setToolTipText("The computations of kinship and PCs are extensive with large number of SNPs. "
+				+ "Sampling a fraction of it would reduce computing time. The valid value sould be greater than 0 and no greater than 1");
+		panel_advance.add(SNP_fraction_input, "wrap");
+		SNP_fraction_input.setText("1");
+		panel_advance.add(file_fragment_text);
+		file_fragment_text.setToolTipText("With large amount of individuals, loading a entire large genotype dataset could be difficult. "
+				+ "GAPIT can load a fragment of it each time. The default of the fragment size is 512 SNPs.");
+		panel_advance.add(file_fragment_input, "wrap");
+		file_fragment_input.setSelectedItem("512");
+		panel_advance.add(model_selection);
+		model_selection.setToolTipText("GAPIT has the capability to conduct Bayesian information criterion (BIC)-based model selection "
+				+ "to find the optimal number of PCs for inclusion in the GWAS models. ");
+		model_selection.setSelected(false);
+		panel_advance.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Advance", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
+		///////////////////////////////////////////////////////////////////////////////////////
+		main_panel = new JPanel(new MigLayout("fillx", "[grow][grow]"));
+		main_panel.add(go_2, "dock north");
+		main_panel.add(wd_panel, "cell 0 0, grow");
+		main_panel.add(panel_genotype, "cell 0 1, grow");
+		main_panel.add(panel_phenotype, "cell 0 2, grow");
+		main_panel.add(panel_ki, "cell 0 3, grow");
+		main_panel.add(panel_co, "cell 0 4, grow");
+		main_panel.add(panel_CMLM, "cell 0 5, grow");
+		main_panel.add(panel_advance, "cell 0 6, grow");
+		///////////////////////////////////////////////////////////////////////////////////////
+		JScrollPane pane = new JScrollPane(main_panel,  
+					ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,  
+					ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		pane.getVerticalScrollBar().setUnitIncrement(16); //scrolling sensitive
+		go_2.addActionListener(this);
+		browse.addActionListener(this);
+		
+		KI_gapit.addActionListener(this);
+		KI_user.addActionListener(this);
+		KI_browse.addActionListener(this);
+		
+		CO_gapit.addActionListener(this);
+		CO_user.addActionListener(this);
+		CO_browse.addActionListener(this);
+		
+		CMLM_enable.addActionListener(this);
+		this.setContentPane(pane);
+		this.setTitle("Configuration");
+		this.pack();
+		this.show();
+	}
+	
+	public void config_three(){
+	
+	}
+
 	public void configuration_initial(){
 		go.setFont(new Font("Ariashowpril", Font.BOLD, 40));
 		///////////////////////////////////////////////////////////////////////////////////////
@@ -532,21 +773,160 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		this.show();
 	}
 	
+	@Override
 	public void actionPerformed(ActionEvent ip){
 	      Object source = ip.getSource();	
 	      if (source == go){
 	    	  	save();
 	    	  	myPanel.MOfile[MOindex] = wd_input.getText();
-	    	  	myPanel.gapit_run[MOindex] = new Thread(back_run);
-	    	  	myPanel.gapit_run[MOindex].start();
+	    	  	myPanel.gapit_run = new Thread(back_run);
+	    	  	myPanel.gapit_run.start();
 	    	  	this.dispose();
 	      }else if(source == browse){
 	    	  	chooser = new iPat_chooser();
 	    	  	wd_input.setText(chooser.getPath());	    	  	
+	      // Config_2
+	      }else if(source == go_2){
+	    	  	save();
+	    	  	myPanel.MOfile[MOindex] = wd_input.getText();
+	    	  	myPanel.gapit_run = new Thread(back_run_2);
+	    	  	myPanel.gapit_run.start();
+	    	  	this.dispose();
+	      }else if(source == KI_gapit){
+	    	  	Prediction.setEnabled(false);
+	    	  	KI_path.setEnabled(false);
+	    	  	KI_browse.setEnabled(false);	    	  
+	      }else if(source == KI_user){
+	    	  	Prediction.setEnabled(true);
+	    	  	KI_path.setEnabled(true);
+	    	  	KI_browse.setEnabled(true);
+	      }else if(source == KI_browse){
+	    	  	JFileChooser KI_chooser = new JFileChooser();
+				int value = KI_chooser.showOpenDialog(null);
+				if (value == JFileChooser.APPROVE_OPTION){
+				    File selectedfile = KI_chooser.getSelectedFile();  	    					    
+				  	KI_path.setText(selectedfile.getAbsolutePath());
+				}
+	      }else if(source == CO_gapit){
+	    	  	PCA_total_text.setEnabled(true);
+	    	  	PCA_total_input.setEnabled(true);
+				CO_path.setEnabled(false);
+				CO_browse.setEnabled(false); 
+	      }else if(source == CO_user){
+	    	  	PCA_total_text.setEnabled(false);
+	    	  	PCA_total_input.setEnabled(false);
+				CO_path.setEnabled(true);
+				CO_browse.setEnabled(true); 
+	      }else if(source == CO_browse){
+	    	  	JFileChooser CO_chooser = new JFileChooser();
+				int value = CO_chooser.showOpenDialog(null);
+				if (value == JFileChooser.APPROVE_OPTION){
+				    File selectedfile = CO_chooser.getSelectedFile();  	    					    
+				  	CO_path.setText(selectedfile.getAbsolutePath());
+				}
+	      }else if(source == CMLM_enable){
+	    	  if(CMLM_open){
+	    			kinship_cluster_input.setEnabled(false);
+	    			kinship_group_input.setEnabled(false);
+	    			group_from_input.setEnabled(false);
+	    			group_to_input.setEnabled(false);
+	    			group_by_input.setEnabled(false);
+	    			CMLM_open = false;
+	    	  }else{
+	    		  	kinship_cluster_input.setEnabled(true);
+	    			kinship_group_input.setEnabled(true);
+	    			group_from_input.setEnabled(true);
+	    			group_to_input.setEnabled(true);
+	    			group_by_input.setEnabled(true);
+	    		  	CMLM_open = true;
+	    	  }
 	      }
 	}
 	
-	void GAPIT(int MOindex){
+	void GAPIT_two(int MOindex) throws FileNotFoundException{
+		Boolean predict = false;
+		String model_selection_s = "";
+		String 	G = "", P = "", K = "", C = "",
+				CM = "";	
+
+		for(int i=0;i<5;i++){
+			if(file_index[i][1] == 1){
+				G = myPanel.TBfile[file_index[i][0]];
+			}else if(file_index[i][1] == 0){
+				P = myPanel.TBfile[file_index[i][0]];
+			}
+		}	
+		if(KI_user.isSelected() && Prediction.isSelected()){
+			K = "KI = read.table('"+ KI_path.getText() +"', head = FALSE), SNP.test = FALSE";
+			System.out.println("prediction only");
+		}else if(KI_user.isSelected()){
+			K = "G=read.table('"+G+"', head = FALSE),"
+				+ "KI = read.table('"+ KI_path.getText() +"', head = FALSE)";
+			System.out.println("load genotype");
+		}
+		if(CO_user.isSelected()){
+			C = "CV = read.table('"+ CO_path.getText() +"', head = TRUE";
+			System.out.println(C);
+		}else{
+			C = "PCA.total = " + PCA_total_input.getText();
+		}
+		if(CMLM_enable.isSelected()){
+			CM =  "kinship.cluster = c("+kinship_cluster_input.getSelectedItem()+"),"
+				+ "kinship.group = c("+kinship_cluster_input.getSelectedItem()+"),"
+				+ "group.from = " + group_from_input.getText() + ","
+				+ "group.to = " + group_to_input.getText() + "," 
+				+ "group.by = " + group_by_input.getText() + ",";
+		}
+		if(model_selection.isSelected()){
+			model_selection_s = "TRUE";
+		}else{
+			model_selection_s = "FALSE";
+		}
+
+		System.out.println("start");
+		myPanel.permit[MOindex] = true;
+		myPanel.rotate_index[MOindex] = 1;
+			
+		r.eval("x=proc.time()");	
+		r.eval("library('MASS')");
+		r.eval("library('multtest')");
+		r.eval("library('gplots')");
+		r.eval("library('compiler')");
+		r.eval("library('scatterplot3d')");
+		r.eval("source('http://www.zzlab.net/GAPIT/emma.txt')");
+		r.eval("source('http://www.zzlab.net/GAPIT/gapit_functions.txt')");
+		r.eval("setwd('"+wd_input.getText()+"')");		
+				
+		r.eval("catch= tryCatch( {"
+				+ "myGAPIT <- GAPIT("
+				+ "Y=read.table('"+P+"', head = TRUE),"
+				+ K + "," + C + "," + CM
+				+ "SNP.fraction = " + SNP_fraction_input.getText() + ","
+				+ "file.fragment = " + file_fragment_input.getSelectedItem() + ","
+				+ "Model.selection = " + model_selection_s + ")},"
+				+"error=function(e){e} )");
+		
+	    REXP rcatch= r.eval("as.character(catch)");
+	    String rcatchs=((REXP)rcatch).asString();	    
+	    try(  PrintWriter out = new PrintWriter( "error.txt" )  ){
+	        out.println( rcatchs );
+		    out.close();
+	    }
+	    if(rcatchs.indexOf("Error")>=0){
+			myPanel.MO[MOindex] = myPanel.MO_fal;
+	    }else{
+			myPanel.MO[MOindex] = myPanel.MO_suc;
+	    }
+		myPanel.permit[MOindex] = false;
+		myPanel.rotate_index[MOindex] = 0;
+		myPanel.MOimageH[MOindex]=myPanel.MO[MOindex].getHeight(null);
+		myPanel.MOimageW[MOindex]=myPanel.MO[MOindex].getWidth(null);
+		myPanel.MOname[MOindex].setLocation(myPanel.MOimageX[MOindex], myPanel.MOimageY[MOindex]+ myPanel.MOimageH[MOindex]);
+		r.eval("print( (proc.time()-x)[3] )");		
+		System.out.println("done");	
+	}
+		
+	void GAPIT(int MOindex) throws FileNotFoundException{
 		String file_output_string, model_string, genoe_view_string, iteration_string,
 		hapmap_string, numerical_string, pca_string, qtn_string, snp_create_string, 
 		snp_major_string, p3d_string, permutation_string, test_string, super_string;
@@ -625,8 +1005,9 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		System.out.println("start");
 		myPanel.permit[MOindex] = true;
 		myPanel.rotate_index[MOindex] = 1;
-		
+			
 		r.eval("x=proc.time()");
+	
 		r.eval("library('MASS')");
 		r.eval("library('multtest')");
 		r.eval("library('gplots')");
@@ -635,7 +1016,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		r.eval("source('http://www.zzlab.net/GAPIT/emma.txt')");
 		r.eval("source('http://www.zzlab.net/GAPIT/gapit_functions.txt')");
 		r.eval("setwd('"+wd_input.getText()+"')");
-		String G = new String(""), P = new String("");
+		String G = "", P = "";
 		for(int i=0;i<10;i++){
 			if(file_index[i][1] == 1){
 				G = myPanel.TBfile[file_index[i][0]];
@@ -665,7 +1046,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				+"file.Ext.G="+ file_Ext_G_input.getText()+"," 
 				+"file.Ext.GD="+ file_Ext_GD_input.getText()+"," 
 				+"file.Ext.GM="+ file_Ext_GM_input.getText()+"," 
-				+"file.fragment="+ file_fragment_input.getText()+"," 
+				+"file.fragment="+ file_fragment_input.getSelectedItem()+"," 
 				+"file.from="+ file_from_input.getText()+"," 
 				+"file.to="+ file_to_input.getText()+"," 
 				+"file.total="+ file_total_input.getText()+"," 
@@ -749,8 +1130,15 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				+"SUPER_GS="+super_string+ ")},"
 				+"error=function(e){e} )");
 		
+		
+		
 	    REXP rcatch= r.eval("as.character(catch)");
-	    String rcatchs=((REXP)rcatch).asString();
+	    String rcatchs=((REXP)rcatch).asString();	    
+	    try(  PrintWriter out = new PrintWriter( "error.txt" )  ){
+	        out.println( rcatchs );
+		    out.close();
+
+	    }
 	    if(rcatchs.indexOf("Error")>=0){
 			myPanel.MO[MOindex] = myPanel.MO_fal;
 	    }else{
@@ -760,7 +1148,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		myPanel.rotate_index[MOindex] = 0;
 		myPanel.MOimageH[MOindex]=myPanel.MO[MOindex].getHeight(null);
 		myPanel.MOimageW[MOindex]=myPanel.MO[MOindex].getWidth(null);
-		myPanel.MOname[MOindex].setLocation(myPanel.MOimageX[MOindex], myPanel.MOimageY[MOindex]+ myPanel.MOimageH[MOindex]- myPanel.panelHeigth+15);	
+		myPanel.MOname[MOindex].setLocation(myPanel.MOimageX[MOindex], myPanel.MOimageY[MOindex]+ myPanel.MOimageH[MOindex]);
 		r.eval("print( (proc.time()-x)[3] )");		
 		System.out.println("done");	
 	}
@@ -879,7 +1267,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		file_Ext_G_input.setText(pref.get("file_ext_g", "NULL"));
 		file_Ext_GD_input.setText(pref.get("file_ext_gd", "NULL"));
 		file_Ext_GM_input.setText(pref.get("file_ext_gm", "NULL"));
-		file_fragment_input.setText(pref.get("file_fragment", "99999"));
+		file_fragment_input.setSelectedItem(pref.get("file_fragment", "512"));
 		file_from_input.setText(pref.get("file_from", "1"));
 		file_to_input.setText(pref.get("file_to", "1"));
 		file_total_input.setText(pref.get("file_total", "NULL"));
@@ -920,7 +1308,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		output_plot_style_input.setSelectedItem(pref.get("output_plot", "Oceanic"));
 		output_threshold_input.setText(pref.get("output_threshold", "0.01"));
 		
-		PCA_total_input.setText(pref.get("pca_total", "0"));
+		PCA_total_input.setText(pref.get("pca_total", "3"));
 		PCA_View_input.setSelected(pref.getBoolean("pca_view", true));
 		
 		QTN_prior_input.setText(pref.get("qtn_prior", "NULL"));
@@ -978,7 +1366,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		pref.put("file_ext_g", file_Ext_G_input.getText());
 		pref.put("file_ext_gd", file_Ext_GD_input.getText());
 		pref.put("file_ext_gm", file_Ext_GM_input.getText());
-		pref.put("file_fragment", file_fragment_input.getText());
+		pref.put("file_fragment", (String) file_fragment_input.getSelectedItem());
 		pref.put("file_from", file_from_input.getText());
 		pref.put("file_to", file_to_input.getText());
 		pref.put("file_total", file_total_input.getText());

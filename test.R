@@ -98,7 +98,15 @@ SUPER_GS	=	FALSE	)
 (proc.time()-x)[3]
 
 
-
+x=3
+catch = 
+  tryCatch({print(y); print(x)}, error= function(e){e})
+catch
+tryCatch({
+  stop("demo error")
+}, error = function(e) {
+  conditionMessage(e) # 這就會是"demo error"
+})
 
 
 

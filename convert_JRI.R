@@ -1,5 +1,5 @@
 wd <- "/Users/Poissonfish/git/iPat"
-file <- "FarmCPU.R"
+file <- "speed_test.R"
 
 library(magrittr)
 setwd(wd)
