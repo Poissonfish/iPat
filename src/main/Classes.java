@@ -1,8 +1,11 @@
 package main;
 
+import java.awt.AlphaComposite;
 import java.awt.Container;
 import java.awt.FileDialog;
 import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,19 +29,17 @@ public class Classes {
 
 class iPat_chooser{
 	File selectedfile = null;
-
 	public iPat_chooser(){
 		int value;
     		JFileChooser folder_chooser = new JFileChooser(){
     			public void approveSelection()
     		    {
-    		        if (getSelectedFile().isFile())
-    		        {
+    		        if (getSelectedFile().isFile()){
     		            // beep
     		            return;
-    		        }
-    		        else
-    		            super.approveSelection();
+    		        }else{
+    		        	super.approveSelection();
+    		        }   
     		    }
     		};
     		folder_chooser.setAcceptAllFileFilterUsed(false);
@@ -101,3 +102,19 @@ class TextConsole implements RMainLoopCallbacks{
     }			
 }
 
+class AlphaLabel extends JLabel {
+    private float alpha = 1f;        
+    public float getAlpha() {
+        return alpha;
+    }
+    public void setAlpha(float alpha) {
+        this.alpha = alpha;
+        repaint();
+    }
+    @Override
+    public void paintComponent(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));          
+        super.paintComponent(g2);
+    }
+}

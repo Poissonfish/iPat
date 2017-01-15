@@ -107,7 +107,8 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	Image[] Trash= new Image[10];
 	Image[] White= new Image[10];
 	static Image Excel, Powerpoint, Word, Music, Video, Unknown, Text, 
-		  TBimage, MOimage, Prefbar, MO_suc, MO_fal;
+		  TBimage, MOimage, Prefbar, MO_suc, MO_fal, 
+		  hint_object, hint_trash, hint_model, hint_table;
 	
 	JLayeredPane startPanel;
 	JPanel mainPanel;	
@@ -127,7 +128,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	//animation
 	Timer TrashAnimation, DashLineAnimation, CombinedDeleteAnimation, 
 		  Fadein1, Fadein2, Fadein3, Fadein4, Fadesave, Wipe;
-	
+		  	
 	Boolean TA;
 		
 	 //combine 
@@ -202,7 +203,6 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
     //object select
 	int TBindex_select = 0;
 	int MOindex_select = 0;
-
     int object_selected = -1;   //1 table, 2 model
 	int select_intex= -1;
 	
@@ -210,52 +210,47 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	static double rotate = Math.toRadians(0);
 	static int[] rotate_index = new int[MOMAX];
 	static Boolean[] permit = new Boolean[MOMAX];
-	static Boolean running = false;
-
-	public static boolean all_true(Boolean[] array){
-	    for(boolean b : array) if(!b) return false;
-	    return true;
-	}
-	public static boolean all_false(Boolean[] array){
-	    for(boolean b : array) if(b) return false;
-	    return true;
-	}
-	public static boolean partial_true(Boolean[] array){
-	    for(boolean b : array) if(b) return true;
-	    return false;
-	}
-	
-	Timer gear_rotate = new Timer(50, new ActionListener() {
-		int i=0;
-	    @Override
-	    public void actionPerformed(ActionEvent ae) {
-	    	if(all_false(permit)){
-	    		running = false;
-		    	rotate = Math.toRadians(0);
-	    		gear_rotate.stop();
-	    	}
-	    	rotate = Math.toRadians(i*36);
-	    	repaint();
-	    	i++;	    	
-	    }
-	});	
-	
+	static Boolean running = false;	
+	Timer gear_rotate;
 	//periodically repaint (delcare after fill value in permit)
-	Timer periodically_repaint = new Timer(1000, new ActionListener() {
-	    @Override
-	    public void actionPerformed(ActionEvent ae) {
-	    	repaint(); 
-	    	if(partial_true(permit) && !running){ // avoid running it again over again
-	    		running = true;
-	    		gear_rotate.start();
-	    	}
-	    }
-	});
+	Timer periodically_repaint;
+	//hint_object
+	boolean hint_ob_b=false,  //check if run at once  
+			hint_ob_out = false; //check if going to fadeout
+	float hint_ob_alpha = 0;
+	AlphaLabel hint_ob = new AlphaLabel();
+	Timer hint_ob_timer_in;
+	Timer hint_ob_timer_out;
+	Timer hint_ob_main;
+	//hint_tr
+	boolean hint_tr_b=false,  //check if run at once  
+			hint_tr_out = false; //check if going to fadeout
+	float hint_tr_alpha = 0;
+	AlphaLabel hint_tr = new AlphaLabel();
+	Timer hint_tr_timer_in;
+	Timer hint_tr_timer_out;
+	Timer hint_tr_main;
+	//hint_model
+	boolean hint_mo_b=false,  //check if run at once  
+			hint_mo_out = false; //check if going to fadeout
+	float hint_mo_alpha = 0;
+	static int link_model = 0;
+	AlphaLabel hint_mo = new AlphaLabel();
+	Timer hint_mo_timer_in;
+	Timer hint_mo_timer_out;
+	Timer hint_mo_main;
+	//hint_table
+	boolean hint_tb_b=false,  //check if run at once  
+			hint_tb_out = false; //check if going to fadeout
+	float hint_tb_alpha = 0;
+	AlphaLabel hint_tb = new AlphaLabel();
+	Timer hint_tb_timer_in;
+	Timer hint_tb_timer_out;
+	Timer hint_tb_main;
+	//multi-thread
+	static Thread gapit_run = new Thread(); 
 	
-	//Multi-thread
-	static Thread[] gapit_run = new Thread[MOMAX]; 
-	
-	public myPanel(int Wideint, int Heigthint, int pH){	
+	public myPanel(int Wideint, int Heigthint, int pH){
 		this.Wide=Wideint;
 		this.Heigth=Heigthint;
 		this.panelHeigth=pH;
@@ -289,6 +284,14 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			MO_suc = ImageIO.read(this.getClass().getResourceAsStream("resources/Model_suc.png"));
 			MO_fal = ImageIO.read(this.getClass().getResourceAsStream("resources/Model_fal.png"));
 			addMO = ImageIO.read(this.getClass().getResourceAsStream("resources/add_Model.png"));
+			hint_object = ImageIO.read(this.getClass().getResourceAsStream("resources/hint_object.png"));			
+			hint_trash = ImageIO.read(this.getClass().getResourceAsStream("resources/hint_trash.png"));	
+			hint_model = ImageIO.read(this.getClass().getResourceAsStream("resources/hint_model.png"));	
+			hint_table =  ImageIO.read(this.getClass().getResourceAsStream("resources/hint_link.png"));	
+			hint_tr.setIcon(new ImageIcon(hint_trash));
+			hint_ob.setIcon(new ImageIcon(hint_object));
+			hint_tb.setIcon(new ImageIcon(hint_table));
+			hint_mo.setIcon(new ImageIcon(hint_model));
 			TBButton.setIcon(new ImageIcon(addTB));
 			MOButton.setIcon(new ImageIcon(addMO));
 		} catch (IOException ex){}
@@ -299,8 +302,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		for (int i=1; i<=MOMAX-1; i++){
 			MO[i] = MOimage;
 		}
-		
-		
+			
 		for (int i=1; i<14; i++){
 			black[i-1]= new Color(228+2*i,228+2*i,228+2*i, 255);
 		}
@@ -309,26 +311,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		////////////
 		//LAYOUT.START
 		////////////
-		//this ---startPanel(layered)------trashl*
-		//      |					 |	
-		//		|					 --layoutPanel-----iPat*
-		//		|							 		|
-		//		|							 		--TBButton*
-		//		|									|
-		//		|							 		--MOButton*
-		//		|
-		//		--nullPanel(layered)----prefbarl*
-		//							  |
-		//				              ---whitel*
-		//		
-		//		
-		
-		TBButton.setOpaque(false);
-		TBButton.setContentAreaFilled(false);
-		TBButton.setBorderPainted(false);
-		MOButton.setOpaque(false);
-		MOButton.setContentAreaFilled(false);
-		MOButton.setBorderPainted(false);
+	
 		
 		iPat.setOpaque(false);	
 
@@ -336,32 +319,44 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		startPanel = new JLayeredPane();
 		nullPanel= new JLayeredPane();
 		
-		startPanel.setPreferredSize(new Dimension(Wide, panelHeigth));	
+		startPanel.setPreferredSize(new Dimension(Wide, Heigth));	
 		startPanel.add(iPat, new Integer(4));
-		nullPanel.add(trashl, new Integer(3));
-		nullPanel.add(TBButton, new Integer(1));
-		nullPanel.add(MOButton, new Integer(2));
-		
+		startPanel.add(trashl, new Integer(3));
+		startPanel.add(hint_ob, new Integer(2));		
+		startPanel.add(hint_tr, new Integer(1));		
+		startPanel.add(hint_tb, new Integer(5));		
+		startPanel.add(hint_mo, new Integer(6));		
+
+		hint_ob.setBounds(new Rectangle(0, 0, hint_object.getWidth(null), hint_object.getHeight(null)));
+		hint_ob.setVisible(true);	
+		hint_tr.setBounds(new Rectangle(0, 0, hint_trash.getWidth(null), hint_trash.getHeight(null)));
+		hint_tr.setVisible(true);	
+		hint_tb.setBounds(new Rectangle(0, 0, hint_table.getWidth(null), hint_table.getHeight(null)));
+		hint_tb.setVisible(true);	
+		hint_mo.setBounds(new Rectangle(0, 0, hint_model.getWidth(null), hint_model.getHeight(null)));
+		hint_mo.setVisible(true);	
 		trashl.setBounds(new Rectangle(-100,-100, trashW, trashH));
 		trashl.setVisible(true);	
 		
+		hint_ob.setAlpha(0);
+		hint_tr.setAlpha(0);
+		hint_tb.setAlpha(0);
+		hint_mo.setAlpha(0);
+		
 		iPat.setBounds(new Rectangle(523, 10, 150, 80)); 
-		TBButton.setBounds(new Rectangle(-10000, -10000, TBimage.getWidth(null), TBimage.getHeight(null)));
-		MOButton.setBounds(new Rectangle(-10000, -10000, MOimage.getWidth(null), MOimage.getHeight(null)));
-		nullPanel.setPreferredSize(new Dimension(Wide, Heigth-panelHeigth));
 		
-		this.setLayout(new MigLayout("fillx","[grow]","[grow]"));
-		this.add(startPanel," dock north");
-		this.add(nullPanel,"grow"); 
-		
+		//this.setLayout(new MigLayout("debug, fill","[grow]","[grow]"));
+		this.setLayout(null);
+		this.add(startPanel);
+		startPanel.setBounds(0,0,Wide,Heigth);
+		//this.add(nullPanel,"grow"); 
 		startPanel.setOpaque(false);
-		nullPanel.setOpaque(false);
 				
 		for (int i=1; i<=TBMAX-1; i++){
 			TBchooser[i]= new JFileChooser();
-			TBfile[i]= new String();
+			TBfile[i]= "null";
 			TBname[i]= new JLabel();
-			nullPanel.add(TBname[i]);
+			startPanel.add(TBname[i]);
 			TBimageH[i]=TB[i].getHeight(null);	
 			TBimageW[i]=TB[i].getWidth(null);	
 			TBco[i][0]=-1;
@@ -372,7 +367,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		}	
 		for (int i=1; i<=MOMAX-1; i++){
 			MOname[i]= new JLabel();		
-			nullPanel.add(MOname[i]);
+			startPanel.add(MOname[i]);
 			MOimageH[i]=MO[i].getHeight(null);	
 			MOimageW[i]=MO[i].getWidth(null);
 			MOco[i][0]=-1;
@@ -389,9 +384,218 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		//LAYOUT.END
 		////////////
 		////////////
-	
+		gear_rotate = new Timer(50, new ActionListener() {
+			int i=0;
+		    @Override
+		    public void actionPerformed(ActionEvent ae) {
+		    	if(all_false(permit)){
+		    		running = false;
+			    	rotate = Math.toRadians(0);
+		    		gear_rotate.stop();
+		    	}
+		    	rotate = Math.toRadians(i*36);
+		    	repaint();
+		    	i++;	    	
+		    }
+		});	
+		//periodically repaint (delcare after fill value in permit)
+		periodically_repaint = new Timer(1000, new ActionListener() {
+		    @Override
+		    public void actionPerformed(ActionEvent ae) {
+		    	repaint(); 
+		    	if(partial_true(permit) && !running){ // avoid running it again over again
+		    		running = true;
+		    		gear_rotate.start();
+		    	}
+		    }
+		});	
+		hint_ob_timer_in = new Timer(30, new ActionListener() {
+			float alpha = 0;
+			@Override
+		    public void actionPerformed(ActionEvent ae) {
+		    		if(hint_ob.getAlpha() <.9f){
+		    			alpha += .1f;
+		    			hint_ob.setAlpha(alpha);
+			    		repaint();
+		    		}else{
+		    			hint_ob_timer_in.stop();
+		    			hint_ob_out = true;
+		    		}
+					
+		    }
+		});
+		hint_ob_timer_out = new Timer(30, new ActionListener() {
+			float alpha = 1.0f;
+			@Override
+		    public void actionPerformed(ActionEvent ae) {
+		    		if(hint_ob.getAlpha() >.1f){
+		    			alpha -= .1f;
+		    			hint_ob.setAlpha(alpha); 
+			    		repaint();
+		    		}else{
+		    			hint_ob.setAlpha(0f);
+		    			hint_ob_timer_out.stop();
+		    		}
+					
+		    }
+		});
+		hint_ob_main = new Timer(7000, new ActionListener() {
+			@Override
+		    public void actionPerformed(ActionEvent ae) {
+					repaint();
+					if(!hint_ob_b && TBcount < 2 && MOcount <1 ){
+						hint_ob_b = true;
+						hint_ob_timer_in.start();
+					}else if(hint_ob_out){
+						hint_ob_timer_out.start();
+					}
+					
+		    }
+		});
+		hint_tr_timer_in = new Timer(30, new ActionListener() {
+			float alpha = 0;
+			@Override
+		    public void actionPerformed(ActionEvent ae) {
+		    		if(hint_tr.getAlpha() <.9f){
+		    			alpha += .1f;
+		    			hint_tr.setAlpha(alpha);
+			    		repaint();
+		    		}else{
+		    			hint_tr_timer_in.stop();
+		    			hint_tr_out = true;
+		    		}
+					
+		    }
+		});
+		hint_tr_timer_out = new Timer(30, new ActionListener() {
+			float alpha = 1.0f;
+			@Override
+		    public void actionPerformed(ActionEvent ae) {
+		    		if(hint_tr.getAlpha() >.1f){
+		    			alpha -= .1f;
+		    			hint_tr.setAlpha(alpha); 
+			    		repaint();
+		    		}else{
+		    			hint_tr.setAlpha(0f);
+		    			hint_tr_timer_out.stop();
+		    		}
+					
+		    }
+		}); 
+		hint_tr_main = new Timer(7003, new ActionListener() {
+			@Override
+		    public void actionPerformed(ActionEvent ae) {
+					repaint();
+					if(!hint_tr_b && (TBcount+MOcount>4) &&
+							!hint_tb_timer_in.isRunning() &&
+							!hint_mo_timer_in.isRunning() &&
+							!hint_tr_timer_in.isRunning() ){
+						hint_tr_b = true;
+						hint_tr_timer_in.start();
+					}else if(hint_tr_out){
+						hint_tr_timer_out.start();
+					}
+					
+		    }
+		});
+		hint_mo_timer_in = new Timer(30, new ActionListener() {
+			float alpha = 0;
+			@Override
+		    public void actionPerformed(ActionEvent ae) {
+		    		if(hint_mo.getAlpha() <.9f){
+		    			alpha += .1f;
+		    			hint_mo.setAlpha(alpha);
+			    		repaint();
+		    		}else{
+		    			hint_mo_timer_in.stop();
+		    			hint_mo_out = true;
+		    		}
+					
+		    }
+		});
+		hint_mo_timer_out = new Timer(30, new ActionListener() {
+			float alpha = 1.0f;
+			@Override
+		    public void actionPerformed(ActionEvent ae) {
+		    		if(hint_mo.getAlpha() >.1f){
+		    			alpha -= .1f;
+		    			hint_mo.setAlpha(alpha); 
+			    		repaint();
+		    		}else{
+		    			hint_mo.setAlpha(0f);
+						link_model = 0;
+		    			hint_mo_timer_out.stop();
+		    		}
+					
+		    }
+		});
+		hint_mo_main = new Timer(7002, new ActionListener() {
+			@Override
+		    public void actionPerformed(ActionEvent ae) {
+					repaint();
+					if(!hint_mo_b && MOcount>0 && check_model_linked()!=0 &&
+							!hint_tb_timer_in.isRunning() &&
+							!hint_ob_timer_in.isRunning() &&
+							!hint_tr_timer_in.isRunning() ){
+						hint_mo_b = true;
+						hint_mo_timer_in.start();
+					}else if(hint_mo_out){
+						hint_mo_timer_out.start();
+					}
+					
+		    }
+		});
+		hint_tb_timer_in = new Timer(30, new ActionListener() {
+			float alpha = 0;
+			@Override
+		    public void actionPerformed(ActionEvent ae) {
+		    		if(hint_tb.getAlpha() <.9f){
+		    			alpha += .1f;
+		    			hint_tb.setAlpha(alpha);
+			    		repaint();
+		    		}else{
+		    			hint_tb_timer_in.stop();
+		    			hint_tb_out = true;
+		    		}
+					
+		    }
+		});
+		hint_tb_timer_out = new Timer(30, new ActionListener() {
+			float alpha = 1.0f;
+			@Override
+		    public void actionPerformed(ActionEvent ae) {
+		    		if(hint_tb.getAlpha() >.1f){
+		    			alpha -= .1f;
+		    			hint_tb.setAlpha(alpha); 
+			    		repaint();
+		    		}else{
+		    			hint_tb.setAlpha(0f);
+		    			hint_tb_timer_out.stop();
+		    		}
+					
+		    }
+		});
+		hint_tb_main = new Timer(7001, new ActionListener() {
+			@Override
+		    public void actionPerformed(ActionEvent ae) {
+					repaint();
+					if(!hint_tb_b && TBcount>0 && 
+							!hint_ob_timer_in.isRunning() &&
+							!hint_mo_timer_in.isRunning() &&
+							!hint_tr_timer_in.isRunning() ){
+						hint_tb_b = true;
+						hint_tb_timer_in.start();
+					}else if(hint_tb_out){
+						hint_tb_timer_out.start();
+					}			
+		    }
+		});
+
 		periodically_repaint.start();
-		
+		hint_ob_main.start();
+		hint_tr_main.start();
+		hint_tb_main.start();
+		hint_mo_main.start();
 		this.addMouseListener(new MouseAdapter(){		
 			@Override
 			public void mousePressed(MouseEvent ee){
@@ -416,9 +620,10 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 
     			//Debug section
     			if(TBindex!=0){
-        			System.out.println("COgroup: "+TBco[TBindex][3]+" index= "+TBindex);        				
+        			System.out.println("COgroup: "+TBco[TBindex][3]+" index= "+TBindex); 
+        			System.out.println(TBfile[TBindex].matches("null"));
     			}else if(MOindex!=0){
-    				System.out.println("COgourp: "+MOco[MOindex][3]);
+    				System.out.println("COgourp: "+MOco[MOindex][3]+" index= "+MOindex);
     			}
     			//  			
     			if (ableselect){
@@ -436,7 +641,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 					  	iconchange(TBindex); 
 					  	TBimageH[TBindex]=TB[TBindex].getHeight(null);
 					  	TBimageW[TBindex]=TB[TBindex].getWidth(null);
-						TBname[TBindex].setLocation(TBimageX[TBindex], TBimageY[TBindex]+TBimageH[TBindex]-panelHeigth+15);
+						TBname[TBindex].setLocation(TBimageX[TBindex], TBimageY[TBindex]+TBimageH[TBindex]);
 						TBname[TBindex].setSize(200,15);
 						TBname[TBindex].setText(selectedfile.getName());
 						TBindex=0;
@@ -447,7 +652,6 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			   		Configuration model_frame;
 					try {
 						model_frame = new Configuration(r, MOindex);
-						model_frame.configuration_initial();
 				  		model_frame.setBounds(300, 100, 350, 500);
 				   		model_frame.setResizable(true);
 				   		model_frame.setVisible(true);
@@ -612,7 +816,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 				}				
 				
 				if (removeornot){
-					if (y>=delbboundy && x>=delbboundx){
+					if ((TBindex!=0||MOindex!=0) && y>=delbboundy && x>=delbboundx){
 						break_object();
 					}else if(lineindex!=-1&&(y>=(delbboundy)&&x>=(delbboundx))){
 						break_linkage();
@@ -663,7 +867,6 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
         					break;
     					}
     				}
-  
     				if(ifopenfile){
     					ifopenfile=false;
     					TBopenfile(openindex);
@@ -683,7 +886,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
         				MOBound[MOcount]= new Rectangle(MOimageX[MOcount], MOimageY[MOcount], MOimage.getWidth(null), MOimage.getHeight(null));
         				MOimageH[MOcount]=MO[MOcount].getHeight(null);
 					  	MOimageW[MOcount]=MO[MOcount].getHeight(null);
-						MOname[MOcount].setLocation(MOimageX[MOcount], MOimageY[MOcount]+MOimageH[MOcount]-panelHeigth+15);
+						MOname[MOcount].setLocation(MOimageX[MOcount], MOimageY[MOcount]+MOimageH[MOcount]);
 						MOname[MOcount].setSize(200,15);
 						MOname[MOcount].setText("Project "+MOcount);
         				repaint();
@@ -697,22 +900,28 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	
 	@Override
 	protected void paintComponent(Graphics g) {	
-	     super.paintComponent(g);	 
-	     g.setColor(ovalcolor);
+		if(hint_mo_b){
+			hint_mo.setBounds(new Rectangle(MOimageX[link_model]-85, MOimageY[link_model]-120, hint_model.getWidth(null), hint_model.getHeight(null)));
+    	}else if(hint_tb_b){
+			hint_tb.setBounds(new Rectangle(TBimageX[1]-85, TBimageY[1]-120, hint_table.getWidth(null), hint_table.getHeight(null)));
+    	}
+    	
+	    super.paintComponent(g);	
+	    g.setColor(ovalcolor);
 	     
-	     if(lineindex!=-1){
+	    if(lineindex!=-1){
 			 Draw_Lines(g, line_drag_x[0], line_drag_y[0], line_drag_x[1], line_drag_y[1], dashed);	
-	     }     
-		 Draw_Lines(g, linex[0], liney[0], linex[1], liney[1], dashed); //temp_link 
-		 DrawLinkedLine(g); //object_link
+	    }     
+		Draw_Lines(g, linex[0], liney[0], linex[1], liney[1], dashed); //temp_link 
+		DrawLinkedLine(g); //object_link
 		 
-    	 for (int i=1; i<=TBcount; i++){
+    	for (int i=1; i<=TBcount; i++){
 		     g.drawImage(TB[i],TBimageX[i],TBimageY[i], this); 
 		     if(TBindex_select == i){
 		    	Draw_Rects(g, TBimageX[i]-5, TBimageY[i]-3, TBimageW[i]+10, TBimageH[i]+6, select); //temp_link 
 		     }
-    	 }
-    	 for (int i=1; i<=MOcount; i++){
+    	}
+    	for (int i=1; i<=MOcount; i++){
     		 if(rotate_index[i] == 1){
     			 AffineTransform tx = AffineTransform.getRotateInstance(rotate, MO[i].getWidth(null)/2,MO[i].getHeight(null)/2);
         		 AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
@@ -723,7 +932,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		     if(MOindex_select == i){
 			     Draw_Rects(g, MOimageX[i]-5, MOimageY[i]-3, MOimageW[i]+10, MOimageH[i]+6, select); //temp_link 
 		     }
-    	 }
+    	}  	
     }
 	
 	@Override
@@ -739,7 +948,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			CombinedorNot(TBindex, TBimageX, TBimageY, TBimageW, TBimageH, 1);
 			KeepInPanel (imX, imY, TBindex, TBimageW, TBimageH, TBimageX, TBimageY,
 						 boundN,  boundS,  boundE, TBBound);
-		 	TBname[TBindex].setLocation(TBimageX[TBindex],TBimageY[TBindex]+TBimageH[TBindex]-panelHeigth+15);
+		 	TBname[TBindex].setLocation(TBimageX[TBindex],TBimageY[TBindex]+TBimageH[TBindex]);
 			TBBound[TBindex]=new Rectangle(TBimageX[TBindex], TBimageY[TBindex], TB[TBindex].getWidth(null), TB[TBindex].getHeight(null));
 			repaint();
 		}else if(MOindex!=0){
@@ -747,7 +956,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			CombinedorNot(MOindex, MOimageX, MOimageY, MOimageW, MOimageH, 2);
 			KeepInPanel (imX, imY, MOindex, MOimageW, MOimageH, MOimageX, MOimageY,
 						 boundN,  boundS,  boundE, MOBound);
-			MOname[MOindex].setLocation(MOimageX[MOindex],MOimageY[MOindex]+MOimageH[MOindex]-panelHeigth+15);
+			MOname[MOindex].setLocation(MOimageX[MOindex],MOimageY[MOindex]+MOimageH[MOindex]);
 			MOBound[MOindex]=new Rectangle(MOimageX[MOindex], MOimageY[MOindex], MO[MOindex].getWidth(null), MO[MOindex].getHeight(null));
 			repaint();
 		}
@@ -765,7 +974,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			    @Override
 			    public void actionPerformed(ActionEvent ae) {
 			    	if(i<10&TA){
-			    		trashl.setBounds(new Rectangle(Wide-trashW,  Heigth-panelHeigth-trashH-10, trashW, trashH));
+			    		trashl.setBounds(new Rectangle(Wide-trashW,  Heigth-trashH-10, trashW, trashH));
 			    		//trashl.setBounds(new Rectangle(200,200,100,100));
 			    		trashl.setIcon(new ImageIcon(Trash[i]));
 						startPanel.setLayer(trashl, new Integer(200));
@@ -954,7 +1163,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	void break_linkage(){
 		int[][] traceback = new int[linklineindex][3]; //class, class_index, which link
 		int[][] traceback_temp = new int[linklineindex][3]; //class, class_index, which link
-		int trace_index = 0, trace_max = 1, group_ori= 0;
+		int trace_index = 0;
 		// linkline[][2]   class, class index 
 		// traceback[][3]  class, class index, which link  				
 		for (int i=0; i<linklineindex; i++){
@@ -970,11 +1179,9 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		traceback[0][2] = lineindex;
 		//modified the first one
 		if(linkline[lineindex][2] == 1){
-			group_ori= TBco[linkline[lineindex][3]][3]; //catch original group
 			TBco[linkline[lineindex][3]][1] = COcount;
 			TBco[linkline[lineindex][3]][3] = COcount;
 		}else if(linkline[lineindex][2] == 2){
-			group_ori= MOco[linkline[lineindex][3]][3]; //catch original group
 			MOco[linkline[lineindex][3]][1] = COcount;
 			MOco[linkline[lineindex][3]][3] = COcount;							
 		}	
@@ -1031,65 +1238,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			traceback[trace_index][0] =-1;
 		}
 		//////
-		
-		//to check if remain object is only one
-		int count_A = 0, count_B = 0, 
-			TB_A = 0, TB_B = 0, MO_A = 0, MO_B = 0;
-		for (int i=1; i<TBMAX; i++){
-			if(TBco[i][3] == group_ori){
-				count_A ++;
-				TB_A = i;
-			}else if(TBco[i][3] == COcount){
-				count_B ++;
-				TB_B = i;
-			}
-		}
-		for (int i=1; i<MOMAX; i++){
-			if(MOco[i][3] == group_ori){
-				count_A ++;
-				MO_A = i;
-			}else if(MOco[i][3] == COcount){
-				count_B ++;
-				MO_B = i;
-			}
-		}
-		System.out.println("countA: "+count_A+" group:"+ group_ori);
-		System.out.println("countB: "+count_B+" group:"+ COcount);
-		
-		if (count_A == 1){ //if one of these 2 group is only one object
-			if(TB_A != 0){
-				TBco[TB_A][2] = -1;
-				TBco[TB_A][3] = -1;
-				TBco[TB_A][4] = -1;
-			}else if (MO_A != 0){
-				MOco[MO_A][2] = -1;
-				MOco[MO_A][3] = -1;
-				MOco[MO_A][4] = -1;				
-			}
-		}	
-		if (count_B ==1){
-			if(TB_B != 0){
-				TBco[TB_B][2] = -1;
-				TBco[TB_B][3] = -1;
-				TBco[TB_B][4] = -1;
-			}else if (MO_B != 0){
-				MOco[MO_B][2] = -1;
-				MOco[MO_B][3] = -1;
-				MOco[MO_B][4] = -1;
-			}
-		}
-		
-		//to check if group able to link model
-		int no_mo_index = 0;
-		if(MO_A == 0){ // indecate "group_ori" doesn't have model
-			for(int i = 1; i<TBMAX; i++){
-				if(TBco[i][3]== group_ori){TBco[i][4] = -1;}
-			}
-		}else if(MO_B == 0){
-			for(int i = 1; i<TBMAX; i++){
-				if(TBco[i][3]== COcount){TBco[i][4] = -1;}
-			}
-		}
+		check_alone_and_model();
 		COcount ++;
 		linedelete[lineindex]=-1;
 		linkline[lineindex][0] = -1;
@@ -1144,7 +1293,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	void check_alone_and_model(){
 		int catch_t, catch_m, count;
 		System.out.println("cocount="+COcount);
-		for (int i = 0; i< COcount; i++){
+		for (int i = 0; i<= COcount; i++){
 			catch_t = 0; catch_m = 0; count = 0;
 			for (int t = 1; t<TBMAX; t++){
 				if(TBco[t][3] == i){
@@ -1177,8 +1326,6 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			}
 		}
 	}
-	
-	
 	
 	void break_object(){
 		int[] traceback = new int[3];
@@ -1274,20 +1421,20 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		int[] TBdist= new int[TBcount+1];
 		int[] MOdist= new int[MOcount+1];
 		int minvalue= min_dist(index, Xs, Ys, Ws, Hs, TBdist, MOdist);
-		System.out.println("----------log start-------------");
-		System.out.println("minvalue="+minvalue);
+		//System.out.println("----------log start-------------");
+		//System.out.println("minvalue="+minvalue);
 		int case3_count = 0;
 		if(TBindex!=0){
-			System.out.println("check model");
+			//System.out.println("check model");
 			combine_type_determined(MOdist, minvalue, case3_count,
 									Xs, Ys, Ws, Hs, index, TorM_s, 
 									MOimageX, MOimageY, MOimageW, MOimageH, MOcount, MOco, 2);
 		}
-		System.out.println("check table");
+		//System.out.println("check table");
 		combine_type_determined(TBdist, minvalue, case3_count,
 								Xs, Ys, Ws, Hs, index, TorM_s, 
 								TBimageX, TBimageY, TBimageW, TBimageH, TBcount, TBco, 1);						
-		System.out.println("----------log end-------------");
+		//System.out.println("----------log end-------------");
 	}		
 	
 	public int min_dist(int index, int[] X, int[] Y, int[] W, int[] H, int[] TBdist, int[] MOdist){
@@ -1325,9 +1472,9 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 										int[] Xs, int[] Ys, int[] Ws, int[] Hs, int index, int TorM_s,
 										int[] Xt, int[] Yt, int[] Wt, int[] Ht, int count_t, int[][] co_t, int TorM_t){
 		for (int i= 1; i<=count_t; i++){
-			System.out.println(" i="+i+" count= "+count_t);
+			//System.out.println(" i="+i+" count= "+count_t);
 			if(TorM_s == TorM_t && index == i){ 
-				System.out.println("  return");
+				//System.out.println("  return");
 				continue;} //skip target to itself and model-link object
 			if(dist[i]==minvalue && minvalue < 100){		//1. target object, <100
 				if(((TorM_s==1 && TBco[index][2]==-1) || (TorM_s==2 && MOco[index][2]==-1)) &&  //1-1. unlink-unlink
@@ -1350,7 +1497,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 					linex[1]= Xt[i]+(Wt[i]/2);
 					liney[1]= Yt[i]+(Ht[i]/2);
 					link_case = 1;
-					System.out.println("  case 1-1");
+					//System.out.println("  case 1-1");
 				}else if(((TorM_s==1 && TBco[index][2]==-1) || (TorM_s==2 && MOco[index][2]==-1)) &&  //1-2. unlink-link
 				   (co_t[i][2]!=-1)){
 					if(co_t[i][4]==1 && TorM_s==2){continue;} //skip model-link group
@@ -1374,7 +1521,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 					linex[1]= Xt[i]+(Wt[i]/2);
 					liney[1]= Yt[i]+(Ht[i]/2);
 					link_case = 2;
-					System.out.println("  case 1-2");
+					//System.out.println("  case 1-2");
 				}else if(((TorM_s==1 && TBco[index][2]!=-1) || (TorM_s==2 && MOco[index][2]!=-1)) &&  //1-3. link-link
 				   (co_t[i][2]!=-1)){
 					linex[0]=0;
@@ -1382,7 +1529,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 					liney[0]=0;
 					liney[1]=0;
 					link_case = 3;
-					System.out.println("  case 1-3");
+					//System.out.println("  case 1-3");
 				}else if(((TorM_s==1 && TBco[index][2]!=-1) || (TorM_s==2 && MOco[index][2]!=-1)) &&  //1-4. link-unlink
 				   (co_t[i][2]==-1)){				
 					if((TorM_s==1 && TBco[index][4] == 1 && TorM_t == 2) ||  //skip TBgroup - model
@@ -1407,7 +1554,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 					linex[1]= Xt[i]+(Wt[i]/2);
 					liney[1]= Yt[i]+(Ht[i]/2);
 					link_case = 4;
-					System.out.println("  case 1-4");
+					//System.out.println("  case 1-4");
 				}
 			}else if(dist[i]==minvalue && minvalue >= 100){ //2. target object, >=100
 				linex[0]=0;
@@ -1415,7 +1562,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 				liney[0]=0;
 				liney[1]=0;
 				link_case = -1;
-				System.out.println("  case 2");
+				//System.out.println("  case 2");
 			}else{ 											//3. other remain (not closest)
 				if(TorM_t==1 && link_to_TB_index == i){
 					link_to_TB_index = -1;
@@ -1424,7 +1571,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 				}
 				co_t[i][0]=-1;
 				co_t[i][1]=-1;
-				System.out.println("  case 3");
+				//System.out.println("  case 3");
 				++case3_count;
 				if(TBindex!=0 && case3_count == MOcount + TBcount -1){  // to catch all case 3, make line disappear
 					linex[0]=0;
@@ -1432,14 +1579,14 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 					liney[0]=0;
 					liney[1]=0;
 					link_case = -1;
-					System.out.println("*** ALL case 3 ***");
+					//System.out.println("*** ALL case 3 ***");
 				}else if (MOindex!=0 && case3_count == TBcount){
 					linex[0]=0;
 					linex[1]=0;
 					liney[0]=0;
 					liney[1]=0;
 					link_case = -1;
-					System.out.println("*** ALL case 3 ***");
+					//System.out.println("*** ALL case 3 ***");
 				}
 			}
 		}
@@ -1451,7 +1598,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		Y[index]=Y[index]+dy;
 		bound[index]= new Rectangle(X[index], Y[index], 
 									image[index].getWidth(null), image[index].getHeight(null));
-		name[index].setLocation(X[index], Y[index]+H[index]-panelHeigth+15);
+		name[index].setLocation(X[index], Y[index]+H[index]);
 	}
 				
 	public void KeepInPanel (int x, int y, int index, int[] imageW, int[] imageH, int[] imageX, int[] imageY,
@@ -1589,11 +1736,29 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			}
 		}
 	}
-
-    public void hello(){
-    	System.out.println("done");
-    }
-    
+	
+	public int check_model_linked(){
+		int catch_TB = 0, catch_MO = 0;
+		for (int i=1; i<=TBcount; i++){
+			if(!TBfile[i].matches("null") && TBco[i][4] == 1){
+				System.out.println(i);
+				catch_TB = i;
+				break;
+			}
+		}
+		if(catch_TB!=0){
+			for (int i=1; i<=MOcount; i++){
+				if(MOco[i][3] == TBco[catch_TB][3]){
+					catch_MO = i;
+					break;
+				}
+			}
+			myPanel.link_model = catch_MO;
+			return catch_MO;
+		}
+		return 0;
+	}
+	
 	@Override
 	public void keyTyped(KeyEvent e) {}
 
@@ -1603,6 +1768,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		int key = e.getKeyCode(); 
 		System.out.println("key input: "+key);
 		if(key==8){
+			System.out.println("lineselect= "+lineselected);
 			if(lineselected!=-1){
 				break_linkage();
 			}else if(TBindex_select != 0){
@@ -1620,5 +1786,18 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	}
 
 	@Override
-	public void keyReleased(KeyEvent e) {}
+	public void keyReleased(KeyEvent e) {}	
+
+	public static boolean all_true(Boolean[] array){
+	    for(boolean b : array) if(!b) return false;
+	    return true;
+	}
+	public static boolean all_false(Boolean[] array){
+	    for(boolean b : array) if(b) return false;
+	    return true;
+	}
+	public static boolean partial_true(Boolean[] array){
+	    for(boolean b : array) if(b) return true;
+	    return false;
+	}
 }
