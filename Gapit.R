@@ -30,3 +30,9 @@ data= data[-1]
 time_plot = data.frame(x= 1:51, y= data) 
 #ggplot(data = time_plot, aes(x=x, y=y))+geom_point()+geom_line(aes(group= 1))
 write.csv(x = time_plot, file = "r_run.csv")
+
+
+
+
+GD= read.delim('GD.txt', head=FALSE)
+G= read.delim('G.txt', head=FALSE)
