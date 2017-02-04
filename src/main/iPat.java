@@ -652,7 +652,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			   		Configuration model_frame;
 					try {
 						model_frame = new Configuration(r, MOindex);
-				  		model_frame.setBounds(300, 100, 350, 500);
+				  		model_frame.setBounds(300, 100, 370, 500);
 				   		model_frame.setResizable(true);
 				   		model_frame.setVisible(true);
 					} catch (IOException e) {
@@ -888,7 +888,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 					  	MOimageW[MOcount]=MO[MOcount].getHeight(null);
 						MOname[MOcount].setLocation(MOimageX[MOcount], MOimageY[MOcount]+MOimageH[MOcount]);
 						MOname[MOcount].setSize(200,15);
-						MOname[MOcount].setText("Project "+MOcount);
+						MOname[MOcount].setText("Task "+MOcount);
         				repaint();
     				}
     			}

@@ -20,6 +20,63 @@ import net.miginfocom.swing.MigLayout;
 public class Configuration extends JFrame implements ActionListener, WindowListener{
 	Preferences pref;
 	///////////////////////////////////////////////////////////////////////////////////////
+	//Config 2
+	JLabel project_text_s = new JLabel("Task name");
+	JTextField project_input_s = new JTextField(10);
+	JLabel workingdir_text_s = new JLabel("Working Directory");
+	JTextField workingdir_input_s = new JTextField(15);
+	JButton wd_browse_s = new JButton("Browse");
+
+	JPanel panel_phenotype;
+	JLabel P_filename = new JLabel("File:\tNA");
+
+	JPanel panel_genotype;
+	JLabel G_filename = new JLabel("File:\tNA");
+	JLabel G_format = new JLabel("Format: HapMap");
+	
+	JPanel panel_ki;
+	ButtonGroup KI_group = new ButtonGroup();
+	JRadioButton KI_gapit = new JRadioButton("Calculate within GAPIT");
+	JRadioButton KI_user = new JRadioButton("User input");
+	JCheckBox Prediction = new JCheckBox("GP only");
+	JButton KI_browse = new JButton("Browse");
+	JTextField KI_path = new JTextField(15);
+	iPat_chooser KI_chooser;	
+	
+	JPanel panel_co;
+	ButtonGroup CO_group = new ButtonGroup();
+	JRadioButton CO_gapit = new JRadioButton("Calculate within GAPIT");
+	JLabel PCA_total_text_s = new JLabel("PCA.total");
+	JTextField PCA_total_input_s= new JTextField(3);
+	JRadioButton CO_user = new JRadioButton("User input");
+	JButton CO_browse = new JButton("Browse");
+	JTextField CO_path = new JTextField(15);
+	iPat_chooser CO_chooser;	
+
+	String[] kinship_cluster_names_s= {"average", "complete", "ward", "single", "mcquitty", "median", "centroid"};
+	JComboBox kinship_cluster_input_s= new JComboBox(kinship_cluster_names_s);
+	JLabel kinship_cluster_text_s= new JLabel("Cluster");
+	String[] kinship_group_names_s= {"Mean", "Max", "Min", "Median"};
+	JComboBox kinship_group_input_s= new JComboBox(kinship_group_names_s);
+	JLabel kinship_group_text_s = new JLabel("Group");
+	JLabel group_by_text_s = new JLabel("By");
+	JTextField group_by_input_s = new JTextField(5);
+	JLabel group_from_text_s = new JLabel("From");
+	JTextField group_from_input_s = new JTextField(5);
+	JLabel group_to_text_s = new JLabel("To");
+	JTextField group_to_input_s = new JTextField(5);
+	
+	JLabel SNP_fraction_text_s = new JLabel("SNP fraction");
+	JTextField SNP_fraction_input_s= new JTextField(5);
+	String[] file_fragment_names_s = {"512", "256", "128", "64"};
+	JLabel file_fragment_text_s = new JLabel("File fragment");
+	JComboBox file_fragment_input_s= new JComboBox(file_fragment_names_s);
+	JCheckBox model_selection_s = new JCheckBox("Model selection");
+
+	///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+	
 	JPanel panel_EMMA;
 	JLabel esp_text = new JLabel("esp"); 
 	JTextField esp_input = new JTextField(5);
@@ -47,7 +104,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JTextField file_Ext_GM_input= new JTextField(5);
 	
 	String[] file_fragment_names = {"512", "256", "128", "64"};
-	JLabel file_fragment_text = new JLabel("Fragment");
+	JLabel file_fragment_text = new JLabel("File fragment");
 	JComboBox file_fragment_input= new JComboBox(file_fragment_names);
 	
 	JLabel file_from_text = new JLabel("From");
@@ -78,10 +135,10 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	String[] kinship_algorithm_names= {"VanRaden"};
 	JComboBox kinship_algorithm_input= new JComboBox(kinship_algorithm_names);
 	JLabel kinship_algorithm_text = new JLabel("Algorithm");
-	String[] kinship_cluster_names= {"'average', 'complete', 'ward'", "'average'"};
+	String[] kinship_cluster_names= {"average", "complete", "ward", "single", "mcquitty", "median", "centroid"};
 	JComboBox kinship_cluster_input= new JComboBox(kinship_cluster_names);
 	JLabel kinship_cluster_text = new JLabel("Cluster");
-	String[] kinship_group_names= {"'Mean', 'Max'", "'Mean"};
+	String[] kinship_group_names= {"Mean", "Max", "Min", "Median"};
 	JComboBox kinship_group_input= new JComboBox(kinship_group_names);
 	JLabel kinship_group_text = new JLabel("Group");
 	//
@@ -135,7 +192,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JTextField output_threshold_input= new JTextField(5);
 	///////////////////////////////////////////////////////////////////////////////////////
 	JPanel panel_PCA;
-
+	JLabel PCA_total_text = new JLabel("PCA.total");
+	JTextField PCA_total_input= new JTextField(3);
 	JCheckBox PCA_View_input = new JCheckBox("View output");
 	///////////////////////////////////////////////////////////////////////////////////////
 	JPanel panel_QTN;
@@ -164,7 +222,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JLabel SNP_effect_text = new JLabel("effect");
 	JLabel SNP_FDR_text = new JLabel("FDR");
 	JTextField SNP_FDR_input= new JTextField(5);
-	JLabel SNP_fraction_text = new JLabel("fraction");
+	JLabel SNP_fraction_text = new JLabel("SNP fraction");
 	JTextField SNP_fraction_input= new JTextField(5);
 	String[] SNP_impute_names= {"Middle"};
 	JComboBox SNP_impute_input = new JComboBox(SNP_impute_names);
@@ -212,32 +270,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JLabel SUPER_GD_text = new JLabel("GD");
 	JTextField SUPER_GD_input= new JTextField(5);
 	JCheckBox SUPER_GS = new JCheckBox("GS");
-	///////////////////////////////////////////////////////////////////////////////////////
-	JPanel panel_co;
-	ButtonGroup CO_group = new ButtonGroup();
-	JRadioButton CO_gapit = new JRadioButton("Calculate within GAPIT");
-	JLabel PCA_total_text = new JLabel("PCA.total");
-	JTextField PCA_total_input= new JTextField(3);
-	JRadioButton CO_user = new JRadioButton("User input");
-	JButton CO_browse = new JButton("Browse");
-	JTextField CO_path = new JTextField(15);
-	iPat_chooser CO_chooser;	
-	///////////////////////////////////////////////////////////////////////////////////////
-	JPanel panel_ki;
-	ButtonGroup KI_group = new ButtonGroup();
-	JRadioButton KI_gapit = new JRadioButton("Calculate within GAPIT");
-	JRadioButton KI_user = new JRadioButton("User input");
-	JCheckBox Prediction = new JCheckBox("GS only");
-	JButton KI_browse = new JButton("Browse");
-	JTextField KI_path = new JTextField(15);
-	iPat_chooser KI_chooser;	
-	///////////////////////////////////////////////////////////////////////////////////////
-	JPanel panel_phenotype;
-	JLabel P_filename = new JLabel("File:\tNA");
-	///////////////////////////////////////////////////////////////////////////////////////
-	JPanel panel_genotype;
-	JLabel G_filename = new JLabel("File:\tNA");
-	JLabel G_format = new JLabel("Format: HapMap");
+	
 	///////////////////////////////////////////////////////////////////////////////////////
 	JPanel main_panel;
 	JButton go = new JButton("GO");
@@ -252,7 +285,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	iPat_chooser chooser;	
 	JLabel wd_text = new JLabel("Working Directory");
 	JTextField wd_input = new JTextField(15);
-	JLabel n_text = new JLabel("Project Name");
+	JLabel n_text = new JLabel("Task Name");
 	JTextField n_input = new JTextField(10);
 	///////////////////////////////////////////////////////////////////////////////////////	
 	Runnable back_run = new Runnable(){
@@ -307,17 +340,28 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				GM_name = p.getFileName().toString();
 			}
 		}
+		JScrollPane subPane = null;
+		JScrollPane editPane = null;
 		switch(index){
 			case 1:
 				configuration_initial();
 				break;
 			case 2:
-				config_two(P_name, G_name);
+				subPane = config_two(P_name, G_name);
+				editPane = configuration_initial();
 				break;
 			case 3:
 				configuration_initial();
 				break;
-		}	
+		}		
+        JTabbedPane mainPane = new JTabbedPane();
+        mainPane.addTab("Simple Config.", subPane);
+        mainPane.addTab("Full Config.", editPane);
+		this.setContentPane(mainPane);
+		this.setTitle("Configuration");
+		this.pack();
+		this.show();
+		
 		pref = Preferences.userRoot().node("/ipat"); 
 		load();
 //		config_two();
@@ -373,15 +417,15 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		
 	}
 	
-	public void config_two(String P_name, String G_name){
+	public JScrollPane config_two(String P_name, String G_name){
 		go_2.setFont(new Font("Ariashowpril", Font.BOLD, 40));		///////////////////////////////////////////////////////////////////////////////////////
 		wd_panel = new JPanel(new MigLayout("fillx"));
-		wd_panel.add(n_text, "wrap");
-		wd_panel.add(n_input, "wrap");
-		wd_panel.add(wd_text, "wrap");
-		wd_panel.add(wd_input);
-		wd_panel.add(browse, "wrap");
-		wd_panel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
+		wd_panel.add(project_text_s, "wrap");
+		wd_panel.add(project_input_s, "wrap");
+		wd_panel.add(workingdir_text_s, "wrap");
+		wd_panel.add(workingdir_input_s);
+		wd_panel.add(wd_browse_s, "wrap");
+		wd_panel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Task", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_genotype = new JPanel(new MigLayout("fillx"));
 		panel_genotype.add(G_filename, "wrap");
@@ -396,18 +440,10 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_ki = new JPanel(new MigLayout("fillx"));
 		KI_group.add(KI_gapit);
-		KI_gapit.setToolTipText("<html>" + "The kinship matrix or covariates (e.g., PCs) <br>"
-				+ "may be calculated previously or from third party software. <br>"
-				+ "When the PCs are input in this way, <br>"
-				+ "the parameter “PCA.total” should be set to 0 (default). <br>"
-				+ "Otherwise, PCs will be calculated within GAPIT"+ "</html>");
+		KI_gapit.setToolTipText("<html>" + "The kinship matrix will be calculated within GAPIT <br>" + "</html>");
 		KI_gapit.setSelected(true);
 		KI_group.add(KI_user);
-		KI_user.setToolTipText("<html>" + "The kinship matrix or covariates (e.g., PCs) <br>"
-				+ "may be calculated previously or from third party software. <br>"
-				+ "When the PCs are input in this way, <br>"
-				+ "the parameter “PCA.total” should be set to 0 (default). <br>"
-				+ "Otherwise, PCs will be calculated within GAPIT"+ "</html>");
+		KI_user.setToolTipText("<html>" + "The kinship matrix can be input by users <br>" + "</html>");
 		panel_ki.add(KI_gapit, "wrap");
 		KI_gapit.isSelected();
 		panel_ki.add(KI_user);
@@ -422,18 +458,10 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_co = new JPanel(new MigLayout("fillx"));
 		CO_group.add(CO_gapit);
-		CO_gapit.setToolTipText("<html>" + "The kinship matrix or covariates (e.g., PCs) <br>"
-				+ "may be calculated previously or from third party software. <br>"
-				+ "When the PCs are input in this way, <br>"
-				+ "the parameter “PCA.total” should be set to 0 (default). <br>"
-				+ "Otherwise, PCs will be calculated within GAPIT"+ "</html>");
+		CO_gapit.setToolTipText("The covariates (e.g., PCs) can be calculated within GAPIT");
 		CO_gapit.setSelected(true);
 		CO_group.add(CO_user);
-		CO_user.setToolTipText("<html>" + "The kinship matrix or covariates (e.g., PCs) <br>"
-				+ "may be calculated previously or from third party software. <br>"
-				+ "When the PCs are input in this way, <br>"
-				+ "the parameter “PCA.total” should be set to 0 (default). <br>"
-				+ "Otherwise, PCs will be calculated within GAPIT"+ "</html>");
+		CO_user.setToolTipText("The covariates (e.g., PCs) can be input by users");
 		panel_co.add(CO_gapit, "wrap");
 		panel_co.add(PCA_total_text);
 		PCA_total_text.setToolTipText("Total Number of PCs as Covariates");
@@ -449,62 +477,47 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		panel_CMLM = new JPanel(new MigLayout("fillx"));
 		panel_CMLM.add(CMLM_enable, "wrap");
 		CMLM_enable.setSelected(false);
-		CMLM_enable.setToolTipText("Users can specify additional clustering algorithms and kinship summary statistic."
-				+ "The default method of cluster is 'average', and kinship.group is 'Mean'. "
-				+ "Additionally, a specific range group numbers (i.e., dimension of the kinship matrix) can be specified. "
-				+ "This range is controlled by the “group.from”, “group.to”, and “group.by” parameters.");
-		panel_CMLM.add(kinship_cluster_text);
-		kinship_cluster_text.setToolTipText("Users can specify additional clustering algorithms and kinship summary statistic."
-				+ "The default method of cluster is 'average', and kinship.group is 'Mean'. "
-				+ "Additionally, a specific range group numbers (i.e., dimension of the kinship matrix) can be specified. "
-				+ "This range is controlled by the “group.from”, “group.to”, and “group.by” parameters.");
-		panel_CMLM.add(kinship_cluster_input, "wrap");
-		kinship_cluster_input.setEnabled(false);
-		panel_CMLM.add(kinship_group_text);
-		kinship_group_text.setToolTipText("Users can specify additional clustering algorithms and kinship summary statistic."
-				+ "The default method of cluster is 'average', and kinship.group is 'Mean'. "
-				+ "Additionally, a specific range group numbers (i.e., dimension of the kinship matrix) can be specified. "
-				+ "This range is controlled by the “group.from”, “group.to”, and “group.by” parameters.");
-		panel_CMLM.add(kinship_group_input, "wrap");
-		kinship_group_input.setEnabled(false);
-		panel_CMLM.add(group_from_text);
-		group_from_text.setToolTipText("Users can specify additional clustering algorithms and kinship summary statistic."
-				+ "The default method of cluster is 'average', and kinship.group is 'Mean'. "
-				+ "Additionally, a specific range group numbers (i.e., dimension of the kinship matrix) can be specified. "
-				+ "This range is controlled by the “group.from”, “group.to”, and “group.by” parameters.");
-		panel_CMLM.add(group_from_input, "wrap");
-		group_from_input.setEnabled(false);
-		panel_CMLM.add(group_to_text);
-		group_to_text.setToolTipText("Users can specify additional clustering algorithms and kinship summary statistic."
-				+ "The default method of cluster is 'average', and kinship.group is 'Mean'. "
-				+ "Additionally, a specific range group numbers (i.e., dimension of the kinship matrix) can be specified. "
-				+ "This range is controlled by the “group.from”, “group.to”, and “group.by” parameters.");
-		panel_CMLM.add(group_to_input, "wrap");
-		group_to_input.setEnabled(false);
-		panel_CMLM.add(group_by_text);
-		group_by_text.setToolTipText("Users can specify additional clustering algorithms and kinship summary statistic."
-				+ "The default method of cluster is 'average', and kinship.group is 'Mean'. "
-				+ "Additionally, a specific range group numbers (i.e., dimension of the kinship matrix) can be specified. "
-				+ "This range is controlled by the “group.from”, “group.to”, and “group.by” parameters.");
-		panel_CMLM.add(group_by_input, "wrap");		
-		group_by_input.setEnabled(false);
+		CMLM_enable.setToolTipText("Users can specify additional clustering algorithms and kinship summary statistic");
+		panel_CMLM.add(kinship_cluster_text_s);
+		kinship_cluster_text_s.setToolTipText("Clustering algorithm to group individuals based on their kinship");
+		panel_CMLM.add(kinship_cluster_input_s, "wrap");
+		kinship_cluster_input_s.setEnabled(false);
+		panel_CMLM.add(kinship_group_text_s);
+		kinship_group_text_s.setToolTipText("Method to derive kinship among groups");
+		panel_CMLM.add(kinship_group_input_s, "wrap");
+		kinship_group_input_s.setEnabled(false);
+		panel_CMLM.add(group_from_text_s);
+		group_from_text_s.setToolTipText("The Starting Number of Groups of Compression");
+		panel_CMLM.add(group_from_input_s, "wrap");
+		group_from_input_s.setEnabled(false);
+		panel_CMLM.add(group_to_text_s);
+		group_to_text_s.setToolTipText("The Ending Number of Groups of Compression");
+		panel_CMLM.add(group_to_input_s, "wrap");
+		group_to_input_s.setEnabled(false);
+		panel_CMLM.add(group_by_text_s);
+		group_by_text_s.setToolTipText("The Grouping Interval of Compression");
+		panel_CMLM.add(group_by_input_s, "wrap");		
+		group_by_input_s.setEnabled(false);
 		panel_CMLM.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "CMLM", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_advance = new JPanel(new MigLayout("fillx"));
-		panel_advance.add(SNP_fraction_text);
-		SNP_fraction_text.setToolTipText("The computations of kinship and PCs are extensive with large number of SNPs. "
-				+ "Sampling a fraction of it would reduce computing time. The valid value sould be greater than 0 and no greater than 1");
-		panel_advance.add(SNP_fraction_input, "wrap");
-		SNP_fraction_input.setText("1");
-		panel_advance.add(file_fragment_text);
-		file_fragment_text.setToolTipText("With large amount of individuals, loading a entire large genotype dataset could be difficult. "
-				+ "GAPIT can load a fragment of it each time. The default of the fragment size is 512 SNPs.");
-		panel_advance.add(file_fragment_input, "wrap");
-		file_fragment_input.setSelectedItem("512");
-		panel_advance.add(model_selection);
-		model_selection.setToolTipText("GAPIT has the capability to conduct Bayesian information criterion (BIC)-based model selection "
-				+ "to find the optimal number of PCs for inclusion in the GWAS models. ");
-		model_selection.setSelected(false);
+		panel_advance.add(SNP_fraction_text_s);
+		SNP_fraction_text_s.setToolTipText("<html> The computations of kinship and PCs are extensive with large number of SNPs. <br>"
+				+ "Sampling a fraction of it would reduce computing time. <br>"
+				+ "The valid value sould be greater than 0 and no greater than 1 </html>");
+		panel_advance.add(SNP_fraction_input_s, "wrap");
+		SNP_fraction_input_s.setText("1");
+		panel_advance.add(file_fragment_text_s);
+		file_fragment_text_s.setToolTipText("<html> With large amount of individuals, <br>"
+				+ "loading a entire large genotype dataset could be difficult. <br>"
+				+ "GAPIT can load a fragment of it each time. <br>"
+				+ "The default of the fragment size is 512 SNPs </html>");
+		panel_advance.add(file_fragment_input_s, "wrap");
+		file_fragment_input_s.setSelectedItem("512");
+		panel_advance.add(model_selection_s);
+		model_selection_s.setToolTipText("<html> GAPIT has the capability to conduct BIC-based model selection <br>"
+				+ "to find the optimal number of PCs for inclusion in the GWAS models. </html>");
+		model_selection_s.setSelected(false);
 		panel_advance.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Advance", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
 		main_panel = new JPanel(new MigLayout("fillx", "[grow][grow]"));
@@ -521,8 +534,9 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 					ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,  
 					ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		pane.getVerticalScrollBar().setUnitIncrement(16); //scrolling sensitive
+		
 		go_2.addActionListener(this);
-		browse.addActionListener(this);
+		wd_browse_s.addActionListener(this);
 		
 		KI_gapit.addActionListener(this);
 		KI_user.addActionListener(this);
@@ -533,17 +547,15 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		CO_browse.addActionListener(this);
 		
 		CMLM_enable.addActionListener(this);
-		this.setContentPane(pane);
-		this.setTitle("Configuration");
-		this.pack();
-		this.show();
+		return pane;
+
 	}
 	
 	public void config_three(){
 	
 	}
 
-	public void configuration_initial(){
+	public JScrollPane configuration_initial(){
 		go.setFont(new Font("Ariashowpril", Font.BOLD, 40));
 		///////////////////////////////////////////////////////////////////////////////////////
 		wd_panel = new JPanel(new MigLayout("fillx"));
@@ -552,7 +564,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		wd_panel.add(wd_text, "wrap");
 		wd_panel.add(wd_input);
 		wd_panel.add(browse, "wrap");
-		wd_panel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
+		wd_panel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Task", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_EMMA = new JPanel(new MigLayout("fillx"));
 		panel_EMMA.add(esp_text); esp_text.setToolTipText("EMMA parameter");
@@ -767,10 +779,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		pane.getVerticalScrollBar().setUnitIncrement(16); //scrolling sensitive
 		go.addActionListener(this);
 		browse.addActionListener(this);
-		this.setContentPane(pane);
-		this.setTitle("Configuration");
-		this.pack();
-		this.show();
+		return pane;
 	}
 	
 	@Override
@@ -792,6 +801,9 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	    	  	myPanel.gapit_run = new Thread(back_run_2);
 	    	  	myPanel.gapit_run.start();
 	    	  	this.dispose();
+	      }else if(source == wd_browse_s){
+	    	  	chooser = new iPat_chooser();
+	    	  	workingdir_input_s.setText(chooser.getPath());
 	      }else if(source == KI_gapit){
 	    	  	Prediction.setEnabled(false);
 	    	  	KI_path.setEnabled(false);
@@ -826,18 +838,18 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				}
 	      }else if(source == CMLM_enable){
 	    	  if(CMLM_open){
-	    			kinship_cluster_input.setEnabled(false);
-	    			kinship_group_input.setEnabled(false);
-	    			group_from_input.setEnabled(false);
-	    			group_to_input.setEnabled(false);
-	    			group_by_input.setEnabled(false);
+	    			kinship_cluster_input_s.setEnabled(false);
+	    			kinship_group_input_s.setEnabled(false);
+	    			group_from_input_s.setEnabled(false);
+	    			group_to_input_s.setEnabled(false);
+	    			group_by_input_s.setEnabled(false);
 	    			CMLM_open = false;
 	    	  }else{
-	    		  	kinship_cluster_input.setEnabled(true);
-	    			kinship_group_input.setEnabled(true);
-	    			group_from_input.setEnabled(true);
-	    			group_to_input.setEnabled(true);
-	    			group_by_input.setEnabled(true);
+	    		  	kinship_cluster_input_s.setEnabled(true);
+	    			kinship_group_input_s.setEnabled(true);
+	    			group_from_input_s.setEnabled(true);
+	    			group_to_input_s.setEnabled(true);
+	    			group_by_input_s.setEnabled(true);
 	    		  	CMLM_open = true;
 	    	  }
 	      }
@@ -845,10 +857,9 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	
 	void GAPIT_two(int MOindex) throws FileNotFoundException{
 		Boolean predict = false;
-		String model_selection_s = "";
+		String model_selection_string = "";
 		String 	G = "", P = "", K = "", C = "",
 				CM = "";	
-
 		for(int i=0;i<5;i++){
 			if(file_index[i][1] == 1){
 				G = myPanel.TBfile[file_index[i][0]];
@@ -858,32 +869,29 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		}	
 		if(KI_user.isSelected() && Prediction.isSelected()){
 			K = "KI = read.table('"+ KI_path.getText() +"', head = FALSE), SNP.test = FALSE";
-			System.out.println("prediction only");
 		}else if(KI_user.isSelected()){
-			K = "G=read.table('"+G+"', head = FALSE),"
+			K = "G=read.csv('"+G+"', head = FALSE, sep='\t'),"
 				+ "KI = read.table('"+ KI_path.getText() +"', head = FALSE)";
-			System.out.println("load genotype");
+		}else if(!KI_user.isSelected()){
+			K = "G=read.csv('"+G+"', head = FALSE, sep='\t')";
 		}
 		if(CO_user.isSelected()){
 			C = "CV = read.table('"+ CO_path.getText() +"', head = TRUE";
-			System.out.println(C);
 		}else{
-			C = "PCA.total = " + PCA_total_input.getText();
+			C = "PCA.total = " + PCA_total_input_s.getText();
 		}
 		if(CMLM_enable.isSelected()){
-			CM =  "kinship.cluster = c("+kinship_cluster_input.getSelectedItem()+"),"
-				+ "kinship.group = c("+kinship_cluster_input.getSelectedItem()+"),"
-				+ "group.from = " + group_from_input.getText() + ","
-				+ "group.to = " + group_to_input.getText() + "," 
-				+ "group.by = " + group_by_input.getText() + ",";
+			CM =  "kinship.cluster = c("+kinship_cluster_input_s.getSelectedItem()+"),"
+				+ "kinship.group = c("+kinship_cluster_input_s.getSelectedItem()+"),"
+				+ "group.from = " + group_from_input_s.getText() + ","
+				+ "group.to = " + group_to_input_s.getText() + "," 
+				+ "group.by = " + group_by_input_s.getText() + ",";
 		}
-		if(model_selection.isSelected()){
-			model_selection_s = "TRUE";
+		if(model_selection_s.isSelected()){
+			model_selection_string = "TRUE";
 		}else{
-			model_selection_s = "FALSE";
+			model_selection_string = "FALSE";
 		}
-
-		System.out.println("start");
 		myPanel.permit[MOindex] = true;
 		myPanel.rotate_index[MOindex] = 1;
 			
@@ -895,16 +903,16 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		r.eval("library('scatterplot3d')");
 		r.eval("source('http://www.zzlab.net/GAPIT/emma.txt')");
 		r.eval("source('http://www.zzlab.net/GAPIT/gapit_functions.txt')");
-		r.eval("setwd('"+wd_input.getText()+"')");		
+		r.eval("setwd('"+workingdir_input_s.getText()+"')");		
 				
 		r.eval("catch= tryCatch( {"
 				+ "myGAPIT <- GAPIT("
 				+ "Y=read.table('"+P+"', head = TRUE),"
 				+ K + "," + C + "," + CM
-				+ "SNP.fraction = " + SNP_fraction_input.getText() + ","
-				+ "file.fragment = " + file_fragment_input.getSelectedItem() + ","
-				+ "Model.selection = " + model_selection_s + ")},"
-				+"error=function(e){e} )");
+				+ "SNP.fraction = " + SNP_fraction_input_s.getText() + ","
+				+ "file.fragment = " + file_fragment_input_s.getSelectedItem() + ","
+				+ "Model.selection = " + model_selection_string + ")},"
+		 		+"error=function(e){e} )");
 		
 	    REXP rcatch= r.eval("as.character(catch)");
 	    String rcatchs=((REXP)rcatch).asString();	    
@@ -1253,8 +1261,10 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	
 	void load(){
 		wd_input.setText(pref.get("wd", " "));
+		workingdir_input_s.setText(pref.get("wd", "~/"));
 		n_input.setText(myPanel.MOname[MOindex].getText());
-
+		project_input_s.setText(myPanel.MOname[MOindex].getText());
+		
 		esp_input.setText(pref.get("emma_esp", "1.00E-10"));
 		llim_input.setText(pref.get("emma_llim", "-10"));
 		ngrid_input.setText(pref.get("emma_ngrid", "100"));
