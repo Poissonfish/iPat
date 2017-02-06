@@ -195,8 +195,6 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	File[] File_paths = new File[30];
 	JFileChooser folder_chooser = new JFileChooser(); 
 	iPat_chooser chooser; 
-	
-	Rengine r = new Rengine(new String[]{"--no-save"}, true, new TextConsole());
 	//settingframe model_frame;
 	Preferences pref = Preferences.userRoot().node("/iPat"); 
 	
@@ -256,6 +254,28 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		this.panelHeigth=pH;
 		delbboundx=Wide-50;
 		delbboundy=Heigth-70;	
+		
+		/*
+		Process pl;
+		try {
+     		Runtime.getRuntime().exec("/usr/local/bin/Rscript /Users/Poissonfish/test.r");
+			Runtime.getRuntime().exec("/usr/local/bin/Rscript --vanilla /Users/Poissonfish/test2.r ");
+
+			pl = Runtime.getRuntime().exec("/bin/ls");
+			String line = "";
+	        BufferedReader p_in = new BufferedReader(new InputStreamReader(pl.getInputStream()));
+	        while((line = p_in.readLine()) != null){
+	                System.out.println(line);
+	        }
+	        p_in.close();a
+		}
+		*/
+		try {
+			Runtime.getRuntime().exec("rscript ../test/test2.r y=5");
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		//
 		try{
 			Image iconIP = ImageIO.read(getClass().getResource("resources/iPat.png"));
 			iPat.setIcon(new ImageIcon(iconIP));
@@ -312,7 +332,6 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		//LAYOUT.START
 		////////////
 	
-		
 		iPat.setOpaque(false);	
 
 		trashl = new JLabel(new ImageIcon(Trash[0]));	
@@ -651,7 +670,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			   	}else if(MOindex!=0 & SwingUtilities.isRightMouseButton(ee)){ 
 			   		Configuration model_frame;
 					try {
-						model_frame = new Configuration(r, MOindex);
+						model_frame = new Configuration(MOindex);
 				  		model_frame.setBounds(300, 100, 370, 500);
 				   		model_frame.setResizable(true);
 				   		model_frame.setVisible(true);

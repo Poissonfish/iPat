@@ -5,6 +5,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
@@ -292,7 +293,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		@Override
 		public void run(){
 			try {
-				GAPIT(MOindex);
+				GAPIT_two(MOindex);
+				//GAPIT(MOindex);
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
@@ -313,15 +315,21 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	///////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////
     String folder_path = new String();
-	Rengine r;
 	int  MOindex;
 	///////////////////////////////////////////////////////////////////////////////////////
 	int[][] file_index = new int[10][2]; //tbindex; filetype: 1=G, 2=P
 	
-	public Configuration(Rengine r, int MOindex) throws FileNotFoundException, IOException{	
-		this.r = r;
-		this.MOindex = MOindex;
+	public Configuration(int MOindex) throws FileNotFoundException, IOException{	
+		ProcessBuilder pb = new ProcessBuilder("sh", "-c", "mkdir testfolder");
+		Process pro = pb.start();
+		pb = new ProcessBuilder("sh", "-c", "touch testtext");
+		pro = pb.start();
+		pb = new ProcessBuilder("sh", "-c", "Rscript test.r");
+		pro = pb.start();
+		pb = new ProcessBuilder("sh", "-c", "R CMD BATCH --no-save --no-restore '--args y=5' test2.r test.out");
+		pro = pb.start();
 		
+		this.MOindex = MOindex;
 		int index = 0;
 		index = catch_files(file_index);	
 		String P_name = "", G_name = "", GD_name = "", GM_name = "";
@@ -344,24 +352,19 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		JScrollPane editPane = null;
 		switch(index){
 			case 1:
-				configuration_initial();
 				break;
 			case 2:
 				subPane = config_two(P_name, G_name);
-				editPane = configuration_initial();
 				break;
 			case 3:
-				configuration_initial();
 				break;
 		}		
         JTabbedPane mainPane = new JTabbedPane();
         mainPane.addTab("Simple Config.", subPane);
-        mainPane.addTab("Full Config.", editPane);
 		this.setContentPane(mainPane);
 		this.setTitle("Configuration");
 		this.pack();
-		this.show();
-		
+		this.show();	
 		pref = Preferences.userRoot().node("/ipat"); 
 		load();
 //		config_two();
@@ -388,31 +391,36 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				file_index[0][1] = 0;
 				break;
 			case 2:
-				r.eval("file1 = read.csv('"+myPanel.TBfile[file_index[0][0]]+"', "
-						+ "sep = '\t', header= FALSE, stringsAsFactors=FALSE)");
-				r.eval("file2 = read.csv('"+myPanel.TBfile[file_index[1][0]]+"', "
-						+ "sep = '\t', header= FALSE, stringsAsFactors=FALSE)");
-				r.eval("if(all(file1[2:6, 5]%in%c('+', '-')) && any(file1[2:6, 5]%in%c('+', '-'))){one = 1;two = 0}else{one = 0;two = 1}");									
-				file_index[0][1] = (int)r.eval("one").asDouble();
-				file_index[1][1] = (int)r.eval("two").asDouble();				
+				String[] text1 = read_10_lines(myPanel.TBfile[file_index[0][0]]);
+				String[] one_row1 = text1[1].split("\t");
+				String[] one_row2 = text1[2].split("\t");
+				String[] text2 = read_10_lines(myPanel.TBfile[file_index[1][0]]);
+				String[] two_row1 = text2[1].split("\t");
+				String[] two_row2 = text2[2].split("\t");
+				if(one_row1.length<5){
+					file_index[0][1] = 0;
+					file_index[1][1] = 1;
+				}else if(two_row1.length<5){
+					file_index[0][1] = 1;
+					file_index[1][1] = 0;
+				}else if( (one_row1[4].equals("+")||one_row1[4].equals("-")) &&
+						  (one_row2[4].equals("+")||one_row2[4].equals("-")) ){
+					file_index[0][1] = 1;
+					file_index[1][1] = 0;
+				}else{
+					file_index[0][1] = 0;
+					file_index[1][1] = 1;
+				}		
 				break;
 			case 3:
-				r.eval("file1 = read.csv('"+myPanel.TBfile[file_index[0][0]]+"', "
-						+ "sep = '\t', header= FALSE, stringsAsFactors=FALSE)");
-				r.eval("file2 = read.csv('"+myPanel.TBfile[file_index[1][0]]+"', "
-						+ "sep = '\t', header= FALSE, stringsAsFactors=FALSE)");
-				r.eval("file3 = read.csv('"+myPanel.TBfile[file_index[2][0]]+"', "
-						+ "sep = '\t', header= FALSE, stringsAsFactors=FALSE)");
-				r.eval("max = max(dim(file1)[2], dim(file2)[2], dim(file3)[2])");
-				r.eval("if(dim(file1)[2] == max){one = 2;if(all(file1[1,2:6]==file2[2:6, 1])){two = 3;three = 0}else{two = 0;three = 3}}else if(dim(file2)[2] == max){two = 2;if(all(file2[1,2:6]==file1[2:6, 1])){one = 3;three = 0}else{one = 0;three = 3}}else{three = 2;if(all(file3[1,2:6]==file2[2:6, 1])){one = 0;two = 3}else{one = 3;two = 0}}");
-				file_index[0][1] = (int)r.eval("one").asDouble();
-				file_index[1][1] = (int)r.eval("two").asDouble();
-				file_index[2][1] = (int)r.eval("three").asDouble();
+				//
+				//Distinguish g and y
+				//
+				
 				break;
 		}
 		return index;		
 	}
-	
 	public void config_one(){
 		
 	}
@@ -437,7 +445,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		panel_phenotype.add(P_filename);
 		P_filename.setText("File:\t"+P_name);
 		panel_phenotype.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Phenotype", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
-		///////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////
 		panel_ki = new JPanel(new MigLayout("fillx"));
 		KI_group.add(KI_gapit);
 		KI_gapit.setToolTipText("<html>" + "The kinship matrix will be calculated within GAPIT <br>" + "</html>");
@@ -554,233 +562,6 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	public void config_three(){
 	
 	}
-
-	public JScrollPane configuration_initial(){
-		go.setFont(new Font("Ariashowpril", Font.BOLD, 40));
-		///////////////////////////////////////////////////////////////////////////////////////
-		wd_panel = new JPanel(new MigLayout("fillx"));
-		wd_panel.add(n_text, "wrap");
-		wd_panel.add(n_input, "wrap");
-		wd_panel.add(wd_text, "wrap");
-		wd_panel.add(wd_input);
-		wd_panel.add(browse, "wrap");
-		wd_panel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Task", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
-		///////////////////////////////////////////////////////////////////////////////////////
-		panel_EMMA = new JPanel(new MigLayout("fillx"));
-		panel_EMMA.add(esp_text); esp_text.setToolTipText("EMMA parameter");
-		panel_EMMA.add(esp_input, "wrap");
-		panel_EMMA.add(llim_text); llim_text.setToolTipText("EMMA parameter");
-		panel_EMMA.add(llim_input, "wrap");
-		panel_EMMA.add(ngrid_text); ngrid_text.setToolTipText("EMMA parameter");
-		panel_EMMA.add(ngrid_input, "wrap");
-		panel_EMMA.add(ulim_text); ulim_text.setToolTipText("EMMA parameter");
-		panel_EMMA.add(ulim_input, "wrap");
-		panel_EMMA.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "EMMA", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
-		///////////////////////////////////////////////////////////////////////////////////////
-		panel_Farm = new JPanel(new MigLayout("fillx"));
-		panel_Farm.add(acceleration_text); acceleration_text.setToolTipText("FarmCPU parameter");
-		panel_Farm.add(acceleration_input, "wrap");
-		panel_Farm.add(converge_text); converge_text.setToolTipText("FarmCPU parameter");
-		panel_Farm.add(converge_input, "wrap");
-		panel_Farm.add(maxLoop_text); maxLoop_text.setToolTipText("maximum number ofloops in FarmCPU");
-		panel_Farm.add(maxLoop_input, "wrap");
-		panel_Farm.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "FarmCPU", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
-		///////////////////////////////////////////////////////////////////////////////////////
-		panel_file = new JPanel(new MigLayout("fillx"));
-		panel_file.add(file_Ext_G_text);
-		panel_file.add(file_Ext_G_input, "wrap");
-		panel_file.add(file_Ext_GD_text);
-		panel_file.add(file_Ext_GD_input, "wrap");
-		panel_file.add(file_Ext_GM_text);
-		panel_file.add(file_Ext_GM_input, "wrap");
-		panel_file.add(file_fragment_text);
-		panel_file.add(file_fragment_input, "wrap");
-		panel_file.add(file_from_text);
-		panel_file.add(file_from_input, "wrap");
-		panel_file.add(file_to_text);
-		panel_file.add(file_to_input, "wrap");
-		panel_file.add(file_total_text);
-		panel_file.add(file_total_input, "wrap");
-		panel_file.add(file_G_text);
-		panel_file.add(file_G_input, "wrap");
-		panel_file.add(file_GD_text);
-		panel_file.add(file_GD_input, "wrap");
-		panel_file.add(file_GM_text);
-		panel_file.add(file_GM_input, "wrap");
-		panel_file.add(file_path_text);
-		panel_file.add(file_path_input, "wrap");
-		panel_file.add(file_output);
-		panel_file.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "File", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
-		///////////////////////////////////////////////////////////////////////////////////////
-		panel_group = new JPanel(new MigLayout("fillx"));
-		panel_group.add(group_by_text);
-		panel_group.add(group_by_input, "wrap");
-		panel_group.add(group_from_text);
-		panel_group.add(group_from_input, "wrap");
-		panel_group.add(group_to_text);
-		panel_group.add(group_to_input, "wrap");
-		panel_group.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Group", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
-		///////////////////////////////////////////////////////////////////////////////////////
-		panel_kinship = new JPanel(new MigLayout("fillx"));
-		panel_kinship.add(kinship_algorithm_text);
-		panel_kinship.add(kinship_algorithm_input, "wrap");
-		panel_kinship.add(kinship_cluster_text);
-		panel_kinship.add(kinship_cluster_input, "wrap");
-		panel_kinship.add(kinship_group_text);
-		panel_kinship.add(kinship_group_input, "wrap");
-		panel_kinship.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Kinship", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
-		///////////////////////////////////////////////////////////////////////////////////////
-		panel_LD = new JPanel(new MigLayout("fillx"));
-		panel_LD.add(LD_chromosome_text);
-		panel_LD.add(LD_chromosome_input, "wrap");
-		panel_LD.add(LD_location_text);
-		panel_LD.add(LD_location_input, "wrap");
-		panel_LD.add(LD_range_text);
-		panel_LD.add(LD_range_input, "wrap");
-		panel_LD.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "LD", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
-		///////////////////////////////////////////////////////////////////////////////////////
-		panel_method = new JPanel(new MigLayout("fillx"));
-		panel_method.add(method_iteration_text);
-		panel_method.add(method_iteration_input, "wrap");
-		panel_method.add(method_bin_text);
-		panel_method.add(method_bin_input, "wrap");
-		panel_method.add(method_GLM_text);		
-		panel_method.add(method_GLM_input, "wrap");
-		panel_method.add(method_sub_text);
-		panel_method.add(method_sub_input, "wrap");
-		panel_method.add(method_sub_final_text);
-		panel_method.add(method_sub_final_input, "wrap");
-		panel_method.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Method", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
-		///////////////////////////////////////////////////////////////////////////////////////
-		panel_model = new JPanel(new MigLayout("fillx"));
-		panel_model.add(model_selection);
-		panel_model.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Model", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
-		///////////////////////////////////////////////////////////////////////////////////////
-		panel_output = new JPanel(new MigLayout("fillx"));
-		panel_output.add(output_cutOff_text);
-		panel_output.add(output_cutOff_input, "wrap");
-		panel_output.add(output_CV_Inheritance_text);
-		panel_output.add(output_CV_Inheritance_input, "wrap");
-		panel_output.add(output_DPP_text);
-		panel_output.add(output_DPP_input, "wrap");
-		panel_output.add(output_Geno_View_output, "wrap");
-		panel_output.add(output_iteration_output, "wrap");
-		panel_output.add(output_maxOut_text);
-		panel_output.add(output_maxOut_input, "wrap");
-		panel_output.add(output_hapmap, "wrap");
-		panel_output.add(output_numerical, "wrap");
-		panel_output.add(output_plot_style_text);
-		panel_output.add(output_plot_style_input, "wrap");
-		panel_output.add(output_threshold_text);
-		panel_output.add(output_threshold_input, "wrap");
-		panel_output.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Output", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
-		///////////////////////////////////////////////////////////////////////////////////////
-		panel_PCA = new JPanel(new MigLayout("fillx"));
-		panel_PCA.add(PCA_total_text);
-		panel_PCA.add(PCA_total_input, "wrap");
-		panel_PCA.add(PCA_View_input, "wrap");
-		panel_PCA.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "PCA", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
-		///////////////////////////////////////////////////////////////////////////////////////
-		panel_QTN = new JPanel(new MigLayout("fillx"));
-		panel_QTN.add(QTN_prior_text);
-		panel_QTN.add(QTN_prior_input, "wrap");
-		panel_QTN.add(QTN_text);
-		panel_QTN.add(QTN_input, "wrap");
-		panel_QTN.add(QTN_limit_text);
-		panel_QTN.add(QTN_limit_input, "wrap");
-		panel_QTN.add(QTN_method_text);
-		panel_QTN.add(QTN_method_input, "wrap");
-		panel_QTN.add(QTN_position_text);
-		panel_QTN.add(QTN_position_input, "wrap");
-		panel_QTN.add(QTN_round_text);
-		panel_QTN.add(QTN_round_input, "wrap");
-		panel_QTN.add(QTN_update, "wrap");
-		panel_QTN.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "QTN", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
-		///////////////////////////////////////////////////////////////////////////////////////
-		panel_SNP = new JPanel(new MigLayout("fillx"));
-		panel_SNP.add(SNP_create_indicater, "wrap");
-		panel_SNP.add(SNP_major_allele_zero, "wrap");
-		panel_SNP.add(SNP_CV_text);
-		panel_SNP.add(SNP_CV_input, "wrap");
-		panel_SNP.add(SNP_effect_text);
-		panel_SNP.add(SNP_effect_input, "wrap");
-		panel_SNP.add(SNP_FDR_text);
-		panel_SNP.add(SNP_FDR_input, "wrap");
-		panel_SNP.add(SNP_fraction_text);
-		panel_SNP.add(SNP_fraction_input, "wrap");
-		panel_SNP.add(SNP_impute_text);
-		panel_SNP.add(SNP_impute_input, "wrap");
-		panel_SNP.add(SNP_MAF_text);
-		panel_SNP.add(SNP_MAF_input, "wrap");
-		panel_SNP.add(SNP_P3D, "wrap");
-		panel_SNP.add(SNP_permutation, "wrap");
-		panel_SNP.add(SNP_robust_text);
-		panel_SNP.add(SNP_robust_input, "wrap");
-		panel_SNP.add(SNP_test, "wrap");
-		panel_SNP.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "SNP", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
-		///////////////////////////////////////////////////////////////////////////////////////
-		panel_super = new JPanel(new MigLayout("fillx"));
-		panel_super.add(SUPER_bin_by_text);
-		panel_super.add(SUPER_bin_by_input, "wrap");
-		panel_super.add(SUPER_bin_from_text);
-		panel_super.add(SUPER_bin_from_input, "wrap");
-		panel_super.add(SUPER_bin_to_text);
-		panel_super.add(SUPER_bin_to_input, "wrap");
-		panel_super.add(SUPER_bin_selection_text);
-		panel_super.add(SUPER_bin_selection_input, "wrap");
-		panel_super.add(SUPER_bin_size_text);
-		panel_super.add(SUPER_bin_size_input, "wrap");
-		
-		panel_super.add(SUPER_BINS_text);
-		panel_super.add(SUPER_BINS_input, "wrap");
-		panel_super.add(SUPER_FDR_rate_text);
-		panel_super.add(SUPER_FDR_rate_input, "wrap");
-		panel_super.add(SUPER_GT_index_text);
-		panel_super.add(SUPER_GT_index_input, "wrap");
-		
-		panel_super.add(SUPER_inclosure_by_text);
-		panel_super.add(SUPER_inclosure_by_input, "wrap");
-		panel_super.add(SUPER_inclosure_from_text);
-		panel_super.add(SUPER_inclosure_from_input, "wrap");
-		panel_super.add(SUPER_inclosure_to_text);
-		panel_super.add(SUPER_inclosure_to_input, "wrap");
-		panel_super.add(SUPER_LD_text);
-		panel_super.add(SUPER_LD_input, "wrap");
-		panel_super.add(SUPER_sanawich_bottom_text);
-		panel_super.add(SUPER_sanawich_bottom_input, "wrap");
-		panel_super.add(SUPER_sanawich_top_text);
-		panel_super.add(SUPER_sanawich_top_input, "wrap");
-		panel_super.add(SUPER_GD_text);
-		panel_super.add(SUPER_GD_input, "wrap");
-		panel_super.add(SUPER_GS, "wrap");
-		panel_super.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "SUPER", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
-		///////////////////////////////////////////////////////////////////////////////////////
-		main_panel = new JPanel(new MigLayout("fillx", "[grow][grow]"));
-		main_panel.add(go, "dock north");
-		main_panel.add(wd_panel, "cell 0 0, grow");
-		main_panel.add(panel_EMMA, "cell 0 1, grow");
-		main_panel.add(panel_Farm, "cell 0 2, grow");
-		main_panel.add(panel_file, "cell 0 3, grow");
-		main_panel.add(panel_group, "cell 0 4, grow");
-		main_panel.add(panel_kinship, "cell 0 5, grow");
-		main_panel.add(panel_LD, "cell 0 6, grow");
-		main_panel.add(panel_method, "cell 0 7, grow");
-		main_panel.add(panel_model, "cell 0 8, grow");
-		main_panel.add(panel_output, "cell 0 9, grow");
-		main_panel.add(panel_PCA, "cell 0 10, grow");
-		main_panel.add(panel_QTN, "cell 0 11, grow");
-		main_panel.add(panel_SNP, "cell 0 12, grow");
-		main_panel.add(panel_super, "cell 0 13, grow");
-
-		///////////////////////////////////////////////////////////////////////////////////////
-		JScrollPane pane = new JScrollPane(main_panel,  
-					ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,  
-					ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		pane.getVerticalScrollBar().setUnitIncrement(16); //scrolling sensitive
-		go.addActionListener(this);
-		browse.addActionListener(this);
-		return pane;
-	}
 	
 	@Override
 	public void actionPerformed(ActionEvent ip){
@@ -894,17 +675,10 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		}
 		myPanel.permit[MOindex] = true;
 		myPanel.rotate_index[MOindex] = 1;
-			
-		r.eval("x=proc.time()");	
-		r.eval("library('MASS')");
-		r.eval("library('multtest')");
-		r.eval("library('gplots')");
-		r.eval("library('compiler')");
-		r.eval("library('scatterplot3d')");
-		r.eval("source('http://www.zzlab.net/GAPIT/emma.txt')");
-		r.eval("source('http://www.zzlab.net/GAPIT/gapit_functions.txt')");
-		r.eval("setwd('"+workingdir_input_s.getText()+"')");		
-				
+		
+	
+		
+		/*	
 		r.eval("catch= tryCatch( {"
 				+ "myGAPIT <- GAPIT("
 				+ "Y=read.table('"+P+"', head = TRUE),"
@@ -924,242 +698,28 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 			myPanel.MO[MOindex] = myPanel.MO_fal;
 	    }else{
 			myPanel.MO[MOindex] = myPanel.MO_suc;
-	    }
+	    }*/
 		myPanel.permit[MOindex] = false;
 		myPanel.rotate_index[MOindex] = 0;
 		myPanel.MOimageH[MOindex]=myPanel.MO[MOindex].getHeight(null);
 		myPanel.MOimageW[MOindex]=myPanel.MO[MOindex].getWidth(null);
 		myPanel.MOname[MOindex].setLocation(myPanel.MOimageX[MOindex], myPanel.MOimageY[MOindex]+ myPanel.MOimageH[MOindex]);
-		r.eval("print( (proc.time()-x)[3] )");		
 		System.out.println("done");	
 	}
 		
-	void GAPIT(int MOindex) throws FileNotFoundException{
-		String file_output_string, model_string, genoe_view_string, iteration_string,
-		hapmap_string, numerical_string, pca_string, qtn_string, snp_create_string, 
-		snp_major_string, p3d_string, permutation_string, test_string, super_string;
-		
-		if(file_output.isSelected()){
-			file_output_string = "TRUE";
-		}else{
-			file_output_string = "FALSE";
-		}
-		if(model_selection.isSelected()){
-			model_string = "TRUE";
-		}else{
-			model_string = "FALSE";
-		}
-		if(output_Geno_View_output.isSelected()){
-			genoe_view_string = "TRUE";
-		}else{
-			genoe_view_string = "FALSE";
-		}
-		if(output_iteration_output.isSelected()){
-			iteration_string = "TRUE";
-		}else{
-			iteration_string = "FALSE";
-		}
-		if(output_hapmap.isSelected()){
-			hapmap_string = "TRUE";
-		}else{
-			hapmap_string = "FALSE";
-		}
-		if(output_numerical.isSelected()){
-			numerical_string = "TRUE";
-		}else{
-			numerical_string = "FALSE";
-		}
-		if(PCA_View_input.isSelected()){
-			pca_string = "TRUE";
-		}else{
-			pca_string = "FALSE";
-		}
-		if(QTN_update.isSelected()){
-			qtn_string = "TRUE";
-		}else{
-			qtn_string = "FALSE";
-		}
-		if(SNP_create_indicater.isSelected()){
-			snp_create_string = "TRUE";
-		}else{
-			snp_create_string = "FALSE";
-		}
-		if(SNP_major_allele_zero.isSelected()){
-			snp_major_string = "TRUE";
-		}else{
-			snp_major_string = "FALSE";
-		}
-		if(SNP_P3D.isSelected()){
-			p3d_string = "TRUE";
-		}else{
-			p3d_string = "FALSE";
-		}
-		if(SNP_permutation.isSelected()){
-			permutation_string = "TRUE";
-		}else{
-			permutation_string = "FALSE";
-		}
-		if(SNP_test.isSelected()){
-			test_string = "TRUE";
-		}else{
-			test_string = "FALSE";
-		}
-		if(SUPER_GS.isSelected()){
-			super_string = "TRUE";
-		}else{
-			super_string = "FALSE";
-		}		
-		
-		System.out.println("start");
-		myPanel.permit[MOindex] = true;
-		myPanel.rotate_index[MOindex] = 1;
-			
-		r.eval("x=proc.time()");
-	
-		r.eval("library('MASS')");
-		r.eval("library('multtest')");
-		r.eval("library('gplots')");
-		r.eval("library('compiler')");
-		r.eval("library('scatterplot3d')");
-		r.eval("source('http://www.zzlab.net/GAPIT/emma.txt')");
-		r.eval("source('http://www.zzlab.net/GAPIT/gapit_functions.txt')");
-		r.eval("setwd('"+wd_input.getText()+"')");
-		String G = "", P = "";
-		for(int i=0;i<10;i++){
-			if(file_index[i][1] == 1){
-				G = myPanel.TBfile[file_index[i][0]];
-				System.out.println("G="+G);
-			}else if(file_index[i][1] == 2){
-				P = myPanel.TBfile[file_index[i][0]];
-				System.out.println("P="+P);
-			}
-		}
-		
-		if(G==""||P==""){
-			System.out.println("Wrong File Format");
-		}
-		
-		r.eval("catch= tryCatch( {"
-				+"myGAPIT <- GAPIT(Y=read.table('"+P+"', head = TRUE),"
-				+ "G=read.delim('"+G+"', head = FALSE),"
-				+"esp="+esp_input.getText()+"," 
-				+"llim="+llim_input.getText()+"," 
-				+"ngrid="+ngrid_input.getText()+"," 
-				+"ulim="+ulim_input.getText()+"," 
-		
-				+"acceleration="+acceleration_input.getText()+"," 
-				+"converge="+converge_input.getText()+"," 
-				+"maxLoop="+maxLoop_input.getText()+"," 
-				
-				+"file.Ext.G="+ file_Ext_G_input.getText()+"," 
-				+"file.Ext.GD="+ file_Ext_GD_input.getText()+"," 
-				+"file.Ext.GM="+ file_Ext_GM_input.getText()+"," 
-				+"file.fragment="+ file_fragment_input.getSelectedItem()+"," 
-				+"file.from="+ file_from_input.getText()+"," 
-				+"file.to="+ file_to_input.getText()+"," 
-				+"file.total="+ file_total_input.getText()+"," 
-				+"file.G="+ file_G_input.getText()+"," 
-				+"file.GD="+ file_GD_input.getText()+"," 
-				+"file.GM="+ file_GM_input.getText()+"," 
-				+"file.output="+  file_output_string+","
-				+"file.path="+ file_path_input.getText()+"," 
-				
-				+"group.by="+ group_by_input.getText()+"," 
-				+"group.from="+ group_from_input.getText()+"," 
-				+"group.to="+ group_to_input.getText()+"," 
-				
-				+"kinship.algorithm='"+ (String) kinship_algorithm_input.getSelectedItem()+"'," 
-				+"kinship.cluster='"+ (String) kinship_cluster_input.getSelectedItem()+"'," 
-				+"kinship.group='"+ (String) kinship_group_input.getSelectedItem()+"',"
-				
-				+"LD.chromosome="+ LD_chromosome_input.getText()+"," 
-				+"LD.location="+ LD_location_input.getText()+"," 
-				+"LD.range="+ LD_range_input.getText()+"," 
-		
-				+"iteration.method='"+ (String) method_iteration_input.getSelectedItem()+"'," 
-				+"method.bin='"+ (String) method_bin_input.getSelectedItem()+"'," 
-				+"method.GLM='"+ (String) method_GLM_input.getSelectedItem()+"'," 
-				+"method.sub='"+ (String) method_sub_input.getSelectedItem()+"'," 
-				+"method.sub.final='"+ (String) method_sub_final_input.getSelectedItem()+"'," 
-				
-				+"Model.selection="+ model_string+","
-				
-				+"cutOff="+ output_cutOff_input.getText()+"," 
-				+"CV.Inheritance="+ output_CV_Inheritance_input.getText()+"," 
-				+"DPP="+ output_DPP_input.getText()+"," 
-				+"Geno.View.output="+ genoe_view_string+","
-				+"iteration.output="+ iteration_string+","
-				+"maxOut="+ output_maxOut_input.getText()+"," 
-				+"output.hapmap="+ hapmap_string+","
-				+"output.numerical="+ numerical_string+","
-				+"plot.style='"+ (String) output_plot_style_input.getSelectedItem()+"'," 
-				+"threshold.output="+ output_threshold_input.getText()+"," 
-		
-				+"PCA.total="+ PCA_total_input.getText()+ ","
-				+"PCA.View.output="+ pca_string+ ","
-				
-				+"Prior="+QTN_prior_input.getText() +","
-				+"QTN="+QTN_input.getText() +","
-				+"QTN.limit="+QTN_limit_input.getText() +","
-				+"QTN.method='"+ (String) QTN_method_input.getSelectedItem()+"'," 
-				+"QTN.position="+QTN_position_input.getText() +","
-				+"QTN.round="+QTN_round_input.getText() +","
-				+"QTN.update="+ qtn_string +","
-				
-				+"Create.indicator="+ snp_create_string+ ","
-				+"Major.allele.zero="+ snp_major_string+ ","
-				+"SNP.CV="+SNP_CV_input.getText()+ ","
-				+"SNP.effect='"+(String) SNP_effect_input.getSelectedItem()+"'," 
-				+"SNP.FDR="+SNP_FDR_input.getText() 	+ ","	
-				+"SNP.fraction="+SNP_fraction_input.getText() + ","
-				+"SNP.impute='"+(String) SNP_impute_input.getSelectedItem()+"'," 
-				+"SNP.MAF="+SNP_MAF_input.getText() + ","
-				+"SNP.P3D="+p3d_string+ ","
-				+"SNP.permutation="+permutation_string+ ","
-				+"SNP.robust='"+(String) SNP_robust_input.getSelectedItem()+"'," 
-				+"SNP.test="+test_string+ ","				
-		
-				+"bin.by="+SUPER_bin_by_input.getText ()+ "," 
-				+"bin.from="+SUPER_bin_from_input.getText ()+ "," 
-				+"bin.to="+SUPER_bin_to_input.getText ()+ "," 
-				+"bin.selection="+SUPER_bin_selection_input.getText ()+ "," 
-				+"bin.size="+SUPER_bin_size_input.getText ()+ "," 
-		
-				+"BINS="+SUPER_BINS_input.getText ()+ "," 
-				+"FDR.Rate="+SUPER_FDR_rate_input.getText ()+ "," 
-				+"GTindex="+SUPER_GT_index_input.getText ()+ "," 
-				+"inclosure.by="+SUPER_inclosure_by_input.getText ()+ "," 
-				+"inclosure.from="+SUPER_inclosure_from_input.getText ()+ "," 
-				+"inclosure.to="+SUPER_inclosure_to_input.getText ()+ "," 
-				+"LD="+SUPER_LD_input.getText ()+ "," 
-				+"sangwich.bottom="+SUPER_sanawich_bottom_input.getText ()+ "," 
-				+"sangwich.top="+SUPER_sanawich_top_input.getText ()+ "," 
-				+"SUPER_GD="+SUPER_GD_input.getText ()+ "," 
-				+"SUPER_GS="+super_string+ ")},"
-				+"error=function(e){e} )");
-		
-		
-		
-	    REXP rcatch= r.eval("as.character(catch)");
-	    String rcatchs=((REXP)rcatch).asString();	    
-	    try(  PrintWriter out = new PrintWriter( "error.txt" )  ){
-	        out.println( rcatchs );
-		    out.close();
-
-	    }
-	    if(rcatchs.indexOf("Error")>=0){
-			myPanel.MO[MOindex] = myPanel.MO_fal;
-	    }else{
-			myPanel.MO[MOindex] = myPanel.MO_suc;
-	    }
-		myPanel.permit[MOindex] = false;
-		myPanel.rotate_index[MOindex] = 0;
-		myPanel.MOimageH[MOindex]=myPanel.MO[MOindex].getHeight(null);
-		myPanel.MOimageW[MOindex]=myPanel.MO[MOindex].getWidth(null);
-		myPanel.MOname[MOindex].setLocation(myPanel.MOimageX[MOindex], myPanel.MOimageY[MOindex]+ myPanel.MOimageH[MOindex]);
-		r.eval("print( (proc.time()-x)[3] )");		
-		System.out.println("done");	
-	}
+	public static String[] read_10_lines(String filename) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(filename));
+        String[] lines = new String[10];
+        String line;
+        int nLine = 0;
+        while((line = reader.readLine()) != null) {
+            lines[nLine++] = line;
+            if(nLine >= 10) {
+                break;
+            }
+        }
+        return lines;
+    }
 	
 	void remove(){
 		pref.remove("wd");
