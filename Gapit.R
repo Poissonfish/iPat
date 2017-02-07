@@ -6,10 +6,10 @@ library(compiler)
 library(scatterplot3d)
 source('http://www.zzlab.net/GAPIT/emma.txt')
 source('http://www.zzlab.net/GAPIT/gapit_functions.txt')
-myY  <- read.table('P.txt', head = TRUE)
-myG <- read.delim('G.txt', head = FALSE)
-K = read.table('KI.txt', head= FALSE)
-
+myY  <- read.table('G.txt', head = FALSE)
+head(myY)
+G  <- read.delim('jeff.txt', head = FALSE)
+head(G)
 
 count = 0
 time = 0

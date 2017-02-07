@@ -1,5 +1,4 @@
 package main;
-import org.rosuda.JRI.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -27,7 +26,9 @@ public class iPat {
 	static String folder_path = new String("path");
 	public static myPanel ipat;
 
-	public static void main(String[] args){    
+	public static void main(String[] args){  
+		System.out.println("Can you hear me?");
+
 		JFrame main = new JFrame();
 		main.setLocation(200, 0); 
 		main.setSize(Wide, Heigth);
@@ -254,7 +255,8 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		this.panelHeigth=pH;
 		delbboundx=Wide-50;
 		delbboundy=Heigth-70;	
-		
+		System.out.println("Can you hear me?");
+
 		/*
 		Process pl;
 		try {
@@ -269,13 +271,14 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	        }
 	        p_in.close();a
 		}
-		*/
+		
+		System.out.println("sleep");
 		try {
-			Runtime.getRuntime().exec("rscript ../test/test2.r y=5");
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-		//
+			Runtime.getRuntime().exec("rscript ./libs/test2.r aaa bbb ccc").waitFor();
+		} catch (IOException | InterruptedException e1) {e1.printStackTrace();}
+		System.out.println("awake");
+		*/
+		
 		try{
 			Image iconIP = ImageIO.read(getClass().getResource("resources/iPat.png"));
 			iPat.setIcon(new ImageIcon(iconIP));
@@ -652,10 +655,10 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
     			
     			String folder_path = null;
 				if(TBindex!=0 & SwingUtilities.isRightMouseButton(ee)){
-					 TBchooser[TBindex].setApproveButtonText("Link!");
-					 TBvalue[TBindex]= TBchooser[TBindex].showOpenDialog(null);
-					 if (TBvalue[TBindex] == JFileChooser.APPROVE_OPTION){
-					    File selectedfile = TBchooser[TBindex].getSelectedFile();  	    					    
+					 TBchooser[0].setApproveButtonText("Link!");
+					 TBvalue[0]= TBchooser[0].showOpenDialog(null);
+					 if (TBvalue[0] == JFileChooser.APPROVE_OPTION){
+					    File selectedfile = TBchooser[0].getSelectedFile();  	    					    
 					  	TBfile[TBindex]= selectedfile.getAbsolutePath();
 					  	iconchange(TBindex); 
 					  	TBimageH[TBindex]=TB[TBindex].getHeight(null);
@@ -675,7 +678,6 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 				   		model_frame.setResizable(true);
 				   		model_frame.setVisible(true);
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 			   		
@@ -1783,7 +1785,6 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		// TODO Auto-generated method stub
 		int key = e.getKeyCode(); 
 		System.out.println("key input: "+key);
 		if(key==8){

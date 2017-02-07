@@ -18,9 +18,6 @@ import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
-import org.rosuda.JRI.RMainLoopCallbacks;
-import org.rosuda.JRI.Rengine;
-
 import net.miginfocom.swing.MigLayout;
 
 public class Classes {
