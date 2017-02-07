@@ -27,8 +27,7 @@ public class iPat {
 	public static myPanel ipat;
 
 	public static void main(String[] args){  
-		System.out.println("Can you hear me?");
-
+		System.out.println("Welcome to iPat!");
 		JFrame main = new JFrame();
 		main.setLocation(200, 0); 
 		main.setSize(Wide, Heigth);
@@ -50,7 +49,7 @@ public class iPat {
 	            System.out.println("H: "+c.getHeight()+" W: "+c.getWidth()); 
 	        }	
 		});	
-	}	
+	}
 }
 
 class myPanel extends JPanel implements MouseMotionListener, KeyListener{	
@@ -255,30 +254,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		this.panelHeigth=pH;
 		delbboundx=Wide-50;
 		delbboundy=Heigth-70;	
-		System.out.println("Can you hear me?");
 
-		/*
-		Process pl;
-		try {
-     		Runtime.getRuntime().exec("/usr/local/bin/Rscript /Users/Poissonfish/test.r");
-			Runtime.getRuntime().exec("/usr/local/bin/Rscript --vanilla /Users/Poissonfish/test2.r ");
-
-			pl = Runtime.getRuntime().exec("/bin/ls");
-			String line = "";
-	        BufferedReader p_in = new BufferedReader(new InputStreamReader(pl.getInputStream()));
-	        while((line = p_in.readLine()) != null){
-	                System.out.println(line);
-	        }
-	        p_in.close();a
-		}
-		
-		System.out.println("sleep");
-		try {
-			Runtime.getRuntime().exec("rscript ./libs/test2.r aaa bbb ccc").waitFor();
-		} catch (IOException | InterruptedException e1) {e1.printStackTrace();}
-		System.out.println("awake");
-		*/
-		
 		try{
 			Image iconIP = ImageIO.read(getClass().getResource("resources/iPat.png"));
 			iPat.setIcon(new ImageIcon(iconIP));
@@ -655,10 +631,10 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
     			
     			String folder_path = null;
 				if(TBindex!=0 & SwingUtilities.isRightMouseButton(ee)){
-					 TBchooser[0].setApproveButtonText("Link!");
-					 TBvalue[0]= TBchooser[0].showOpenDialog(null);
-					 if (TBvalue[0] == JFileChooser.APPROVE_OPTION){
-					    File selectedfile = TBchooser[0].getSelectedFile();  	    					    
+					 TBchooser[1].setApproveButtonText("Link!");
+					 TBvalue[1]= TBchooser[1].showOpenDialog(null);
+					 if (TBvalue[1] == JFileChooser.APPROVE_OPTION){
+					    File selectedfile = TBchooser[1].getSelectedFile();  	    					    
 					  	TBfile[TBindex]= selectedfile.getAbsolutePath();
 					  	iconchange(TBindex); 
 					  	TBimageH[TBindex]=TB[TBindex].getHeight(null);
@@ -673,6 +649,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			   	}else if(MOindex!=0 & SwingUtilities.isRightMouseButton(ee)){ 
 			   		Configuration model_frame;
 					try {
+						MO[MOindex] = MOimage;
 						model_frame = new Configuration(MOindex);
 				  		model_frame.setBounds(300, 100, 370, 500);
 				   		model_frame.setResizable(true);
