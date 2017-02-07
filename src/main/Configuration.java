@@ -73,20 +73,11 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JCheckBox model_selection_s = new JCheckBox("Model selection");
 
 	///////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////
 	JPanel panel_CMLM;
-	///////////////////////////////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////
 	JPanel panel_PCA;
 	JLabel PCA_total_text = new JLabel("PCA.total");
 	JTextField PCA_total_input= new JTextField(3);
-	///////////////////////////////////////////////////////////////////////////////////////
-
-	///////////////////////////////////////////////////////////////////////////////////////
-
-	
 	///////////////////////////////////////////////////////////////////////////////////////
 	JPanel main_panel;
 	JButton go = new JButton("GO");
@@ -120,9 +111,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 			}
 		}
 	};
-	
 	int test_run = 0;
-	///////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////
     String folder_path = new String();
 	int  MOindex;
@@ -168,8 +157,6 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		this.setTitle("Configuration");
 		this.pack();
 		this.show();	
-
-		remove();
 		load();
 		addWindowListener(this);
 	}	
@@ -396,7 +383,6 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				  	KI_path.setText(selectedfile.getAbsolutePath());
 				}
 	      }else if(source == CO_gapit){
-	    	  	load();
 	    	  	PCA_total_text.setEnabled(true);
 	    	  	PCA_total_input.setEnabled(true);
 				CO_path.setEnabled(false);
@@ -490,15 +476,25 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		myPanel.permit[MOindex] = true;
 		myPanel.rotate_index[MOindex] = 1;
 		Runtime gapit_run = Runtime.getRuntime();
+		Process pl;
+
 		String[] row1 = null;
+		String command = null;
 		try {
 			System.out.println("running gapit");
-
-			gapit_run.exec("rscript ./libs/Gapit.R "
+			pl = Runtime.getRuntime().exec("pwd");
+			String line = "";
+	        BufferedReader p_in = new BufferedReader(new InputStreamReader(pl.getInputStream()));
+	        while((line = p_in.readLine()) != null){
+	                System.out.println(line);
+	        }
+	        p_in.close();
+	        command = "rscript ./libs/Gapit.R "
 					+ G + " NULL NULL " + P + " " + K + " " + SNP_test + " " + C + " " + PCA + " "
 					+ ki_c + " " + ki_g + " " + g_from + " " + g_to + " " + g_by + " "
-					+ model_selection_string + " " + SNP_fraction + " " + file_fragment + " "+ WD
-					).waitFor();
+					+ model_selection_string + " " + SNP_fraction + " " + file_fragment + " "+ WD;
+            System.out.println(command);
+			gapit_run.exec(command).waitFor();
 			String[] result = read_10_lines(WD+"/output.log");
 			row1 = result[0].split(" ");
 		} catch (IOException | InterruptedException e1) {e1.printStackTrace();}

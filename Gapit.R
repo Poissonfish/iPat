@@ -1,4 +1,4 @@
-setwd("~/all demofile")
+setwd("~/all_demofile")
 library(MASS)
 library(multtest)
 library(gplots)
@@ -8,7 +8,7 @@ source('http://www.zzlab.net/GAPIT/emma.txt')
 source('http://www.zzlab.net/GAPIT/gapit_functions.txt')
 myY  <- read.table('G.txt', head = FALSE)
 head(myY)
-G  <- read.delim('jeff.txt', head = FALSE)
+G  <- read.delim('jeff_G.txt', head = FALSE)
 head(G)
 
 count = 0

@@ -16,12 +16,6 @@ library(scatterplot3d)
 source("http://www.zzlab.net/GAPIT/emma.txt")
 source("http://www.zzlab.net/GAPIT/gapit_functions.txt")
 
-
-#
-#"rscript Gapit.R /Users/Poissonfish/all_demofile/G.txt NULL NULL /Users/Poissonfish/all_demofile/P.txt NULL TRUE NULL 3 average Mean 1 100000 10 TRUE 128 1"
-#"rscript Gapit.R /Users/Poissonfish/all_demofile/G.txt NULL NULL /Users/Poissonfish/all_demofile/P.txt NULL TRUE NULL 3 average Mean 1 10000000 10 FALSE 1 512
-
-
 G.path = args[1]
 GM.path = args[2]
 GD.path = args[3]
@@ -47,7 +41,6 @@ if(GD.path=="NULL"){GD=NULL}else{GD=read.table(GD.path, head=FALSE)}
 if(C.path=="NULL"){C=NULL}else{C=read.table(C.path, head=TRUE)}
 if(K.path=="NULL"){K=NULL}else{K=read.table(D.path, head=FALSE)}
 
-Error=FALSE
 myGAPIT = capture.output(
   tryCatch(
     {GAPIT(
@@ -69,12 +62,11 @@ myGAPIT = capture.output(
       file.fragment = file.fragment
     )},error = function(e){
       print(e)
-      Error= TRUE
     }
   ) 
 )
-if(Error){
-  cat("GAPIT output", myGAPIT, file="output.log", sep="\n", append=TRUE)
+if(length(grep('Error',myGAPIT[length(myGAPIT)]))>0){
+  cat("Error GAPIT output", myGAPIT, file="output.log", sep="\n", append=FALSE)
 }else{
-  cat("Error GAPIT output", myGAPIT, file="output.log", sep="\n", append=TRUE)
+  cat("GAPIT output", myGAPIT, file="output.log", sep="\n", append=FALSE)
 }
