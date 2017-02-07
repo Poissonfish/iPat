@@ -13,8 +13,6 @@ import java.util.regex.Pattern;
 
 import javax.swing.*;
 import javax.swing.border.*;
-
-import org.rosuda.JRI.*;
 import net.miginfocom.swing.MigLayout;
 
 
@@ -77,200 +75,17 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
-	
-	JPanel panel_EMMA;
-	JLabel esp_text = new JLabel("esp"); 
-	JTextField esp_input = new JTextField(5);
-	JLabel llim_text = new JLabel("llim");
-	JTextField llim_input = new JTextField(5);
-	JLabel ngrid_text = new JLabel("ngrid");
-	JTextField ngrid_input = new JTextField(5);
-	JLabel ulim_text = new JLabel("ulim");
-	JTextField ulim_input = new JTextField(5);
-	///////////////////////////////////////////////////////////////////////////////////////
-	JPanel panel_Farm;
-	JLabel acceleration_text = new JLabel("acceleration");
-	JTextField acceleration_input= new JTextField(5);
-	JLabel converge_text = new JLabel("converge");
-	JTextField converge_input= new JTextField(5);
-	JLabel maxLoop_text = new JLabel("maxLoop"); 
-	JTextField maxLoop_input= new JTextField(5);
-	///////////////////////////////////////////////////////////////////////////////////////
-	JPanel panel_file;
-	JLabel file_Ext_G_text = new JLabel("Ext.G");
-	JTextField file_Ext_G_input= new JTextField(5);
-	JLabel file_Ext_GD_text = new JLabel("Ext.GD");
-	JTextField file_Ext_GD_input= new JTextField(5);
-	JLabel file_Ext_GM_text = new JLabel("Ext.GM");
-	JTextField file_Ext_GM_input= new JTextField(5);
-	
-	String[] file_fragment_names = {"512", "256", "128", "64"};
-	JLabel file_fragment_text = new JLabel("File fragment");
-	JComboBox file_fragment_input= new JComboBox(file_fragment_names);
-	
-	JLabel file_from_text = new JLabel("From");
-	JTextField file_from_input= new JTextField(5);
-	JLabel file_to_text = new JLabel("To");
-	JTextField file_to_input= new JTextField(5);
-	JLabel file_total_text = new JLabel("Total");
-	JTextField file_total_input= new JTextField(5);
-	JLabel file_G_text = new JLabel("G");
-	JTextField file_G_input= new JTextField(5);
-	JLabel file_GD_text = new JLabel("GD");
-	JTextField file_GD_input= new JTextField(5);
-	JLabel file_GM_text = new JLabel("GM");
-	JTextField file_GM_input= new JTextField(5);
-	JLabel file_path_text = new JLabel("Path");
-	JTextField file_path_input= new JTextField(5);
-	JCheckBox file_output = new JCheckBox("output");
-	///////////////////////////////////////////////////////////////////////////////////////
-	JPanel panel_group;
-	JLabel group_by_text = new JLabel("By");
-	JTextField group_by_input = new JTextField(5);
-	JLabel group_from_text = new JLabel("From");
-	JTextField group_from_input = new JTextField(5);
-	JLabel group_to_text = new JLabel("To");
-	JTextField group_to_input = new JTextField(5);
-	///////////////////////////////////////////////////////////////////////////////////////
-	JPanel panel_kinship;
-	String[] kinship_algorithm_names= {"VanRaden"};
-	JComboBox kinship_algorithm_input= new JComboBox(kinship_algorithm_names);
-	JLabel kinship_algorithm_text = new JLabel("Algorithm");
-	String[] kinship_cluster_names= {"average", "complete", "ward", "single", "mcquitty", "median", "centroid"};
-	JComboBox kinship_cluster_input= new JComboBox(kinship_cluster_names);
-	JLabel kinship_cluster_text = new JLabel("Cluster");
-	String[] kinship_group_names= {"Mean", "Max", "Min", "Median"};
-	JComboBox kinship_group_input= new JComboBox(kinship_group_names);
-	JLabel kinship_group_text = new JLabel("Group");
-	//
 	JPanel panel_CMLM;
 	///////////////////////////////////////////////////////////////////////////////////////
-	JPanel panel_LD;
-	JLabel LD_chromosome_text = new JLabel("Chromosome");
-	JTextField LD_chromosome_input= new JTextField(5);
-	JLabel LD_location_text = new JLabel("Location");
-	JTextField LD_location_input = new JTextField(5);
-	JLabel LD_range_text = new JLabel("Range");
-	JTextField LD_range_input = new JTextField(5);
 	///////////////////////////////////////////////////////////////////////////////////////
-	JPanel panel_method;
-	String[] method_iteration_names= {"accum"};
-	JComboBox method_iteration_input= new JComboBox(method_iteration_names);
-	JLabel method_iteration_text = new JLabel("iteration");
-	String[] method_bin_names= {"static"};
-	JComboBox method_bin_input= new JComboBox(method_bin_names);
-	JLabel method_bin_text = new JLabel("bin");
-	String[] method_GLM_names= {"fast.lm"};
-	JComboBox method_GLM_input= new JComboBox(method_GLM_names);
-	JLabel method_GLM_text = new JLabel("GLM");
-	String[] method_sub_names= {"reward"};
-	JComboBox method_sub_input= new JComboBox(method_sub_names);
-	JLabel method_sub_text = new JLabel("sub");
-	String[] method_sub_final_names= {"reward"};
-	JComboBox method_sub_final_input= new JComboBox(method_sub_final_names);
-	JLabel method_sub_final_text = new JLabel("sub_final");
-	///////////////////////////////////////////////////////////////////////////////////////
-	JPanel panel_model;
-	JCheckBox model_selection = new JCheckBox("Model selection");
-	///////////////////////////////////////////////////////////////////////////////////////
-	JPanel panel_output;
-	JLabel output_cutOff_text = new JLabel("cutOff");
-	JTextField output_cutOff_input= new JTextField(5);
-	JLabel output_CV_Inheritance_text = new JLabel("CV inheritance");
-	JTextField output_CV_Inheritance_input = new JTextField(5);
-	JLabel output_DPP_text = new JLabel("DPP");
-	JTextField output_DPP_input= new JTextField(5);
-	JCheckBox output_Geno_View_output = new JCheckBox("Geno View output");
-	JCheckBox output_iteration_output = new JCheckBox("iteration output");
-	JLabel output_maxOut_text = new JLabel("maxOut");
-	JTextField output_maxOut_input= new JTextField(5);
-	JCheckBox output_hapmap = new JCheckBox("hapmap");
-	JCheckBox output_numerical= new JCheckBox("numerical");
-	String[] output_plot_style_names= {"Oceanic"};
-	JComboBox output_plot_style_input= new JComboBox(output_plot_style_names);
-	JLabel output_plot_style_text = new JLabel("plot style");
-	JLabel output_threshold_text = new JLabel("threshold");
-	JTextField output_threshold_input= new JTextField(5);
 	///////////////////////////////////////////////////////////////////////////////////////
 	JPanel panel_PCA;
 	JLabel PCA_total_text = new JLabel("PCA.total");
 	JTextField PCA_total_input= new JTextField(3);
-	JCheckBox PCA_View_input = new JCheckBox("View output");
 	///////////////////////////////////////////////////////////////////////////////////////
-	JPanel panel_QTN;
-	JLabel QTN_prior_text = new JLabel("Prior");
-	JTextField QTN_prior_input= new JTextField(5);
-	JLabel QTN_text = new JLabel("QTN");
-	JTextField QTN_input= new JTextField(5);
-	JLabel QTN_limit_text = new JLabel("QTN limit");
-	JTextField QTN_limit_input= new JTextField(5);
-	String[] QTN_method_names= {"Penalty"};
-	JComboBox QTN_method_input = new JComboBox(QTN_method_names);
-	JLabel QTN_method_text = new JLabel("method");
-	JLabel QTN_position_text = new JLabel("position");
-	JTextField QTN_position_input= new JTextField(5);
-	JLabel QTN_round_text = new JLabel("round");
-	JTextField QTN_round_input= new JTextField(5);
-	JCheckBox QTN_update = new JCheckBox("update");
-	///////////////////////////////////////////////////////////////////////////////////////
-	JPanel panel_SNP;
-	JCheckBox SNP_create_indicater = new JCheckBox("Create indicator");
-	JCheckBox SNP_major_allele_zero = new JCheckBox("Major allele zero");
-	JLabel SNP_CV_text = new JLabel("CV");
-	JTextField SNP_CV_input= new JTextField(5);
-	String[] SNP_effect_names= {"Add"};
-	JComboBox SNP_effect_input = new JComboBox(SNP_effect_names);
-	JLabel SNP_effect_text = new JLabel("effect");
-	JLabel SNP_FDR_text = new JLabel("FDR");
-	JTextField SNP_FDR_input= new JTextField(5);
-	JLabel SNP_fraction_text = new JLabel("SNP fraction");
-	JTextField SNP_fraction_input= new JTextField(5);
-	String[] SNP_impute_names= {"Middle"};
-	JComboBox SNP_impute_input = new JComboBox(SNP_impute_names);
-	JLabel SNP_impute_text = new JLabel("impute");
-	JLabel SNP_MAF_text = new JLabel("MAF");
-	JTextField SNP_MAF_input = new JTextField(5);
-	JCheckBox SNP_P3D = new JCheckBox("P3D");
-	JCheckBox SNP_permutation = new JCheckBox("permutation");
-	String[] SNP_robust_names= {"GLM"};
-	JComboBox SNP_robust_input = new JComboBox(SNP_robust_names);
-	JLabel SNP_robust_text = new JLabel("robust");
-	JCheckBox SNP_test = new JCheckBox("SNP_test");
-	///////////////////////////////////////////////////////////////////////////////////////
-	JPanel panel_super;
-	JLabel SUPER_bin_by_text = new JLabel("bin by");
-	JTextField SUPER_bin_by_input = new JTextField(5);
-	JLabel SUPER_bin_from_text = new JLabel("bin from");
-	JTextField SUPER_bin_from_input = new JTextField(5);
-	JLabel SUPER_bin_to_text = new JLabel("bin to");
-	JTextField SUPER_bin_to_input = new JTextField(5);
-	JLabel SUPER_bin_selection_text = new JLabel("bin selection");
-	JTextField SUPER_bin_selection_input= new JTextField(5);
-	JLabel SUPER_bin_size_text = new JLabel("bin size");
-	JTextField SUPER_bin_size_input = new JTextField(5);
-	
-	JLabel SUPER_BINS_text = new JLabel("BINS");
-	JTextField SUPER_BINS_input= new JTextField(5);
-	JLabel SUPER_FDR_rate_text = new JLabel("FDR rate");
-	JTextField SUPER_FDR_rate_input= new JTextField(5);
-	JLabel SUPER_GT_index_text = new JLabel("GTindex");
-	JTextField SUPER_GT_index_input= new JTextField(5);
 
-	JLabel SUPER_inclosure_by_text = new JLabel("inclosure by");
-	JTextField SUPER_inclosure_by_input= new JTextField(5);
-	JLabel SUPER_inclosure_from_text = new JLabel("inclosure from");
-	JTextField SUPER_inclosure_from_input= new JTextField(5);
-	JLabel SUPER_inclosure_to_text = new JLabel("inclosure to");
-	JTextField SUPER_inclosure_to_input= new JTextField(5);
-	JLabel SUPER_LD_text = new JLabel("LD");
-	JTextField SUPER_LD_input= new JTextField(5);
-	JLabel SUPER_sanawich_bottom_text = new JLabel("sanawich bottom");
-	JTextField SUPER_sanawich_bottom_input= new JTextField(5);
-	JLabel SUPER_sanawich_top_text = new JLabel("sanawich top");
-	JTextField SUPER_sanawich_top_input= new JTextField(5);
-	JLabel SUPER_GD_text = new JLabel("GD");
-	JTextField SUPER_GD_input= new JTextField(5);
-	JCheckBox SUPER_GS = new JCheckBox("GS");
+	///////////////////////////////////////////////////////////////////////////////////////
+
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	JPanel main_panel;
@@ -282,12 +97,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	Boolean CMLM_open = false;
 	///////////////////////////////////////////////////////////////////////////////////////
 	JPanel wd_panel;
-	JButton browse = new JButton("Browse");
 	iPat_chooser chooser;	
-	JLabel wd_text = new JLabel("Working Directory");
-	JTextField wd_input = new JTextField(15);
-	JLabel n_text = new JLabel("Task Name");
-	JTextField n_input = new JTextField(10);
 	///////////////////////////////////////////////////////////////////////////////////////	
 	Runnable back_run = new Runnable(){
 		@Override
@@ -320,15 +130,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	int[][] file_index = new int[10][2]; //tbindex; filetype: 1=G, 2=P
 	
 	public Configuration(int MOindex) throws FileNotFoundException, IOException{	
-		ProcessBuilder pb = new ProcessBuilder("sh", "-c", "mkdir testfolder");
-		Process pro = pb.start();
-		pb = new ProcessBuilder("sh", "-c", "touch testtext");
-		pro = pb.start();
-		pb = new ProcessBuilder("sh", "-c", "Rscript test.r");
-		pro = pb.start();
-		pb = new ProcessBuilder("sh", "-c", "R CMD BATCH --no-save --no-restore '--args y=5' test2.r test.out");
-		pro = pb.start();
-		
+		System.out.println("Can you hear me?");
 		this.MOindex = MOindex;
 		int index = 0;
 		index = catch_files(file_index);	
@@ -354,6 +156,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 			case 1:
 				break;
 			case 2:
+				pref = Preferences.userRoot().node("/ipat"); 
 				subPane = config_two(P_name, G_name);
 				break;
 			case 3:
@@ -365,10 +168,9 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		this.setTitle("Configuration");
 		this.pack();
 		this.show();	
-		pref = Preferences.userRoot().node("/ipat"); 
+
+		remove();
 		load();
-//		config_two();
-//		configuration_initial();
 		addWindowListener(this);
 	}	
 	
@@ -542,7 +344,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 					ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,  
 					ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		pane.getVerticalScrollBar().setUnitIncrement(16); //scrolling sensitive
-		
+		pref = Preferences.userRoot().node("/ipat"); 
+
 		go_2.addActionListener(this);
 		wd_browse_s.addActionListener(this);
 		
@@ -556,7 +359,6 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		
 		CMLM_enable.addActionListener(this);
 		return pane;
-
 	}
 	
 	public void config_three(){
@@ -567,18 +369,11 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	public void actionPerformed(ActionEvent ip){
 	      Object source = ip.getSource();	
 	      if (source == go){
-	    	  	save();
-	    	  	myPanel.MOfile[MOindex] = wd_input.getText();
-	    	  	myPanel.gapit_run = new Thread(back_run);
-	    	  	myPanel.gapit_run.start();
-	    	  	this.dispose();
-	      }else if(source == browse){
-	    	  	chooser = new iPat_chooser();
-	    	  	wd_input.setText(chooser.getPath());	    	  	
+	    	      	  	
 	      // Config_2
 	      }else if(source == go_2){
 	    	  	save();
-	    	  	myPanel.MOfile[MOindex] = wd_input.getText();
+	    	  	myPanel.MOfile[MOindex] = workingdir_input_s.getText();
 	    	  	myPanel.gapit_run = new Thread(back_run_2);
 	    	  	myPanel.gapit_run.start();
 	    	  	this.dispose();
@@ -601,6 +396,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				  	KI_path.setText(selectedfile.getAbsolutePath());
 				}
 	      }else if(source == CO_gapit){
+	    	  	load();
 	    	  	PCA_total_text.setEnabled(true);
 	    	  	PCA_total_input.setEnabled(true);
 				CO_path.setEnabled(false);
@@ -640,7 +436,10 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		Boolean predict = false;
 		String model_selection_string = "";
 		String 	G = "", P = "", K = "", C = "",
-				CM = "";	
+				SNP_test = "", PCA = "",
+				ki_c = "", ki_g = "", 
+				g_from = "", g_to = "", g_by = "", 
+				SNP_fraction = "", file_fragment = "", WD = "";
 		for(int i=0;i<5;i++){
 			if(file_index[i][1] == 1){
 				G = myPanel.TBfile[file_index[i][0]];
@@ -649,56 +448,66 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 			}
 		}	
 		if(KI_user.isSelected() && Prediction.isSelected()){
-			K = "KI = read.table('"+ KI_path.getText() +"', head = FALSE), SNP.test = FALSE";
+			K = KI_path.getText();
+			SNP_test = "FALSE";
+			G = "NULL";
 		}else if(KI_user.isSelected()){
-			K = "G=read.csv('"+G+"', head = FALSE, sep='\t'),"
-				+ "KI = read.table('"+ KI_path.getText() +"', head = FALSE)";
+			K = KI_path.getText();
+			SNP_test = "TRUE";
 		}else if(!KI_user.isSelected()){
-			K = "G=read.csv('"+G+"', head = FALSE, sep='\t')";
+			K = "NULL";
+			SNP_test = "TRUE";
 		}
 		if(CO_user.isSelected()){
-			C = "CV = read.table('"+ CO_path.getText() +"', head = TRUE";
+			C = CO_path.getText();
+			PCA = "0";
 		}else{
-			C = "PCA.total = " + PCA_total_input_s.getText();
+			C = "NULL";
+			PCA =  "3";
+					//PCA_total_input_s.getText();
 		}
 		if(CMLM_enable.isSelected()){
-			CM =  "kinship.cluster = c("+kinship_cluster_input_s.getSelectedItem()+"),"
-				+ "kinship.group = c("+kinship_cluster_input_s.getSelectedItem()+"),"
-				+ "group.from = " + group_from_input_s.getText() + ","
-				+ "group.to = " + group_to_input_s.getText() + "," 
-				+ "group.by = " + group_by_input_s.getText() + ",";
+			ki_c = (String) kinship_cluster_input_s.getSelectedItem();
+			ki_g = (String) kinship_group_input_s.getSelectedItem();
+			g_from = group_from_input_s.getText();
+			g_to = group_to_input_s.getText();
+			g_by = group_by_input_s.getText();
+		}else{
+			ki_c = "average"; 
+			ki_g = "Mean";
+			g_from = "1";
+			g_to = "10000000";
+			g_by = "10";
 		}
 		if(model_selection_s.isSelected()){
 			model_selection_string = "TRUE";
 		}else{
 			model_selection_string = "FALSE";
 		}
+		SNP_fraction = SNP_fraction_input_s.getText();
+		file_fragment = (String) file_fragment_input_s.getSelectedItem();
+		WD = workingdir_input_s.getText();
 		myPanel.permit[MOindex] = true;
 		myPanel.rotate_index[MOindex] = 1;
-		
-	
-		
-		/*	
-		r.eval("catch= tryCatch( {"
-				+ "myGAPIT <- GAPIT("
-				+ "Y=read.table('"+P+"', head = TRUE),"
-				+ K + "," + C + "," + CM
-				+ "SNP.fraction = " + SNP_fraction_input_s.getText() + ","
-				+ "file.fragment = " + file_fragment_input_s.getSelectedItem() + ","
-				+ "Model.selection = " + model_selection_string + ")},"
-		 		+"error=function(e){e} )");
-		
-	    REXP rcatch= r.eval("as.character(catch)");
-	    String rcatchs=((REXP)rcatch).asString();	    
-	    try(  PrintWriter out = new PrintWriter( "error.txt" )  ){
-	        out.println( rcatchs );
-		    out.close();
-	    }
-	    if(rcatchs.indexOf("Error")>=0){
+		Runtime gapit_run = Runtime.getRuntime();
+		String[] row1 = null;
+		try {
+			System.out.println("running gapit");
+
+			gapit_run.exec("rscript ./libs/Gapit.R "
+					+ G + " NULL NULL " + P + " " + K + " " + SNP_test + " " + C + " " + PCA + " "
+					+ ki_c + " " + ki_g + " " + g_from + " " + g_to + " " + g_by + " "
+					+ model_selection_string + " " + SNP_fraction + " " + file_fragment + " "+ WD
+					).waitFor();
+			String[] result = read_10_lines(WD+"/output.log");
+			row1 = result[0].split(" ");
+		} catch (IOException | InterruptedException e1) {e1.printStackTrace();}
+				
+	    if(row1[0].equals("Error")){
 			myPanel.MO[MOindex] = myPanel.MO_fal;
 	    }else{
 			myPanel.MO[MOindex] = myPanel.MO_suc;
-	    }*/
+	    }
 		myPanel.permit[MOindex] = false;
 		myPanel.rotate_index[MOindex] = 0;
 		myPanel.MOimageH[MOindex]=myPanel.MO[MOindex].getHeight(null);
@@ -721,7 +530,9 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
         return lines;
     }
 	
-	void remove(){
+	public void remove(){
+		System.out.println("REMOVE");
+
 		pref.remove("wd");
 		
 		pref.remove("emma_esp");
@@ -819,211 +630,26 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		pref.remove("super_gs");
 	}
 	
-	void load(){
-		wd_input.setText(pref.get("wd", " "));
-		workingdir_input_s.setText(pref.get("wd", "~/"));
-		n_input.setText(myPanel.MOname[MOindex].getText());
-		project_input_s.setText(myPanel.MOname[MOindex].getText());
-		
-		esp_input.setText(pref.get("emma_esp", "1.00E-10"));
-		llim_input.setText(pref.get("emma_llim", "-10"));
-		ngrid_input.setText(pref.get("emma_ngrid", "100"));
-		ulim_input.setText(pref.get("emma_ulim", "10"));
-		
-		acceleration_input.setText(pref.get("farm_acc", "0"));
-		converge_input.setText(pref.get("farm_con", "1"));
-		maxLoop_input.setText(pref.get("farm_max", "3"));
-		
-		file_Ext_G_input.setText(pref.get("file_ext_g", "NULL"));
-		file_Ext_GD_input.setText(pref.get("file_ext_gd", "NULL"));
-		file_Ext_GM_input.setText(pref.get("file_ext_gm", "NULL"));
-		file_fragment_input.setSelectedItem(pref.get("file_fragment", "512"));
-		file_from_input.setText(pref.get("file_from", "1"));
-		file_to_input.setText(pref.get("file_to", "1"));
-		file_total_input.setText(pref.get("file_total", "NULL"));
-		file_G_input.setText(pref.get("file_g", "NULL"));
-		file_GD_input.setText(pref.get("file_gd", "NULL"));
-		file_GM_input.setText(pref.get("file_gm", "NULL"));
-		file_output.setSelected(pref.getBoolean("file_out", true));
-		file_path_input.setText(pref.get("file_path", "NULL"));
-		
-		group_by_input.setText(pref.get("group_by", "10"));
-		group_from_input.setText(pref.get("group_from", "30"));
-		group_to_input.setText(pref.get("group_to", "1000000"));
-		
-		kinship_algorithm_input.setSelectedItem(pref.get("kinship_algorithm", "VanRaden"));
-		kinship_cluster_input.setSelectedItem(pref.get("kinship_cluster", "average"));
-		kinship_group_input.setSelectedItem(pref.get("kinship_group", "Mean"));
-
-		LD_chromosome_input.setText(pref.get("ld_chromosome", "NULL"));
-		LD_location_input.setText(pref.get("ld_location", "NULL"));
-		LD_range_input.setText(pref.get("ld_range", "NULL"));
-		
-		method_iteration_input.setSelectedItem(pref.get("method_iteration", "accum"));
-		method_bin_input.setSelectedItem(pref.get("method_bin", "static"));
-		method_GLM_input.setSelectedItem(pref.get("method_GLM", "fast.lm"));
-		method_sub_input.setSelectedItem(pref.get("method_sub", "reward"));
-		method_sub_final_input.setSelectedItem(pref.get("method_sub_final", "reward"));
-		
-		model_selection.setSelected(pref.getBoolean("model_selection", false));
-		
-		output_cutOff_input.setText(pref.get("output_cutoff", "0.01"));
-		output_CV_Inheritance_input.setText(pref.get("output_cv", "NULL"));
-		output_DPP_input.setText(pref.get("output_DPP", "100000"));
-		output_Geno_View_output.setSelected(pref.getBoolean("output_geno", true));
-		output_iteration_output.setSelected(pref.getBoolean("output_iteration", false));
-		output_maxOut_input.setText(pref.get("output_maxout", "100"));
-		output_hapmap.setSelected(pref.getBoolean("output_hapmap", false));
-		output_numerical.setSelected(pref.getBoolean("output_numeric",  false));
-		output_plot_style_input.setSelectedItem(pref.get("output_plot", "Oceanic"));
-		output_threshold_input.setText(pref.get("output_threshold", "0.01"));
-		
-		PCA_total_input.setText(pref.get("pca_total", "3"));
-		PCA_View_input.setSelected(pref.getBoolean("pca_view", true));
-		
-		QTN_prior_input.setText(pref.get("qtn_prior", "NULL"));
-		QTN_input.setText(pref.get("qtn", "NULL"));
-		QTN_limit_input.setText(pref.get("qtn_limit", "0"));
-		QTN_method_input.setSelectedItem(pref.get("qtn_method", "Penalty"));
-		QTN_position_input.setText(pref.get("qtn_position", "NULL"));
-		QTN_round_input.setText(pref.get("qtn_round", "1"));
-		QTN_update.setSelected(pref.getBoolean("qtn_update", true));
-		
-		SNP_create_indicater.setSelected(pref.getBoolean("snp_create",  false));
-		SNP_major_allele_zero.setSelected(pref.getBoolean("snp_major", false));
-		SNP_CV_input.setText(pref.get("snp_cv", "NULL"));
-		SNP_effect_input.setSelectedItem(pref.get("snp_effect", "Add"));
-		SNP_FDR_input.setText(pref.get("snp_fdr", "1"));
-		SNP_fraction_input.setText(pref.get("snp_fraction", "1"));
-		SNP_impute_input.setSelectedItem(pref.get("snp_impute", "Middle"));
-		SNP_MAF_input.setText(pref.get("snp_maf", "0"));
-		SNP_P3D.setSelected(pref.getBoolean("snp_p3d", true));
-		SNP_permutation.setSelected(pref.getBoolean("snp_permuation", false));
-		SNP_robust_input.setSelectedItem(pref.get("snp_robust", "GLM"));
-		SNP_test.setSelected(pref.getBoolean("snp_test", true));
-		
-		SUPER_bin_by_input.setText(pref.get("super_bin_by", "10000"));
-		SUPER_bin_from_input.setText(pref.get("super_bin_from", "10000"));
-		SUPER_bin_to_input.setText(pref.get("super_bin_to", "10000"));
-		SUPER_bin_selection_input.setText(pref.get("super_bin_selection", "c(10,20,50,100,200,500,1000)"));
-		SUPER_bin_size_input.setText(pref.get("super_bin_size" ,"c(1000000)"));
-		SUPER_BINS_input.setText(pref.get("super_bin", "20"));
-		SUPER_FDR_rate_input.setText(pref.get("super_fdr", "1"));
-		SUPER_GT_index_input.setText(pref.get("super_gt", "NULL"));
-		SUPER_inclosure_by_input.setText(pref.get("super_inclosure_by", "10"));
-		SUPER_inclosure_from_input.setText(pref.get("super_inclosure_from", "10"));
-		SUPER_inclosure_to_input.setText(pref.get("super_inclosure_to", "10"));
-		SUPER_LD_input.setText(pref.get("super_ld", "0.1"));
-		SUPER_sanawich_bottom_input.setText(pref.get("super_bottom", "NULL"));
-		SUPER_sanawich_top_input.setText(pref.get("super_top", "NULL"));
-		SUPER_GD_input.setText(pref.get("super_gd", "NULL"));
-		SUPER_GS.setSelected(pref.getBoolean("super_gs", false));
+	public void load(){
+		System.out.println("LOAD");
+		workingdir_input_s.setText(pref.get("wds", "~/"));
+		project_input_s.setText(myPanel.MOname[MOindex].getText());	
+		PCA_total_input.setText(pref.get("pca_total", "3"));		
 	}
 	
-	void save(){
-		pref.put("wd",  wd_input.getText());
-		myPanel.MOname[MOindex].setText(n_input.getText());
-		
-		pref.put("emma_esp", esp_input.getText());
-		pref.put("emma_llim", llim_input.getText());
-		pref.put("emma_ngrid", ngrid_input.getText());
-		pref.put("emma_ulim", ulim_input.getText());
-		
-		pref.put("farm_acc", acceleration_input.getText());
-		pref.put("farm_con", converge_input.getText());
-		pref.put("farm_max", maxLoop_input.getText());
-
-		pref.put("file_ext_g", file_Ext_G_input.getText());
-		pref.put("file_ext_gd", file_Ext_GD_input.getText());
-		pref.put("file_ext_gm", file_Ext_GM_input.getText());
-		pref.put("file_fragment", (String) file_fragment_input.getSelectedItem());
-		pref.put("file_from", file_from_input.getText());
-		pref.put("file_to", file_to_input.getText());
-		pref.put("file_total", file_total_input.getText());
-		pref.put("file_g", file_G_input.getText());
-		pref.put("file_gd", file_GD_input.getText());
-		pref.put("file_gm", file_GM_input.getText());
-		pref.putBoolean("file_out", file_output.isSelected());
-		pref.put("file_path", file_path_input.getText());
-		
-		pref.put("group_by", group_by_input.getText());
-		pref.put("group_from", group_from_input.getText());
-		pref.put("group_to", group_to_input.getText());
-		
-		pref.put("kinship_algorithm", (String) kinship_algorithm_input.getSelectedItem());
-		pref.put("kinship_cluster", (String) kinship_cluster_input.getSelectedItem());
-		pref.put("kinship_group", (String) kinship_group_input.getSelectedItem());
-
-		pref.put("ld_chromosome", LD_chromosome_input.getText());
-		pref.put("ld_location", LD_location_input.getText());
-		pref.put("ld_range", LD_range_input.getText());
-
-		pref.put("method_iteration", (String) method_iteration_input.getSelectedItem());
-		pref.put("method_bin", (String) method_bin_input.getSelectedItem());
-		pref.put("method_GLM", (String) method_GLM_input.getSelectedItem());
-		pref.put("method_sub", (String) method_sub_input.getSelectedItem());
-		pref.put("method_sub_final", (String) method_sub_final_input.getSelectedItem());
-
-		pref.putBoolean("model_selection", model_selection.isSelected());
-
-		pref.put("output_cutoff", output_cutOff_input.getText());
-		pref.put("output_cv", output_CV_Inheritance_input.getText());
-		pref.put("output_DPP", output_DPP_input.getText());
-		pref.putBoolean("output_geno", output_Geno_View_output.isSelected());
-		pref.putBoolean("output_iteration", output_iteration_output.isSelected());
-		pref.put("output_maxout", output_maxOut_input.getText());
-		pref.putBoolean("output_hapmap", output_hapmap.isSelected());
-		pref.putBoolean("output_numeric", output_numerical.isSelected());
-		pref.put("output_plot", (String) output_plot_style_input.getSelectedItem());
-		pref.put("output_threshold", output_threshold_input.getText());
-
+	public void save(){
+		System.out.println("SAVE");
+		pref.put("wds", workingdir_input_s.getText());
+		myPanel.MOname[MOindex].setText(project_input_s.getText());
+		System.out.println(project_input_s.getText());
 		pref.put("pca_total", PCA_total_input.getText());
-		pref.putBoolean("pca_view", PCA_View_input.isSelected());
-
-		pref.put("qtn_prior", QTN_prior_input.getText());
-		pref.put("qtn", QTN_input.getText());
-		pref.put("qtn_limit", QTN_limit_input.getText());
-		pref.put("qtn_method", (String) QTN_method_input.getSelectedItem());
-		pref.put("qtn_position", QTN_position_input.getText());
-		pref.put("qtn_round", QTN_round_input.getText());
-		pref.putBoolean("qtn_update", QTN_update.isSelected());
-
-		pref.putBoolean("snp_create", SNP_create_indicater.isSelected());
-		pref.putBoolean("snp_major", SNP_major_allele_zero.isSelected());
-		pref.put("snp_cv", SNP_CV_input.getText());
-		pref.put("snp_effect", (String) SNP_effect_input.getSelectedItem());
-		pref.put("snp_fdr", SNP_FDR_input.getText());
-		pref.put("snp_fraction", SNP_fraction_input.getText());
-		pref.put("snp_impute", (String) SNP_impute_input.getSelectedItem());
-		pref.put("snp_maf", SNP_MAF_input.getText());
-		pref.putBoolean("snp_p3d", SNP_P3D.isSelected());
-		pref.putBoolean("snp_permuation", SNP_permutation.isSelected());
-		pref.put("snp_robust", (String) SNP_robust_input.getSelectedItem());
-		pref.putBoolean("snp_test", SNP_test.isSelected());
 		
-		pref.put("super_bin_by", SUPER_bin_by_input.getText());
-		pref.put("super_bin_from", SUPER_bin_from_input.getText());
-		pref.put("super_bin_to", SUPER_bin_to_input.getText());
-		pref.put("super_bin_selection", SUPER_bin_selection_input.getText());
-		pref.put("super_bin_size", SUPER_bin_size_input.getText());
-		pref.put("super_bin", SUPER_BINS_input.getText());
-		pref.put("super_fdr", SUPER_FDR_rate_input.getText());
-		pref.put("super_gt", SUPER_GT_index_input.getText());
-		pref.put("super_inclosure_by", SUPER_inclosure_by_input.getText());
-		pref.put("super_inclosure_from", SUPER_inclosure_from_input.getText());
-		pref.put("super_inclosure_to", SUPER_inclosure_to_input.getText());
-		pref.put("super_ld", SUPER_LD_input.getText());
-		pref.put("super_bottom", SUPER_sanawich_bottom_input.getText());
-		pref.put("super_top", SUPER_sanawich_top_input.getText());
-		pref.put("super_gd", SUPER_GD_input.getText());
-		pref.putBoolean("super_gs", SUPER_GS.isSelected());
 	}
 	
 	
 
 	@Override
 	public void windowClosing(WindowEvent e) {
-		// TODO Auto-generated method stub
 		System.out.println("close");	
 		save();		
 	}
