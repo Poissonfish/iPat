@@ -1,6 +1,6 @@
 args = commandArgs(trailingOnly=TRUE)
 
-list.of.packages <- c("MASS", "gplots", "compiler", "scatterplot3d")
+list.of.packages <- c("MASS", "gplots", "compiler", "scatterplot3d", "R.utils")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 if(!'multtest'%in% installed.packages()[,"Package"]){
@@ -13,6 +13,7 @@ library(multtest)
 library(gplots)
 library(compiler) #required for cmpfun
 library(scatterplot3d)
+library(R.utils)
 source("http://www.zzlab.net/GAPIT/emma.txt")
 source("http://www.zzlab.net/GAPIT/gapit_functions.txt")
 
@@ -40,33 +41,27 @@ if(GM.path=="NULL"){GM=NULL}else{GM=read.table(GM.path, head=FALSE)}
 if(GD.path=="NULL"){GD=NULL}else{GD=read.table(GD.path, head=FALSE)}
 if(C.path=="NULL"){C=NULL}else{C=read.table(C.path, head=TRUE)}
 if(K.path=="NULL"){K=NULL}else{K=read.table(D.path, head=FALSE)}
-
-myGAPIT = capture.output(
-  tryCatch(
-    {GAPIT(
-      Y = read.table(Y.path, head=TRUE),
-      G = G, 
-      GM = GM,
-      GD = GD,
-      KI = K,
-      SNP.test = SNP.test,
-      CV = C, 
-      PCA.total = PCA,
-      kinship.cluster = ki.c,
-      kinship.group = ki.g,
-      group.from = g.from,
-      group.to = g.to, 
-      group.by = g.by,
-      Model.selection = model.s,
-      SNP.fraction = snp.fraction,
-      file.fragment = file.fragment
-    )},error = function(e){
-      print(e)
-    }
-  ) 
+#rscript ./libs/Gapit.R /Users/Poissonfish/all_demofile/G.txt NULL NULL /Users/Poissonfish/all_demofile/P.txt NULL TRUE NULL 3 average Mean 1 10000 10000 FALSE 1 512 /Users/Poissonfish/Desktop/output
+print('GAPIT start')
+tryCatch(
+  {x=GAPIT(
+    Y = read.table(Y.path, head=TRUE),
+    G = G,
+    GM = GM,
+    GD = GD,
+    KI = K,
+    SNP.test = SNP.test,
+    CV = C,
+    PCA.total = PCA,
+    kinship.cluster = ki.c,
+    kinship.group = ki.g,
+    group.from = g.from,
+    group.to = g.to,
+    group.by = g.by,
+    Model.selection = model.s,
+    SNP.fraction = snp.fraction,
+    file.fragment = file.fragment
+  )},error = function(e){
+    print(e)
+  }
 )
-if(length(grep('Error',myGAPIT[length(myGAPIT)]))>0){
-  cat("Error GAPIT output", myGAPIT, file="output.log", sep="\n", append=FALSE)
-}else{
-  cat("GAPIT output", myGAPIT, file="output.log", sep="\n", append=FALSE)
-}
