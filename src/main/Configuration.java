@@ -5,6 +5,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.prefs.Preferences;
@@ -18,8 +19,11 @@ import net.miginfocom.swing.MigLayout;
 
 public class Configuration extends JFrame implements ActionListener, WindowListener{
 	Preferences pref;
+	static Runtime[] gapit_runtime = new Runtime[myPanel.MOMAX];
+	static Process[] gapit_pro = new Process[myPanel.MOMAX];
+
 	///////////////////////////////////////////////////////////////////////////////////////
-	//Config 2
+	//Config 
 	JLabel project_text_s = new JLabel("Task name");
 	JTextField project_input_s = new JTextField(10);
 	JLabel workingdir_text_s = new JLabel("Working Directory");
@@ -90,22 +94,37 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JPanel wd_panel;
 	iPat_chooser chooser;	
 	///////////////////////////////////////////////////////////////////////////////////////	
+
+	Boolean[] Suc_or_Fal = new Boolean[myPanel.MOMAX];
+	
 	Runnable back_run = new Runnable(){
 		@Override
 		public void run(){
 			try {
+		        // Construct panel
+	            myPanel.text_console[MOindex] = new JTextArea();
+	            myPanel.text_console[MOindex].setEditable(false);
+	            myPanel.scroll_console[MOindex] = new JScrollPane(myPanel.text_console[MOindex] ,
+	                    JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+	                    JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+	            myPanel.frame_console[MOindex]  = new JFrame();
+	            myPanel.frame_console[MOindex].setContentPane(myPanel.scroll_console[MOindex]);
+	            myPanel.frame_console[MOindex].setTitle(project_input_s.getText());
+	            myPanel.frame_console[MOindex].setSize(700,350);
+	            myPanel.frame_console[MOindex].setVisible(true); 
+	            myPanel.frame_console[MOindex].addWindowListener(new WindowAdapter(){
+	    			@Override
+	    			public void windowClosing(WindowEvent e) {
+	    				if(Configuration.gapit_pro[MOindex].isAlive()){
+	    					Configuration.gapit_pro[MOindex].destroy();
+	    					Suc_or_Fal[MOindex] = false;
+	    				}
+	    				System.out.println("Task killed");
+	    			}
+	    		});
+	            
 				GAPIT_two(MOindex);
 				//GAPIT(MOindex);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-		}
-	};
-	Runnable back_run_2 = new Runnable(){
-		@Override
-		public void run(){
-			try {
-				GAPIT_two(MOindex);
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
@@ -119,9 +138,9 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	int[][] file_index = new int[10][2]; //tbindex; filetype: 1=G, 2=P
 	
 	public Configuration(int MOindex) throws FileNotFoundException, IOException{	
-		System.out.println("Can you hear me?");
 		this.MOindex = MOindex;
 		int index = 0;
+		Arrays.fill(Suc_or_Fal, false);
 		index = catch_files(file_index);	
 		String P_name = "", G_name = "", GD_name = "", GM_name = "";
 		for (int i = 0; i<4;i++){
@@ -361,8 +380,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	      }else if(source == go_2){
 	    	  	save();
 	    	  	myPanel.MOfile[MOindex] = workingdir_input_s.getText();
-	    	  	myPanel.gapit_run = new Thread(back_run_2);
-	    	  	myPanel.gapit_run.start();
+	    	  	myPanel.gapit_run[MOindex] = new Thread(back_run);
+	    	  	myPanel.gapit_run[MOindex].start();
 	    	  	this.dispose();
 	      }else if(source == wd_browse_s){
 	    	  	chooser = new iPat_chooser();
@@ -475,35 +494,47 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		WD = workingdir_input_s.getText();
 		myPanel.permit[MOindex] = true;
 		myPanel.rotate_index[MOindex] = 1;
-		Runtime gapit_run = Runtime.getRuntime();
 		Process pl;
-
-		String[] row1 = null;
 		String command = null;
 		try {
+			// Check working directory
 			System.out.println("running gapit");
 			pl = Runtime.getRuntime().exec("pwd");
-			String line = "";
-	        BufferedReader p_in = new BufferedReader(new InputStreamReader(pl.getInputStream()));
-	        while((line = p_in.readLine()) != null){
+			String line = "", gapit_line = "";
+	        BufferedReader pl_in = new BufferedReader(new InputStreamReader(pl.getInputStream()));
+	        while((line = pl_in.readLine()) != null){
 	                System.out.println(line);
 	        }
-	        p_in.close();
+	        pl_in.close();
+	        // Command input
 	        command = "rscript ./libs/Gapit.R "
 					+ G + " NULL NULL " + P + " " + K + " " + SNP_test + " " + C + " " + PCA + " "
 					+ ki_c + " " + ki_g + " " + g_from + " " + g_to + " " + g_by + " "
 					+ model_selection_string + " " + SNP_fraction + " " + file_fragment + " "+ WD;
             System.out.println(command);
-			gapit_run.exec(command).waitFor();
-			String[] result = read_10_lines(WD+"/output.log");
-			row1 = result[0].split(" ");
+            
+            // Run Gapit
+            gapit_runtime[MOindex] = Runtime.getRuntime();
+            gapit_pro[MOindex] = gapit_runtime[MOindex].exec(command);
+            BufferedReader gapit_in = new BufferedReader(new InputStreamReader(gapit_pro[MOindex].getInputStream()));
+	        while((gapit_line = gapit_in.readLine()) != null){
+	        		if(gapit_line.contains("Error")){Suc_or_Fal[MOindex] = false;}
+	                System.out.println(gapit_line);
+	                myPanel.text_console[MOindex].append(gapit_line+ System.getProperty("line.separator"));
+	                myPanel.text_console[MOindex].setCaretPosition(myPanel.text_console[MOindex].getDocument().getLength());
+	        }
+            gapit_pro[MOindex].waitFor();
+            File outfile = new File(WD+"/"+project_input_s.getText()+".log");
+            FileWriter outWriter = new FileWriter(outfile.getAbsoluteFile(), true);
+            myPanel.text_console[MOindex].write(outWriter);
 		} catch (IOException | InterruptedException e1) {e1.printStackTrace();}
 				
-	    if(row1[0].equals("Error")){
-			myPanel.MO[MOindex] = myPanel.MO_fal;
-	    }else{
+	    if(Suc_or_Fal[MOindex]){
 			myPanel.MO[MOindex] = myPanel.MO_suc;
+	    }else{
+			myPanel.MO[MOindex] = myPanel.MO_fal;
 	    }
+	    
 		myPanel.permit[MOindex] = false;
 		myPanel.rotate_index[MOindex] = 0;
 		myPanel.MOimageH[MOindex]=myPanel.MO[MOindex].getHeight(null);
@@ -637,13 +668,9 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		System.out.println("SAVE");
 		pref.put("wds", workingdir_input_s.getText());
 		myPanel.MOname[MOindex].setText(project_input_s.getText());
-		System.out.println(project_input_s.getText());
-		pref.put("pca_total", PCA_total_input.getText());
-		
+		pref.put("pca_total", PCA_total_input.getText());	
 	}
 	
-	
-
 	@Override
 	public void windowClosing(WindowEvent e) {
 		System.out.println("close");	
