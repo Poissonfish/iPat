@@ -140,7 +140,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	public Configuration(int MOindex) throws FileNotFoundException, IOException{	
 		this.MOindex = MOindex;
 		int index = 0;
-		Arrays.fill(Suc_or_Fal, false);
+		Arrays.fill(Suc_or_Fal, true);
 		index = catch_files(file_index);	
 		String P_name = "", G_name = "", GD_name = "", GM_name = "";
 		for (int i = 0; i<4;i++){
@@ -495,7 +495,6 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		myPanel.permit[MOindex] = true;
 		myPanel.rotate_index[MOindex] = 1;
 		Process pl;
-		String command = null;
 		try {
 			// Check working directory
 			System.out.println("running gapit");
@@ -507,11 +506,11 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	        }
 	        pl_in.close();
 	        // Command input
-	        command = "rscript ./libs/Gapit.R "
-					+ G + " NULL NULL " + P + " " + K + " " + SNP_test + " " + C + " " + PCA + " "
-					+ ki_c + " " + ki_g + " " + g_from + " " + g_to + " " + g_by + " "
-					+ model_selection_string + " " + SNP_fraction + " " + file_fragment + " "+ WD;
-            System.out.println(command);
+	        String[] command = {"rscript", "./libs/Gapit.R",
+	        		G, "NULL", "NULL", P, K, SNP_test, C, PCA, 
+	        		ki_c, ki_g, g_from, g_to, g_by, 
+	        		model_selection_string, SNP_fraction, file_fragment, WD};
+	        System.out.println(command);
             
             // Run Gapit
             gapit_runtime[MOindex] = Runtime.getRuntime();
