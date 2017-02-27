@@ -2,6 +2,9 @@ package main;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -67,6 +70,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	private static final int TBMAX=40;
 	static int MOMAX=10;
 	private static final int COMAX=20;	
+	static File jar;
 	
 	static int[] TBimageX= new int[TBMAX];
 	static int[] TBimageY= new int[TBMAX];
@@ -257,11 +261,29 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	Timer hint_tb_timer_out;
 	Timer hint_tb_main;
 	//multi-thread
-	static Thread[] gapit_run = new Thread[MOMAX]; 
+	static Thread[] multi_run = new Thread[MOMAX]; 
 	//Console panel
 	static JScrollPane[] scroll_console = new JScrollPane[MOMAX];
 	static JTextArea[] text_console = new JTextArea[MOMAX];
 	static JFrame[] frame_console = new JFrame[MOMAX];
+	
+	////
+	public static class CustomOutputStream extends OutputStream {
+	    private JTextArea textArea;
+	     
+	    public CustomOutputStream(JTextArea textArea) {
+	        this.textArea = textArea;
+	    }
+	     
+	    @Override
+	    public void write(int b) throws IOException {
+	        // redirects data to the text area
+	        textArea.append(String.valueOf((char)b));
+	        // scrolls the text area to the end of data
+	        textArea.setCaretPosition(textArea.getDocument().getLength());
+	    }
+	}
+	////
 	
 	public myPanel(int Wideint, int Heigthint, int pH){
 		this.Wide=Wideint;
@@ -270,6 +292,11 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		delbboundx=Wide-50;
 		delbboundy=Heigth-70;	
 
+		
+        try {
+			jar = new File(iPat.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+		} catch (URISyntaxException e1) {e1.printStackTrace();}
+        
 		try{
 			Image iconIP = ImageIO.read(getClass().getResource("resources/iPat.png"));
 			iPat.setIcon(new ImageIcon(iconIP));
