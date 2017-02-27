@@ -291,7 +291,6 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		this.panelHeigth=pH;
 		delbboundx=Wide-50;
 		delbboundy=Heigth-70;	
-
 		
         try {
 			jar = new File(iPat.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
@@ -416,8 +415,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			MOco[i][3]=-1;	
 			MOco[i][4]=-1;
 			rotate_index[i]=0;
-		}	
-		
+		}			
 		Arrays.fill(permit, false);	
 		
 		////////////
@@ -878,8 +876,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 				link=false;
 				linktolink=false;
 			}
-			
-			
+		
 			@Override
     		public void mouseClicked(MouseEvent evt) {
     			int x = evt.getX();

@@ -23,12 +23,13 @@ wd = args[9]
 # GM.path="/Users/Poissonfish/aaafolder/mdp_SNP_information.txt"
 # GD.path="/Users/Poissonfish/aaafolder/mdp_numeric.txt"
 # Y.path="/Users/Poissonfish/aaafolder/mdp_traits_validation.txt"
-# C.path = "NULL" 
-# method.bin = "static" 
-# maxLoop=as.numeric("10") 
-# MAF.calculate = as.logical("FALSE") 
-# maf.threshold=as.numeric("0.05") 
+# C.path = "NULL"
+# method.bin = "optimum"
+# maxLoop=as.numeric("2")
+# MAF.calculate = as.logical("TRUE")
+# maf.threshold=as.numeric("0.05")
 # wd="/Users/Poissonfish/Desktop/output"
+
 
 setwd(wd)
 if(GM.path=="NULL"){GM=NULL}else{GM=read.table(GM.path, head=TRUE)}

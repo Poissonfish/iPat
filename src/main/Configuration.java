@@ -58,7 +58,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 
 	JPanel adv_panel_farm;
 	JLabel method_bin_name_farm = new JLabel("Method bin");
-	String[] method_bin_list_farm= {"Static", "Optimum"};
+	String[] method_bin_list_farm= {"static", "optimum"};
 	JComboBox method_bin_combo_farm= new JComboBox(method_bin_list_farm);
 	
 	JLabel maxloop_text = new JLabel("Max Loop");
@@ -164,8 +164,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	            myPanel.frame_console[MOindex].addWindowListener(new WindowAdapter(){
 	    			@Override
 	    			public void windowClosing(WindowEvent e) {
-	    				if(Configuration.gapit_pro[MOindex].isAlive()){
-	    					Configuration.gapit_pro[MOindex].destroy();
+	    				if(gapit_pro[MOindex].isAlive()){
+	    					gapit_pro[MOindex].destroy();
 	    					Suc_or_Fal[MOindex] = false;
 	    				}
 	    				System.out.println("Task killed");
@@ -200,8 +200,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	            myPanel.frame_console[MOindex].addWindowListener(new WindowAdapter(){
 	    			@Override
 	    			public void windowClosing(WindowEvent e) {
-	    				if(Configuration.gapit_pro[MOindex].isAlive()){
-	    					Configuration.gapit_pro[MOindex].destroy();
+	    				if(farm_pro[MOindex].isAlive()){
+	    					farm_pro[MOindex].destroy();
 	    					Suc_or_Fal[MOindex] = false;
 	    				}
 	    				System.out.println("Task killed");
