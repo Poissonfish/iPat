@@ -37,11 +37,11 @@ wd = args[17]
 
 setwd(wd)
 if(G.path=="NULL"){G=NULL}else{G=read.delim(G.path, head=FALSE)}
-if(GM.path=="NULL"){GM=NULL}else{GM=read.table(GM.path, head=FALSE)}
-if(GD.path=="NULL"){GD=NULL}else{GD=read.table(GD.path, head=FALSE)}
+if(GM.path=="NULL"){GM=NULL}else{GM=read.table(GM.path, head=TRUE)}
+if(GD.path=="NULL"){GD=NULL}else{GD=read.table(GD.path, head=TRUE)}
 if(C.path=="NULL"){C=NULL}else{C=read.table(C.path, head=TRUE)}
 if(K.path=="NULL"){K=NULL}else{K=read.table(D.path, head=FALSE)}
-###rscript ./libs/Gapit.R '/Users/Poissonfish/all demofile/G.txt' NULL NULL '/Users/Poissonfish/all demofile/P.txt' 'NULL' TRUE 'NULL' 3 average Mean 1 10000 10000 FALSE 1 512 '/Users/Poissonfish/Desktop/output2'
+print(length(args))
 
 print('GAPIT start')
 tryCatch(
@@ -66,3 +66,4 @@ tryCatch(
     print(e)
   }
 )
+print(warnings())
