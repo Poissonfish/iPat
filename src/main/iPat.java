@@ -1,6 +1,7 @@
 package main;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -266,7 +267,9 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	static JScrollPane[] scroll_console = new JScrollPane[MOMAX];
 	static JTextArea[] text_console = new JTextArea[MOMAX];
 	static JFrame[] frame_console = new JFrame[MOMAX];
-	
+	// file format catch
+	static int[][] file_index = new int[10][2]; //tbindex; filetype: 1=G, 2=P
+
 	////
 	public static class CustomOutputStream extends OutputStream {
 	    private JTextArea textArea;
@@ -683,13 +686,27 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 					 }
 			   	}else if(MOindex!=0 & SwingUtilities.isRightMouseButton(ee)){ 
 			   		Configuration model_frame;
+			   		JFrame wrong_formate = null;
+			   		int file_count = -1;
+					try {
+						file_count = catch_files(file_index);
+					} catch (IOException e1) {e1.printStackTrace();}
+					
 			   		hint_mo_run = true;
 					try {
-						MO[MOindex] = MOimage;
-						model_frame = new Configuration(MOindex);
-				  		model_frame.setBounds(300, 100, 370, 500);
-				   		model_frame.setResizable(true);
-				   		model_frame.setVisible(true);
+						if(file_count!=-1){
+							MO[MOindex] = MOimage;
+							model_frame = new Configuration(MOindex, file_count, file_index);
+					  		model_frame.setBounds(300, 100, 370, 500);
+					   		model_frame.setResizable(true);
+					   		model_frame.setVisible(true);
+						}else{
+							JOptionPane.showMessageDialog(wrong_formate,
+								    "Please use demo files to correct the format",
+								    "Incorrect format",
+								    JOptionPane.ERROR_MESSAGE);
+						}
+						
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -1726,7 +1743,6 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
         g2d.dispose();        
 	}
 	
-	
 	public void DrawLinkedLine(Graphics g){
 		Stroke temp_stroke;
 		for (int i=0; i<linklineindex; i++){
@@ -1830,5 +1846,131 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	public static boolean partial_true(Boolean[] array){
 	    for(boolean b : array) if(b) return true;
 	    return false;
+	}
+	
+	public static String[] read_10_lines(String filename) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(filename));
+        String[] lines = new String[10];
+        String line;
+        int nLine = 0;
+        while((line = reader.readLine()) != null) {
+            lines[nLine++] = line;
+            if(nLine >= 10) {
+                break;
+            }
+        }
+        return lines;
+    }
+	
+	int catch_files(int[][] file_index) throws IOException{
+		String[][] text= new String[5][], first_row= new String[5][], second_row= new String[5][];
+		for(int i=0;i<5;i++){
+			file_index[i][0] = 0; //default to TBindex = 0, which is null
+			file_index[i][1] = -1; //default to -1; 0:P, 1:G, 2:GD, 3:GM, 4:KI, 5:CO			
+		}
+		int index = 0;
+		for (int i = 1; i<=myPanel.TBcount; i++){
+			if(index>3){break;}
+			if(myPanel.TBco[i][3]==myPanel.MOco[MOindex][3] && myPanel.TBco[i][3]!=-1){
+				System.out.println(myPanel.TBfile[i]);
+				file_index[index][0] = i;
+				text[index] = read_10_lines(myPanel.TBfile[file_index[index][0]]);
+				first_row[index] = text[index][0].split("\t");
+				second_row[index] = text[index][1].split("\t");
+				index++;
+			}
+		}
+		switch (index){
+			case 1:
+				file_index[0][1] = 0;
+				break;
+			case 2:
+				// G(1): row -> head + marker; col -> 11 + samples
+				// P(0): row -> head + samples; col -> 1 + traits
+				/*
+				System.out.println("Print start");
+				for(int i = 0; i<2; i++){
+					System.out.println("i="+i);
+					System.out.println(first_row[i].length);
+					System.out.println(first_row[i][0]);
+					System.out.println(first_row[i][1]);
+					System.out.println(second_row[i][0]);
+					System.out.println(second_row[i][1]);
+				}
+				System.out.println(first_row[1][11]);
+				System.out.println(second_row[0][0]);
+				System.out.println("Print end");
+				*/
+				
+				if(first_row[0].length<12 && first_row[1].length>11 && 
+				  (second_row[0][0].equals(first_row[1][11])) &&
+				  (second_row[1][4].equals("+")||second_row[1][4].equals("-"))){
+					file_index[0][1] = 0;
+					file_index[1][1] = 1;
+					System.out.println("Status I");
+				}else if(first_row[1].length<12 && first_row[0].length>11 && 
+						(second_row[1][0].equals(first_row[0][11])) &&
+						(second_row[0][4].equals("+")||second_row[0][4].equals("-"))){
+					file_index[0][1] = 1;
+					file_index[1][1] = 0;
+					System.out.println("Status II");
+				}else{
+					index = -1;
+					System.out.println("Status V ");
+				}
+				break;
+			case 3:
+				// GD(2): row -> head + samples; col -> 1 + marker
+				// GM(3): row -> head + marker; col -> 3
+				// P(0): row -> head + samples; col -> 1 + traits
+				/*
+				System.out.println("Print start");
+				for(int i = 0; i<3; i++){
+					System.out.println("i="+i);
+					System.out.println(first_row[i].length);
+					System.out.println(first_row[i][0]);
+					System.out.println(first_row[i][1]);
+					System.out.println(second_row[i][0]);
+					System.out.println(second_row[i][1]);
+				}
+				System.out.println("Print end");
+				*/
+				if(first_row[0].length==3 && first_row[1].length >1 && (second_row[0][0].equals(first_row[1][1]))){
+					file_index[0][1] = 3;
+					file_index[1][1] = 2;
+					file_index[2][1] = 0;
+					System.out.println("Status I");
+				}else if(first_row[0].length==3 && first_row[2].length >1 && (second_row[0][0].equals(first_row[2][1]))){
+					file_index[0][1] = 3;
+					file_index[2][1] = 2;
+					file_index[1][1] = 0;
+					System.out.println("Status II");
+				}else if(first_row[1].length==3 && first_row[0].length >1 && (second_row[1][0].equals(first_row[0][1]))){
+					file_index[1][1] = 3;
+					file_index[0][1] = 2;
+					file_index[2][1] = 0;
+					System.out.println("Status III");
+				}else if(first_row[1].length==3 && first_row[2].length >1 && (second_row[1][0].equals(first_row[2][1]))){
+					file_index[1][1] = 3;
+					file_index[2][1] = 2;
+					file_index[0][1] = 0;
+					System.out.println("Status IV");
+				}else if(first_row[2].length==3 && first_row[0].length >1 && (second_row[2][0].equals(first_row[0][1]))){
+					file_index[2][1] = 3;
+					file_index[0][1] = 2;
+					file_index[1][1] = 0;
+					System.out.println("Status V");
+				}else if(first_row[2].length==3 && first_row[1].length >1 && (second_row[2][0].equals(first_row[1][1]))){
+					file_index[2][1] = 3;
+					file_index[1][1] = 2;
+					file_index[0][1] = 0;
+					System.out.println("Status VI");
+				}else{					
+					index = -1;
+					System.out.println("Status VII");
+				}
+				break;
+		}
+		return index;		
 	}
 }

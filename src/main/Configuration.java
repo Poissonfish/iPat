@@ -21,10 +21,8 @@ import net.miginfocom.swing.MigLayout;
 
 public class Configuration extends JFrame implements ActionListener, WindowListener{
 	Preferences pref;
-	static Runtime[] gapit_runtime = new Runtime[myPanel.MOMAX];
-	static Process[] gapit_pro = new Process[myPanel.MOMAX];
-	static Runtime[] farm_runtime = new Runtime[myPanel.MOMAX];
-	static Process[] farm_pro = new Process[myPanel.MOMAX];
+	static Runtime[] runtime = new Runtime[myPanel.MOMAX];
+	static Process[] process = new Process[myPanel.MOMAX];
 	PrintStream printStream;
 	///////////////////////////////////////////////////////////////////////////////////////
 	//Config farm
@@ -112,6 +110,9 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	String[] kinship_group_names_s= {"Mean", "Max", "Min", "Median"};
 	JComboBox kinship_group_input_s= new JComboBox(kinship_group_names_s);
 	JLabel kinship_group_text_s = new JLabel("Group");
+	JLabel model_select = new JLabel("Select a model");
+	String[] model_select_names = {"GLM", "MLM", "CMLM"};
+	JComboBox model_select_input = new JComboBox(model_select_names);
 	JLabel group_by_text_s = new JLabel("By");
 	JTextField group_by_input_s = new JTextField(5);
 	JLabel group_from_text_s = new JLabel("From");
@@ -143,8 +144,6 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JPanel wd_panel;
 	iPat_chooser chooser;	
 	///////////////////////////////////////////////////////////////////////////////////////	
-
-	Boolean[] Suc_or_Fal = new Boolean[myPanel.MOMAX];
 	
 	Runnable back_run_gapit = new Runnable(){
 		@Override
@@ -164,9 +163,9 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	            myPanel.frame_console[MOindex].addWindowListener(new WindowAdapter(){
 	    			@Override
 	    			public void windowClosing(WindowEvent e) {
-	    				if(gapit_pro[MOindex].isAlive()){
-	    					gapit_pro[MOindex].destroy();
-	    					Suc_or_Fal[MOindex] = false;
+	    				if(process[MOindex].isAlive()){
+	    					process[MOindex].destroy();
+	    					myPanel.MO[MOindex] = myPanel.MO_fal;
 	    				}
 	    				System.out.println("Task killed");
 	    			}
@@ -176,7 +175,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	    		System.setOut(printStream);
 	    		System.setErr(printStream);
 */
-				run_GAPIT(MOindex);
+				run_GAPIT(MOindex, myPanel.file_index);
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
@@ -200,9 +199,9 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	            myPanel.frame_console[MOindex].addWindowListener(new WindowAdapter(){
 	    			@Override
 	    			public void windowClosing(WindowEvent e) {
-	    				if(farm_pro[MOindex].isAlive()){
-	    					farm_pro[MOindex].destroy();
-	    					Suc_or_Fal[MOindex] = false;
+	    				if(process[MOindex].isAlive()){
+	    					process[MOindex].destroy();
+	    					myPanel.MO[MOindex] = myPanel.MO_fal;
 	    				}
 	    				System.out.println("Task killed");
 	    			}
@@ -212,7 +211,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	    		System.setOut(printStream);
 	    		System.setErr(printStream);
 */
-				run_Farm(MOindex);
+				run_Farm(MOindex, myPanel.file_index);
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
@@ -224,42 +223,40 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
     String folder_path = new String();
 	int  MOindex;
 	///////////////////////////////////////////////////////////////////////////////////////
-	int[][] file_index = new int[10][2]; //tbindex; filetype: 1=G, 2=P
-	///////////////////////////////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////
 
-	public Configuration(int MOindex) throws FileNotFoundException, IOException{	
+	public Configuration(int MOindex, int file_count, int[][] file_index) throws FileNotFoundException, IOException{	
 		this.MOindex = MOindex;
-		int index = 0;
-		Arrays.fill(Suc_or_Fal, true);
-		index = catch_files(file_index);	
+
 		String P_name = "", G_name = "", GD_name = "", GM_name = "";
-		for (int i = 0; i<4;i++){
-			if(file_index[i][1] == 0){
-				Path p = Paths.get(myPanel.TBfile[file_index[i][0]]);
-				P_name = p.getFileName().toString();
-			}else if(file_index[i][1] == 1){
-				Path p = Paths.get(myPanel.TBfile[file_index[i][0]]);
-				G_name = p.getFileName().toString();
-			}else if(file_index[i][1] == 2){
-				Path p = Paths.get(myPanel.TBfile[file_index[i][0]]);
-				GD_name = p.getFileName().toString();
-			}else if(file_index[i][1] == 3){
-				Path p = Paths.get(myPanel.TBfile[file_index[i][0]]);
-				GM_name = p.getFileName().toString();
+		if(file_index[0][1]!=-1){ //input format supported
+			for (int i = 0; i<4;i++){
+				if(file_index[i][1] == 0){
+					Path p = Paths.get(myPanel.TBfile[file_index[i][0]]);
+					P_name = p.getFileName().toString();
+				}else if(file_index[i][1] == 1){
+					Path p = Paths.get(myPanel.TBfile[file_index[i][0]]);
+					G_name = p.getFileName().toString();
+				}else if(file_index[i][1] == 2){
+					Path p = Paths.get(myPanel.TBfile[file_index[i][0]]);
+					GD_name = p.getFileName().toString();
+				}else if(file_index[i][1] == 3){
+					Path p = Paths.get(myPanel.TBfile[file_index[i][0]]);
+					GM_name = p.getFileName().toString();
+				}
 			}
-		}
+		}	
 		JScrollPane pane_gapit = null;
 		JScrollPane pane_farm = null;
 		pref = Preferences.userRoot().node("/ipat"); 
 		System.out.println("P:"+P_name+" GD:"+GD_name+" GM:"+GM_name+" G:"+G_name);
-		System.out.println("index:" + index);
-		switch(index){
+		System.out.println("files count:" + file_count);
+		switch(file_count){
 			case 1:
 				break;
 			case 2:
 				pane_gapit = config_gapit(P_name, G_name, "0");
+				pane_farm = config_farm(P_name, GD_name, "0");
 				break;
 			case 3:
 				pane_gapit = config_gapit(P_name, GD_name, GM_name);
@@ -278,89 +275,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		addWindowListener(this);
 	}	
 	
-	int catch_files(int[][] file_index) throws IOException{
-		String[][] text= new String[5][], first_row= new String[5][], second_row= new String[5][];
-		for(int i=0;i<5;i++){
-			file_index[i][0] = 0; //default to TBindex = 0, which is null
-			file_index[i][1] = -1; //default to -1; 0:P, 1:G, 2:GD, 3:GM, 4:KI, 5:CO
-		}
-		int index = 0;
-		for (int i = 1; i<=myPanel.TBcount; i++){
-			if(index>3){break;}
-			if(myPanel.TBco[i][3]==myPanel.MOco[MOindex][3] && myPanel.TBco[i][3]!=-1){
-				System.out.println(myPanel.TBfile[i]);
-				file_index[index][0] = i;
-				text[index] = read_10_lines(myPanel.TBfile[file_index[index][0]]);
-				first_row[index] = text[index][0].split("\t");
-				second_row[index] = text[index][1].split("\t");
-				index++;
-			}
-		}
-		switch (index){
-			case 1:
-				file_index[0][1] = 0;
-				break;
-			case 2:
-				// G(1): row -> head + marker; col -> 11 + samples
-				// P(0): row -> head + samples; col -> 1 + traits
-				if(first_row[0].length<5){
-					file_index[0][1] = 0;
-					file_index[1][1] = 1;
-				}else if(first_row[1].length<5){
-					file_index[0][1] = 1;
-					file_index[1][1] = 0;
-				}else if(first_row[0][4].equals("+")||first_row[0][4].equals("-") ){
-					file_index[0][1] = 1;
-					file_index[1][1] = 0;
-				}else{
-					file_index[0][1] = 0;
-					file_index[1][1] = 1;
-				}		
-				break;
-			case 3:
-				// GD(2): row -> head + samples; col -> 1 + marker
-				// GM(3): row -> head + marker; col -> 3
-				// P(0): row -> head + samples; col -> 1 + traits
-				System.out.println("Print start");
-				for(int i = 0; i<3; i++){
-					System.out.println("i="+i);
-					System.out.println(first_row[i].length);
-					System.out.println(first_row[i][0]);
-					System.out.println(first_row[i][1]);
-					System.out.println(second_row[i][0]);
-					System.out.println(second_row[i][1]);
-				}
-				System.out.println("Print end");
-				
-				if(first_row[0].length==3 && (second_row[0][0].equals(first_row[1][1]))){
-					file_index[0][1] = 3;
-					file_index[1][1] = 2;
-					file_index[2][1] = 0;
-				}else if(first_row[0].length==3 && (second_row[0][0].equals(first_row[2][1]))){
-					file_index[0][1] = 3;
-					file_index[2][1] = 2;
-					file_index[1][1] = 0;
-				}else if(first_row[1].length==3 && (second_row[1][0].equals(first_row[0][1]))){
-					file_index[1][1] = 3;
-					file_index[0][1] = 2;
-					file_index[2][1] = 0;
-				}else if(first_row[1].length==3 && (second_row[1][0].equals(first_row[2][1]))){
-					file_index[1][1] = 3;
-					file_index[2][1] = 2;
-					file_index[0][1] = 0;
-				}else if(first_row[2].length==3 && (second_row[2][0].equals(first_row[0][1]))){
-					file_index[2][1] = 3;
-					file_index[0][1] = 2;
-					file_index[1][1] = 0;
-				}else{
-					file_index[2][1] = 3;
-					file_index[1][1] = 2;
-					file_index[0][1] = 0;
-				}
-				break;
-		}
-		return index;		
-	}
+	
 	
 	public JScrollPane config_farm(String P_name, String G_name, String G2_name){
 		go_farm.setFont(new Font("Ariashowpril", Font.BOLD, 40));		
@@ -435,6 +350,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		CO_browse_farm.addActionListener(this);
 		
 		MAF.addActionListener(this);
+		
 		return pane;
 	}
 	public JScrollPane config_gapit(String P_name, String G_name, String G2_name){
@@ -506,17 +422,23 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		panel_co.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Covariates", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_CMLM = new JPanel(new MigLayout("fillx"));
+		/*
 		panel_CMLM.add(CMLM_enable, "wrap");
 		CMLM_enable.setSelected(false);
 		CMLM_enable.setToolTipText("Users can specify additional clustering algorithms and kinship summary statistic");
+		*/
+		panel_CMLM.add(model_select);
+		panel_CMLM.add(model_select_input, "wrap");
+		model_select_input.setSelectedItem("CMLM");
 		panel_CMLM.add(kinship_cluster_text_s);
 		kinship_cluster_text_s.setToolTipText("Clustering algorithm to group individuals based on their kinship");
 		panel_CMLM.add(kinship_cluster_input_s, "wrap");
-		kinship_cluster_input_s.setEnabled(false);
+		//kinship_cluster_input_s.setEnabled(false);
 		panel_CMLM.add(kinship_group_text_s);
 		kinship_group_text_s.setToolTipText("Method to derive kinship among groups");
 		panel_CMLM.add(kinship_group_input_s, "wrap");
-		kinship_group_input_s.setEnabled(false);
+		//kinship_group_input_s.setEnabled(false);
+		/*
 		panel_CMLM.add(group_from_text_s);
 		group_from_text_s.setToolTipText("The Starting Number of Groups of Compression");
 		panel_CMLM.add(group_from_input_s, "wrap");
@@ -532,7 +454,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		panel_CMLM.add(group_by_input_s, "wrap");	
 		group_by_input_s.setText("10");
 		group_by_input_s.setEnabled(false);
-		panel_CMLM.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "CMLM", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
+		*/
+		panel_CMLM.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Model", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_advance = new JPanel(new MigLayout("fillx"));
 		panel_advance.add(SNP_fraction_text_s);
@@ -580,7 +503,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		CO_user.addActionListener(this);
 		CO_browse.addActionListener(this);
 		
-		CMLM_enable.addActionListener(this);	
+		//CMLM_enable.addActionListener(this);	
 		return pane;
 	}
 	
@@ -677,10 +600,9 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	      }
 	}
 	
-	void run_Farm(int MOindex) throws FileNotFoundException{
-		String 	P = "", GD = "NULL", GM = "NULL", C = "", WD = "",	
-				method_bin = "", maxloop = "", maf_cal = "", maf_threshold = "";
-		
+	void run_Farm(int MOindex, int[][] file_index) throws FileNotFoundException{
+		String 	P = "", GD = "NULL", GM = "NULL", C = "", WD = "", Project_name = "",	
+				method_bin = "", maxloop = "", maf_cal = "", maf_threshold = "";		
 		for(int i=0;i<5;i++){
 			if(file_index[i][1] == 0){
 				P = myPanel.TBfile[file_index[i][0]];
@@ -689,8 +611,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 			}else if(file_index[i][1] == 3){
 				GM = myPanel.TBfile[file_index[i][0]];
 			}
-		}	
-		
+		}			
 		if(CO_user.isSelected()){
 			C = CO_path.getText();
 		}else{
@@ -706,62 +627,25 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		maf_threshold = maf_input.getText();
 	
 		WD = workingdir_input_farm.getText();
-		myPanel.permit[MOindex] = true;
-		myPanel.rotate_index[MOindex] = 1;
+		Project_name = project_input_farm.getText();
 		
-        System.out.println("running gapit");
+        System.out.println("running FarmCPU");
         
-		try {
-			String farm_line = "";	     	        
-	        // Command input
-	        String[] command = {"/usr/local/bin/Rscript", myPanel.jar.getParent()+"/libs/FarmCPU.R",
-	        		GM, GD, P, C, 
-	        		method_bin, maxloop, maf_cal, maf_threshold, WD};  
-	        // check command
-	        
-            for (int i = 0; i<command.length; i++){
-            	  myPanel.text_console[MOindex].append(command[i]+" ");
-            }
-            myPanel.text_console[MOindex].setCaretPosition(myPanel.text_console[MOindex].getDocument().getLength());
-          
-	        // Run FarmCPU
-            farm_runtime[MOindex] = Runtime.getRuntime();	        
-            farm_pro[MOindex] = farm_runtime[MOindex].exec(command);
-            
-            BufferedReader gapit_in = new BufferedReader(new InputStreamReader(farm_pro[MOindex].getInputStream()));
-	        while((farm_line = gapit_in.readLine()) != null){
-	        		if(farm_line.contains("Error")||farm_line.contains("error")){Suc_or_Fal[MOindex] = false;}
-	                System.out.println(farm_line);
-	                myPanel.text_console[MOindex].append(farm_line+ System.getProperty("line.separator"));
-	                myPanel.text_console[MOindex].setCaretPosition(myPanel.text_console[MOindex].getDocument().getLength());
-	        }
-	        farm_pro[MOindex].waitFor();
-            File outfile = new File(WD+"/"+project_input_farm.getText()+".log");
-            FileWriter outWriter = new FileWriter(outfile.getAbsoluteFile(), true);
-            myPanel.text_console[MOindex].write(outWriter);
-		} catch (IOException | InterruptedException e1) {e1.printStackTrace();}
-				
-	    if(Suc_or_Fal[MOindex]){
-			myPanel.MO[MOindex] = myPanel.MO_suc;
-	    }else{
-			myPanel.MO[MOindex] = myPanel.MO_fal;
-	    }
-	    
-		myPanel.permit[MOindex] = false;
-		myPanel.rotate_index[MOindex] = 0;
-		myPanel.MOimageH[MOindex]=myPanel.MO[MOindex].getHeight(null);
-		myPanel.MOimageW[MOindex]=myPanel.MO[MOindex].getWidth(null);
-		myPanel.MOname[MOindex].setLocation(myPanel.MOimageX[MOindex], myPanel.MOimageY[MOindex]+ myPanel.MOimageH[MOindex]);
-		System.out.println("done");
+        // Command input
+        String[] command = {" ", myPanel.jar.getParent()+"/libs/FarmCPU.R",
+        		GM, GD, P, C, 
+        		method_bin, maxloop, maf_cal, maf_threshold, WD}; 
+        String[] R_Path = {"/usr/local/bin/Rscript", "/usr/bin/Rsciprt", "/usr/Rscript"};
+        run_command(MOindex, command, R_Path, WD, Project_name);
 	}
-	void run_GAPIT(int MOindex) throws FileNotFoundException{
-		Boolean predict = false;
+	
+	void run_GAPIT(int MOindex, int[][] file_index) throws FileNotFoundException{
 		String model_selection_string = "";
 		String 	G = "NULL", P = "", GD = "NULL", GM = "NULL", K = "", C = "",
 				SNP_test = "", PCA = "",
 				ki_c = "", ki_g = "", 
 				g_from = "", g_to = "", g_by = "", 
-				SNP_fraction = "", file_fragment = "", WD = "";
+				SNP_fraction = "", file_fragment = "", WD = "", Project_name = "";
 		for(int i=0;i<5;i++){
 			if(file_index[i][1] == 1){
 				G = myPanel.TBfile[file_index[i][0]];
@@ -791,19 +675,27 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 			C = "NULL";
 			PCA =  "3";
 		}
-		if(CMLM_enable.isSelected()){
+		String model_selected = (String)model_select_input.getSelectedItem();
+		if(model_selected.equals("GLM")){
 			ki_c = (String) kinship_cluster_input_s.getSelectedItem();
 			ki_g = (String) kinship_group_input_s.getSelectedItem();
-			g_from = group_from_input_s.getText();
-			g_to = group_to_input_s.getText();
-			g_by = group_by_input_s.getText();
-		}else{
-			ki_c = "average"; 
-			ki_g = "Mean";
+			g_from = "1";
+			g_to = "1";
+			g_by = "10";
+		}else if (model_selected.equals("MLM")){
+			ki_c = (String) kinship_cluster_input_s.getSelectedItem();
+			ki_g = (String) kinship_group_input_s.getSelectedItem();
 			g_from = "1";
 			g_to = "10000000";
 			g_by = "10";
+		}else if (model_selected.equals("CMLM")){
+			ki_c = (String) kinship_cluster_input_s.getSelectedItem();
+			ki_g = (String) kinship_group_input_s.getSelectedItem();
+			g_from = "10000000";
+			g_to = "10000000";
+			g_by = "10";
 		}
+				
 		if(model_selection_s.isSelected()){
 			model_selection_string = "TRUE";
 		}else{
@@ -812,68 +704,65 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		SNP_fraction = SNP_fraction_input_s.getText();
 		file_fragment = (String) file_fragment_input_s.getSelectedItem();
 		WD = workingdir_input_s.getText();
+		Project_name = project_input_s.getText();
+		
+        System.out.println("running gapit");        
+        // Command input
+        String[] command = {" ", myPanel.jar.getParent()+"/libs/Gapit.R",
+        		G, GM, GD, P, K, SNP_test, C, PCA, 
+        		ki_c, ki_g, g_from, g_to, g_by, 
+        		model_selection_string, SNP_fraction, file_fragment, WD};  
+        String[] R_Path = {"/usr/local/bin/Rscript", "/usr/bin/Rsciprt", "/usr/Rscript"};
+        run_command(MOindex, command, R_Path, WD, Project_name);      
+	}
+	
+	public static void run_command(int MOindex, String[] command, String[] path, 
+								   String WD, String name){
+        int int_error = 0, loop_error = 0;
+        String line = ""; Boolean Suc_or_Fal = true;
 		myPanel.permit[MOindex] = true;
 		myPanel.rotate_index[MOindex] = 1;
-        System.out.println("running gapit");
-        
-		try {
-			String gapit_line = "";	     	        
-	        // Command input
-	        String[] command = {"/usr/local/bin/Rscript", myPanel.jar.getParent()+"/libs/Gapit.R",
-	        		G, GM, GD, P, K, SNP_test, C, PCA, 
-	        		ki_c, ki_g, g_from, g_to, g_by, 
-	        		model_selection_string, SNP_fraction, file_fragment, WD};  
-	        // check command
-	        
+        runtime[MOindex] = Runtime.getRuntime();	        
+         //Check the correct path until it can locate R
+        while(int_error == 0){
+        	command[0] = path[loop_error];
+        	try{
+        		process[MOindex] = runtime[MOindex].exec(command);
+                int_error = process[MOindex].getErrorStream().read();
+        	}catch (IOException e1) {e1.printStackTrace();}
+        	++loop_error;
+        	// check command	        
             for (int i = 0; i<command.length; i++){
             	  myPanel.text_console[MOindex].append(command[i]+" ");
             }
             myPanel.text_console[MOindex].setCaretPosition(myPanel.text_console[MOindex].getDocument().getLength());
-          
-	        // Run Gapit
-            gapit_runtime[MOindex] = Runtime.getRuntime();	        
-            gapit_pro[MOindex] = gapit_runtime[MOindex].exec(command);
-            
-            BufferedReader gapit_in = new BufferedReader(new InputStreamReader(gapit_pro[MOindex].getInputStream()));
-	        while((gapit_line = gapit_in.readLine()) != null){
-	        		if(gapit_line.contains("Error")||gapit_line.contains("error")){Suc_or_Fal[MOindex] = false;}
-	                System.out.println(gapit_line);
-	                myPanel.text_console[MOindex].append(gapit_line+ System.getProperty("line.separator"));
+        }		           
+        try {
+            BufferedReader farm_in = new BufferedReader(new InputStreamReader(process[MOindex].getInputStream()));
+	        while((line = farm_in.readLine()) != null){
+	        		if(line.contains("Error")||line.contains("error")){Suc_or_Fal = false;}
+	                System.out.println(line);
+	                myPanel.text_console[MOindex].append(line+ System.getProperty("line.separator"));
 	                myPanel.text_console[MOindex].setCaretPosition(myPanel.text_console[MOindex].getDocument().getLength());
 	        }
-            gapit_pro[MOindex].waitFor();
-            File outfile = new File(WD+"/"+project_input_s.getText()+".log");
+	        process[MOindex].waitFor();
+            File outfile = new File(WD+"/"+name+".log");
             FileWriter outWriter = new FileWriter(outfile.getAbsoluteFile(), true);
             myPanel.text_console[MOindex].write(outWriter);
-		} catch (IOException | InterruptedException e1) {e1.printStackTrace();}
-				
-	    if(Suc_or_Fal[MOindex]){
+		} catch (IOException | InterruptedException e1) {e1.printStackTrace();}				
+	    if(Suc_or_Fal){
 			myPanel.MO[MOindex] = myPanel.MO_suc;
 	    }else{
 			myPanel.MO[MOindex] = myPanel.MO_fal;
-	    }
-	    
+	    }    
 		myPanel.permit[MOindex] = false;
 		myPanel.rotate_index[MOindex] = 0;
 		myPanel.MOimageH[MOindex]=myPanel.MO[MOindex].getHeight(null);
 		myPanel.MOimageW[MOindex]=myPanel.MO[MOindex].getWidth(null);
 		myPanel.MOname[MOindex].setLocation(myPanel.MOimageX[MOindex], myPanel.MOimageY[MOindex]+ myPanel.MOimageH[MOindex]);
-		System.out.println("done");	
+		System.out.println("done");
 	}
 	
-	public static String[] read_10_lines(String filename) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(filename));
-        String[] lines = new String[10];
-        String line;
-        int nLine = 0;
-        while((line = reader.readLine()) != null) {
-            lines[nLine++] = line;
-            if(nLine >= 10) {
-                break;
-            }
-        }
-        return lines;
-    }
 	
 	public void remove(){
 		System.out.println("REMOVE");
