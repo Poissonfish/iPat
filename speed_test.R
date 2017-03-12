@@ -30,9 +30,17 @@ write.csv(x = time_plot, file = "r_run.csv")
 
 
 ##plot
+library(ggplot2)
 data <- read.csv("plot_data.csv")
-new_data <- data[!data$time%in%boxplot.stats(data$time)$out,]
-
-ggplot(data = new_data, aes(x=env, fill=env, y=time))+
+new_data <- data[!data$time%in%boxplot.stats(data$time)$out,] # clean outliers
+levels(new_data$env)= c('iPat', 'Original tools')
+names(new_data) = c('N','N2', 'Platform', 'Runtime' )
+  
+ggplot(data = new_data, aes(x=Platform, fill=Platform, y=Runtime))+
   geom_boxplot(outlier.colour = 'NA')+
-  scale_y_continuous(limits=c(550, 570))
+  scale_y_continuous(limits=c(550, 570))+ theme(legend.justification = c(1, 1), legend.position = c(1, 1))
+
+
+
+
+

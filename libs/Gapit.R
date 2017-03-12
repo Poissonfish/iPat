@@ -35,6 +35,25 @@ snp.fraction = as.numeric(args[15])
 file.fragment = as.numeric(args[16])
 wd = args[17]
 
+
+# G.path = "/Users/Poissonfish/aaafolder/P.txt"
+# GM.path = "NULL"
+# GD.path = "NULL"
+# Y.path = "/Users/Poissonfish/aaafolder/G.txt"
+# K.path = "NULL" 
+# SNP.test = TRUE
+# C.path = "NULL"
+# PCA = 3
+# ki.c = 'average'
+# ki.g = 'Mean'
+# g.from = 1
+# g.to = 10000000
+# g.by = 10
+# model.s = FALSE
+# snp.fraction = 1
+# file.fragment = 512
+# wd = "/Users/Poissonfish/Desktop/output"
+
 setwd(wd)
 if(G.path=="NULL"){G=NULL}else{G=read.delim(G.path, head=FALSE)}
 if(GM.path=="NULL"){GM=NULL}else{GM=read.table(GM.path, head=TRUE)}
