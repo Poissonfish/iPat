@@ -20,10 +20,6 @@ import javax.swing.border.TitledBorder;
 
 import net.miginfocom.swing.MigLayout;
 
-public class Classes {
-
-}
-
 class iPat_chooser{
 	File selectedfile = null;
 	public iPat_chooser(){
@@ -69,4 +65,66 @@ class AlphaLabel extends JLabel {
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));          
         super.paintComponent(g2);
     }
+}
+
+class Group_Value{
+	public JLabel name = new JLabel();
+	public JTextField longfield = new JTextField(10);
+	public JTextField field = new JTextField(3);
+	public Group_Value(String text){
+		name.setText(text);
+	}
+}
+class Group_RadioButton{
+	public ButtonGroup	group = new ButtonGroup();
+	public JRadioButton[] button;
+	public Group_RadioButton(int size){
+		button = new JRadioButton[size];
+		for(int i = 0; i<size; i++){
+			button[i] = new JRadioButton("");
+			group.add(button[i]);
+		}
+	}
+	public void setName(int num, String text){
+		button[num].setText(text);
+	}	
+}
+class Group_Combo{
+	public JLabel name = new JLabel();
+	public JComboBox combo;
+	public Group_Combo(String text, String[] list){
+		name.setText(text);
+		combo = new JComboBox(list);
+	}
+}
+class Group_Path{
+	public JLabel name = new JLabel();
+	public JButton browse = new JButton("Browse");
+	public JTextField field = new JTextField(15);
+	public Group_Path(String text){
+		name.setText(text);
+	}	
+	public void setPath(boolean folder){
+		JFileChooser chooser;
+		if(folder){
+			chooser = new JFileChooser(){
+				public void approveSelection(){
+					if (getSelectedFile().isFile()){
+						return;
+					}else{
+						super.approveSelection();
+					}
+				}
+			};
+    		chooser.setAcceptAllFileFilterUsed(false);
+    		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+		}else{
+			chooser = new JFileChooser();
+		}
+		int value = chooser.showOpenDialog(null);
+		if (value == JFileChooser.APPROVE_OPTION){
+		    File selectedfile = chooser.getSelectedFile();  	    					    
+		  	field.setText(selectedfile.getAbsolutePath());
+		}
+	}
 }
