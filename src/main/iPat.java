@@ -72,68 +72,10 @@ public class iPat {
 	        }	
 			
 		});		
-		JLabel myLabel = new JLabel("Drag something here!", SwingConstants.CENTER);
-	    // Create the drag and drop listener
-	    MyDragDropListener myDragDropListener = new MyDragDropListener();
-	    // Connect the label with a drag and drop listener
-	    new DropTarget(ipat, myDragDropListener);
-	    // Add the label to the content
-	    //cPane.add(BorderLayout.CENTER, myLabel);
+	   
 	 
 	}
 }
-
-
-class MyDragDropListener implements DropTargetListener {
-    @Override
-    public void drop(DropTargetDropEvent event) {
-        // Accept copy drops
-        event.acceptDrop(DnDConstants.ACTION_COPY);
-        // Get the transfer which can provide the dropped item data
-        Transferable transferable = event.getTransferable();
-        // Get the data formats of the dropped item
-        DataFlavor[] flavors = transferable.getTransferDataFlavors();
-        // Loop through the flavors
-        for (DataFlavor flavor : flavors) {
-            try {
-                // If the drop items are files
-                if(flavor.equals(DataFlavor.javaFileListFlavor)){
-                    List<File> files = (List<File>) transferable.getTransferData(flavor);
-                	for (File file : files) {
-                        // Print out the file path
-                        System.out.println("File path is '" + file.getPath() + "'.");
-                    }
-                }
-            } catch (Exception e) {
-                // Print out the error stack
-                e.printStackTrace();
-            }
-        }
-        // Inform that the drop is complete
-        event.dropComplete(true);     
-    }
-
-    @Override
-    public void dragOver(DropTargetDragEvent event) {
-    }
-    @Override
-    public void dropActionChanged(DropTargetDragEvent event) {
-    }
-	@Override
-	public void dragEnter(DropTargetDragEvent dtde) {
-		// TODO Auto-generated method stub		
-	}
-
-	@Override
-	public void dragExit(DropTargetEvent dte) {
-		// TODO Auto-generated method stub		
-	}
-
-}
-
-
-
-
 
 class myPanel extends JPanel implements MouseMotionListener, KeyListener{	
 	//  private static class ipatButton extends JButton {
@@ -171,7 +113,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	
 	static int TBindex =0, TBindex_temp=0;
 	static int MOindex =0, MOindex_temp=0;
-	int COindex =-1;
+	static int COindex =-1;
 	
 	static int TBcount =0;
 	static int MOcount =0;
@@ -323,8 +265,8 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	Timer hint_mo_main;
 	//hint_table
 	boolean hint_tb_b=false,  //check if run at once  
-			hint_tb_out = false, //check if going to fadeout
-			hint_tb_link = false;
+			hint_tb_out = false;
+	static boolean hint_tb_link = false;
 	float hint_tb_alpha = 0;
 	AlphaLabel hint_tb = new AlphaLabel();
 	Timer hint_tb_timer_in;
@@ -341,12 +283,10 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 
 	////
 	public static class CustomOutputStream extends OutputStream {
-	    private JTextArea textArea;
-	     
+	    private JTextArea textArea;	     
 	    public CustomOutputStream(JTextArea textArea) {
 	        this.textArea = textArea;
-	    }
-	     
+	    }	     
 	    @Override
 	    public void write(int b) throws IOException {
 	        // redirects data to the text area
@@ -364,6 +304,60 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		delbboundx=Wide-50;
 		delbboundy=Heigth-70;	
 		
+	    // Connect the label with a drag and drop listener
+	    new DropTarget(this, new DropTargetListener(){
+	        @Override
+	        public void drop(DropTargetDropEvent event) {
+	            // Accept copy drops
+	            event.acceptDrop(DnDConstants.ACTION_COPY);
+	            // Get the transfer which can provide the dropped item data
+	            Transferable transferable = event.getTransferable();
+	            // Get the data formats of the dropped item
+	            DataFlavor[] flavors = transferable.getTransferDataFlavors();
+	            // Loop through the flavors
+	            for (DataFlavor flavor : flavors) {
+	                try {
+	                    // If the drop items are files
+	                    if(flavor.equals(DataFlavor.javaFileListFlavor)){
+	                        List<File> files = (List<File>) transferable.getTransferData(flavor);
+	                    	int count = 0;
+	                        for (File file : files) {
+	                    		Point pointer = event.getLocation();
+	                            int x = (int)pointer.getX();
+	                    		int y = (int)pointer.getY();
+	                    		create_TB(x+count*10, y);
+	                    		TBindex = TBcount;
+	                    		TB_assign(file);
+	                    		count++;
+	                    		// Print out the file path
+	                            System.out.println("File path is '" + file.getPath() + "'.");
+	                            repaint();
+	                        }
+	                    }
+	                } catch (Exception e) {
+	                    // Print out the error stack
+	                    e.printStackTrace();
+	                }
+	            }
+	            TBindex = 0;
+	            // Inform that the drop is complete
+	            event.dropComplete(true);     
+	        }
+	        @Override
+	        public void dragOver(DropTargetDragEvent event) {
+	        }
+	        @Override
+	        public void dropActionChanged(DropTargetDragEvent event) {
+	        }
+	    	@Override
+	    	public void dragEnter(DropTargetDragEvent dtde) {
+	    	}
+	    	@Override
+	    	public void dragExit(DropTargetEvent dte) {
+	    	}
+	    }
+	    );
+	    
         try {
 			jar = new File(iPat.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
 		} catch (URISyntaxException e1) {e1.printStackTrace();}
@@ -407,11 +401,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			TBButton.setIcon(new ImageIcon(addTB));
 			MOButton.setIcon(new ImageIcon(addMO));
 		} catch (IOException ex){}
-		
-		for (int i=1; i<=TBMAX-1; i++){
-		}
-		for (int i=1; i<=MOMAX-1; i++){
-		}
+	
 			
 		for (int i=1; i<14; i++){
 			black[i-1]= new Color(228+2*i,228+2*i,228+2*i, 255);
@@ -469,11 +459,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			startPanel.add(TBname[i]);
 			TBimageH[i]=TB[i].getHeight(null);	
 			TBimageW[i]=TB[i].getWidth(null);	
-			TBco[i][0]=-1;
-			TBco[i][1]=-1;
-			TBco[i][2]=-1;
-			TBco[i][3]=-1;
-			TBco[i][4]=-1;
+			Arrays.fill(TBco[i], -1);
 		}	
 		for (int i=1; i<=MOMAX-1; i++){
 			MO[i] = MOimage;
@@ -481,11 +467,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			startPanel.add(MOname[i]);
 			MOimageH[i]=MO[i].getHeight(null);	
 			MOimageW[i]=MO[i].getWidth(null);
-			MOco[i][0]=-1;
-			MOco[i][1]=-1;
-			MOco[i][2]=-1;
-			MOco[i][3]=-1;	
-			MOco[i][4]=-1;
+			Arrays.fill(MOco[i], -1);
 			rotate_index[i]=0;
 		}			
 		Arrays.fill(permit, false);	
@@ -738,21 +720,9 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
     			String folder_path = null;
 				if(TBindex!=0 & SwingUtilities.isRightMouseButton(ee)){
 					hint_tb_link = true;
-					 TBchooser[1].setApproveButtonText("Link!");
-					 TBvalue[1]= TBchooser[1].showOpenDialog(null);
-					 if (TBvalue[1] == JFileChooser.APPROVE_OPTION){
-					    File selectedfile = TBchooser[1].getSelectedFile();  	    					    
-					  	TBfile[TBindex]= selectedfile.getAbsolutePath();
-					  	iconchange(TBindex); 
-					  	TBimageH[TBindex]=TB[TBindex].getHeight(null);
-					  	TBimageW[TBindex]=TB[TBindex].getWidth(null);
-						TBname[TBindex].setLocation(TBimageX[TBindex], TBimageY[TBindex]+TBimageH[TBindex]);
-						TBname[TBindex].setSize(200,15);
-						TBname[TBindex].setText(selectedfile.getName());
-						TBindex=0;
-						COindex=-1;
-						repaint();
-					 }
+					File file = iPatChooser();
+					TB_assign(file);
+					repaint();
 			   	}else if(MOindex!=0 & SwingUtilities.isRightMouseButton(ee)){ 
 			   		Configuration model_frame;
 			   		JFrame wrong_formate = null;
@@ -993,22 +963,11 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
     					ifopenMO=false;
     					MOopenfile(open_MO);
     				}else if (x<(Wide/2)&&TBindex_temp==0){
-    					TBcount++;
-        				TBimageX[TBcount]=createX-TBimageW[TBcount]/2;
-        				TBimageY[TBcount]=createY-TBimageH[TBcount]-5;
-        				TBBound[TBcount]= new Rectangle(TBimageX[TBcount], TBimageY[TBcount], TBimage.getWidth(null), TBimage.getHeight(null));
-        				repaint();
+    					create_TB(x,y);
+    					repaint();
     				}else if(x>(Wide/2)&&MOindex_temp==0){
-    					MOcount++;
-        				MOimageX[MOcount]=createX-MOimageW[MOcount]/2;
-        				MOimageY[MOcount]=createY-MOimageH[MOcount]-5;
-        				MOBound[MOcount]= new Rectangle(MOimageX[MOcount], MOimageY[MOcount], MOimage.getWidth(null), MOimage.getHeight(null));
-        				MOimageH[MOcount]=MO[MOcount].getHeight(null);
-					  	MOimageW[MOcount]=MO[MOcount].getHeight(null);
-						MOname[MOcount].setLocation(MOimageX[MOcount], MOimageY[MOcount]+MOimageH[MOcount]);
-						MOname[MOcount].setSize(200,15);
-						MOname[MOcount].setText("Task "+MOcount);
-        				repaint();
+    					create_MO(x,y);
+    					repaint();
     				}
     			}
     		}
@@ -1229,7 +1188,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			}
 	}	
 	
-	public void iconchange(int i){
+	public static void iconchange(int i){
 	  	if 		(TBfile[i].indexOf(".csv")>=0){TB[i]=Excel;}
 	  	else if	(TBfile[i].indexOf(".xlm")>=0){TB[i]=Excel;}
 	  	else if	(TBfile[i].indexOf(".xls")>=0){TB[i]=Excel;}
@@ -1585,6 +1544,45 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		return MinValue(newdist);
 	}	
 	
+	public static void create_TB(int x, int y){
+		TBcount++;
+		TBimageX[TBcount]=x-TBimageW[TBcount]/2;
+		TBimageY[TBcount]=y-TBimageH[TBcount]-5;
+		TBBound[TBcount]= new Rectangle(TBimageX[TBcount], TBimageY[TBcount], TBimage.getWidth(null), TBimage.getHeight(null));
+	}
+	public static void create_MO(int x, int y){
+		MOcount++;
+		MOimageX[MOcount]=x-MOimageW[MOcount]/2;
+		MOimageY[MOcount]=y-MOimageH[MOcount]-5;
+		MOBound[MOcount]= new Rectangle(MOimageX[MOcount], MOimageY[MOcount], MOimage.getWidth(null), MOimage.getHeight(null));
+		MOimageH[MOcount]=MO[MOcount].getHeight(null);
+	  	MOimageW[MOcount]=MO[MOcount].getHeight(null);
+		MOname[MOcount].setLocation(MOimageX[MOcount], MOimageY[MOcount]+MOimageH[MOcount]);
+		MOname[MOcount].setSize(200,15);
+		MOname[MOcount].setText("Task "+MOcount);
+	}
+	public static File iPatChooser(){
+		JFileChooser chooser = new JFileChooser();
+		File selectedfile = null;
+		chooser.setApproveButtonText("Link!");
+		int value = chooser.showOpenDialog(null);
+		if (value == JFileChooser.APPROVE_OPTION){
+		   selectedfile = chooser.getSelectedFile();  	    					  
+		}
+		return selectedfile;
+	}
+	
+	public static void TB_assign(File selectedfile){
+		   TBfile[TBindex]= selectedfile.getAbsolutePath();
+		   iconchange(TBindex); 
+		   TBimageH[TBindex]=TB[TBindex].getHeight(null);
+		   TBimageW[TBindex]=TB[TBindex].getWidth(null);
+		   TBname[TBindex].setLocation(TBimageX[TBindex], TBimageY[TBindex]+TBimageH[TBindex]);
+		   TBname[TBindex].setSize(200,15);
+		   TBname[TBindex].setText(selectedfile.getName());
+		   TBindex=0;
+		   COindex=-1;
+	}
 	
 	// target_specify
 	public void combine_type_determined(int[] dist, int minvalue, int case3_count,
