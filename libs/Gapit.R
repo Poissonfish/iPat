@@ -35,12 +35,15 @@ snp.fraction = as.numeric(args[15])
 file.fragment = as.numeric(args[16])
 wd = args[17]
 
-
-# G.path = "/Users/Poissonfish/aaafolder/P.txt"
+# args = vector(mode="character", length = 20)
+# args[18]="3"
+# args[19]="1"
+# args[20]="2" 
+# G.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/demo_data/Hapmap/mdp_hapmap.txt"
 # GM.path = "NULL"
 # GD.path = "NULL"
-# Y.path = "/Users/Poissonfish/aaafolder/G.txt"
-# K.path = "NULL" 
+# Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/demo_data/Hapmap/mdp_traits.txt"
+# K.path = "NULL"
 # SNP.test = TRUE
 # C.path = "NULL"
 # PCA = 3
@@ -60,12 +63,21 @@ if(GM.path=="NULL"){GM=NULL}else{GM=read.table(GM.path, head=TRUE)}
 if(GD.path=="NULL"){GD=NULL}else{GD=read.table(GD.path, head=TRUE)}
 if(C.path=="NULL"){C=NULL}else{C=read.table(C.path, head=TRUE)}
 if(K.path=="NULL"){K=NULL}else{K=read.table(D.path, head=FALSE)}
+
+#Select Phenotype
+Y.file = read.table(Y.path, head=TRUE)
+trait = c()
+for (i in 18:length(args)){
+  trait = c(trait, as.numeric(args[i])) 
+}
+print(trait)
+Y.file = Y.file[,c(1,trait+1)]
 print(length(args))
 
 print('GAPIT start')
 tryCatch(
   {x=GAPIT(
-    Y = read.table(Y.path, head=TRUE),
+    Y = Y.file,
     G = G,
     GM = GM,
     GD = GD,
@@ -85,4 +97,5 @@ tryCatch(
     print(e)
   }
 )
+
 print(warnings())
