@@ -1,6 +1,11 @@
 package main;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -38,27 +43,30 @@ public class iPat {
 	static int Heigth=700;
 	static int PHeight=190;
 	static String folder_path = new String("path");
-	public static myPanel ipat;
+	public static iPatPanel ipat;
 
 	public static void main(String[] args){  
 		System.out.println("Welcome to iPat!");
+		String OS = System.getProperty("os.name");
+		System.out.println("You're runngin iPat on "+ OS);// Mac OS X, 
 		JFrame main = new JFrame();
 
-		main.setSize(Wide, Heigth);
 		//Set to center
 		Dimension windowSize = main.getSize();
         GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
         Point centerPoint = local_env.getCenterPoint();
         int dx = centerPoint.x - windowSize.width / 2;
         int dy = centerPoint.y - windowSize.height / 2;    
+
+		main.setSize(Wide, Heigth);
+		main.setResizable(false);
         main.setLocation(dx, dy);
-		//
 		main.setLayout(new BorderLayout());
 		main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Container cPane = main.getContentPane();
 		Wide= main.getWidth();
 		Heigth= main.getHeight();
-		ipat = new myPanel(Wide, Heigth, PHeight);
+		ipat = new iPatPanel(Wide, Heigth, PHeight);
 		ipat.setFocusable(true); // for keylistener
 		ipat.requestFocusInWindow(); // for keylistener
 		cPane.add(ipat);	
@@ -70,14 +78,11 @@ public class iPat {
 	            Component c = (Component)evt.getSource();
 	            System.out.println("H: "+c.getHeight()+" W: "+c.getWidth()); 
 	        }	
-			
-		});		
-	   
-	 
+		});			 
 	}
 }
 
-class myPanel extends JPanel implements MouseMotionListener, KeyListener{	
+class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{	
 	//  private static class ipatButton extends JButton {
 	private static final int TBMAX=40;
 	static int MOMAX=10;
@@ -95,6 +100,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	//4= coindex, 
 	//5= if include model
 	static int[][] TBco= new int[TBMAX][5];
+	static int[] TBtype = new int[TBMAX]; // 0 = normal, 1 = C, 2 = K;
 	static int[] TBdelete= new int[TBMAX];
 	boolean link_to_TB = false;
 	int link_to_TB_index = -1;
@@ -132,9 +138,9 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	static Image[] MO= new Image[MOMAX];
 	Image[] Trash= new Image[10];
 	Image[] White= new Image[10];
-	static Image Excel, Powerpoint, Word, Music, Video, Unknown, Text, 
-		  TBimage, MOimage, Prefbar, MO_suc, MO_fal, 
-		  hint_object, hint_trash, hint_model, hint_table;
+	static Image TBimage, TB_C, TB_K,
+		MOimage, Prefbar, MO_suc, MO_fal, 
+		hint_object, hint_trash, hint_model, hint_table;
 	
 	JLayeredPane startPanel;
 	JPanel mainPanel;	
@@ -143,7 +149,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	 
 	JLabel iPat = new JLabel();
 
-	JFileChooser[] TBchooser= new JFileChooser[TBMAX];
+	public static FileDialog chooser;
 	static String[] TBfile= new String[TBMAX];
 	int[] TBvalue= new int[TBMAX];
 	static String[] MOfile= new String[MOMAX];
@@ -218,8 +224,6 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	//Gapit
 	String[] File_names;
 	File[] File_paths = new File[30];
-	JFileChooser folder_chooser = new JFileChooser(); 
-	iPat_chooser chooser; 
 	//settingframe model_frame;
 	Preferences pref = Preferences.userRoot().node("/iPat"); 
 	
@@ -279,7 +283,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	static JTextArea[] text_console = new JTextArea[MOMAX];
 	static JFrame[] frame_console = new JFrame[MOMAX];
 	// file format catch
-	static int[][] file_index = new int[10][2]; //tbindex; filetype: 1=G, 2=P
+	static int[][] file_index = new int[3][2]; //0:tbindex; 1:filetype:
 
 	////
 	public static class CustomOutputStream extends OutputStream {
@@ -296,8 +300,12 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	    }
 	}
 	////
+	public static enum FORMAT{
+		NA, Hapmap, Numeric, VCF, PLink_ASCII, PLink_Binary
+	}
+	public static FORMAT format = FORMAT.NA;
 	
-	public myPanel(int Wideint, int Heigthint, int pH){
+	public iPatPanel(int Wideint, int Heigthint, int pH){
 		this.Wide=Wideint;
 		this.Heigth=Heigthint;
 		this.panelHeigth=pH;
@@ -325,7 +333,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	                    		Point pointer = event.getLocation();
 	                            int x = (int)pointer.getX();
 	                    		int y = (int)pointer.getY();
-	                    		create_TB(x+count*10, y);
+	                    		create_TB(x+count*30, y+count*15);
 	                    		TBindex = TBcount;
 	                    		TB_assign(file);
 	                    		count++;
@@ -344,17 +352,13 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	            event.dropComplete(true);     
 	        }
 	        @Override
-	        public void dragOver(DropTargetDragEvent event) {
-	        }
+	        public void dragOver(DropTargetDragEvent event) {}
 	        @Override
-	        public void dropActionChanged(DropTargetDragEvent event) {
-	        }
+	        public void dropActionChanged(DropTargetDragEvent event) {}
 	    	@Override
-	    	public void dragEnter(DropTargetDragEvent dtde) {
-	    	}
+	    	public void dragEnter(DropTargetDragEvent dtde) {}
 	    	@Override
-	    	public void dragExit(DropTargetEvent dte) {
-	    	}
+	    	public void dragExit(DropTargetEvent dte) {}
 	    }
 	    );
 	    
@@ -375,16 +379,9 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			trashW= Trash[0].getWidth(null);	
 		} catch (IOException ex){}		
 		try{
-			Excel = ImageIO.read(this.getClass().getResourceAsStream("resources/Excel.png"));
-			Powerpoint = ImageIO.read(this.getClass().getResourceAsStream("resources/Powerpoint.png"));
-			Word = ImageIO.read(this.getClass().getResourceAsStream("resources/Word.png"));
-			Video = ImageIO.read(this.getClass().getResourceAsStream("resources/Video.png"));
-			Music = ImageIO.read(this.getClass().getResourceAsStream("resources/Music.png"));
-			Text = ImageIO.read(this.getClass().getResourceAsStream("resources/Text.png"));
-			Unknown = ImageIO.read(this.getClass().getResourceAsStream("resources/Unknown.png"));
-		} catch (IOException ex){}
-		try{
-			TBimage = ImageIO.read(this.getClass().getResourceAsStream("resources/Table.png"));
+			TBimage = ImageIO.read(this.getClass().getResourceAsStream("resources/File.png"));
+			TB_C = ImageIO.read(this.getClass().getResourceAsStream("resources/File_c.png"));
+			TB_K = ImageIO.read(this.getClass().getResourceAsStream("resources/File_k.png"));
 			addTB = ImageIO.read(this.getClass().getResourceAsStream("resources/add_Table.png"));
 			MOimage = ImageIO.read(this.getClass().getResourceAsStream("resources/Model.png"));
 			MO_suc = ImageIO.read(this.getClass().getResourceAsStream("resources/Model_suc.png"));
@@ -453,7 +450,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 				
 		for (int i=1; i<=TBMAX-1; i++){
 			TB[i] = TBimage;
-			TBchooser[i]= new JFileChooser();
+			TBtype[i] = 0;
 			TBfile[i]= "null";
 			TBname[i]= new JLabel();
 			startPanel.add(TBname[i]);
@@ -470,8 +467,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			Arrays.fill(MOco[i], -1);
 			rotate_index[i]=0;
 		}			
-		Arrays.fill(permit, false);	
-		
+		Arrays.fill(permit, false);
 		////////////
 		////////////
 		//LAYOUT.END
@@ -719,33 +715,43 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
     			
     			String folder_path = null;
 				if(TBindex!=0 & SwingUtilities.isRightMouseButton(ee)){
-					hint_tb_link = true;
-					File file = iPatChooser();
-					TB_assign(file);
-					repaint();
+					switch(TBtype[TBindex]){
+						case 0:
+							TBtype[TBindex] = 1;
+							TB[TBindex] = TB_C;
+							break;
+						case 1:
+							TBtype[TBindex] = 2;
+							TB[TBindex] = TB_K;
+							break;
+						case 2:
+							TBtype[TBindex] = 0;
+							TB[TBindex] = TBimage;
+							break;
+					}
 			   	}else if(MOindex!=0 & SwingUtilities.isRightMouseButton(ee)){ 
 			   		Configuration model_frame;
 			   		JFrame wrong_formate = null;
-			   		int file_count = -1;
-					try {
-						file_count = catch_files(file_index);
-					} catch (IOException e1) {e1.printStackTrace();}
-					
+			   		int[] type = new int[2]; //0: C, 1:K
+			   		Arrays.fill(type, 0);
+			   		try {
+						format = catch_files(file_index, type);
+					} catch (IOException e1) {e1.printStackTrace();}				
 			   		hint_mo_run = true;
 					try {
-						if(file_count!=-1){
+						if(format != FORMAT.NA){
 							MO[MOindex] = MOimage;
-							model_frame = new Configuration(MOindex, file_count, file_index);
+							System.out.println("C: "+TBfile[type[0]]+"; K: "+TBfile[type[1]]);
+							model_frame = new Configuration(MOindex, format, file_index, type[0], type[1]);
 					  		model_frame.setBounds(300, 100, 370, 500);
 					   		model_frame.setResizable(true);
 					   		model_frame.setVisible(true);
 						}else{
 							JOptionPane.showMessageDialog(wrong_formate,
-								    "Please use demo files to correct the format",
+								    "No match format with either Hapmap, Numeric, VCF or PLINK. Please check demo files to correct the format and the extension name.",
 								    "Incorrect format",
 								    JOptionPane.ERROR_MESSAGE);
-						}
-						
+						}	
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -962,10 +968,10 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
     				}else if(ifopenMO){
     					ifopenMO=false;
     					MOopenfile(open_MO);
-    				}else if (x<(Wide/2)&&TBindex_temp==0){
+    			  /*}else if (x<(Wide/2)&&TBindex_temp==0){
     					create_TB(x,y);
-    					repaint();
-    				}else if(x>(Wide/2)&&MOindex_temp==0){
+    					repaint(); */
+    				}else if(MOindex_temp==0){
     					create_MO(x,y);
     					repaint();
     				}
@@ -1188,6 +1194,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 			}
 	}	
 	
+	/*
 	public static void iconchange(int i){
 	  	if 		(TBfile[i].indexOf(".csv")>=0){TB[i]=Excel;}
 	  	else if	(TBfile[i].indexOf(".xlm")>=0){TB[i]=Excel;}
@@ -1236,7 +1243,8 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 		else if	(TBfile[i].indexOf(".log")>=0){TB[i]=Text;}
 	  	
 	  	else{TB[i]=Unknown;}	  	
-	}
+	}*/
+
 	
 	void break_linkage(){
 		int[][] traceback = new int[linklineindex][3]; //class, class_index, which link
@@ -1559,22 +1567,30 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	  	MOimageW[MOcount]=MO[MOcount].getHeight(null);
 		MOname[MOcount].setLocation(MOimageX[MOcount], MOimageY[MOcount]+MOimageH[MOcount]);
 		MOname[MOcount].setSize(200,15);
-		MOname[MOcount].setText("Task "+MOcount);
+		MOname[MOcount].setText("Project "+MOcount);
 	}
-	public static File iPatChooser(){
-		JFileChooser chooser = new JFileChooser();
+	public static File iPatChooser(String title, boolean DirOnly){
 		File selectedfile = null;
-		chooser.setApproveButtonText("Link!");
-		int value = chooser.showOpenDialog(null);
-		if (value == JFileChooser.APPROVE_OPTION){
-		   selectedfile = chooser.getSelectedFile();  	    					  
-		}
+		if(!DirOnly){
+			chooser = new FileDialog(new JFrame(), title, FileDialog.LOAD);   
+			chooser.setVisible(true);   
+		    if(chooser!=null){   
+		    	selectedfile = chooser.getFiles()[0];
+		    }
+		}else{
+			System.setProperty("apple.awt.fileDialogForDirectories", "true");
+			chooser = new FileDialog(new JFrame(), title, FileDialog.LOAD);   
+			chooser.setVisible(true);   
+		    if(chooser!=null){   
+		    	selectedfile = chooser.getFiles()[0];
+		    }
+			System.setProperty("apple.awt.fileDialogForDirectories", "false");
+		}	
 		return selectedfile;
 	}
 	
 	public static void TB_assign(File selectedfile){
 		   TBfile[TBindex]= selectedfile.getAbsolutePath();
-		   iconchange(TBindex); 
 		   TBimageH[TBindex]=TB[TBindex].getHeight(null);
 		   TBimageW[TBindex]=TB[TBindex].getWidth(null);
 		   TBname[TBindex].setLocation(TBimageX[TBindex], TBimageY[TBindex]+TBimageH[TBindex]);
@@ -1868,7 +1884,7 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 					break;
 				}
 			}
-			myPanel.link_model = catch_MO;
+			iPatPanel.link_model = catch_MO;
 			return catch_MO;
 		}
 		return 0;
@@ -1915,129 +1931,146 @@ class myPanel extends JPanel implements MouseMotionListener, KeyListener{
 	    return false;
 	}
 	
-	public static String[] read_10_lines(String filename) throws IOException {
+	public static void read_binary(String file){
+		//Binary
+		/*File input_file = new File (file);
+		DataInputStream data_in;
+		long [] array_of_ints = new long [1000000];
+	    int index = 0;
+		try {
+			data_in = new DataInputStream(new BufferedInputStream( new FileInputStream(input_file)));
+			while(true){
+				try{
+					long a = data_in.readLong();
+					index++;
+					System.out.println(a);
+				}catch(EOFException eof) {
+					System.out.println ("End of File");
+					break;
+				}
+			}
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
+	}
+	
+	public static String[] read_lines(String filename, int bound) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         String[] lines = new String[10];
-        String line;
-        int nLine = 0;
-        while((line = reader.readLine()) != null) {
-            lines[nLine++] = line;
-            if(nLine >= 10) {
-                break;
-            }
+        String readline;
+        int nLine = 0, boundary = 0;
+        while((readline = reader.readLine()) != null && nLine < bound && boundary < 100)  {
+        	if(readline.split("\t").length > 1){
+            	lines[nLine++] = readline;
+        	}
+        	boundary++;
         }
         return lines;
     }
 	
-	int catch_files(int[][] file_index) throws IOException{
-		String[][] text= new String[5][], first_row= new String[5][], second_row= new String[5][];
-		for(int i=0;i<5;i++){
+	FORMAT catch_files(int[][] file_index, int[] type) throws IOException{
+		// need extension (without extension): Binary fam
+		
+		String[][] text= new String[3][], row1 = new String[3][], row2= new String[3][];
+		for(int i = 0; i < 3; i++){
 			file_index[i][0] = 0; //default to TBindex = 0, which is null
-			file_index[i][1] = -1; //default to -1; 0:P, 1:G, 2:GD, 3:GM, 4:KI, 5:CO			
+			file_index[i][1] = -1; //default to -1; 0:P, 1:G, 2:GD, 3:GM, 4:VCF, 5: PED, 6: MAP, 7: BED, 8: FAM, 9: BIM	;		
 		}
-		int index = 0;
-		for (int i = 1; i<=myPanel.TBcount; i++){
-			if(index>3){break;}
-			if(myPanel.TBco[i][3]==myPanel.MOco[MOindex][3] && myPanel.TBco[i][3]!=-1){
-				System.out.println(myPanel.TBfile[i]);
-				file_index[index][0] = i;
-				text[index] = read_10_lines(myPanel.TBfile[file_index[index][0]]);
-				first_row[index] = text[index][0].split("\t");
-				second_row[index] = text[index][1].split("\t");
-				index++;
-			}
-		}
-		switch (index){
-			case 1:
-				file_index[0][1] = 0;
-				break;
-			case 2:
-				// G(1): row -> head + marker; col -> 11 + samples
-				// P(0): row -> head + samples; col -> 1 + traits
-				/*
-				System.out.println("Print start");
-				for(int i = 0; i<2; i++){
-					System.out.println("i="+i);
-					System.out.println(first_row[i].length);
-					System.out.println(first_row[i][0]);
-					System.out.println(first_row[i][1]);
-					System.out.println(second_row[i][0]);
-					System.out.println(second_row[i][1]);
+		int count = 0; // 1: Hapmap, 2: Numeric, 3: VCF, 4: PLINK(ASCII), 5: PLINK(Binary)
+		FORMAT format = FORMAT.NA;
+		//Get file path frmo table
+		for (int i = 1; i <= TBcount; i++){
+			if(TBco[i][3] == MOco[MOindex][3] && TBco[i][3] != -1){
+				if(TBtype[i] != 0){
+					type[TBtype[i]-1] = i;
+				}else if(count < 3){
+					System.out.println(TBfile[i]);
+					file_index[count][0] = i;
+					text[count] = read_lines(TBfile[file_index[count][0]], 3);
+					if(text[count][0]!=null && text[count][1]!=null){
+						row1[count] = text[count][0].split("\t");
+						row2[count] = text[count][1].split("\t");	
+					}
+					count++;	
 				}
-				System.out.println(first_row[1][11]);
-				System.out.println(second_row[0][0]);
-				System.out.println("Print end");
-				*/
-				
-				if(first_row[0].length<12 && first_row[1].length>11 && 
-				  (second_row[0][0].equals(first_row[1][11])) &&
-				  (second_row[1][4].equals("+")||second_row[1][4].equals("-"))){
+			}
+		}		
+		
+		switch (count){
+			case 2:	
+				// VCF
+				if(row1[0].length - text[0][1].split("/").length == 8 &&
+				   text[0][1].split("/").length > 1){
+					file_index[0][1] = 4;
+					file_index[1][1] = 0; 
+					format = FORMAT.VCF;
+				}else if(row1[1].length - text[1][1].split("/").length == 8 &&
+						 text[1][1].split("/").length > 1){
 					file_index[0][1] = 0;
-					file_index[1][1] = 1;
-					System.out.println("Status I");
-				}else if(first_row[1].length<12 && first_row[0].length>11 && 
-						(second_row[1][0].equals(first_row[0][11])) &&
-						(second_row[0][4].equals("+")||second_row[0][4].equals("-"))){
+					file_index[1][1] = 4;
+					format = FORMAT.VCF;			
+				// Hapmap
+				}else if(text[0][0].indexOf(row2[1][0])>=0 && row2[1][0].length() > 1 &&
+						TBfile[file_index[1][0]].indexOf(".map")<0 ){	
 					file_index[0][1] = 1;
 					file_index[1][1] = 0;
-					System.out.println("Status II");
-				}else{
-					index = -1;
-					System.out.println("Status V ");
+					format = FORMAT.Hapmap;
+				}else if(text[1][0].indexOf(row2[0][0])>=0 && row2[1][0].length() > 1 &&
+						TBfile[file_index[0][0]].indexOf(".map")<0){
+					file_index[0][1] = 0;
+					file_index[1][1] = 1;
+					format = FORMAT.Hapmap;			
+				// ASCII
+				}else if(row1[0].length == 4){
+					file_index[0][1] = 6;
+					file_index[1][1] = 5;
+					format = FORMAT.PLink_ASCII;
+				}else if(row1[1].length == 4){
+					file_index[0][1] = 5;
+					file_index[1][1] = 6;
+					format = FORMAT.PLink_ASCII;
 				}
 				break;
 			case 3:
-				// GD(2): row -> head + samples; col -> 1 + marker
-				// GM(3): row -> head + marker; col -> 3
-				// P(0): row -> head + samples; col -> 1 + traits
-				/*
-				System.out.println("Print start");
-				for(int i = 0; i<3; i++){
-					System.out.println("i="+i);
-					System.out.println(first_row[i].length);
-					System.out.println(first_row[i][0]);
-					System.out.println(first_row[i][1]);
-					System.out.println(second_row[i][0]);
-					System.out.println(second_row[i][1]);
-				}
-				System.out.println("Print end");
-				*/
-				if(first_row[0].length==3 && first_row[1].length >1 && (second_row[0][0].equals(first_row[1][1]))){
-					file_index[0][1] = 3;
-					file_index[1][1] = 2;
-					file_index[2][1] = 0;
-					System.out.println("Status I");
-				}else if(first_row[0].length==3 && first_row[2].length >1 && (second_row[0][0].equals(first_row[2][1]))){
-					file_index[0][1] = 3;
-					file_index[2][1] = 2;
-					file_index[1][1] = 0;
-					System.out.println("Status II");
-				}else if(first_row[1].length==3 && first_row[0].length >1 && (second_row[1][0].equals(first_row[0][1]))){
-					file_index[1][1] = 3;
-					file_index[0][1] = 2;
-					file_index[2][1] = 0;
-					System.out.println("Status III");
-				}else if(first_row[1].length==3 && first_row[2].length >1 && (second_row[1][0].equals(first_row[2][1]))){
-					file_index[1][1] = 3;
-					file_index[2][1] = 2;
-					file_index[0][1] = 0;
-					System.out.println("Status IV");
-				}else if(first_row[2].length==3 && first_row[0].length >1 && (second_row[2][0].equals(first_row[0][1]))){
-					file_index[2][1] = 3;
-					file_index[0][1] = 2;
-					file_index[1][1] = 0;
-					System.out.println("Status V");
-				}else if(first_row[2].length==3 && first_row[1].length >1 && (second_row[2][0].equals(first_row[1][1]))){
-					file_index[2][1] = 3;
-					file_index[1][1] = 2;
-					file_index[0][1] = 0;
-					System.out.println("Status VI");
-				}else{					
-					index = -1;
-					System.out.println("Status VII");
+				//Binary
+				if(text[0][0]== null || text[1][0]== null || text[2][0]== null){
+					for (int i = 0; i<3; i++){
+						if(text[i][0] == null){
+							file_index[i][1] = 7;
+						}else if(TBfile[file_index[i][0]].indexOf(".fam")>=0 &&
+								 row1[i].length == 6){
+							file_index[i][1] = 8;
+						}else if(row1[i].length == 6){
+							file_index[i][1] = 9;
+						}
+					}
+					if(file_index[0][1] + file_index[1][1] + file_index[2][1] == 24){
+						format = FORMAT.PLink_Binary;	
+					}				
+				// Numeric
+				}else{
+					for (int i = 0; i<3; i++){
+						if(TBfile[file_index[i][0]].indexOf(".map")>=0 && row1[i].length ==3){
+							file_index[i][1] = 3;
+						}else if(Arrays.asList(row2[i]).containsAll(Arrays.asList("0", "1", "2"))){
+							file_index[i][1] = 2;
+						}else{
+							file_index[i][1] = 0;
+						}
+					}
+					if(file_index[0][1] + file_index[1][1] + file_index[2][1] == 5){
+						format = FORMAT.Numeric;
+					}
 				}
 				break;
 		}
-		return index;		
+		System.out.println("It's format "+format);
+		
+		System.out.println(file_index[0][1]+""+file_index[1][1]+""+file_index[2][1]);
+		return format;		
 	}
 }

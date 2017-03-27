@@ -1,0 +1,15 @@
+PLINK v1.90b3.46 64-bit (13 Feb 2017)
+Options in effect:
+  --file toy
+  --freq
+  --out iPAT_test
+
+Hostname: wless-user-172019039120.temp.wsu.edu
+Working directory: /Users/Poissonfish/git/iPat
+Start time: Mon Mar 13 12:25:32 2017
+
+Random number seed: 1489433132
+8192 MB RAM detected; reserving 4096 MB for main workspace.
+Error: Failed to open toy.map.
+
+End time: Mon Mar 13 12:25:32 2017
