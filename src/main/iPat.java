@@ -52,25 +52,29 @@ public class iPat {
 		JFrame main = new JFrame();
 
 		//Set to center
+		main.setSize(Wide, Heigth);
 		Dimension windowSize = main.getSize();
         GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
         Point centerPoint = local_env.getCenterPoint();
         int dx = centerPoint.x - windowSize.width / 2;
         int dy = centerPoint.y - windowSize.height / 2;    
 
-		main.setSize(Wide, Heigth);
 		main.setResizable(false);
         main.setLocation(dx, dy);
 		main.setLayout(new BorderLayout());
 		main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Container cPane = main.getContentPane();
+
 		Wide= main.getWidth();
 		Heigth= main.getHeight();
 		ipat = new iPatPanel(Wide, Heigth, PHeight);
+
 		ipat.setFocusable(true); // for keylistener
 		ipat.requestFocusInWindow(); // for keylistener
 		cPane.add(ipat);	
+
 		main.setVisible(true);
+
 		main.addComponentListener(new ComponentAdapter() {
 			@Override
 	        public void componentResized(ComponentEvent evt) {
@@ -100,7 +104,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	//4= coindex, 
 	//5= if include model
 	static int[][] TBco= new int[TBMAX][5];
-	static int[] TBtype = new int[TBMAX]; // 0 = normal, 1 = C, 2 = K;
+	static Findex.FILE[] TBtype = new Findex.FILE[TBMAX]; 
 	static int[] TBdelete= new int[TBMAX];
 	boolean link_to_TB = false;
 	int link_to_TB_index = -1;
@@ -138,9 +142,10 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	static Image[] MO= new Image[MOMAX];
 	Image[] Trash= new Image[10];
 	Image[] White= new Image[10];
-	static Image TBimage, TB_C, TB_K,
+	static Image TBimage, TB_C, TB_K, TB_P,
 		MOimage, Prefbar, MO_suc, MO_fal, 
-		hint_object, hint_trash, hint_model, hint_table;
+		hint_object, hint_trash, hint_model, hint_table,
+		iconIP;
 	
 	JLayeredPane startPanel;
 	JPanel mainPanel;	
@@ -283,8 +288,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	static JTextArea[] text_console = new JTextArea[MOMAX];
 	static JFrame[] frame_console = new JFrame[MOMAX];
 	// file format catch
-	static int[][] file_index = new int[3][2]; //0:tbindex; 1:filetype:
-
+	static Findex[] file_index = new Findex[3];
 	////
 	public static class CustomOutputStream extends OutputStream {
 	    private JTextArea textArea;	     
@@ -310,8 +314,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		this.Heigth=Heigthint;
 		this.panelHeigth=pH;
 		delbboundx=Wide-50;
-		delbboundy=Heigth-70;	
-		
+		delbboundy=Heigth-70;
 	    // Connect the label with a drag and drop listener
 	    new DropTarget(this, new DropTargetListener(){
 	        @Override
@@ -361,13 +364,13 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	    	public void dragExit(DropTargetEvent dte) {}
 	    }
 	    );
-	    
+
         try {
 			jar = new File(iPat.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
 		} catch (URISyntaxException e1) {e1.printStackTrace();}
         
 		try{
-			Image iconIP = ImageIO.read(getClass().getResource("resources/iPat.png"));
+			iconIP = ImageIO.read(getClass().getResource("resources/iPat.png"));
 			iPat.setIcon(new ImageIcon(iconIP));
 		} catch (IOException ex){}
 		try{
@@ -380,6 +383,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		} catch (IOException ex){}		
 		try{
 			TBimage = ImageIO.read(this.getClass().getResourceAsStream("resources/File.png"));
+			TB_P = ImageIO.read(this.getClass().getResourceAsStream("resources/File_p.png"));
 			TB_C = ImageIO.read(this.getClass().getResourceAsStream("resources/File_c.png"));
 			TB_K = ImageIO.read(this.getClass().getResourceAsStream("resources/File_k.png"));
 			addTB = ImageIO.read(this.getClass().getResourceAsStream("resources/add_Table.png"));
@@ -399,12 +403,10 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			MOButton.setIcon(new ImageIcon(addMO));
 		} catch (IOException ex){}
 	
-			
 		for (int i=1; i<14; i++){
 			black[i-1]= new Color(228+2*i,228+2*i,228+2*i, 255);
 		}
 		this.setBackground(Color.white);
-		
 		////////////
 		//LAYOUT.START
 		////////////
@@ -439,7 +441,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		hint_tb.setAlpha(0);
 		hint_mo.setAlpha(0);
 		
-		iPat.setBounds(new Rectangle(523, 10, 150, 80)); 
+		iPat.setBounds(new Rectangle(510, 10, iconIP.getWidth(this), iconIP.getHeight(this))); 
 		
 		//this.setLayout(new MigLayout("debug, fill","[grow]","[grow]"));
 		this.setLayout(null);
@@ -450,7 +452,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				
 		for (int i=1; i<=TBMAX-1; i++){
 			TB[i] = TBimage;
-			TBtype[i] = 0;
+			TBtype[i] = Findex.FILE.TB;
 			TBfile[i]= "null";
 			TBname[i]= new JLabel();
 			startPanel.add(TBname[i]);
@@ -468,6 +470,10 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			rotate_index[i]=0;
 		}			
 		Arrays.fill(permit, false);
+		for(int i = 0; i<3; i++){
+			file_index[i] = new Findex();	
+		}
+		
 		////////////
 		////////////
 		//LAYOUT.END
@@ -678,6 +684,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		hint_tr_main.start();
 		hint_tb_main.start();
 		hint_mo_main.start();
+
 		this.addMouseListener(new MouseAdapter(){		
 			@Override
 			public void mousePressed(MouseEvent ee){
@@ -715,35 +722,54 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
     			
     			String folder_path = null;
 				if(TBindex!=0 & SwingUtilities.isRightMouseButton(ee)){
+					int adx = 7, ady = 9;
 					switch(TBtype[TBindex]){
-						case 0:
-							TBtype[TBindex] = 1;
+						case TB:
+							TBtype[TBindex] = Findex.FILE.P;
+							TB[TBindex] = TB_P;
+							TBimageH[TBindex] = TB[TBindex].getHeight(null);
+							TBimageW[TBindex] = TB[TBindex].getWidth(null);
+							TBimageX[TBindex]-=adx;
+							TBimageY[TBindex]-=ady;
+							break;
+						case P:
+							TBtype[TBindex] = Findex.FILE.C;
 							TB[TBindex] = TB_C;
+							TBimageH[TBindex] = TB[TBindex].getHeight(null);
+							TBimageW[TBindex] = TB[TBindex].getWidth(null);
 							break;
-						case 1:
-							TBtype[TBindex] = 2;
+						case C:
+							TBtype[TBindex] = Findex.FILE.K;
 							TB[TBindex] = TB_K;
+							TBimageH[TBindex] = TB[TBindex].getHeight(null);
+							TBimageW[TBindex] = TB[TBindex].getWidth(null);
 							break;
-						case 2:
-							TBtype[TBindex] = 0;
+						case K:
+							TBtype[TBindex] = Findex.FILE.TB;
 							TB[TBindex] = TBimage;
+							TBimageH[TBindex] = TB[TBindex].getHeight(null);
+							TBimageW[TBindex] = TB[TBindex].getWidth(null);
+							TBimageX[TBindex]+=adx;
+							TBimageY[TBindex]+=ady;
 							break;
 					}
+					repaint();
 			   	}else if(MOindex!=0 & SwingUtilities.isRightMouseButton(ee)){ 
 			   		Configuration model_frame;
 			   		JFrame wrong_formate = null;
-			   		int[] type = new int[2]; //0: C, 1:K
+			   		int[] type = new int[3]; //0: P, 1: C, 2: K , record which table
 			   		Arrays.fill(type, 0);
 			   		try {
-						format = catch_files(file_index, type);
+						format = catch_files(type);
 					} catch (IOException e1) {e1.printStackTrace();}				
 			   		hint_mo_run = true;
 					try {
 						if(format != FORMAT.NA){
 							MO[MOindex] = MOimage;
-							System.out.println("C: "+TBfile[type[0]]+"; K: "+TBfile[type[1]]);
-							model_frame = new Configuration(MOindex, format, file_index, type[0], type[1]);
-					  		model_frame.setBounds(300, 100, 370, 500);
+							System.out.println("C: "+TBfile[type[1]]+"; K: "+TBfile[type[2]]);
+							model_frame = new Configuration(MOindex, format, file_index, 
+															type[0], type[1], type[2]);
+					  		model_frame.setBounds(300, 100, 450, 700);
 					   		model_frame.setResizable(true);
 					   		model_frame.setVisible(true);
 						}else{
@@ -765,7 +791,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
     			repaint();
 			}	
 				
-			@Override
+			@Override 
 			public void mouseReleased(MouseEvent ee){				
 				int x=ee.getX();
 				int y=ee.getY();		
@@ -981,7 +1007,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	addKeyListener(this);
 	addMouseMotionListener(this);
 	}	
-	
+
 	@Override
 	protected void paintComponent(Graphics g) {	
 		if(hint_mo_b){
@@ -1051,7 +1077,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			line_drag_y[1]=imY+30;
 			repaint();
 		}
-	
+		
 		if ((TBindex!=0|MOindex!=0|lineindex!=-1|COindex!=-1)&&(imY>=(delbboundy)&&imX>=(delbboundx))&&!removeornot){
 			TrashAnimation = new Timer(15, new ActionListener() {
 				int i=0;
@@ -1964,7 +1990,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
         String readline;
         int nLine = 0, boundary = 0;
         while((readline = reader.readLine()) != null && nLine < bound && boundary < 100)  {
-        	if(readline.split("\t").length > 1){
+        	if(!readline.startsWith("##")){
             	lines[nLine++] = readline;
         	}
         	boundary++;
@@ -1972,73 +1998,100 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
         return lines;
     }
 	
-	FORMAT catch_files(int[][] file_index, int[] type) throws IOException{
+	FORMAT catch_files(int[] type) throws IOException{
 		// need extension (without extension): Binary fam
-		
-		String[][] text= new String[3][], row1 = new String[3][], row2= new String[3][];
-		for(int i = 0; i < 3; i++){
-			file_index[i][0] = 0; //default to TBindex = 0, which is null
-			file_index[i][1] = -1; //default to -1; 0:P, 1:G, 2:GD, 3:GM, 4:VCF, 5: PED, 6: MAP, 7: BED, 8: FAM, 9: BIM	;		
-		}
-		int count = 0; // 1: Hapmap, 2: Numeric, 3: VCF, 4: PLINK(ASCII), 5: PLINK(Binary)
+		// type record which table is P(1), C(2) or K(3)
+		String[][] text = new String[3][], row1 = new String[3][], row2= new String[3][];
+		String[] text_P, row1_P = new String[20];
+		int count = 0;
 		FORMAT format = FORMAT.NA;
-		//Get file path frmo table
+		//Get file path from table
 		for (int i = 1; i <= TBcount; i++){
 			if(TBco[i][3] == MOco[MOindex][3] && TBco[i][3] != -1){
-				if(TBtype[i] != 0){
-					type[TBtype[i]-1] = i;
-				}else if(count < 3){
-					System.out.println(TBfile[i]);
-					file_index[count][0] = i;
-					text[count] = read_lines(TBfile[file_index[count][0]], 3);
-					if(text[count][0]!=null && text[count][1]!=null){
-						row1[count] = text[count][0].split("\t");
-						row2[count] = text[count][1].split("\t");	
-					}
-					count++;	
-				}
-			}
-		}		
-		
+				switch(TBtype[i]){
+					case P: 
+						type[0] = i; 
+						text_P = read_lines(TBfile[i],3);
+						if(text_P[0]!=null && text_P[1]!=null){
+							row1_P = text_P[1].split("\t");
+						}
+						break;
+					case C: type[1] = i; break;
+					case K: type[2] = i; break;
+					default:
+						if(count < 3){
+							System.out.println(TBfile[i]);
+							file_index[count].tb = i;
+							text[count] = read_lines(TBfile[file_index[count].tb], 3);
+							System.out.println(text[count][0]);
+							System.out.println(text[count][1]);
+							if(text[count][0]!=null && text[count][1]!=null){
+								System.out.println("Load 1");
+								row1[count] = text[count][0].split("\t");
+								if(row1[count].length<=1){row1[count] = text[count][0].split(" ");}
+								System.out.println("Load 2");
+								row2[count] = text[count][1].split("\t");	
+								if(row2[count].length<=1){row2[count] = text[count][0].split(" ");}
+							}	
+							count++;	
+						}
+						break;
+		}}}			
+//	-1; 0:P, 1:G, 2:GD, 3:GM, 4:VCF, 5: PED, 6: MAP, 7: BED, 8: FAM, 9: BIM	;		
 		switch (count){
-			case 2:	
+			case 1:	
 				// VCF
 				if(row1[0].length - text[0][1].split("/").length == 8 &&
 				   text[0][1].split("/").length > 1){
-					file_index[0][1] = 4;
-					file_index[1][1] = 0; 
-					format = FORMAT.VCF;
-				}else if(row1[1].length - text[1][1].split("/").length == 8 &&
-						 text[1][1].split("/").length > 1){
-					file_index[0][1] = 0;
-					file_index[1][1] = 4;
-					format = FORMAT.VCF;			
+					file_index[0].file = Findex.FILE.VCF;
+					format = FORMAT.VCF;		
 				// Hapmap
-				}else if(text[0][0].indexOf(row2[1][0])>=0 && row2[1][0].length() > 1 &&
-						TBfile[file_index[1][0]].indexOf(".map")<0 ){	
-					file_index[0][1] = 1;
-					file_index[1][1] = 0;
+				}else if(text[0][0].indexOf(row1_P[0])>=0 && row1_P[0].length() > 1 &&
+						!TBfile[file_index[0].tb].toUpperCase().endsWith("MAP")){	
+					file_index[0].file = Findex.FILE.G;
 					format = FORMAT.Hapmap;
-				}else if(text[1][0].indexOf(row2[0][0])>=0 && row2[1][0].length() > 1 &&
-						TBfile[file_index[0][0]].indexOf(".map")<0){
-					file_index[0][1] = 0;
-					file_index[1][1] = 1;
-					format = FORMAT.Hapmap;			
-				// ASCII
-				}else if(row1[0].length == 4){
-					file_index[0][1] = 6;
-					file_index[1][1] = 5;
-					format = FORMAT.PLink_ASCII;
-				}else if(row1[1].length == 4){
-					file_index[0][1] = 5;
-					file_index[1][1] = 6;
-					format = FORMAT.PLink_ASCII;
 				}
+				break;
+			case 2:		
+				// ASCII
+				if(TBfile[file_index[0].tb].toUpperCase().endsWith("MAP") && 
+				   TBfile[file_index[1].tb].toUpperCase().endsWith("PED")  &&
+				   row1[0].length == 4){
+					file_index[0].file = Findex.FILE.MAP;
+					file_index[1].file = Findex.FILE.PED;
+					format = FORMAT.PLink_ASCII;
+				}else if(TBfile[file_index[0].tb].toUpperCase().endsWith("PED") && 
+						 TBfile[file_index[1].tb].toUpperCase().endsWith("MAP")  &&
+						 row1[1].length == 4){
+					file_index[0].file = Findex.FILE.PED;
+					file_index[1].file = Findex.FILE.MAP;
+					format = FORMAT.PLink_ASCII;
+				// Numeric
+				}else{
+					boolean GM = false, GD = false;
+					for (int i = 0; i<2; i++){
+						if(row1[i].length == 3){
+							file_index[i].file = Findex.FILE.GM; GM = true;
+						}else if(Arrays.asList(row2[i]).containsAll(Arrays.asList("0", "1", "2"))){
+							file_index[i].file = Findex.FILE.GD; GD = true;
+						}
+					}
+					if(GM && GD){format = FORMAT.Numeric;}
+				}		
 				break;
 			case 3:
 				//Binary
+				boolean BED = false, BIM = false, FAM = false;
 				if(text[0][0]== null || text[1][0]== null || text[2][0]== null){
 					for (int i = 0; i<3; i++){
+						if(TBfile[file_index[i].tb].toUpperCase().endsWith("BED")){
+							file_index[i].file = Findex.FILE.BED; BED = true;
+						}else if(TBfile[file_index[i].tb].toUpperCase().endsWith("BIM")){
+							file_index[i].file = Findex.FILE.BIM; BIM = true; 
+						}else if(TBfile[file_index[i].tb].toUpperCase().endsWith("FAM")){
+							file_index[i].file = Findex.FILE.FAM; FAM = true;
+						}
+						/*
 						if(text[i][0] == null){
 							file_index[i][1] = 7;
 						}else if(TBfile[file_index[i][0]].indexOf(".fam")>=0 &&
@@ -2047,30 +2100,14 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 						}else if(row1[i].length == 6){
 							file_index[i][1] = 9;
 						}
+						*/
 					}
-					if(file_index[0][1] + file_index[1][1] + file_index[2][1] == 24){
-						format = FORMAT.PLink_Binary;	
-					}				
-				// Numeric
-				}else{
-					for (int i = 0; i<3; i++){
-						if(TBfile[file_index[i][0]].indexOf(".map")>=0 && row1[i].length ==3){
-							file_index[i][1] = 3;
-						}else if(Arrays.asList(row2[i]).containsAll(Arrays.asList("0", "1", "2"))){
-							file_index[i][1] = 2;
-						}else{
-							file_index[i][1] = 0;
-						}
-					}
-					if(file_index[0][1] + file_index[1][1] + file_index[2][1] == 5){
-						format = FORMAT.Numeric;
-					}
+					if(BED && BIM && FAM){format = FORMAT.PLink_Binary;}				
 				}
 				break;
 		}
 		System.out.println("It's format "+format);
-		
-		System.out.println(file_index[0][1]+""+file_index[1][1]+""+file_index[2][1]);
+		System.out.println(file_index[0].file+" "+file_index[1].file+" "+file_index[2].file);
 		return format;		
-	}
+	} 
 }
