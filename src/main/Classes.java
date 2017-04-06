@@ -64,6 +64,27 @@ class Group_RadioButton{
 		button[num].setText(text);
 	}	
 }
+class Group_CheckBox implements ActionListener{
+	public JCheckBox check = new JCheckBox();
+	public JTextField longfield = new JTextField(10);
+	public JTextField field = new JTextField(3);
+	public Group_CheckBox(String text){
+		check.setText(text);
+		check.setSelected(false);
+		check.addActionListener(this);
+		longfield.setEnabled(false);
+		field.setEnabled(false);
+	}
+	@Override
+	public void actionPerformed(ActionEvent e){
+		 Object source = e.getSource();	
+	      //GAPIT
+	      if (source == check){
+	    	 longfield.setEnabled(!longfield.isEnabled());
+	    	 field.setEnabled(!field.isEnabled());
+	      }
+	}
+}
 class Group_Combo{
 	public JLabel name = new JLabel();
 	public JComboBox combo;
@@ -88,6 +109,16 @@ class Group_Path{
 			selectedfile = iPatPanel.iPatChooser("Choose a file", false);
 		}
 		field.setText(selectedfile.getAbsolutePath());
+	}
+}
+
+class Findex{
+	public static enum FILE{
+		unknown, P, G, GD, GM, VCF, PED, MAP, BED, FAM, BIM, TB, C, K, 
+	}
+	public FILE file = FILE.unknown;
+	public int tb = 0;
+	public Findex(){
 	}
 }
 
@@ -124,35 +155,35 @@ class ListPanel extends JPanel implements ActionListener{
         list_selected.setFixedCellWidth(80);
         list_selected.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
             
-        JPanel panel_items = new JPanel(new MigLayout());
+        JPanel panel_items = new JPanel(layout);
         JScrollPane scroll_items = new JScrollPane(list_items,  
    				ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,  
    				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scroll_items.getVerticalScrollBar().setUnitIncrement(16); //scrolling sensitive);
-        panel_items.add(new JLabel(name1), "wrap");
-        panel_items.add(scroll_items);
+        panel_items.add(new JLabel(name1), "wrap, align r");
+        panel_items.add(scroll_items, "align r");
         
         JPanel panel_selected = new JPanel(layout);
         JScrollPane scroll_selected = new JScrollPane(list_selected, 
    				ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,  
    				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scroll_selected.getVerticalScrollBar().setUnitIncrement(16); //scrolling sensitive);
-        panel_selected.add(new JLabel(name2), "wrap");
-        panel_selected.add(scroll_selected);
+        panel_selected.add(new JLabel(name2), "wrap, align l");
+        panel_selected.add(scroll_selected, "align l");
               
-        JPanel panel_buttons = new JPanel(layout);
+        JPanel panel_buttons = new JPanel(new MigLayout("fill", "[]", "[grow][grow]"));
         button_in = new JButton(">>");
         button_out= new JButton("<<");
         
-        panel_buttons.add(button_in, "wrap");
-        panel_buttons.add(button_out);
+        panel_buttons.add(button_in, "cell 0 0, align c");
+        panel_buttons.add(button_out, "cell 0 1, align c");
         button_in.addActionListener(this);
         button_out.addActionListener(this);
         
-        this.setLayout(layout);
-        this.add(panel_items);
-        this.add(panel_buttons);
-        this.add(panel_selected);
+        this.setLayout(new MigLayout("fill"));
+        this.add(panel_items, "cell 0 0, grow");
+        this.add(panel_buttons, "cell 1 0, grow");
+        this.add(panel_selected, "cell 2 0, grow");
 	}
 		
 	@Override

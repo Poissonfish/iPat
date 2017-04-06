@@ -5,6 +5,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Scanner;
@@ -26,7 +27,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 			// 1: Hapmap, 2: Numeric, 3: VCF, 4: PLINK(ASCII), 5: PLINK(Binary)				
 	String P_name = "", G_name = "", GD_name = "", GM_name = "",
 		   P = "", G = "", GD = "", GM = "", VCF = "", PED = "", MAP = "", BED = "", FAM = "", BIM = ""; 
-	int C_provided = 0, K_provided = 0;
+	int P_provided = 0, C_provided = 0, K_provided = 0;
 	///////////////////////////////////////////////////////////////////////////////////////
 	Preferences pref;
 	static Runtime[] runtime = new Runtime[iPatPanel.MOMAX];
@@ -40,17 +41,20 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JPanel wd_panel;
 	Group_Value Project_g = new Group_Value("Task name");
 	Group_Path WD_g = new Group_Path("Output Directory");
-
+	JLabel format_g = new JLabel("");
+	
 	ListPanel panel_phenotype;
-	JLabel P_filename = new JLabel("File:\tNA");
-	JPanel panel_genotype;
-	JLabel G_filename = new JLabel("");
-	JLabel G_filename2 = new JLabel("");
-	JLabel G_format = new JLabel("");
 	String[] rowP_g;
 	
 	JPanel panel_co;
 	Group_Value PCA = new Group_Value("PCA.total");
+	
+	JPanel panel_filter_g;
+	Group_CheckBox chr_g = new Group_CheckBox("By Chromosome");
+	Group_Combo ms_g = new Group_Combo("By missing rate",
+			new String[]{"No threshold", "20%", "10%", "5%"});
+	Group_Combo maf_g = new Group_Combo("By MAF",
+			new String[]{"No threshold", "5%", "10%", "20%"});
 	
 	JPanel panel_CMLM;
 	Group_Combo K_cluster = new Group_Combo("Cluster", 
@@ -74,24 +78,20 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JPanel wd_panel_farm;
 	Group_Value Project_f = new Group_Value("Task name");
 	Group_Path WD_f = new Group_Path("Output Directory");
-
-	JPanel panel_phenotype_farm;
-	JLabel P_filename_farm = new JLabel("File:\tNA");
-	JPanel panel_genotype_farm;
-	JLabel G_filename_farm = new JLabel("");
-	JLabel G_filename2_farm = new JLabel("");
-	JLabel G_format_farm = new JLabel("");
+	JLabel format_f = new JLabel("");
 	
-	JPanel panel_co_farm;
-
+	JPanel panel_filter_f;
+	Group_CheckBox chr_f = new Group_CheckBox("By Chromosome");
+	Group_Combo ms_f = new Group_Combo("By missing rate",
+			new String[]{"No threshold", "20%", "10%", "5%"});
+	Group_Combo maf_f = new Group_Combo("By MAF",
+			new String[]{"No threshold", "5%", "10%", "20%"});
+	
 	JPanel panel_adv_farm;
 	Group_Combo method_bin = new Group_Combo("Method bin", 
 			new String[]{"static", "optimum"});
 	Group_Value maxloop = new Group_Value("Max Loop");
-	
-	Group_Combo maf = new Group_Combo("MAF threshold",
-			new String[]{"No threshold", "5%", "10%", "20%"});
-	Boolean MAF_open = false;
+
 	///////////////////////////////////////////////////////////////////////////////////////	
 	//Config plink
 	JPanel main_panel_p;
@@ -100,6 +100,20 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JPanel panel_wd_p;
 	Group_Value Project_p = new Group_Value("Task name");
 	Group_Path WD_p = new Group_Path("Output Directory");
+	JLabel format_p = new JLabel("");
+
+	
+	JPanel panel_filter_p;
+	Group_CheckBox chr_p = new Group_CheckBox("By Chromosome");
+	Group_Combo ms_p = new Group_Combo("By missing rate",
+			new String[]{"No threshold", "20%", "10%", "5%"});
+	Group_Combo maf_p = new Group_Combo("By MAF",
+			new String[]{"No threshold", "5%", "10%", "20%"}); 
+	Group_CheckBox trt_p = new Group_CheckBox("By Trait");
+	
+	JPanel panel_analysis_p;
+	Group_Combo ci_p = new Group_Combo("C.I.",
+			new String[]{"95%", "97.5%", "99.5%"}); 
 	
 	///////////////////////////////////////////////////////////////////////////////////////	
 	//Config convert
@@ -143,28 +157,29 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	int  MOindex;
 	///////////////////////////////////////////////////////////////////////////////////////
 	
-	public Configuration(int MOindex, iPatPanel.FORMAT format, int[][] file_index, int C, int K) throws FileNotFoundException, IOException{	
+	public Configuration(int MOindex, iPatPanel.FORMAT format, Findex[] file_index, 
+						 int Phe, int C, int K) throws FileNotFoundException, IOException{	
 		this.MOindex = MOindex;	
+		this.P_provided = Phe;
 		this.C_provided = C;
 		this.K_provided = K;
-		if(file_index[0][1]!=-1){ //input format supported
+		if(file_index[0].file != Findex.FILE.unknown){ //input format supported
+			Path p_path = Paths.get(iPatPanel.TBfile[P_provided]);
+			P_name = p_path.getFileName().toString();
+			P = iPatPanel.TBfile[P_provided];
 			for (int i = 0; i < 3; i++){
-				if(file_index[i][1] == 0){
-					Path p = Paths.get(iPatPanel.TBfile[file_index[i][0]]);
-					P_name = p.getFileName().toString();
-					P = iPatPanel.TBfile[file_index[i][0]];
-				}else if(file_index[i][1] == 1){
-					Path p = Paths.get(iPatPanel.TBfile[file_index[i][0]]);
+				if(file_index[i].file == Findex.FILE.G){
+					Path p = Paths.get(iPatPanel.TBfile[file_index[i].tb]);
 					G_name = p.getFileName().toString();
-					G = iPatPanel.TBfile[file_index[i][0]];
-				}else if(file_index[i][1] == 2){
-					Path p = Paths.get(iPatPanel.TBfile[file_index[i][0]]);
+					G = iPatPanel.TBfile[file_index[i].tb];
+				}else if(file_index[i].file == Findex.FILE.GD){
+					Path p = Paths.get(iPatPanel.TBfile[file_index[i].tb]);
 					GD_name = p.getFileName().toString();
-					GD = iPatPanel.TBfile[file_index[i][0]];
-				}else if(file_index[i][1] == 3){
-					Path p = Paths.get(iPatPanel.TBfile[file_index[i][0]]);
+					GD = iPatPanel.TBfile[file_index[i].tb];
+				}else if(file_index[i].file == Findex.FILE.GM){
+					Path p = Paths.get(iPatPanel.TBfile[file_index[i].tb]);
 					GM_name = p.getFileName().toString();
-					GM = iPatPanel.TBfile[file_index[i][0]];
+					GM = iPatPanel.TBfile[file_index[i].tb];
 				}
 			}
 		}	
@@ -192,6 +207,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 			case PLink_ASCII:
 				break;
 			case PLink_Binary:
+				pane_plink = config_plink();
+				pane_convert = config_convert();
 				break;
 		}	
         JTabbedPane mainPane = new JTabbedPane();
@@ -210,30 +227,16 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	public JScrollPane config_gapit(String P_name, String G_name, String G2_name) throws IOException{
 		go_gapit.setFont(new Font("Ariashowpril", Font.BOLD, 40));		
 		///////////////////////////////////////////////////////////////////////////////////////
-		wd_panel = new JPanel(new MigLayout("fillx"));
-		wd_panel.add(Project_g.name, "wrap");
-		wd_panel.add(Project_g.longfield, "wrap");
-		wd_panel.add(WD_g.name, "wrap");
-		wd_panel.add(WD_g.field);
-		wd_panel.add(WD_g.browse, "wrap");
+		wd_panel = new JPanel(new MigLayout("fillx", "[][grow]"));
+		wd_panel.add(Project_g.name, "cell 0 0 2 1");
+		wd_panel.add(Project_g.longfield, "cell 0 1 2 1");
+		wd_panel.add(WD_g.name,  "cell 0 2 2 1");
+		wd_panel.add(WD_g.field, "cell 0 3 1 1");
+		wd_panel.add(WD_g.browse, "cell 1 3 1 1");
 		Project_g.longfield.setText("Project "+ MOindex);
-		wd_panel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Task", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
-		///////////////////////////////////////////////////////////////////////////////////////
-		panel_genotype = new JPanel(new MigLayout("fillx"));
-		if(G2_name.equals("0")){
-			panel_genotype.add(G_filename, "wrap");
-			G_filename.setText("File:\t"+G_name);
-			panel_genotype.add(G_format);
-			G_format.setText("Format: HapMap");
-		}else{
-			panel_genotype.add(G_filename, "wrap");
-			G_filename.setText("Genotype:\t"+G_name);
-			panel_genotype.add(G_filename2, "wrap");
-			G_filename2.setText("Map:\t"+G2_name);
-			panel_genotype.add(G_format);
-			G_format.setText("Format: Numeric");
-		}
-		panel_genotype.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Genotype", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
+		wd_panel.add(format_g, "cell 0 4 2 1");
+		format_g.setText("The format is "+iPatPanel.format);
+		wd_panel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_phenotype = new ListPanel("Traits", "Excluded");
 		String text = iPatPanel.read_lines(P, 1)[0];
@@ -246,24 +249,31 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		if(C_provided == 0){
 			panel_co = new JPanel(new MigLayout("fillx"));
 			PCA.name.setToolTipText("Total Number of PCs as Covariates");
-			panel_co.add(PCA.name);
-			panel_co.add(PCA.field, "wrap");
+			panel_co.add(PCA.name, "align r");
+			panel_co.add(PCA.field, "wrap, align l");
 			panel_co.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Covariates", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		}
 		///////////////////////////////////////////////////////////////////////////////////////
+		panel_filter_g = new JPanel(new MigLayout("fillx"));
+		panel_filter_g.add(chr_g.check, "cell 0 0, align r");
+		panel_filter_g.add(chr_g.longfield, "cell 1 0,align l");
+		panel_filter_g.add(ms_g.name, "cell 0 1, align r");
+		panel_filter_g.add(ms_g.combo, "cell 1 1, align l");
+		panel_filter_g.add(maf_g.name, "cell 0 2, align r");
+		panel_filter_g.add(maf_g.combo, "cell 1 2, align l");
+		panel_filter_g.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Filter", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
+		///////////////////////////////////////////////////////////////////////////////////////
 		panel_CMLM = new JPanel(new MigLayout("fillx"));
-		
-		model_select.combo.setSelectedItem("CMLM");
-		
 		K_cluster.name.setToolTipText("Clustering algorithm to group individuals based on their kinship");
 		K_group.name.setToolTipText("Method to derive kinship among groups");
 
-		panel_CMLM.add(model_select.name);
-		panel_CMLM.add(model_select.combo, "wrap");
-		panel_CMLM.add(K_cluster.name);
-		panel_CMLM.add(K_cluster.combo, "wrap");
-		panel_CMLM.add(K_group.name);
-		panel_CMLM.add(K_group.combo, "wrap");
+		panel_CMLM.add(model_select.name, "cell 0 0, align r");
+		panel_CMLM.add(model_select.combo, "cell 1 0, align l");
+		model_select.combo.setSelectedItem("CMLM");
+		panel_CMLM.add(K_cluster.name, "cell 0 1, align r");
+		panel_CMLM.add(K_cluster.combo, "cell 1 1, align l");
+		panel_CMLM.add(K_group.name, "cell 0 2, align r");
+		panel_CMLM.add(K_group.combo, "cell 1 2, align l");
 	
 		panel_CMLM.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Model", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
@@ -284,23 +294,24 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				+ "to find the optimal number of PCs for inclusion in the GWAS models. </html>");
 		model_selection_s.setSelected(false);
 		
-		panel_advance.add(snp_frac.name);
-		panel_advance.add(snp_frac.combo, "wrap");
-		panel_advance.add(file_frag.name);
-		panel_advance.add(file_frag.combo, "wrap");
-		panel_advance.add(model_selection_s);
+		panel_advance.add(snp_frac.name, "cell 0 0, align r");
+		panel_advance.add(snp_frac.combo, "cell 1 0, align l");
+		panel_advance.add(file_frag.name, "cell 0 1, align r");
+		panel_advance.add(file_frag.combo, "cell 1 1, align l");
+		panel_advance.add(model_selection_s, "cell 0 2 2 1, align c");
 		panel_advance.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Advance", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
-		main_panel = new JPanel(new MigLayout("fillx", "[grow][grow]"));
+		main_panel = new JPanel(new MigLayout("fillx", "[grow]"));
 		main_panel.add(go_gapit, "dock north");
 		main_panel.add(wd_panel, "cell 0 0, grow");
-		main_panel.add(panel_genotype, "cell 0 1, grow");
-		main_panel.add(panel_phenotype, "cell 0 2, grow");
+		main_panel.add(panel_phenotype, "cell 0 1, grow");
 		if(C_provided == 0){
-			main_panel.add(panel_co, "cell 0 3, grow");
+			main_panel.add(panel_co, "cell 0 2, grow");
+			main_panel.add(panel_filter_g, "cell 0 3, grow");
 			main_panel.add(panel_CMLM, "cell 0 4, grow");
 			main_panel.add(panel_advance, "cell 0 5, grow");	
 		}else{
+			main_panel.add(panel_filter_g, "cell 0 2, grow");
 			main_panel.add(panel_CMLM, "cell 0 3, grow");
 			main_panel.add(panel_advance, "cell 0 4, grow");
 		}
@@ -316,53 +327,43 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	}
 	
 	public JScrollPane config_farm(String P_name, String G_name, String G2_name){
-		go_farm.setFont(new Font("Ariashowpril", Font.BOLD, 40));		
-		wd_panel_farm = new JPanel(new MigLayout("fillx"));
-		wd_panel_farm.add(Project_f.name, "wrap");
-		wd_panel_farm.add(Project_f.longfield, "wrap");
-		wd_panel_farm.add(WD_f.name, "wrap");
-		wd_panel_farm.add(WD_f.field);
-		wd_panel_farm.add(WD_f.browse, "wrap");
+		go_farm.setFont(new Font("Ariashowpril", Font.BOLD, 40));	
+		wd_panel_farm = new JPanel(new MigLayout("fillx", "[][grow]"));
+		wd_panel_farm.add(Project_f.name, "cell 0 0 2 1");
+		wd_panel_farm.add(Project_f.longfield, "cell 0 1 2 1");
+		wd_panel_farm.add(WD_f.name,  "cell 0 2 2 1");
+		wd_panel_farm.add(WD_f.field, "cell 0 3 1 1");
+		wd_panel_farm.add(WD_f.browse, "cell 1 3 1 1");
 		Project_f.longfield.setText("Project "+ MOindex);
-		
-		wd_panel_farm.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Task", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
+		wd_panel_farm.add(format_f, "cell 0 4 2 1");
+		format_f.setText("The format is "+iPatPanel.format);
+		wd_panel_farm.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
-		panel_genotype_farm = new JPanel(new MigLayout("fillx"));
-		G_filename_farm.setText("Genotype:\t"+G_name);
-		G_filename2_farm.setText("Map:\t"+G2_name);
-		G_format_farm.setText("Format: Numeric");
-		
-		panel_genotype_farm.add(G_filename_farm, "wrap");
-		panel_genotype_farm.add(G_filename2_farm, "wrap");
-		panel_genotype_farm.add(G_format_farm);
-		panel_genotype_farm.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Genotype", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
-		///////////////////////////////////////////////////////////////////////////////////////
-		panel_phenotype_farm = new JPanel(new MigLayout("fillx"));
-		P_filename_farm.setText("File:\t"+P_name);
-		
-		panel_phenotype_farm.add(P_filename_farm);
-		panel_phenotype_farm.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Phenotype", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
+		panel_filter_f = new JPanel(new MigLayout("fillx"));
+		panel_filter_f.add(chr_f.check, "cell 0 0, align r");
+		panel_filter_f.add(chr_f.longfield, "cell 1 0,align l");
+		panel_filter_f.add(ms_f.name, "cell 0 1, align r");
+		panel_filter_f.add(ms_f.combo, "cell 1 1, align l");
+		panel_filter_f.add(maf_f.name, "cell 0 2, align r");
+		panel_filter_f.add(maf_f.combo, "cell 1 2, align l");
+		panel_filter_f.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Filter", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
 		//panel_co_farm = new JPanel(new MigLayout("fillx"));
 		//panel_co_farm.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Covariates", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_adv_farm = new JPanel(new MigLayout("fillx"));
-						
-		panel_adv_farm.add(method_bin.name);
-		panel_adv_farm.add(method_bin.combo, "wrap");
-		panel_adv_farm.add(maxloop.name);
-		panel_adv_farm.add(maxloop.field, "wrap");
-		panel_adv_farm.add(maf.name);
-		panel_adv_farm.add(maf.combo);
+		panel_adv_farm.add(method_bin.name,  "cell 0 0, align r");
+		panel_adv_farm.add(method_bin.combo,  "cell 1 0, align l");
+		panel_adv_farm.add(maxloop.name,  "cell 0 1, align r");
+		panel_adv_farm.add(maxloop.field,  "cell 1 1, align l");;
 		panel_adv_farm.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Advance", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
-		main_panel_farm = new JPanel(new MigLayout("fillx", "[grow][grow]"));
+		main_panel_farm = new JPanel(new MigLayout("fillx", "[grow]"));
 		main_panel_farm.add(go_farm, "dock north");
 		main_panel_farm.add(wd_panel_farm, "cell 0 0, grow");
-		main_panel_farm.add(panel_genotype_farm, "cell 0 1, grow");
-		main_panel_farm.add(panel_phenotype_farm, "cell 0 2, grow");
+		main_panel_farm.add(panel_filter_f, "cell 0 1, grow");
 		//main_panel_farm.add(panel_co_farm, "cell 0 3, grow");
-		main_panel_farm.add(panel_adv_farm, "cell 0 3, grow");
+		main_panel_farm.add(panel_adv_farm, "cell 0 2, grow");
 		///////////////////////////////////////////////////////////////////////////////////////
 		JScrollPane pane = new JScrollPane(main_panel_farm,  
 					ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,  
@@ -374,20 +375,35 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	}
 	
 	public JScrollPane config_plink(){
-		go_p.setFont(new Font("Ariashowpril", Font.BOLD, 40));		
-		panel_wd_p = new JPanel(new MigLayout("fillx"));
-		panel_wd_p.add(Project_p.name, "wrap");
-		panel_wd_p.add(Project_p.longfield, "wrap");
-		panel_wd_p.add(WD_p.name, "wrap");
-		panel_wd_p.add(WD_p.field);
-		panel_wd_p.add(WD_p.browse, "wrap");
-
+		go_p.setFont(new Font("Ariashowpril", Font.BOLD, 40));
+		panel_wd_p = new JPanel(new MigLayout("fillx", "[][grow]"));
+		panel_wd_p.add(Project_p.name, "cell 0 0 2 1");
+		panel_wd_p.add(Project_p.longfield, "cell 0 1 2 1");
+		panel_wd_p.add(WD_p.name,  "cell 0 2 2 1");
+		panel_wd_p.add(WD_p.field, "cell 0 3 1 1");
+		panel_wd_p.add(WD_p.browse, "cell 1 3 1 1");
 		Project_p.longfield.setText("Project "+ MOindex);
-		panel_wd_p.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Task", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
+		panel_wd_p.add(format_p, "cell 0 4 2 1");
+		format_p.setText("The format is "+iPatPanel.format);
+		panel_wd_p.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
-		main_panel_p = new JPanel(new MigLayout("fillx", "[grow][grow]"));
+		panel_filter_p = new JPanel(new MigLayout("fillx"));
+		panel_filter_p.add(chr_p.check, "cell 0 0, align r");
+		panel_filter_p.add(chr_p.longfield, "cell 1 0,align l");
+		panel_filter_p.add(ms_p.name, "cell 0 1, align r");
+		panel_filter_p.add(ms_p.combo, "cell 1 1, align l");
+		panel_filter_p.add(maf_p.name, "cell 0 2, align r");
+		panel_filter_p.add(maf_p.combo, "cell 1 2, align l");
+		panel_filter_p.add(trt_p.check, "cell 0 3, align r");
+		panel_filter_p.add(trt_p.longfield, "cell 1 3, align l");
+		panel_filter_p.add(ci_p.name, "cell 0 4, align r");
+		panel_filter_p.add(ci_p.combo, "cell 1 4, align l");		
+		panel_filter_p.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Filter", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
+		///////////////////////////////////////////////////////////////////////////////////////
+		main_panel_p = new JPanel(new MigLayout("fillx", "[grow]"));
 		main_panel_p.add(go_p, "dock north");
 		main_panel_p.add(panel_wd_p, "cell 0 0, grow");
+		main_panel_p.add(panel_filter_p, "cell 0 1, grow");
 		///////////////////////////////////////////////////////////////////////////////////////
 		JScrollPane pane = new JScrollPane(main_panel_p,  
 				ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,  
@@ -403,7 +419,6 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		panel_select = new ListPanel("Traits", "");
 		String[] items = {"one", "two", "three"};
 		panel_select.addElements(items);
-		
 		JScrollPane pane = new JScrollPane(panel_select,  
 				ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,  
 				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -446,7 +461,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	      }
 	}
 	
-	void run_GAPIT(int[][] file_index) throws FileNotFoundException{
+	void run_GAPIT(Findex[] file_index) throws FileNotFoundException{
 		String model_selection_string = "";
 		String 	G = "NULL", P = "", GD = "NULL", GM = "NULL", K = "", C = "",
 				SNP_test = "", PCA_count = "",
@@ -462,16 +477,14 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		}
 		System.out.println("length"+indexp.length);
 		//////
-		
+		P = iPatPanel.TBfile[P_provided];
 		for(int i=0;i<3;i++){
-			if(file_index[i][1] == 1){
-				G = iPatPanel.TBfile[file_index[i][0]];
-			}else if(file_index[i][1] == 0){
-				P = iPatPanel.TBfile[file_index[i][0]];
-			}else if(file_index[i][1] == 2){
-				GD = iPatPanel.TBfile[file_index[i][0]];
-			}else if(file_index[i][1] == 3){
-				GM = iPatPanel.TBfile[file_index[i][0]];
+			if(file_index[i].file == Findex.FILE.G){
+				G = iPatPanel.TBfile[file_index[i].tb];
+			}else if(file_index[i].file == Findex.FILE.GD){
+				GD = iPatPanel.TBfile[file_index[i].tb];
+			}else if(file_index[i].file == Findex.FILE.GM){
+				GM = iPatPanel.TBfile[file_index[i].tb];
 			}
 		}	
 		SNP_test = "TRUE";
@@ -530,16 +543,15 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
         run_command(MOindex, whole, R_Path, WD, Project_name);      
 	}
 	
-	void run_Farm(int[][] file_index) throws FileNotFoundException{
+	void run_Farm(Findex[] file_index) throws FileNotFoundException{
 		String 	P = "", GD = "NULL", GM = "NULL", C = "", WD = "", Project_name = "",	
 				method_b = "", maxloop_run = "", maf_cal = "", maf_threshold = "";		
-		for(int i=0;i<5;i++){
-			if(file_index[i][1] == 0){
-				P = iPatPanel.TBfile[file_index[i][0]];
-			}else if(file_index[i][1] == 2){
-				GD = iPatPanel.TBfile[file_index[i][0]];
-			}else if(file_index[i][1] == 3){
-				GM = iPatPanel.TBfile[file_index[i][0]];
+		P = iPatPanel.TBfile[P_provided];
+		for(int i = 0; i < 3; i++){
+			if(file_index[i].file == Findex.FILE.GD){
+				GD = iPatPanel.TBfile[file_index[i].tb];
+			}else if(file_index[i].file == Findex.FILE.GM){
+				GM = iPatPanel.TBfile[file_index[i].tb];
 			}
 		}			
 		if(C_provided != 0){
@@ -550,7 +562,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		method_b = (String) method_bin.combo.getSelectedItem();
 		maxloop_run = maxloop.field.getText();
 		
-		int maf_value = maf.combo.getSelectedIndex();
+		int maf_value = maf_f.combo.getSelectedIndex();
 		switch(maf_value){
 			case 0:
 				maf_cal = "FALSE";
@@ -577,16 +589,55 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
         run_command(MOindex, command, R_Path, WD, Project_name);
 	}
 	
-	void run_PLink(int[][] file_index) throws FileNotFoundException{
+	void run_PLink(Findex[] file_index) throws FileNotFoundException{
 		String 	WD = "", Project_name;
+		String 	p_path = "", bed = "", bim = "", fam = "", ci = "",
+				ms = "", maf = "";
+		p_path = iPatPanel.TBfile[P_provided];
+		for(int i=0;i<3;i++){
+			if(file_index[i].file == Findex.FILE.BED){
+				bed = iPatPanel.TBfile[file_index[i].tb];
+			}else if(file_index[i].file == Findex.FILE.BIM){
+				bim = iPatPanel.TBfile[file_index[i].tb];
+			}else if(file_index[i].file == Findex.FILE.FAM){
+				fam = iPatPanel.TBfile[file_index[i].tb];
+			}
+		}	
 		WD = WD_p.field.getText();
-		Project_name = Project_p.longfield.getText();
-		String[] command = {" ",
-				"--file", iPatPanel.jar.getParent()+"/libs/PLINK/toy",
-				"--freq", 
-				"--out", WD+"/iPAT_test"};
-		String[] Path = {iPatPanel.jar.getParent()+"/libs/PLINK/plink"};
-		run_command(MOindex, command, Path, WD, Project_name);
+		Project_name = Project_p.longfield.getText(); 
+		
+		ArrayList<String> list = new ArrayList<String>();
+		list.add(iPatPanel.jar.getParent()+"/libs/plink");
+		list.add("--bed"); list.add(bed);
+		list.add("--bim"); list.add(bim);
+		list.add("--fam"); list.add(fam);
+		list.add("--assoc"); list.add("--allow-no-sex"); 
+		list.add("--pheno"); list.add(p_path);
+		list.add("--all-pheno"); list.add("-—adjust");
+		switch(ci_p.combo.getSelectedIndex()){
+			case 0: list.add("--ci"); list.add(".95"); break;
+			case 1:	list.add("--ci"); list.add(".975"); break;
+			case 2: list.add("--ci"); list.add(".995"); break;
+		}
+		switch(ms_p.combo.getSelectedIndex()){
+			case 1:	list.add("--geno"); list.add(".2"); break;
+			case 2: list.add("--geno"); list.add(".1"); break;
+			case 3: list.add("--geno"); list.add(".05"); break;
+		}
+		switch(maf_p.combo.getSelectedIndex()){
+			case 1:	list.add("--maf"); list.add(".05"); break;
+			case 2: list.add("--maf"); list.add(".1"); break;
+			case 3: list.add("--maf"); list.add(".2"); break;
+		}
+		list.add("--out"); list.add(WD+"/"+Project_name);
+		String[] command = list.toArray(new String[0]);		
+		//plink —bfile data —assoc —allow-no-sex —pheno phenos.txt —all-pheno —adjust —ci 0.95 —out output
+		run_command_c(MOindex, command, WD, Project_name);
+		iPatPanel.MO[MOindex] = iPatPanel.MOimage;
+		String[] plot_com = {" ", iPatPanel.jar.getParent()+"/libs/PLinkPlots.R",
+							WD, Project_name, "3"};
+		String[] R_Path = {"/usr/local/bin/Rscript", "/usr/bin/Rsciprt", "/usr/Rscript"};
+        run_command(MOindex, plot_com, R_Path, WD, Project_name);
 	}
 	
 	public void showConsole(String title){
@@ -619,6 +670,60 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
         
 	}
 	
+	public static void run_command_c(int MOindex, String[] command,
+			   						String WD, String name){
+        String line = ""; Boolean Suc_or_Fal = true;
+        PrintWriter errWriter = null;
+		iPatPanel.permit[MOindex] = true;
+		iPatPanel.rotate_index[MOindex] = 1;
+        runtime[MOindex] = Runtime.getRuntime();	        
+         //Check the correct path until it can locate R
+       	try{
+       		process[MOindex] = runtime[MOindex].exec(command);
+       	}catch (IOException e1) {
+        	Suc_or_Fal = false;
+        	e1.printStackTrace();}
+        // check command	        
+        for (int i = 0; i<command.length; i++){
+        	  iPatPanel.text_console[MOindex].append(command[i]+" ");
+        }
+        iPatPanel.text_console[MOindex].append(System.getProperty("line.separator"));
+        iPatPanel.text_console[MOindex].setCaretPosition(iPatPanel.text_console[MOindex].getDocument().getLength());	   	
+        try {
+    	    BufferedReader input_stream = new BufferedReader(new InputStreamReader(process[MOindex].getInputStream()));
+            BufferedReader error_stream= new BufferedReader(new InputStreamReader(process[MOindex].getErrorStream()));
+    	    while((line = input_stream.readLine()) != null){
+	            System.out.println(line);
+	            iPatPanel.text_console[MOindex].append(line+ System.getProperty("line.separator"));
+	            iPatPanel.text_console[MOindex].setCaretPosition(iPatPanel.text_console[MOindex].getDocument().getLength());
+	        }
+    	    while((line = error_stream.readLine()) != null){
+	            System.out.println(line);
+	        	File error = new File(WD+"/"+name+".err");
+	            errWriter = new PrintWriter(error.getAbsoluteFile());
+	            errWriter.println(line);
+	            if(line.toUpperCase().startsWith("ERROR")){Suc_or_Fal = false;}
+	        }  
+    	    process[MOindex].waitFor();        
+		} catch (IOException | InterruptedException e1) {	
+        	Suc_or_Fal = false;
+			e1.printStackTrace();
+		}	
+        
+	    if(Suc_or_Fal){
+			iPatPanel.MO[MOindex] = iPatPanel.MO_suc;
+	    }else{
+			iPatPanel.MO[MOindex] = iPatPanel.MO_fal;
+			errWriter.close();
+	    }    
+		iPatPanel.permit[MOindex] = false;
+		iPatPanel.rotate_index[MOindex] = 0;
+		iPatPanel.MOimageH[MOindex]=iPatPanel.MO[MOindex].getHeight(null);
+		iPatPanel.MOimageW[MOindex]=iPatPanel.MO[MOindex].getWidth(null);
+		iPatPanel.MOname[MOindex].setLocation(iPatPanel.MOimageX[MOindex], iPatPanel.MOimageY[MOindex]+ iPatPanel.MOimageH[MOindex]);
+		System.out.println("done");
+		process[MOindex].destroy();
+	}
 	public static void run_command(int MOindex, String[] command, String[] path, 
 								   String WD, String name){
         int int_error = 0, loop_error = 0;
@@ -626,7 +731,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
         PrintWriter errWriter = null;
 		iPatPanel.permit[MOindex] = true;
 		iPatPanel.rotate_index[MOindex] = 1;
-        runtime[MOindex] = Runtime.getRuntime();	        
+		System.out.println("one");
+		runtime[MOindex] = Runtime.getRuntime();	        
          //Check the correct path until it can locate R
         while(int_error == 0){
         	command[0] = path[loop_error];
@@ -636,12 +742,14 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
         	}catch (IOException e1) {e1.printStackTrace();}
         	++loop_error;
         }
+        	
         // check command	        
         for (int i = 0; i<command.length; i++){
         	  iPatPanel.text_console[MOindex].append(command[i]+" ");
         }
         iPatPanel.text_console[MOindex].append(System.getProperty("line.separator"));
         iPatPanel.text_console[MOindex].setCaretPosition(iPatPanel.text_console[MOindex].getDocument().getLength());	   	
+
         try {
     	    BufferedReader input_stream = new BufferedReader(new InputStreamReader(process[MOindex].getInputStream()));
             BufferedReader error_stream= new BufferedReader(new InputStreamReader(process[MOindex].getErrorStream()));
@@ -676,7 +784,9 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		iPatPanel.MOimageW[MOindex]=iPatPanel.MO[MOindex].getWidth(null);
 		iPatPanel.MOname[MOindex].setLocation(iPatPanel.MOimageX[MOindex], iPatPanel.MOimageY[MOindex]+ iPatPanel.MOimageH[MOindex]);
 		System.out.println("done");
+		process[MOindex].destroy();
 	}
+	
 	
 	
 	public void remove(){
@@ -697,7 +807,9 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		WD_f.field.setText(pref.get("WD_f", "~/"));
 		method_bin.combo.setSelectedIndex(pref.getInt("method_bin_f", 0));
 		maxloop.field.setText(pref.get("maxloop_f", "10"));
-		maf.combo.setSelectedIndex(pref.getInt("maf_f", 0));					
+		maf_f.combo.setSelectedIndex(pref.getInt("maf_f", 0));
+		// PLINK
+		WD_p.field.setText(pref.get("WD_p", "~/"));
 		System.out.println("LOAD");	
 	}
 	
@@ -716,7 +828,10 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		pref.put("WD_f", WD_f.field.getText());
 		pref.putInt("method_bin_f", method_bin.combo.getSelectedIndex());
 		pref.put("maxloop_f", maxloop.field.getText());
-		pref.putInt("maf_f", maf.combo.getSelectedIndex());
+		pref.putInt("maf_f", maf_f.combo.getSelectedIndex());
+		// PLINK
+		pref.put("WD_p", WD_p.field.getText());
+		
 		
 		System.out.println("SAVE");
 	}
