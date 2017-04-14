@@ -91,7 +91,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	static int MOMAX=10;
 	private static final int COMAX=20;	
 	static File jar;
-	int abctest = 0;
+	int abctest = 0;// ok
 	
 	static int[] TBimageX= new int[TBMAX];
 	static int[] TBimageY= new int[TBMAX];
