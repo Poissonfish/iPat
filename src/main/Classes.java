@@ -11,7 +11,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -121,6 +125,92 @@ class Findex{
 	public Findex(){
 	}
 }
+
+class BGThread extends Thread{
+	int MOindex;
+	String[] command;
+	String WD;
+	String Project;
+	public BGThread(int MOindex, String[] command, String WD, String Project){
+		this.MOindex = MOindex;
+		this.command = command;
+		this.WD = WD;
+		this.Project = Project;
+	}
+	@Override
+	public void run(){
+		int int_error = 0, loop_error = 0;
+        String line = ""; Boolean Suc_or_Fal = true;
+        PrintWriter errWriter = null;
+        String[] path = {"/usr/local/bin/Rscript", "/usr/bin/Rsciprt", "/usr/Rscript"};
+		
+        iPatPanel.permit[MOindex] = true;
+		iPatPanel.rotate_index[MOindex] = 1;
+		Configuration.runtime[MOindex] = Runtime.getRuntime();	        
+       /*
+		//Check the correct path until it can locate R
+        while(int_error == 0){
+        	command[0] = path[loop_error];
+        	try{
+        		Configuration.process[MOindex] = Configuration.runtime[MOindex].exec(command);
+                int_error = Configuration.process[MOindex].getErrorStream().read();
+        	}catch (IOException e1) {e1.printStackTrace();}
+        	++loop_error;
+        }
+        */
+        	
+        // check command	
+		try {
+			Configuration.process[MOindex] = Configuration.runtime[MOindex].exec(command);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+        for (int i = 0; i<command.length; i++){
+        	  iPatPanel.text_console[MOindex].append(command[i]+" ");
+        }
+        iPatPanel.text_console[MOindex].append(System.getProperty("line.separator"));
+        iPatPanel.text_console[MOindex].setCaretPosition(iPatPanel.text_console[MOindex].getDocument().getLength());	   	
+
+        try {
+    	    BufferedReader input_stream = new BufferedReader(new InputStreamReader(Configuration.process[MOindex].getInputStream()));
+            BufferedReader error_stream= new BufferedReader(new InputStreamReader(Configuration.process[MOindex].getErrorStream()));
+	        while((line = input_stream.readLine()) != null){
+	            System.out.println(line);
+	            iPatPanel.text_console[MOindex].append(line+ System.getProperty("line.separator"));
+	            iPatPanel.text_console[MOindex].setCaretPosition(iPatPanel.text_console[MOindex].getDocument().getLength());
+	        }
+	        Configuration.process[MOindex].waitFor();        
+	        while((line = error_stream.readLine()) != null){
+	        	File error = new File(WD+"/"+Project+".err");
+	            errWriter = new PrintWriter(error.getAbsoluteFile());
+	            errWriter.println(line);  
+	        }    
+	        errWriter.close();	      
+	        File outfile = new File(WD+"/"+Project+".log");
+            FileWriter outWriter = new FileWriter(outfile.getAbsoluteFile(),true);
+            iPatPanel.text_console[MOindex].write(outWriter);
+		} catch (IOException | InterruptedException e1) {	
+        	Suc_or_Fal = false;
+			e1.printStackTrace();
+		}				
+        
+	    if(Suc_or_Fal){
+			iPatPanel.MO[MOindex] = iPatPanel.MO_suc;
+	    }else{
+			iPatPanel.MO[MOindex] = iPatPanel.MO_fal;
+	    }    
+		iPatPanel.permit[MOindex] = false;
+		iPatPanel.rotate_index[MOindex] = 0;
+		iPatPanel.MOimageH[MOindex]=iPatPanel.MO[MOindex].getHeight(null);
+		iPatPanel.MOimageW[MOindex]=iPatPanel.MO[MOindex].getWidth(null);
+		iPatPanel.MOname[MOindex].setLocation(iPatPanel.MOimageX[MOindex], iPatPanel.MOimageY[MOindex]+ iPatPanel.MOimageH[MOindex]);
+		System.out.println("done");
+		Configuration.process[MOindex].destroy();
+	}
+}
+
 
 class ListPanel extends JPanel implements ActionListener{
 	JList list_items, list_selected;

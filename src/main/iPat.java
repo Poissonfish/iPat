@@ -44,7 +44,6 @@ public class iPat {
 	static int PHeight=190;
 	static String folder_path = new String("path");
 	public static iPatPanel ipat;
-
 	public static void main(String[] args){  
 		System.out.println("Welcome to iPat!");
 		String OS = System.getProperty("os.name");
@@ -92,6 +91,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	static int MOMAX=10;
 	private static final int COMAX=20;	
 	static File jar;
+	int abctest = 0;
 	
 	static int[] TBimageX= new int[TBMAX];
 	static int[] TBimageY= new int[TBMAX];
@@ -282,7 +282,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	Timer hint_tb_timer_out;
 	Timer hint_tb_main;
 	//multi-thread
-	static Thread[] multi_run = new Thread[MOMAX]; 
+	static BGThread[] multi_run = new BGThread[MOMAX]; 
 	//Console panel
 	static JScrollPane[] scroll_console = new JScrollPane[MOMAX];
 	static JTextArea[] text_console = new JTextArea[MOMAX];
@@ -386,11 +386,9 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			TB_P = ImageIO.read(this.getClass().getResourceAsStream("resources/File_p.png"));
 			TB_C = ImageIO.read(this.getClass().getResourceAsStream("resources/File_c.png"));
 			TB_K = ImageIO.read(this.getClass().getResourceAsStream("resources/File_k.png"));
-			addTB = ImageIO.read(this.getClass().getResourceAsStream("resources/add_Table.png"));
 			MOimage = ImageIO.read(this.getClass().getResourceAsStream("resources/Model.png"));
 			MO_suc = ImageIO.read(this.getClass().getResourceAsStream("resources/Model_suc.png"));
 			MO_fal = ImageIO.read(this.getClass().getResourceAsStream("resources/Model_fal.png"));
-			addMO = ImageIO.read(this.getClass().getResourceAsStream("resources/add_Model.png"));
 			hint_object = ImageIO.read(this.getClass().getResourceAsStream("resources/hint_object.png"));			
 			hint_trash = ImageIO.read(this.getClass().getResourceAsStream("resources/hint_trash.png"));	
 			hint_model = ImageIO.read(this.getClass().getResourceAsStream("resources/hint_model.png"));	
@@ -399,8 +397,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			hint_ob.setIcon(new ImageIcon(hint_object));
 			hint_tb.setIcon(new ImageIcon(hint_table));
 			hint_mo.setIcon(new ImageIcon(hint_model));
-			TBButton.setIcon(new ImageIcon(addTB));
-			MOButton.setIcon(new ImageIcon(addMO));
 		} catch (IOException ex){}
 	
 		for (int i=1; i<14; i++){
@@ -2036,8 +2032,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 							count++;	
 						}
 						break;
-		}}}			
-//	-1; 0:P, 1:G, 2:GD, 3:GM, 4:VCF, 5: PED, 6: MAP, 7: BED, 8: FAM, 9: BIM	;		
+		}}}				
 		switch (count){
 			case 1:	
 				// VCF
@@ -2050,6 +2045,9 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 						!TBfile[file_index[0].tb].toUpperCase().endsWith("MAP")){	
 					file_index[0].file = Findex.FILE.G;
 					format = FORMAT.Hapmap;
+				}else if(Arrays.asList(row2[0]).containsAll(Arrays.asList("0", "1", "2"))){
+					file_index[0].file = Findex.FILE.GD;
+					format = FORMAT.Numeric;
 				}
 				break;
 			case 2:		
@@ -2082,7 +2080,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			case 3:
 				//Binary
 				boolean BED = false, BIM = false, FAM = false;
-				if(text[0][0]== null || text[1][0]== null || text[2][0]== null){
 					for (int i = 0; i<3; i++){
 						if(TBfile[file_index[i].tb].toUpperCase().endsWith("BED")){
 							file_index[i].file = Findex.FILE.BED; BED = true;
@@ -2103,7 +2100,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 						*/
 					}
 					if(BED && BIM && FAM){format = FORMAT.PLink_Binary;}				
-				}
+				
 				break;
 		}
 		System.out.println("It's format "+format);

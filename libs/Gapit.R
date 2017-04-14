@@ -1,22 +1,4 @@
 args = commandArgs(trailingOnly=TRUE)
-
-list.of.packages <- c("MASS", "gplots", "compiler", "scatterplot3d", "R.utils")
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
-if(!'multtest'%in% installed.packages()[,"Package"]){
-  source("http://www.bioconductor.org/biocLite.R") 
-  biocLite("multtest")
-}
-
-library(MASS) # required for ginv
-library(multtest)
-library(gplots)
-library(compiler) #required for cmpfun
-library(scatterplot3d)
-library(R.utils)
-source("http://www.zzlab.net/GAPIT/emma.txt")
-source("http://www.zzlab.net/GAPIT/gapit_functions.txt")
-
 G.path = args[1]
 GM.path = args[2]
 GD.path = args[3]
@@ -34,7 +16,7 @@ model.s = as.logical(args[14])
 snp.fraction = as.numeric(args[15])
 file.fragment = as.numeric(args[16])
 wd = args[17]
-
+lib = args[18]
 # args = vector(mode="character", length = 20)
 # args[18]="3"
 # args[19]="1"
@@ -57,6 +39,23 @@ wd = args[17]
 # file.fragment = 512
 # wd = "/Users/Poissonfish/Desktop/output"
 
+setwd(lib)
+list.of.packages <- c("MASS", "gplots", "compiler", "scatterplot3d", "R.utils")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
+if(!'multtest'%in% installed.packages()[,"Package"]){
+  source("http://www.bioconductor.org/biocLite.R") 
+  biocLite("multtest")
+}
+library(MASS) # required for ginv
+library(multtest)
+library(gplots)
+library(compiler) #required for cmpfun
+library(scatterplot3d)
+library(R.utils)
+source("./*Function_EMMA.R")
+source("./*Function_FarmCPU.R")
+
 setwd(wd)
 if(G.path=="NULL"){G=NULL}else{G=read.delim(G.path, head=FALSE)}
 if(GM.path=="NULL"){GM=NULL}else{GM=read.table(GM.path, head=TRUE)}
@@ -67,11 +66,13 @@ if(K.path=="NULL"){K=NULL}else{K=read.table(D.path, head=FALSE)}
 #Select Phenotype
 Y.file = read.table(Y.path, head=TRUE)
 trait = c()
-for (i in 18:length(args)){
-  trait = c(trait, as.numeric(args[i])) 
+if(length(args)>18){
+  for (i in 19:length(args)){
+    trait = c(trait, as.numeric(args[i])) 
+  }
+  print(trait)
+  Y.file = Y.file[,c(1,trait+1)]
 }
-print(trait)
-Y.file = Y.file[,c(1,trait+1)]
 print(length(args))
 
 print('GAPIT start')
@@ -97,5 +98,4 @@ tryCatch(
     print(e)
   }
 )
-
 print(warnings())
