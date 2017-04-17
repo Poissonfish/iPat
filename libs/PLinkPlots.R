@@ -9,9 +9,10 @@ lib = args[4]
 #Load required library
 
 setwd(lib)
-list.of.packages <- c("bigmemory", "biganalytics", "data.table","MASS", "gplots", "compiler", "scatterplot3d", "R.utils")
+list.of.packages <- c("magrittr", "bigmemory", "biganalytics", "data.table","MASS", "gplots", "compiler", "scatterplot3d", "R.utils")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
+library(magrittr)
 library(bigmemory)
 library(biganalytics)
 library(compiler) #this library is already installed in R 

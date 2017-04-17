@@ -1,4 +1,4 @@
-package main;
+ package main;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -22,10 +22,11 @@ import net.miginfocom.swing.MigLayout;
 
 
 public class Configuration extends JFrame implements ActionListener, WindowListener{
-	String P_name = "", G_name = "", GD_name = "", GM_name = "",
-		   P = "", G = "", GD = "", GM = "", VCF = "", PED = "", MAP = "", BED = "", FAM = "", BIM = ""; 
-	int P_provided = 0, C_provided = 0, K_provided = 0;
-    public static String[] R_Path = {"/usr/local/bin/Rscript", "/usr/bin/Rsciprt", "/usr/Rscript"};
+	String  P_name = "NULL", G_name = "NULL", GD_name = "NULL", GM_name = "NULL",
+			C_name = "", K_name = "",
+			VCF_name = "", PED_name = "", MAP_name = "",
+			BED_name = "", FAM_name = "", BIM_name = "";
+	int C_provided = 0, K_provided = 0;
     int MOindex = 0;
 	///////////////////////////////////////////////////////////////////////////////////////
 	Preferences pref;
@@ -138,16 +139,29 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	///////////////////////////////////////////////////////////////////////////////////////	
 	int test_run = 0;
 	///////////////////////////////////////////////////////////////////////////////////////
-    String folder_path = new String();
+    	String folder_path = new String();
 	///////////////////////////////////////////////////////////////////////////////////////
-	public Configuration(int MOindex, iPatPanel.FORMAT format, Findex[] file_index, 
-						 int Phe, int C, int K) throws FileNotFoundException, IOException{	
+	public Configuration(int MOindex, iPatPanel.FORMAT format, Findex[] file_index, int C, int K) throws FileNotFoundException, IOException{	
 		this.MOindex = MOindex;	
-		this.P_provided = Phe;
 		this.C_provided = C;
 		this.K_provided = K;
-		P = iPatPanel.TBfile[P_provided];
 		
+		C_name = iPatPanel.TBfile[C_provided];
+		K_name = iPatPanel.TBfile[K_provided];
+		for(int i = 0; i < iPatPanel.maxfile; i++){
+			switch(file_index[i].file){
+				case P: 	P_name = iPatPanel.TBfile[file_index[i].tb]; break;
+				case G:		G_name = iPatPanel.TBfile[file_index[i].tb]; break;
+				case GD:	GD_name = iPatPanel.TBfile[file_index[i].tb]; break;
+				case GM:	GM_name = iPatPanel.TBfile[file_index[i].tb]; break;
+				case VCF:	VCF_name = iPatPanel.TBfile[file_index[i].tb]; break;
+				case PED:	PED_name = iPatPanel.TBfile[file_index[i].tb]; break;
+				case MAP:	MAP_name = iPatPanel.TBfile[file_index[i].tb]; break;
+				case BED:	BED_name = iPatPanel.TBfile[file_index[i].tb]; break;
+				case FAM:	FAM_name = iPatPanel.TBfile[file_index[i].tb]; break;
+				case BIM:	BIM_name = iPatPanel.TBfile[file_index[i].tb]; break;
+			}
+		}
 		JScrollPane pane_gapit = null;
 		JScrollPane pane_farm = null;
 		JScrollPane pane_plink = null;
@@ -179,11 +193,11 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				pane_rrblup = config_rrblup();
 				break;
 		}	
-        JTabbedPane mainPane = new JTabbedPane();
-        mainPane.addTab("GAPIT", pane_gapit);
-        mainPane.addTab("FarmCPU", pane_farm);
-        mainPane.addTab("PLINK", pane_plink);
-        mainPane.addTab("rrBLUP", pane_rrblup);
+        	JTabbedPane mainPane = new JTabbedPane();
+        	mainPane.addTab("GAPIT", pane_gapit);
+        	mainPane.addTab("FarmCPU", pane_farm);
+        	mainPane.addTab("PLINK", pane_plink);
+        	mainPane.addTab("rrBLUP", pane_rrblup);
 		this.setContentPane(mainPane);
 		this.setTitle("Configuration");
 		this.pack();
@@ -207,7 +221,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		wd_panel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_phenotype_g = new ListPanel("Traits", "Excluded");
-		String text = iPatPanel.read_lines(P, 1)[0];
+		String text = iPatPanel.read_lines(P_name, 1)[0];
 		rowP_g = text.split("\t");
 		for(int i = 1; i < rowP_g.length ; i++){
 			panel_phenotype_g.addElement(rowP_g[i]);
@@ -308,7 +322,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		wd_panel_farm.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_phenotype_f = new ListPanel("Traits", "Excluded");
-		String text = iPatPanel.read_lines(P, 1)[0];
+		String text = iPatPanel.read_lines(P_name, 1)[0];
 		rowP_f = text.split("\t");
 		for(int i = 1; i < rowP_f.length ; i++){
 				panel_phenotype_f.addElement(rowP_f[i]);
@@ -406,7 +420,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		wd_panel_r.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_phenotype_r = new ListPanel("Traits", "Excluded");
-		String text = iPatPanel.read_lines(P, 1)[0];
+		String text = iPatPanel.read_lines(P_name, 1)[0];
 		rowP_r = text.split("\t");
 		for(int i = 1; i < rowP_r.length ; i++){
 			panel_phenotype_r.addElement(rowP_r[i]);
@@ -441,57 +455,55 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 
 	@Override
 	public void actionPerformed(ActionEvent ip){
-	      Object source = ip.getSource();	
-	      //GAPIT
-	      if (source == go_gapit){
-	    	  save();
-	    	  showConsole(Project_g.longfield.getText(), WD_g.field.getText());	            
-	    	  String[] Command = run_GAPIT(iPatPanel.file_index);
-	    	  iPatPanel.multi_run[MOindex] = new BGThread(MOindex, Command, WD_g.field.getText(), Project_g.longfield.getText());
-	    	  iPatPanel.multi_run[MOindex].start();
-	    	  this.dispose(); 	  		      
-	      }else if(source == WD_g.browse){
-	    	  WD_g.setPath(true);
-	      //Farm
-	      }else if(source == go_farm){
-	    	  save();
-	    	  showConsole(Project_f.longfield.getText(), WD_f.field.getText());	            
-	    	  String[] Command = run_Farm(iPatPanel.file_index);
-	    	  iPatPanel.multi_run[MOindex] = new BGThread(MOindex, Command, WD_f.field.getText(), Project_f.longfield.getText());
-	    	  iPatPanel.multi_run[MOindex].start();
-	    	  this.dispose(); 
-	      }else if(source == WD_f.browse){
-	    	  WD_f.setPath(true);    
-	      //Plink
-	      }else if(source == go_p){
-	    	  save();
-	    	  showConsole(Project_p.longfield.getText(), WD_p.field.getText());	            
-	    	  String[] Command = run_PLink(iPatPanel.file_index);
-	    	  iPatPanel.multi_run[MOindex] = new BGThread(MOindex, Command, WD_p.field.getText(), Project_p.longfield.getText());
-	    	  iPatPanel.multi_run[MOindex].start();
-	    	  String[] plot_com = {"/usr/local/bin/Rscript", iPatPanel.jar.getParent()+"/libs/PLinkPlots.R",
-	    			  WD_p.field.getText(), Project_p.longfield.getText(), "3", iPatPanel.jar.getParent()+"/libs/"};
-	    	  //String[] R_Path = {"/usr/local/bin/Rscript", "/usr/bin/Rsciprt", "/usr/Rscript"};
-	    	  iPatPanel.multi_run[MOindex] = new BGThread(MOindex, plot_com, WD_p.field.getText(), Project_p.longfield.getText());
-	    	  iPatPanel.multi_run[MOindex].start();
-	    	  this.dispose(); 	
-	      }else if(source == WD_p.browse){
-	    	  WD_p.setPath(true);    
-	      }else if(source == go_r){
-	    	  save();
-	    	  showConsole(Project_r.longfield.getText(), WD_r.field.getText());	            
-	    	  String[] Command = run_rrBLUP(iPatPanel.file_index);
-	    	  iPatPanel.multi_run[MOindex] = new BGThread(MOindex, Command, WD_r.field.getText(), Project_r.longfield.getText());
-	    	  iPatPanel.multi_run[MOindex].start();
-	    	  this.dispose(); 	
-	      }else if(source == WD_r.browse){
-	    	  WD_r.setPath(true);    
-	      }
+	      	Object source = ip.getSource();	
+	      	//GAPIT
+	      	if (source == go_gapit){
+	    	 	save();
+	    	  	showConsole(MOindex, Project_g.longfield.getText(), WD_g.field.getText());	            
+	    	  	String[] Command = run_GAPIT(iPatPanel.file_index);
+	    	  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, Command, WD_g.field.getText(), Project_g.longfield.getText(), true, false, null, null);
+	    	  	iPatPanel.multi_run[MOindex].start();
+	    	  	this.dispose(); 	  		      
+	      	}else if(source == WD_g.browse){
+	    	  	WD_g.setPath(true);
+	      	//Farm
+	      	}else if(source == go_farm){
+	    	  	save();
+	    	  	showConsole(MOindex, Project_f.longfield.getText(), WD_f.field.getText());	            
+	    	  	String[] Command = run_Farm(iPatPanel.file_index);
+	    	  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, Command, WD_f.field.getText(), Project_f.longfield.getText(), true, false, null, null);
+	    	  	iPatPanel.multi_run[MOindex].start();
+	    	  	this.dispose(); 
+	    	 }else if(source == WD_f.browse){
+	    	  	WD_f.setPath(true);    
+	      	//Plink
+	      	}else if(source == go_p){
+	    	  	save();
+	    	  	showConsole(MOindex, Project_p.longfield.getText(), WD_p.field.getText());	            
+	    	  	String[] Command = run_PLink(iPatPanel.file_index);
+	    	  	System.out.println("Plink Begin");
+	    	  	String[] plot_com = {"", iPatPanel.jar.getParent()+"/libs/PLinkPlots.R",
+			  	         WD_p.field.getText(), Project_p.longfield.getText(), "3", iPatPanel.jar.getParent()+"/libs/"};
+	    	  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, Command, WD_p.field.getText(), Project_p.longfield.getText(), false, true, plot_com, true);
+	    	  	iPatPanel.multi_run[MOindex].start();    	
+	    	  	this.dispose(); 	
+	      	}else if(source == WD_p.browse){
+	    	 	WD_p.setPath(true);    
+	      	}else if(source == go_r){
+	    	  	save();
+	    	  	showConsole(MOindex, Project_r.longfield.getText(), WD_r.field.getText());	            
+	    	  	String[] Command = run_rrBLUP(iPatPanel.file_index);
+	    	  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, Command, WD_r.field.getText(), Project_r.longfield.getText(), true, false, null, null);
+	    	  	iPatPanel.multi_run[MOindex].start();
+	    	  	this.dispose(); 	
+	      	}else if(source == WD_r.browse){
+	    	  	WD_r.setPath(true);    
+	      	}	
 	}
 
 	String[] run_GAPIT(Findex[] file_index){
 		String model_selection_string = "";
-		String 	G = "NULL", P = "", GD = "NULL", GM = "NULL", K = "", C = "",
+		String 	K = "", C = "",
 				SNP_test = "", PCA_count = "",
 				ki_c = "", ki_g = "", 
 				g_from = "", g_to = "", g_by = "", 
@@ -505,24 +517,14 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		}
 		System.out.println("length"+indexp.length);
 		//////
-		P = iPatPanel.TBfile[P_provided];
-		for(int i=0;i<3;i++){
-			if(file_index[i].file == Findex.FILE.G){
-				G = iPatPanel.TBfile[file_index[i].tb];
-			}else if(file_index[i].file == Findex.FILE.GD){
-				GD = iPatPanel.TBfile[file_index[i].tb];
-			}else if(file_index[i].file == Findex.FILE.GM){
-				GM = iPatPanel.TBfile[file_index[i].tb];
-			}
-		}	
 		SNP_test = "TRUE";
 		if(K_provided != 0){
-			K = iPatPanel.TBfile[K_provided];
+			K = K_name;
 		}else{
 			K = "NULL";
 		}
 		if(C_provided != 0){
-			C = iPatPanel.TBfile[C_provided];
+			C = C_name;
 			PCA_count = "0";
 		}else{
 			C = "NULL";
@@ -559,8 +561,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		
         System.out.println("running gapit"); 
         // Command input
-        String[] command = {"/usr/local/bin/Rscript", iPatPanel.jar.getParent()+"/libs/Gapit.R",
-        		G, GM, GD, P, K, SNP_test, C, PCA_count, 
+        String[] command = {"", iPatPanel.jar.getParent()+"/libs/Gapit.R",
+        		G_name, GM_name, GD_name, P_name, K, SNP_test, C, PCA_count, 
         		ki_c, ki_g, g_from, g_to, g_by, 
         		model_selection_string, SNP_fraction, file_fragment, WD_g.field.getText(), iPatPanel.jar.getParent()+"/libs/"};  
         String[] whole = (String[])ArrayUtils.addAll(command, indexp);
@@ -568,7 +570,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	}
 	
 	String[] run_Farm(Findex[] file_index){
-		String 	P = "", GD = "NULL", GM = "NULL", C = "", WD = "", Project_name = "",	
+		String 	C = "", WD = "", Project_name = "",	
 				method_b = "", maxloop_run = "", maf_cal = "", maf_threshold = "";		
 		////// Multiple trait
 		String[] out = panel_phenotype_f.getElement(); //get remain traits
@@ -578,20 +580,9 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 			indexp[i] = Integer.toString(Arrays.asList(rowP_f).indexOf(out[i])); // get selected index
 		}
 		System.out.println("length"+indexp.length);
-		///
-		P = iPatPanel.TBfile[P_provided];
-		for(int i = 0; i < 3; i++){
-			if(file_index[i].file == Findex.FILE.GD){
-				GD = iPatPanel.TBfile[file_index[i].tb];
-			}else if(file_index[i].file == Findex.FILE.GM){
-				GM = iPatPanel.TBfile[file_index[i].tb];
-			}
-		}			
-		if(C_provided != 0){
-			C = iPatPanel.TBfile[C_provided];
-		}else{
-			C = "NULL";
-		}
+		///	
+		C = C_provided != 0 ? iPatPanel.TBfile[C_provided] : "NULL";
+		
 		method_b = (String) method_bin.combo.getSelectedItem();
 		maxloop_run = maxloop.field.getText();		
 		int maf_value = maf_f.combo.getSelectedIndex();
@@ -607,11 +598,10 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 			case 3:
 				maf_cal = "TRUE";
 				maf_threshold = "0.2";
-		}
-		
+		}		
         System.out.println("running FarmCPU");  
-        String[] command = {"/usr/local/bin/Rscript", iPatPanel.jar.getParent()+"/libs/FarmCPU.R",
-        		GM, GD, P, C, 
+        String[] command = {"", iPatPanel.jar.getParent()+"/libs/FarmCPU.R",
+        		GM_name, GD_name, P_name, C, 
         		method_b, maxloop_run, maf_cal, maf_threshold, WD_f.field.getText(), iPatPanel.jar.getParent()+"/libs/"}; 
         String[] whole = (String[])ArrayUtils.addAll(command, indexp);
         return whole;
@@ -619,29 +609,19 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	
 	String[] run_PLink(Findex[] file_index){
 		String 	WD = "", Project_name;
-		String 	p_path = "", bed = "", bim = "", fam = "", ci = "",
-				ms = "", maf = "";
-		p_path = iPatPanel.TBfile[P_provided];
-		for(int i=0;i<3;i++){
-			if(file_index[i].file == Findex.FILE.BED){
-				bed = iPatPanel.TBfile[file_index[i].tb];
-			}else if(file_index[i].file == Findex.FILE.BIM){
-				bim = iPatPanel.TBfile[file_index[i].tb];
-			}else if(file_index[i].file == Findex.FILE.FAM){
-				fam = iPatPanel.TBfile[file_index[i].tb];
-			}
-		}	
+		String 	ci = "", ms = "", maf = "";
+			
 		WD = WD_p.field.getText();
 		Project_name = Project_p.longfield.getText(); 
 		
 		ArrayList<String> list = new ArrayList<String>();
 		list.add(iPatPanel.jar.getParent()+"/libs/plink");
-		list.add("--bed"); list.add(bed);
-		list.add("--bim"); list.add(bim);
-		list.add("--fam"); list.add(fam);
+		list.add("--bed"); list.add(BED_name);
+		list.add("--bim"); list.add(BIM_name);
+		list.add("--fam"); list.add(FAM_name);
 		list.add("--assoc"); list.add("--allow-no-sex"); 
-		list.add("--pheno"); list.add(p_path);
-		list.add("--all-pheno"); list.add("-—adjust");
+		list.add("--pheno"); list.add(P_name);
+		list.add("--all-pheno"); list.add("--adjust");
 		switch(ci_p.combo.getSelectedIndex()){
 			case 0: list.add("--ci"); list.add(".95"); break;
 			case 1:	list.add("--ci"); list.add(".975"); break;
@@ -660,34 +640,27 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		list.add("--out"); list.add(WD+"/"+Project_name);
 		String[] command = list.toArray(new String[0]);		
 		//plink —bfile data —assoc —allow-no-sex —pheno phenos.txt —all-pheno —adjust —ci 0.95 —out output
-		run_command_c(MOindex, command, WD, Project_name);
-		iPatPanel.MO[MOindex] = iPatPanel.MOimage;
 		return command;
 	}
 	
 	String[] run_rrBLUP(Findex[] file_index){
-		String 	P = "", GD = "NULL", 
-				WD = "", Project_name = "";
+		String 	WD = "", Project_name = "";
 		////// Multiple trait
 		String[] out = panel_phenotype_r.getElement(); //get remain traits
 		String[] indexp = new String[out.length]; //create array for index
 		for (int i = 0; i < out.length; i++){
 			indexp[i] = Integer.toString(Arrays.asList(rowP_r).indexOf(out[i])); // get selected index
 		}
-		//////
-		P = iPatPanel.TBfile[P_provided];
-		if(file_index[0].file == Findex.FILE.GD){
-			GD = iPatPanel.TBfile[file_index[0].tb];
-		}	
+		
 		System.out.println("running rrBLUP"); 
 	    // Command input
-	    String[] command = {"/usr/local/bin/Rscript", iPatPanel.jar.getParent()+"/libs/rrBLUP.R",
-	     					GD, P, WD_r.field.getText()};  
+	    String[] command = {"", iPatPanel.jar.getParent()+"/libs/rrBLUP.R",
+	     					GD_name, P_name, WD_r.field.getText()};  
 	    String[] whole = (String[])ArrayUtils.addAll(command, indexp);
 	    return whole;
 	}
 	
-	public void showConsole(String title, String MOPath){
+	public void showConsole(int MOindex, String title, String MOPath){
 		iPatPanel.MOname[MOindex].setText(title);
 		iPatPanel.MOfile[MOindex] = MOPath;
 		iPatPanel.text_console[MOindex] = new JTextArea();
@@ -712,60 +685,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		});  
 	}
 	
-	public static void run_command_c(int MOindex, String[] command,
-			   						String WD, String name){
-        String line = ""; Boolean Suc_or_Fal = true;
-        PrintWriter errWriter = null;
-		iPatPanel.permit[MOindex] = true;
-		iPatPanel.rotate_index[MOindex] = 1;
-        runtime[MOindex] = Runtime.getRuntime();	        
-         //Check the correct path until it can locate R
-       	try{
-       		process[MOindex] = runtime[MOindex].exec(command);
-       	}catch (IOException e1) {
-        	Suc_or_Fal = false;
-        	e1.printStackTrace();}
-        // check command	        
-        for (int i = 0; i<command.length; i++){
-        	  iPatPanel.text_console[MOindex].append(command[i]+" ");
-        }
-        iPatPanel.text_console[MOindex].append(System.getProperty("line.separator"));
-        iPatPanel.text_console[MOindex].setCaretPosition(iPatPanel.text_console[MOindex].getDocument().getLength());	   	
-        try {
-    	    BufferedReader input_stream = new BufferedReader(new InputStreamReader(process[MOindex].getInputStream()));
-            BufferedReader error_stream= new BufferedReader(new InputStreamReader(process[MOindex].getErrorStream()));
-    	    while((line = input_stream.readLine()) != null){
-	            System.out.println(line);
-	            iPatPanel.text_console[MOindex].append(line+ System.getProperty("line.separator"));
-	            iPatPanel.text_console[MOindex].setCaretPosition(iPatPanel.text_console[MOindex].getDocument().getLength());
-	        }
-    	    while((line = error_stream.readLine()) != null){
-	            System.out.println(line);
-	        	File error = new File(WD+"/"+name+".err");
-	            errWriter = new PrintWriter(error.getAbsoluteFile());
-	            errWriter.println(line);
-	            if(line.toUpperCase().startsWith("ERROR")){Suc_or_Fal = false;}
-	        }  
-    	    process[MOindex].waitFor();        
-		} catch (IOException | InterruptedException e1) {	
-        	Suc_or_Fal = false;
-			e1.printStackTrace();
-		}	
-        
-	    if(Suc_or_Fal){
-			iPatPanel.MO[MOindex] = iPatPanel.MO_suc;
-	    }else{
-			iPatPanel.MO[MOindex] = iPatPanel.MO_fal;
-			errWriter.close();
-	    }    
-		iPatPanel.permit[MOindex] = false;
-		iPatPanel.rotate_index[MOindex] = 0;
-		iPatPanel.MOimageH[MOindex]=iPatPanel.MO[MOindex].getHeight(null);
-		iPatPanel.MOimageW[MOindex]=iPatPanel.MO[MOindex].getWidth(null);
-		iPatPanel.MOname[MOindex].setLocation(iPatPanel.MOimageX[MOindex], iPatPanel.MOimageY[MOindex]+ iPatPanel.MOimageH[MOindex]);
-		System.out.println("done");
-		process[MOindex].destroy();
-	}
+	
 	
 	public void remove(){
 		
@@ -809,7 +729,6 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		pref.putInt("maf_f", maf_f.combo.getSelectedIndex());
 		// PLINK
 		pref.put("WD_p", WD_p.field.getText());
-		
 		
 		System.out.println("SAVE");
 	}

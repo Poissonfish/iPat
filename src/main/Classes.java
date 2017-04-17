@@ -81,7 +81,7 @@ class Group_CheckBox implements ActionListener{
 	}
 	@Override
 	public void actionPerformed(ActionEvent e){
-		 Object source = e.getSource();	
+		Object source = e.getSource();	
 	      //GAPIT
 	      if (source == check){
 	    	 longfield.setEnabled(!longfield.isEnabled());
@@ -131,42 +131,47 @@ class BGThread extends Thread{
 	String[] command;
 	String WD;
 	String Project;
-	public BGThread(int MOindex, String[] command, String WD, String Project){
+	Boolean R;
+	Boolean consecutive, con_R;
+	String[] con_command;
+	public BGThread(int MOindex, String[] command, String WD, String Project, Boolean R, 
+			Boolean consecutive, String[] con_command, Boolean con_R){
 		this.MOindex = MOindex;
 		this.command = command;
 		this.WD = WD;
 		this.Project = Project;
+		this.R = R;
+		this.consecutive = consecutive;
+		this.con_command = con_command;
+		this.con_R = con_R;
 	}
 	@Override
 	public void run(){
 		int int_error = 0, loop_error = 0;
-        String line = ""; Boolean Suc_or_Fal = true;
+      	String line = ""; Boolean Suc_or_Fal = true;
         PrintWriter errWriter = null;
         String[] path = {"/usr/local/bin/Rscript", "/usr/bin/Rsciprt", "/usr/Rscript"};
 		
         iPatPanel.permit[MOindex] = true;
 		iPatPanel.rotate_index[MOindex] = 1;
 		Configuration.runtime[MOindex] = Runtime.getRuntime();	        
-       /*
-		//Check the correct path until it can locate R
-        while(int_error == 0){
-        	command[0] = path[loop_error];
-        	try{
+	
+		if(R){
+			//Check the correct path until it can locate R
+	        while(int_error == 0){
+	        	command[0] = path[loop_error];
+	        	try{
+	        		Configuration.process[MOindex] = Configuration.runtime[MOindex].exec(command);
+	                int_error = Configuration.process[MOindex].getErrorStream().read();
+	        	}catch (IOException e1) {e1.printStackTrace();}
+	        	++loop_error;
+	        }
+		}else{
+			try{
         		Configuration.process[MOindex] = Configuration.runtime[MOindex].exec(command);
-                int_error = Configuration.process[MOindex].getErrorStream().read();
         	}catch (IOException e1) {e1.printStackTrace();}
-        	++loop_error;
-        }
-        */
-        	
+		}     	
         // check command	
-		try {
-			Configuration.process[MOindex] = Configuration.runtime[MOindex].exec(command);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
         for (int i = 0; i<command.length; i++){
         	  iPatPanel.text_console[MOindex].append(command[i]+" ");
         }
@@ -187,7 +192,7 @@ class BGThread extends Thread{
 	            errWriter = new PrintWriter(error.getAbsoluteFile());
 	            errWriter.println(line);  
 	        }    
-	        errWriter.close();	      
+	       // errWriter.close();	      
 	        File outfile = new File(WD+"/"+Project+".log");
             FileWriter outWriter = new FileWriter(outfile.getAbsoluteFile(),true);
             iPatPanel.text_console[MOindex].write(outWriter);
@@ -208,6 +213,11 @@ class BGThread extends Thread{
 		iPatPanel.MOname[MOindex].setLocation(iPatPanel.MOimageX[MOindex], iPatPanel.MOimageY[MOindex]+ iPatPanel.MOimageH[MOindex]);
 		System.out.println("done");
 		Configuration.process[MOindex].destroy();
+		if(consecutive){
+    	  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, con_command, WD, Project, true, 
+    	  			false, null, false);
+    	  	iPatPanel.multi_run[MOindex].start();
+		}
 	}
 }
 

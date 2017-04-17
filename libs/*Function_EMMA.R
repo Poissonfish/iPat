@@ -71,7 +71,7 @@ emma.eigen.L.w.Z <- function(Z,K,complete=TRUE) {
 }
 
 emma.eigen.R <- function(Z,K,X,complete=TRUE) {
-  if ( is.null(Z) ) {
+  if (is.null(Z) ) {
     return(emma.eigen.R.wo.Z(K,X))
   }
   else {
