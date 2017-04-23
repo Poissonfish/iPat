@@ -28,6 +28,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 			BED_name = "", FAM_name = "", BIM_name = "";
 	int C_provided = 0, K_provided = 0;
     int MOindex = 0;
+    String file_format = "";
 	///////////////////////////////////////////////////////////////////////////////////////
 	Preferences pref;
 	static Runtime[] runtime = new Runtime[iPatPanel.MOMAX];
@@ -48,6 +49,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	
 	JPanel panel_co;
 	Group_Value PCA = new Group_Value("PCA.total");
+	Group_CheckBox N_Inher_g = new Group_CheckBox("Inheritable covariate");
 	
 	JPanel panel_filter_g;
 	Group_CheckBox chr_g = new Group_CheckBox("By Chromosome");
@@ -83,6 +85,9 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	ListPanel panel_phenotype_f;
 	String[] rowP_f;
 	
+	JPanel panel_co_f;
+	Group_CheckBox N_Inher_f = new Group_CheckBox("Inheritable covariate");
+	
 	JPanel panel_filter_f;
 	Group_CheckBox chr_f = new Group_CheckBox("By Chromosome");
 	Group_Combo ms_f = new Group_Combo("By missing rate",
@@ -103,7 +108,10 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	Group_Value Project_p = new Group_Value("Task name");
 	Group_Path WD_p = new Group_Path("Output Directory");
 	JLabel format_p = new JLabel("");
-
+ 
+	JPanel panel_co_p;
+	Group_CheckBox N_Inher_p = new Group_CheckBox("Inheritable covariate");	
+	
 	JPanel panel_filter_p;
 	Group_CheckBox chr_p = new Group_CheckBox("By Chromosome");
 	Group_Combo ms_p = new Group_Combo("By missing rate",
@@ -139,7 +147,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	///////////////////////////////////////////////////////////////////////////////////////	
 	int test_run = 0;
 	///////////////////////////////////////////////////////////////////////////////////////
-    	String folder_path = new String();
+    String folder_path = new String();
 	///////////////////////////////////////////////////////////////////////////////////////
 	public Configuration(int MOindex, iPatPanel.FORMAT format, Findex[] file_index, int C, int K) throws FileNotFoundException, IOException{	
 		this.MOindex = MOindex;	
@@ -175,22 +183,27 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				pane_farm = config_farm();
 				pane_plink = config_plink();
 				pane_rrblup = config_rrblup();
+				file_format = "Hapmap";
 				break;
 			case Numeric:
 				pane_gapit = config_gapit();
 				pane_farm = config_farm();
 				pane_plink = config_plink();
 				pane_rrblup = config_rrblup();
+				file_format = "Numeric";
 				break;
 			case VCF:
+				file_format = "VCF";
 				break;
 			case PLink_ASCII:
+				file_format = "PLink_ASCII";
 				break;
 			case PLink_Binary:
 				pane_gapit = config_gapit();
 				pane_farm = config_farm();
 				pane_plink = config_plink();
 				pane_rrblup = config_rrblup();
+				file_format = "PLink_Binary";
 				break;
 		}	
         	JTabbedPane mainPane = new JTabbedPane();
@@ -228,19 +241,22 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		}		
 		panel_phenotype_g.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Phenotype", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
 		///////////////////////////////////////////////////////////////////////////////////////
-		if(C_provided == 0){
-			panel_co = new JPanel(new MigLayout("fillx"));
-			PCA.name.setToolTipText("Total Number of PCs as Covariates");
-			panel_co.add(PCA.name, "align r");
-			panel_co.add(PCA.field, "wrap, align l");
-			panel_co.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Covariates", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
+		panel_co = new JPanel(new MigLayout("fillx"));
+		PCA.name.setToolTipText("Total Number of PCs as Covariates");
+		if(C_provided != 0){	
+			panel_co.add(N_Inher_g.check, "cell 0 0, align r");
+			panel_co.add(N_Inher_g.field, "cell 1 0, align l");
+		}else{
+			panel_co.add(PCA.name, "cell 0 0, align r");
+			panel_co.add(PCA.field, "cell 1 0 , align l");
 		}
+		panel_co.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Covariates", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_filter_g = new JPanel(new MigLayout("fillx"));
 		panel_filter_g.add(chr_g.check, "cell 0 0, align r");
 		panel_filter_g.add(chr_g.longfield, "cell 1 0,align l");
 		panel_filter_g.add(ms_g.name, "cell 0 1, align r");
-		panel_filter_g.add(ms_g.combo, "cell 1 1, align l");
+		panel_filter_g.add(ms_g.combo, "cell 1 1, align l");            
 		panel_filter_g.add(maf_g.name, "cell 0 2, align r");
 		panel_filter_g.add(maf_g.combo, "cell 1 2, align l");
 		panel_filter_g.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Filter", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
@@ -287,16 +303,10 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		main_panel.add(go_gapit, "dock north");
 		main_panel.add(wd_panel, "cell 0 0, grow");
 		main_panel.add(panel_phenotype_g, "cell 0 1, grow");
-		if(C_provided == 0){
-			main_panel.add(panel_co, "cell 0 2, grow");
-			main_panel.add(panel_filter_g, "cell 0 3, grow");
-			main_panel.add(panel_CMLM, "cell 0 4, grow");
-			main_panel.add(panel_advance, "cell 0 5, grow");	
-		}else{
-			main_panel.add(panel_filter_g, "cell 0 2, grow");
-			main_panel.add(panel_CMLM, "cell 0 3, grow");
-			main_panel.add(panel_advance, "cell 0 4, grow");
-		}
+		main_panel.add(panel_co, "cell 0 2, grow");
+		main_panel.add(panel_filter_g, "cell 0 3, grow");
+		main_panel.add(panel_CMLM, "cell 0 4, grow");
+		main_panel.add(panel_advance, "cell 0 5, grow");	
 		///////////////////////////////////////////////////////////////////////////////////////
 		JScrollPane pane = new JScrollPane(main_panel,  
 					ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,  
@@ -338,8 +348,10 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		panel_filter_f.add(maf_f.combo, "cell 1 2, align l");
 		panel_filter_f.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Filter", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
-		//panel_co_farm = new JPanel(new MigLayout("fillx"));
-		//panel_co_farm.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Covariates", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
+		panel_co_f = new JPanel(new MigLayout("fillx"));
+		panel_co_f.add(N_Inher_f.check, "cell 0 0, align r");
+		panel_co_f.add(N_Inher_f.field, "cell 1 0, align l");
+		panel_co_f.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Covariates", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_adv_farm = new JPanel(new MigLayout("fillx"));
 		panel_adv_farm.add(method_bin.name,  "cell 0 0, align r");
@@ -352,9 +364,14 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		main_panel_farm.add(go_farm, "dock north");
 		main_panel_farm.add(wd_panel_farm, "cell 0 0, grow");
 		main_panel_farm.add(panel_phenotype_f, "cell 0 1, grow");
-		main_panel_farm.add(panel_filter_f, "cell 0 2, grow");
-		//main_panel_farm.add(panel_co_farm, "cell 0 3, grow");
-		main_panel_farm.add(panel_adv_farm, "cell 0 3, grow");
+		if(C_provided != 0){
+			main_panel_farm.add(panel_co_f, "cell 0 2, grow");
+			main_panel_farm.add(panel_filter_f, "cell 0 3, grow");
+			main_panel_farm.add(panel_adv_farm, "cell 0 4, grow");
+		}else{
+			main_panel_farm.add(panel_filter_f, "cell 0 2, grow");
+			main_panel_farm.add(panel_adv_farm, "cell 0 3, grow");	
+		}
 		///////////////////////////////////////////////////////////////////////////////////////
 		JScrollPane pane = new JScrollPane(main_panel_farm,  
 					ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,  
@@ -503,7 +520,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 
 	String[] run_GAPIT(Findex[] file_index){
 		String model_selection_string = "";
-		String 	K = "", C = "",
+		String 	K = "NULL", C = "NULL", C_inher = "NULL",
 				SNP_test = "", PCA_count = "",
 				ki_c = "", ki_g = "", 
 				g_from = "", g_to = "", g_by = "", 
@@ -518,51 +535,42 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		System.out.println("length"+indexp.length);
 		//////
 		SNP_test = "TRUE";
-		if(K_provided != 0){
-			K = K_name;
-		}else{
-			K = "NULL";
-		}
-		if(C_provided != 0){
-			C = C_name;
-			PCA_count = "0";
-		}else{
-			C = "NULL";
-			PCA_count =  PCA.field.getText();
-		}
-		String model_selected = (String)model_select.combo.getSelectedItem();
-		if(model_selected.equals("GLM")){
+		K = K_provided != 0 ? K_name:K;
+		C = C_provided != 0 ? C_name:C;
+		PCA_count = C_provided != 0 ? "0":PCA.field.getText();
+		C_inher = N_Inher_g.check.isSelected() ? N_Inher_g.field.getText():"NULL";
+	
+		switch((String)model_select.combo.getSelectedItem()){
+		case "GLM":
 			ki_c = (String) K_cluster.combo.getSelectedItem();
 			ki_g = (String) K_group.combo.getSelectedItem();
 			g_from = "1";
 			g_to = "1";
 			g_by = "10";
-		}else if (model_selected.equals("CMLM")){
+			break;
+		case "CMLM":
 			ki_c = (String) K_cluster.combo.getSelectedItem();
 			ki_g = (String) K_group.combo.getSelectedItem();
 			g_from = "1";
 			g_to = "10000000";
 			g_by = "10";
-		}else if (model_selected.equals("MLM")){
+			break;
+		case "MLM":
 			ki_c = (String) K_cluster.combo.getSelectedItem();
 			ki_g = (String) K_group.combo.getSelectedItem();
 			g_from = "10000000";
 			g_to = "10000000";
 			g_by = "10";
-		}
-				
-		if(model_selection_s.isSelected()){
-			model_selection_string = "TRUE";
-		}else{
-			model_selection_string = "FALSE";
-		}
+			break;
+		}	
+		model_selection_string = model_selection_s.isSelected()?"TRUE":"FALSE";
 		SNP_fraction = (String) snp_frac.combo.getSelectedItem();
 		file_fragment = (String) file_frag.combo.getSelectedItem();
 		
         System.out.println("running gapit"); 
         // Command input
         String[] command = {"", iPatPanel.jar.getParent()+"/libs/Gapit.R",
-        		G_name, GM_name, GD_name, P_name, K, SNP_test, C, PCA_count, 
+        		G_name, GM_name, GD_name, P_name, K, SNP_test, C, PCA_count, C_inher,
         		ki_c, ki_g, g_from, g_to, g_by, 
         		model_selection_string, SNP_fraction, file_fragment, WD_g.field.getText(), iPatPanel.jar.getParent()+"/libs/"};  
         String[] whole = (String[])ArrayUtils.addAll(command, indexp);
@@ -570,7 +578,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	}
 	
 	String[] run_Farm(Findex[] file_index){
-		String 	C = "", WD = "", Project_name = "",	
+		String 	C = "", C_inher = "", WD = "", Project_name = "",	
 				method_b = "", maxloop_run = "", maf_cal = "", maf_threshold = "";		
 		////// Multiple trait
 		String[] out = panel_phenotype_f.getElement(); //get remain traits
@@ -582,7 +590,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		System.out.println("length"+indexp.length);
 		///	
 		C = C_provided != 0 ? iPatPanel.TBfile[C_provided] : "NULL";
-		
+		C_inher = N_Inher_f.check.isSelected()? N_Inher_f.field.getText(): "NULL";
+
 		method_b = (String) method_bin.combo.getSelectedItem();
 		maxloop_run = maxloop.field.getText();		
 		int maf_value = maf_f.combo.getSelectedIndex();
@@ -599,10 +608,12 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				maf_cal = "TRUE";
 				maf_threshold = "0.2";
 		}		
+		// Format 
+		GD_name = iPatPanel.format == iPatPanel.FORMAT.Hapmap ? G_name:GD_name;
         System.out.println("running FarmCPU");  
         String[] command = {"", iPatPanel.jar.getParent()+"/libs/FarmCPU.R",
-        		GM_name, GD_name, P_name, C, 
-        		method_b, maxloop_run, maf_cal, maf_threshold, WD_f.field.getText(), iPatPanel.jar.getParent()+"/libs/"}; 
+        		GM_name, GD_name, P_name, C, C_inher,
+        		method_b, maxloop_run, maf_cal, maf_threshold, WD_f.field.getText(), iPatPanel.jar.getParent()+"/libs/", file_format}; 
         String[] whole = (String[])ArrayUtils.addAll(command, indexp);
         return whole;
 	}
@@ -696,6 +707,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		WD_g.field.setText(pref.get("WD_g", "~/"));
 		model_select.combo.setSelectedIndex(pref.getInt("model_select_g", 0));
 		PCA.field.setText(pref.get("PCA_g", "3"));
+		N_Inher_g.field.setText(pref.get("C_inh_g", "0"));
 		K_cluster.combo.setSelectedIndex(pref.getInt("K_cluster_g", 0));
 		K_group.combo.setSelectedIndex(pref.getInt("K_group_g", 0));
 		model_selection_s.setSelected(pref.getBoolean("model_selection_g", false));
@@ -703,6 +715,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		file_frag.combo.setSelectedIndex(pref.getInt("file_frag_g", 0));
 		// FarmCPU
 		WD_f.field.setText(pref.get("WD_f", "~/"));
+		N_Inher_f.field.setText(pref.get("C_inh_f", "0"));
 		method_bin.combo.setSelectedIndex(pref.getInt("method_bin_f", 0));
 		maxloop.field.setText(pref.get("maxloop_f", "10"));
 		maf_f.combo.setSelectedIndex(pref.getInt("maf_f", 0));
@@ -717,6 +730,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		//pref.put("Project_g", Project_g.longfield.getText());
 		pref.putInt("model_select_g", model_select.combo.getSelectedIndex());
 		pref.put("PCA_g", PCA.field.getText());
+		pref.put("C_inh_g", N_Inher_g.field.getText());
 		pref.putInt("K_cluster_g", K_cluster.combo.getSelectedIndex());
 		pref.putInt("K_group_g", K_group.combo.getSelectedIndex());
 		pref.putBoolean("model_selection_g", model_selection_s.isSelected());
@@ -724,6 +738,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		pref.putInt("file_frag_g", file_frag.combo.getSelectedIndex());
 		// FarmCPU
 		pref.put("WD_f", WD_f.field.getText());
+		pref.put("C_inh_f", N_Inher_f.field.getText());
 		pref.putInt("method_bin_f", method_bin.combo.getSelectedIndex());
 		pref.put("maxloop_f", maxloop.field.getText());
 		pref.putInt("maf_f", maf_f.combo.getSelectedIndex());

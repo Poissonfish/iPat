@@ -7,16 +7,18 @@ K.path = args[5]
 SNP.test = as.logical(args[6])
 C.path = args[7]
 PCA = as.numeric(args[8])
-ki.c = args[9]
-ki.g = args[10]
-g.from = as.numeric(args[11])
-g.to = as.numeric(args[12])
-g.by = as.numeric(args[13])
-model.s = as.logical(args[14])
-snp.fraction = as.numeric(args[15])
-file.fragment = as.numeric(args[16])
-wd = args[17]
-lib = args[18]
+C.inher = as.numeric(args[9])
+ki.c = args[10]
+ki.g = args[11]
+g.from = as.numeric(args[12])
+g.to = as.numeric(args[13])
+g.by = as.numeric(args[14])
+model.s = as.logical(args[15])
+snp.fraction = as.numeric(args[16])
+file.fragment = as.numeric(args[17])
+wd = args[18]
+lib = args[19]
+arg_length = 19
 # args = vector(mode="character", length = 20)
 # args[18]="3"
 # args[19]="1"
@@ -62,18 +64,18 @@ if(GM.path=="NULL"){GM=NULL}else{GM=read.table(GM.path, head=TRUE)}
 if(GD.path=="NULL"){GD=NULL}else{GD=read.table(GD.path, head=TRUE)}
 if(C.path=="NULL"){C=NULL}else{C=read.table(C.path, head=TRUE)}
 if(K.path=="NULL"){K=NULL}else{K=read.table(D.path, head=FALSE)}
+C.inher = ifelse(is.na(C.inher), NULL, C.inher)
 
 #Select Phenotype
 Y.file = read.table(Y.path, head=TRUE)
 trait = c()
-if(length(args)>18){
-  for (i in 19:length(args)){
+if(length(args)>arg_length){
+  for (i in (arg_length+1):length(args)){
     trait = c(trait, as.numeric(args[i])) 
   }
   print(trait)
   Y.file = Y.file[,c(1,trait+1)]
 }
-print(length(args))
 
 print('GAPIT start')
 tryCatch(
@@ -85,6 +87,7 @@ tryCatch(
     KI = K,
     SNP.test = SNP.test,
     CV = C,
+    CV.Inheritance = C.inher,
     PCA.total = PCA,
     kinship.cluster = ki.c,
     kinship.group = ki.g,
