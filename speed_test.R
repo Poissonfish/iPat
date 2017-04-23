@@ -29,7 +29,7 @@ time_plot = data.frame(x= 1:51, y= data)
 write.csv(x = time_plot, file = "r_run.csv")
 
 
-##plot
+## plot
 library(ggplot2)
 data <- read.csv("plot_data.csv")
 new_data <- data[!data$time%in%boxplot.stats(data$time)$out,] # clean outliers
