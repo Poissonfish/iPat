@@ -2060,10 +2060,11 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			case 2:	
 				boolean[] VCF_con = {col_count[0] - lines[0][1].split("/").length == 8 && lines[0][1].split("/").length > 1, 
 									 col_count[1] - lines[1][1].split("/").length == 8 && lines[1][1].split("/").length > 1};
-				boolean[] HMAP_con = {col_count[0] - col_count[1] == 11 || col_count[0] - col_count[1] == 10,
-									  col_count[1] - col_count[0] == 11 || col_count[1] - col_count[0] == 10};
+				boolean[] HMAP_con = {col_count[0] - row_count[1] == 11 || col_count[0] - row_count[1] == 10,
+									  col_count[1] - row_count[0] == 11 || col_count[1] - row_count[0] == 10};
 				boolean[] NUM_con = {Arrays.asList(row2[0]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[0]) < 5,
 									 Arrays.asList(row2[1]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[1]) < 5};
+				
 				if(partial_true(VCF_con)){
 					file_index[0].file = VCF_con[0]?Findex.FILE.VCF:Findex.FILE.P;
 					file_index[1].file = VCF_con[1]?Findex.FILE.VCF:Findex.FILE.P;
