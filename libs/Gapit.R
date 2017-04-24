@@ -18,15 +18,13 @@ snp.fraction = as.numeric(args[16])
 file.fragment = as.numeric(args[17])
 wd = args[18]
 lib = args[19]
-arg_length = 19
-# args = vector(mode="character", length = 20)
-# args[18]="3"
-# args[19]="1"
-# args[20]="2" 
-# G.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/demo_data/Hapmap/mdp_hapmap.txt"
+format = args[20]
+arg_length = 20
+
+# G.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/demo_data/VCF/data.vcf"
 # GM.path = "NULL"
 # GD.path = "NULL"
-# Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/demo_data/Hapmap/mdp_traits.txt"
+# Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/demo_data/VCF/data.txt"
 # K.path = "NULL"
 # SNP.test = TRUE
 # C.path = "NULL"
@@ -34,15 +32,18 @@ arg_length = 19
 # ki.c = 'average'
 # ki.g = 'Mean'
 # g.from = 1
-# g.to = 10000000
+# g.to = 1
 # g.by = 10
 # model.s = FALSE
 # snp.fraction = 1
 # file.fragment = 512
-# wd = "/Users/Poissonfish/Desktop/output"
+# wd = "/Users/Poissonfish/Desktop/test/gapit"
+# lib = "/Users/Poissonfish/git/iPat/libs/"
+# format = "VCF"
+# args = c(1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3)
 
 setwd(lib)
-list.of.packages <- c("MASS", "gplots", "compiler", "scatterplot3d", "R.utils")
+list.of.packages <- c("MASS", "data.table", "magrittr", "gplots", "compiler", "scatterplot3d", "R.utils")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
 if(!'multtest'%in% installed.packages()[,"Package"]){
@@ -55,18 +56,14 @@ library(gplots)
 library(compiler) #required for cmpfun
 library(scatterplot3d)
 library(R.utils)
+library(data.table)
+library(magrittr)
 source("./*Function_EMMA.R")
 source("./*Function_FarmCPU.R")
+source("./*Function_GAPIT.R")
 
 setwd(wd)
-if(G.path=="NULL"){G=NULL}else{G=read.delim(G.path, head=FALSE)}
-if(GM.path=="NULL"){GM=NULL}else{GM=read.table(GM.path, head=TRUE)}
-if(GD.path=="NULL"){GD=NULL}else{GD=read.table(GD.path, head=TRUE)}
-if(C.path=="NULL"){C=NULL}else{C=read.table(C.path, head=TRUE)}
-if(K.path=="NULL"){K=NULL}else{K=read.table(D.path, head=FALSE)}
-C.inher = ifelse(is.na(C.inher), NULL, C.inher)
-
-#Select Phenotype
+# Select Phenotype
 Y.file = read.table(Y.path, head=TRUE)
 trait = c()
 if(length(args)>arg_length){
@@ -76,6 +73,32 @@ if(length(args)>arg_length){
   print(trait)
   Y.file = Y.file[,c(1,trait+1)]
 }
+
+# Format free
+switch(format, 
+  VCF = {
+    sprintf("chmod 777 %s/blink", lib) %>% system()
+    vcf = substring(G.path, 1, nchar(G.path)-4)
+    sprintf("%s/blink --file %s --compress --vcf", lib, vcf) %>% system()
+    sprintf("%s/blink --file %s --recode --out %s --numeric", lib, vcf, vcf) %>% system()
+    GD = read.table(sprintf("%s.dat", vcf)) %>% t() %>% data.frame(Y.file[,1], .)
+    GM = read.table(sprintf("%s.map", vcf), head = TRUE)
+    G = NULL
+  },
+  PLink_ASCII = {
+
+  },
+  PLink_Binary = {
+
+  }, {
+    if(G.path=="NULL"){G=NULL}else{G=read.delim(G.path, head=FALSE)}
+    if(GM.path=="NULL"){GM=NULL}else{GM=read.table(GM.path, head=TRUE)}
+    if(GD.path=="NULL"){GD=NULL}else{GD=read.table(GD.path, head=TRUE)}
+  }
+)
+if(C.path=="NULL"){C=NULL}else{C=read.table(C.path, head=TRUE)}
+if(K.path=="NULL"){K=NULL}else{K=read.table(D.path, head=FALSE)}
+if(is.na(C.inher)) C.inher = NULL else C.inher = C.inher
 
 print('GAPIT start')
 tryCatch(

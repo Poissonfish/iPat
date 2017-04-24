@@ -2545,7 +2545,7 @@ function(G=NULL,GD=NULL,GM=NULL,KI=NULL,
   GP = NULL,GK = NULL,GTindex=NULL,  
   bin.size = 1000,inclosure.size = 100,
   sangwich.top=NULL,sangwich.bottom=NULL,
-  file.output=TRUE,kinship.cluster="average",NJtree.group=5,NJtree.type=c("fan","unrooted"),
+  file.output=TRUE,kinship.cluster="average",NJtree.group=NULL,NJtree.type=c("fan","unrooted"),
   Create.indicator = FALSE, Major.allele.zero = FALSE,Geno.View.output=TRUE){
 #Object: To unify genotype and calculate kinship and PC if required:
 #       1.For G data, convert it to GD and GI
@@ -2864,11 +2864,13 @@ if(KI!=1) {
     distance.matrix=dist(theKin,upper=TRUE)
     hc=hclust(distance.matrix,method=kinship.cluster)
     hcd = as.dendrogram(hc)
-    clusMember <- cutree(hc, k = NJtree.group)
+    ##plot NJtree
+    if (!is.null(NJtree.group))
+    {clusMember <- cutree(hc, k = NJtree.group)
     type_col=rainbow(NJtree.group)
     Optimum=c(nrow(theKin),kinship.cluster,NJtree.group)
-    
     rm(distance.matrix,hc)
+    }
 Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="set kinship")
 Memory=GAPIT.Memory(Memory=Memory,Infor="set kinship")
 
@@ -2885,9 +2887,10 @@ Memory=GAPIT.Memory(Memory=Memory,Infor="prepare heatmap")
 Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="plot heatmap")
 Memory=GAPIT.Memory(Memory=Memory,Infor="plot heatmap")
 ## Jiabo Wang add NJ Tree of kinship at 4.5.2017
+if (!is.null(NJtree.group))
+{
     for(tr in 1:length(NJtree.type))
     {
-
     print("Creating NJ Tree for kinship...")
     pdf(paste("GAPIT.Kin.NJtree.",NJtree.type[tr],".pdf",sep=""), width = 12, height = 12)
     par(mar = c(5,5,5,5))
@@ -2900,10 +2903,11 @@ Memory=GAPIT.Memory(Memory=Memory,Infor="prepare NJ TREE")
     dev.off()
     }
     print("Kinship NJ TREE PDF created!")
-    
+ 
 Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="plot NJ TREE")
 Memory=GAPIT.Memory(Memory=Memory,Infor="plot NJ TREE")
     rm(hc,clusMember)
+}#end 
 ## NJ Tree end
   } #end of if(nrow(KI)<1000)
 } #end of if(KI!=1)
@@ -2994,12 +2998,15 @@ if(is.null(KI) & (!is.null(GD) |!is.null(GK)) & kinship.algorithm!="SUPER")
 if(!is.null(theKin)){
   colnames(theKin)=myGT
   rownames(theKin)=myGT
+  if (!is.null(NJtree.group))
+  {
   distance.matrix=dist(theKin,upper=TRUE)
   hc=hclust(distance.matrix,method=kinship.cluster)
   hcd = as.dendrogram(hc)
   clusMember <- cutree(hc, k = NJtree.group)
   type_col=rainbow(NJtree.group)
   Optimum=c(nrow(theKin),kinship.cluster,NJtree.group)
+  }
   #print(Optimum)
  print("kinship calculated")
 
@@ -3013,6 +3020,8 @@ if(!is.null(theKin)){
     dev.off()
     print("Kinship heat map created")
     ## Jiabo Wang add NJ Tree of kinship at 4.5.2017
+  if (!is.null(NJtree.group))
+  {
     print("Creating NJ Tree for kinship...")
     for(tr in 1:length(NJtree.type))
     {
@@ -3032,7 +3041,7 @@ if(!is.null(theKin)){
     Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="plot NJ TREE")
     Memory=GAPIT.Memory(Memory=Memory,Infor="plot NJ TREE")
     rm(hc,clusMember)
-  
+  }#end NJtree
     
   }
 
@@ -4155,6 +4164,7 @@ if(QC)
   Z=qc$Z
   GK=qc$GK
   if(noCV)CVI=qc$CV #this part will make GS without CV not present all prediction
+  my_taxa=as.character(KI[,1])
 }
 #Output phenotype
 colnames(Y)=c("Taxa",name.of.trait)
@@ -5005,8 +5015,8 @@ if((!byPass)&(!Model.selection)){
      my_allX=cbind(1,as.matrix(my_allCV[,-1]))
   }
   
-    print(dim(my_allX))
-    print(head(my_allX))
+    #print(dim(my_allX))
+    #print(head(my_allX))
     #print(dim(BB))
     #print(CV.Inheritance)
  if(is.null(CV.Inheritance))
@@ -5042,7 +5052,7 @@ if((!byPass)&(!Model.selection)){
     BLUE=Pred$BLUE[1]
     prediction=as.matrix(GPS$BLUP)+(BLUE)
     Pred=cbind(GPS,BLUE,prediction)
- colnames(Pred)=c("Taxa","Group","RefInf","ID","BLUP","PEV","BLUE","Prediction","Pred_Heritable")
+ colnames(Pred)=c("Taxa","Group","RefInf","ID","BLUP","PEV","BLUE","Prediction")
     }#end NOBLUP
     }#end noCV
  print("GAPIT after BLUP and BLUE")
@@ -7330,7 +7340,7 @@ function(Y=NULL,G=NULL,GD=NULL,GM=NULL,KI=NULL,Z=NULL,CV=NULL,CV.Inheritance=NUL
                 file.G=NULL, file.Ext.G=NULL,file.GD=NULL, file.GM=NULL, file.Ext.GD=NULL,file.Ext.GM=NULL, 
                 ngrid = 100, llim = -10, ulim = 10, esp = 1e-10,
                 LD.chromosome=NULL,LD.location=NULL,LD.range=NULL,
-                sangwich.top=NULL,sangwich.bottom=NULL,QC=TRUE,GTindex=NULL,LD=0.1,NJtree.group=5,NJtree.type=c("fan","unrooted"),plot.bin=10^9,
+                sangwich.top=NULL,sangwich.bottom=NULL,QC=TRUE,GTindex=NULL,LD=0.1,NJtree.group=NULL,NJtree.type=c("fan","unrooted"),plot.bin=10^9,
                 file.output=TRUE,cutOff=0.01, Model.selection = FALSE,output.numerical = FALSE,
                 output.hapmap = FALSE, Create.indicator = FALSE,
         QTN=NULL, QTN.round=1,QTN.limit=0, QTN.update=TRUE, QTN.method="Penalty", Major.allele.zero = FALSE,

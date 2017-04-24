@@ -1,49 +1,85 @@
 args = commandArgs(trailingOnly=TRUE)
-
-# G.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/demo_data/Numeric/mdp_numeric.txt"
-# Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/demo_data/Numeric/mdp_traits.txt"
-# wd = "/Users/Poissonfish/Desktop/test/rr"
 G.path = args[1]
 Y.path = args[2]
 wd = args[3]
+lib = args[4]
+format = args[5]
+arg_length = 5
+# G.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/demo_data/Hapmap/data.hmp"
+# Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/demo_data/Hapmap/data.txt"
+# wd = "/Users/Poissonfish/Desktop/test/rr"
+# lib = "/Users/Poissonfish/git/iPat/libs/"
+# format = "Hapmap"
+# args = c(1,2,3,4,5,2,1)
 
-list.of.packages = c("data.table","rrBLUP")
+list.of.packages = c("data.table", "magrittr", "rrBLUP")
 new.packages <- list.of.packages[!(list.of.packages%in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
 library(rrBLUP)
 library(data.table)
+library(magrittr)
 
 setwd(wd)
-G = fread(G.path); G = as.data.frame(G)
-Y = fread(Y.path); Y = as.data.frame(Y)
-taxa = c()
-
-#Remove first column if it is taxa name
-if(is.character(G[,1])){
-  G = G[,-1]
-}
+# Select Phenotype
+Y = read.table(Y.path, head=TRUE, stringsAsFactors = F)
+# First col can't contain inidvidual name
 if(is.character(Y[,1])){
-  taxa = Y[,1]
-  name = names(Y)[-1]
-  Y = Y[,-1]
+      taxa = Y[,1]
+      Y = Y[,-1]
 }else{
-  name = names(Y)
-  taxa = 1:ncol(Y)
-}
-#Select Phenotype
+      taxa = 1:ncol(Y)
+} 
 trait = c()
-for (i in 4:length(args)){
-  trait = c(trait, as.numeric(args[i])) 
+if(length(args)>arg_length){
+  for (i in (arg_length+1):length(args)){
+    trait = c(trait, as.numeric(args[i])) 
+  }
+  if(length(trait) == 1){
+    trait_names = names(Y)[trait]
+    Y = Y[,trait] %>% as.matrix(ncol = 1)
+  }else{
+    Y = Y[,trait] 
+    trait_names = names(Y)
+  }
 }
-Y = Y[,trait]
+
+# Format-free
+switch(format, 
+  Hapmap = {
+    sprintf("chmod 777 %s/blink", lib) %>% system()
+    hmp = substring(G.path, 1, nchar(G.path)-4)
+    sprintf("%s/blink --file %s --compress --hapmap", lib, hmp) %>% system()
+    sprintf("%s/blink --file %s --recode --out %s --numeric", lib, hmp, hmp) %>% system()
+    G = read.table(sprintf("%s.dat", hmp)) %>% t()
+  }, 
+  VCF = {
+    sprintf("chmod 777 %s/blink", lib) %>% system()
+    vcf = substring(G.path, 1, nchar(G.path)-4)
+    sprintf("%s/blink --file %s --compress --vcf", lib, vcf) %>% system()
+    sprintf("%s/blink --file %s --recode --out %s --numeric", lib, vcf, vcf) %>% system()
+    G = read.table(sprintf("%s.dat", vcf)) %>% t()
+  },
+  PLink_ASCII = {
+
+  },
+  PLink_Binary = {
+
+  }, {
+    G = fread(G.path)
+    #Remove first column if it is taxa name
+    if(is.character(G[,1])){
+      G = G[,-1]
+    }
+  }
+)
 
 #Genome prediction
 print('rrBLUP start')
 tryCatch(
-  {if(is.null(ncol(Y))){
+  {if(ncol(Y) == 1){
     ans <- mixed.solve(Y,K=A.mat(G))
     write.table(data.frame(Taxa = taxa, u = ans$u), 
-                sprintf("rrBLUP_out_%s.txt", name[trait]),
+                sprintf("rrBLUP_out_%s.txt", trait_names),
                 row.names = F,
                 quote = F, 
                 sep = '\t')
@@ -51,7 +87,7 @@ tryCatch(
     for(i in 1:ncol(Y)){
       ans <- mixed.solve(Y[,i],K=A.mat(G))
       write.table(data.frame(Taxa = taxa, u = ans$u), 
-                  sprintf("rrBLUP_out_%s.txt", name[trait[i]]),
+                  sprintf("rrBLUP_out_%s.txt", trait_names[i]),
                   row.names = F,
                   quote = F, 
                   sep = '\t')

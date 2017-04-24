@@ -193,9 +193,17 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				file_format = "Numeric";
 				break;
 			case VCF:
+				pane_gapit = config_gapit();
+				pane_farm = config_farm();
+				pane_plink = config_plink();
+				pane_rrblup = config_rrblup();
 				file_format = "VCF";
 				break;
 			case PLink_ASCII:
+				pane_gapit = config_gapit();
+				pane_farm = config_farm();
+				pane_plink = config_plink();
+				pane_rrblup = config_rrblup();
 				file_format = "PLink_ASCII";
 				break;
 			case PLink_Binary:
@@ -328,7 +336,12 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		wd_panel_farm.add(WD_f.browse, "cell 1 3 1 1");
 		Project_f.longfield.setText("Project "+ MOindex);
 		wd_panel_farm.add(format_f, "cell 0 4 2 1");
-		format_f.setText("The format is "+iPatPanel.format);
+		switch(iPatPanel.format){
+		case Numeric:
+			format_f.setText("The format is "+iPatPanel.format); break;
+		default:
+			format_f.setText("The format is "+iPatPanel.format+"(Conversion required)"); break;
+		}
 		wd_panel_farm.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_phenotype_f = new ListPanel("Traits", "Excluded");
@@ -433,6 +446,12 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		wd_panel_r.add(WD_r.browse, "cell 1 3 1 1");
 		Project_r.longfield.setText("Project "+ MOindex);
 		wd_panel_r.add(format_r, "cell 0 4 2 1");
+		switch(iPatPanel.format){
+		case Numeric:
+			format_f.setText("The format is "+iPatPanel.format); break;
+		default:
+			format_f.setText("The format is "+iPatPanel.format+"(Conversion required)"); break;
+		}
 		format_r.setText("The format is "+iPatPanel.format);
 		wd_panel_r.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
@@ -567,12 +586,22 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		SNP_fraction = (String) snp_frac.combo.getSelectedItem();
 		file_fragment = (String) file_frag.combo.getSelectedItem();
 		
+		// Format 
+		switch(iPatPanel.format){
+			case VCF:
+				G_name = VCF_name; 
+				break;
+			case PLink_ASCII:
+				break;
+			case PLink_Binary:
+				break;
+		}
         System.out.println("running gapit"); 
         // Command input
         String[] command = {"", iPatPanel.jar.getParent()+"/libs/Gapit.R",
         		G_name, GM_name, GD_name, P_name, K, SNP_test, C, PCA_count, C_inher,
         		ki_c, ki_g, g_from, g_to, g_by, 
-        		model_selection_string, SNP_fraction, file_fragment, WD_g.field.getText(), iPatPanel.jar.getParent()+"/libs/"};  
+        		model_selection_string, SNP_fraction, file_fragment, WD_g.field.getText(), iPatPanel.jar.getParent()+"/libs/", file_format};  
         String[] whole = (String[])ArrayUtils.addAll(command, indexp);
         return whole;
 	}
@@ -598,18 +627,33 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		switch(maf_value){
 			case 0:
 				maf_cal = "FALSE";
+				break;
 			case 1:
 				maf_cal = "TRUE";
 				maf_threshold = "0.05";
+				break;
 			case 2:
 				maf_cal = "TRUE";
 				maf_threshold = "0.1";
+				break;
 			case 3:
 				maf_cal = "TRUE";
 				maf_threshold = "0.2";
+				break;
 		}		
 		// Format 
-		GD_name = iPatPanel.format == iPatPanel.FORMAT.Hapmap ? G_name:GD_name;
+		switch(iPatPanel.format){
+			case Hapmap:
+				GD_name = G_name;
+				break;
+			case VCF:
+				GD_name = VCF_name; 
+				break;
+			case PLink_ASCII:
+				break;
+			case PLink_Binary:
+				break;
+		}
         System.out.println("running FarmCPU");  
         String[] command = {"", iPatPanel.jar.getParent()+"/libs/FarmCPU.R",
         		GM_name, GD_name, P_name, C, C_inher,
@@ -666,7 +710,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		System.out.println("running rrBLUP"); 
 	    // Command input
 	    String[] command = {"", iPatPanel.jar.getParent()+"/libs/rrBLUP.R",
-	     					GD_name, P_name, WD_r.field.getText()};  
+	     					GD_name, P_name, WD_r.field.getText(), iPatPanel.jar.getParent()+"/libs/", file_format};  
 	    String[] whole = (String[])ArrayUtils.addAll(command, indexp);
 	    return whole;
 	}
