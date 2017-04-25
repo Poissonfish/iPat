@@ -4,6 +4,8 @@
 
 ## [Download iPat](http://zzlab.net/iPat/iPat.zip)
 ## [Demo data](http://zzlab.net/iPat/demo.zip)
+## [User manual (pdf)](http://zzlab.net/iPat/iPat_manual.pdf)
+
 # Table of Contents
 #### 1. [Getting start](#get_start)
 #### 2. [Interface](#interface)
@@ -151,7 +153,7 @@ Tools implemented in iPat allow users to do genome-wide associate study (GWAS) a
 
 <a name="support"></a>## 4 Support
 * If there is any difficulty on iPat, please leave your question in the page of [issue report](https://github.com/Poissonfish/iPat/issues).
-* Or you can directly send an email to the auther [James Chen](mailto:chun-peng.chen@wsu.edu)
+* Or you can directly send an email to the author [James Chen](mailto:chun-peng.chen@wsu.edu)
 
 <a name="cite"></a>
 ## 5 Citation
