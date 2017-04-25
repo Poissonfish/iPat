@@ -6,44 +6,11 @@
 <h3 style="text-align:center">(Version 1.1)</h3>
 <h3 style="text-align:center">Last updated on Apr 24, 2017</h3>
 
-Normal Text
+<div style="text-align:center"><h3>abc</h3></div>
 
-<p align="center">
-  <header><h3>(Version 1.1)</h3></header>
-</p>
+<div style="text-align:center">abc</div>
 
-<p align="center">
-  <header>
-  <h3>(Version 1.1)</h3>
-  </header>
-</p>
-
-<p align="center">
-  <b>Some Links:</b><br>
-</p>
-  <h3 style="text-align:center">(Version 1.1)</h3>
-
-  <a href="#">Link 1</a> |
-  <a href="#">Link 2</a> |
-  <a href="#">Link 3</a>
-  <br><br>
-  <img src="http://s.4cdn.org/image/title/105.gif">
-
-Normal text
-
-Normal Text
-
-<p align="center">
-  <b>Some Links:</b><br>
-  <a href="#">Link 1</a> |
-  <a href="#">Link 2</a> |
-  <a href="#">Link 3</a>
-  <br><br>
-  <img src="http://s.4cdn.org/image/title/105.gif">
-</p>
-
-Normal text
-
+<br><br><br>
 
 # Table of Contents
 #### 1. [Getting start](#get_start)
