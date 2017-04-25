@@ -55,7 +55,7 @@
 ### 2.2 *Create a project*
 * After importing the files, double clicking on anywhere in iPat to create a new project.
 * Build linkages between this project and all the files planed to be analyzed. A linkage can be built by dragging one object over one another.
-</p><img src = "./res/linkages.png" width = 250></p>
+<p align="center"><img src = "./res/linkages.png" width = 250></p>
 
 <a name="file_format"></a>
 ### 2.3 *File formats*
@@ -63,7 +63,7 @@
 
 * ***Imported file set need to have identical names and correct extension name if they need to be converted to a proper format.*** For example, if you want to perform GWAS using VCF format in FarmCPU, files set should be named as: data.vcf and data.txt. The table below shows examples of files and its extension name for the corresponded format:
 
-<p align="center">
+<center>
 
 |Format |Genotype|Phenotype|Other information|
 |:-----:|:------:|:-------:|:---------------:|
@@ -72,7 +72,7 @@
 |VCF    |.vcf    |.txt     |None             |
 |PLINK  |.bed    |.txt     |.fam .bim        |
 
-</p><a name="C_K"></a>### 2.4 *Covariates and kinship** Users are allowed to add covariates into the project. Right clicking on the file can change the file type.
+</center><a name="C_K"></a>### 2.4 *Covariates and kinship** Users are allowed to add covariates into the project. Right clicking on the file can change the file type.
 <p align="center"><img src = "./res/ck.png" width = 400></p>
 * Label “C” stands for covariate, and Label “K” is indicated as kinship.<p align="center"><img src = "./res/ck2.png" width = 250></p>
 
