@@ -1,9 +1,14 @@
 <center>
-#User Manual for
-<img src = "./res/icon.png" width = 200>
-#Intelligent Prediction and Association Tool
+# User Manual for
+
+<p align="center"><img src = "./res/icon.png" width = 200></p>
+
+# Intelligent Prediction and Association Tool
+
 ### (Version 1.1)
+
 ### Last updated on Apr 24, 2017
+
 </center>
 
 # Table of Contents
