@@ -9,12 +9,32 @@
 Normal Text
 
 <p align="center">
+  <header><h3>(Version 1.1)</h3></header>
+</p>
+
+<p align="center">
+  <header>
   <h3>(Version 1.1)</h3>
+  </header>
+</p>
 
-
+<p align="center">
   <b>Some Links:</b><br>
+</p>
   <h3 style="text-align:center">(Version 1.1)</h3>
 
+  <a href="#">Link 1</a> |
+  <a href="#">Link 2</a> |
+  <a href="#">Link 3</a>
+  <br><br>
+  <img src="http://s.4cdn.org/image/title/105.gif">
+
+Normal text
+
+Normal Text
+
+<p align="center">
+  <b>Some Links:</b><br>
   <a href="#">Link 1</a> |
   <a href="#">Link 2</a> |
   <a href="#">Link 3</a>
@@ -23,6 +43,7 @@ Normal Text
 </p>
 
 Normal text
+
 
 # Table of Contents
 #### 1. [Getting start](#get_start)
