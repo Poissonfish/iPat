@@ -1,18 +1,12 @@
-<center> 
-# User Manual for
-</center>
+<center> # User Manual for </center>
 
 <p align="center"><img src = "./res/icon.png" width = 200></p>
 
-<center> 
+<center> # Intelligent Prediction and Association Tool </center> 
 
-# Intelligent Prediction and Association Tool
+<center> ### (Version 1.1) </center> 
 
-### (Version 1.1)
-
-### Last updated on Apr 24, 2017
-
-</center> 
+<p align="center"> ### Last updated on Apr 24, 2017 </p>
 
 # Table of Contents
 #### 1. [Getting start](#get_start)
@@ -35,6 +29,7 @@
 
 #### 3. [GWAS and GS](#Gwas)
 
+<br><br><br>
 
 <a name="get_start"></a>
 ## 1. Getting start 
