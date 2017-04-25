@@ -1,7 +1,10 @@
-<center>
+<center> 
 # User Manual for
+</center>
 
 <p align="center"><img src = "./res/icon.png" width = 200></p>
+
+<center> 
 
 # Intelligent Prediction and Association Tool
 
@@ -9,7 +12,7 @@
 
 ### Last updated on Apr 24, 2017
 
-</center>
+</center> 
 
 # Table of Contents
 #### 1. [Getting start](#get_start)
