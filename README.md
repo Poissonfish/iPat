@@ -1,12 +1,26 @@
 <h1 style="text-align:center">User Manual for</h1>
 
-
 <p align="center"><img src = "./res/icon.png" width = 200></p>
 <h1 style="text-align:center">Intelligent Prediction and Association Tool</h1>
 
 <h3 style="text-align:center">(Version 1.1)</h3>
 <h3 style="text-align:center">Last updated on Apr 24, 2017</h3>
 
+Normal Text
+
+<p align="center">
+  <b>Some Links:</b><br>
+  <h3 style="text-align:center">(Version 1.1)</h3>
+  <h3>(Version 1.1)</h3>
+
+  <a href="#">Link 1</a> |
+  <a href="#">Link 2</a> |
+  <a href="#">Link 3</a>
+  <br><br>
+  <img src="http://s.4cdn.org/image/title/105.gif">
+</p>
+
+Normal text
 
 # Table of Contents
 #### 1. [Getting start](#get_start)
