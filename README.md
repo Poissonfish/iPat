@@ -1,4 +1,4 @@
-#Intelligent Prediction and Association Tool
+# Intelligent Prediction and Association Tool
 
 <p align="center"><img src = "./res/icon.png" width = 200></p>
 
