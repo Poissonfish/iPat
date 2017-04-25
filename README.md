@@ -1,6 +1,6 @@
-<p align="center"> 
+<center> 
 # User Manual for 
-</p>
+</center>
 
 <p align="center"><img src = "./res/icon.png" width = 200></p>
 
