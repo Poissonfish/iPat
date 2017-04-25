@@ -9,9 +9,11 @@
 Normal Text
 
 <p align="center">
+  <h3>(Version 1.1)</h3>
+
+
   <b>Some Links:</b><br>
   <h3 style="text-align:center">(Version 1.1)</h3>
-  <h3>(Version 1.1)</h3>
 
   <a href="#">Link 1</a> |
   <a href="#">Link 2</a> |
