@@ -4,9 +4,6 @@
 
 ## [Download iPat](http://zzlab.net/iPat/iPat.zip)
 ## [Demo data](http://zzlab.net/iPat/demo.zip)
-
-<br><br><br>
-
 # Table of Contents
 #### 1. [Getting start](#get_start)
 #### 2. [Interface](#interface)
