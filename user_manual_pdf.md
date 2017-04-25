@@ -1,11 +1,15 @@
-#Intelligent Prediction and Association Tool
+<h1 style="text-align:center">User Manual for</h1>
 
 <p align="center"><img src = "./res/icon.png" width = 200></p>
 
-## [Download iPat](http://zzlab.net/iPat/iPat.zip)
-## [Demo data](http://zzlab.net/iPat/demo.zip)
+<h1 style="text-align:center">Intelligent Prediction and Association Tool</h1>
+
+<h3 style="text-align:center">(Version 1.1)</h3>
+<h3 style="text-align:center">Last updated on Apr 24, 2017</h3>
 
 <br><br><br>
+
+<div style="page-break-after: always;"></div>
 
 # Table of Contents
 #### 1. [Getting start](#get_start)
@@ -153,6 +157,7 @@ Tools implemented in iPat allow users to do genome-wide associate study (GWAS) a
 
 
 <a name="support"></a>## 4 Support
+* User can download demo files from [here](http://zzlab.net/iPat/demo.zip).
 * If there is any difficulty on iPat, please leave your question in the page of [issue report](https://github.com/Poissonfish/iPat/issues).
 * Or you can directly send an email to the auther [James Chen](mailto:chun-peng.chen@wsu.edu)
 
