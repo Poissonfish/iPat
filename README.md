@@ -1,12 +1,20 @@
-<center> # User Manual for </center>
+<p align="center"> 
+# User Manual for 
+</p>
 
 <p align="center"><img src = "./res/icon.png" width = 200></p>
 
-<center> # Intelligent Prediction and Association Tool </center> 
+<p align="center"> 
+# Intelligent Prediction and Association Tool
+</p>
 
-<center> ### (Version 1.1) </center> 
+<p align="center">  
+### (Version 1.1)
+</p>
 
-<p align="center"> ### Last updated on Apr 24, 2017 </p>
+<p align="center"> 
+## Last updated on Apr 24, 2017 
+</p>
 
 # Table of Contents
 #### 1. [Getting start](#get_start)
