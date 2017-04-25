@@ -1,20 +1,12 @@
-<center> 
-# User Manual for 
-</center>
+<h1 style="text-align:center">User Manual for</h1>
+
 
 <p align="center"><img src = "./res/icon.png" width = 200></p>
+<h1 style="text-align:center">Intelligent Prediction and Association Tool</h1>
 
-<p align="center"> 
-# Intelligent Prediction and Association Tool
-</p>
+<h3 style="text-align:center">(Version 1.1)</h3>
+<h3 style="text-align:center">Last updated on Apr 24, 2017</h3>
 
-<p align="center">  
-### (Version 1.1)
-</p>
-
-<p align="center"> 
-## Last updated on Apr 24, 2017 
-</p>
 
 # Table of Contents
 #### 1. [Getting start](#get_start)
@@ -45,7 +37,7 @@
 * The operation environment need to meet the following requirement:
 	* Operation System: Mac OS X.
 	* [Java Runtime Environment (JRE)](http://www.oracle.com/technetwork/java/javase/downloads/index.html): Version 8 or later.
-	* [R]((https://www.r-project.org)): Version 3.4.0 or later. 
+	* [R](https://www.r-project.org): Version 3.4.0 or later. 
 * After set up all the thing mentioned previously, iPat is now ready to go. Double-click on 'iPat.jar' to launch iPat.
 
 <center><img src = "./res/libs.png" width = 700></center>
