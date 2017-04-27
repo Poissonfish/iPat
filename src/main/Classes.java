@@ -128,20 +128,17 @@ class Findex{
 
 class BGThread extends Thread{
 	int MOindex;
-	String[] command;
 	String WD;
 	String Project;
-	Boolean R;
-	Boolean consecutive, con_R;
-	String[] con_command;
-	public BGThread(int MOindex, String[] command, String WD, String Project, Boolean R, 
-			Boolean consecutive, String[] con_command, Boolean con_R){
+	String[] command, con_command;
+	Boolean R, con_R;
+	public BGThread(int MOindex, String WD, String Project, String[] command,  Boolean R, 
+															String[] con_command, Boolean con_R){
 		this.MOindex = MOindex;
 		this.command = command;
 		this.WD = WD;
 		this.Project = Project;
 		this.R = R;
-		this.consecutive = consecutive;
 		this.con_command = con_command;
 		this.con_R = con_R;
 	}
@@ -154,8 +151,9 @@ class BGThread extends Thread{
 		
         iPatPanel.permit[MOindex] = true;
 		iPatPanel.rotate_index[MOindex] = 1;
-		Configuration.runtime[MOindex] = Runtime.getRuntime();	        
-	
+		Configuration.runtime[MOindex] = Runtime.getRuntime();
+		
+		// Execute the command
 		if(R){
 			//Check the correct path until it can locate R
 	        while(int_error == 0){
@@ -179,6 +177,7 @@ class BGThread extends Thread{
         iPatPanel.text_console[MOindex].setCaretPosition(iPatPanel.text_console[MOindex].getDocument().getLength());	   	
 
         try {
+        	System.out.println("begin to print");
     	    BufferedReader input_stream = new BufferedReader(new InputStreamReader(Configuration.process[MOindex].getInputStream()));
             BufferedReader error_stream= new BufferedReader(new InputStreamReader(Configuration.process[MOindex].getErrorStream()));
 	        while((line = input_stream.readLine()) != null){
@@ -186,36 +185,38 @@ class BGThread extends Thread{
 	            iPatPanel.text_console[MOindex].append(line+ System.getProperty("line.separator"));
 	            iPatPanel.text_console[MOindex].setCaretPosition(iPatPanel.text_console[MOindex].getDocument().getLength());
 	        }
+        	System.out.println("wait");
 	        Configuration.process[MOindex].waitFor();        
+        	System.out.println("finish");
 	        while((line = error_stream.readLine()) != null){
 	        	File error = new File(WD+"/"+Project+".err");
 	            errWriter = new PrintWriter(error.getAbsoluteFile());
 	            errWriter.println(line);  
 	        }    
+        	System.out.println("output");
 	       // errWriter.close();	      
 	        File outfile = new File(WD+"/"+Project+".log");
             FileWriter outWriter = new FileWriter(outfile.getAbsoluteFile(),true);
             iPatPanel.text_console[MOindex].write(outWriter);
 		} catch (IOException | InterruptedException e1) {	
         	Suc_or_Fal = false;
+        	System.out.println("failed");
 			e1.printStackTrace();
 		}				
-        
-	    if(Suc_or_Fal){
-			iPatPanel.MO[MOindex] = iPatPanel.MO_suc;
-	    }else{
-			iPatPanel.MO[MOindex] = iPatPanel.MO_fal;
-	    }    
-		iPatPanel.permit[MOindex] = false;
+        // Indicator
+	    if(Suc_or_Fal) iPatPanel.MO[MOindex] = iPatPanel.MO_suc; else iPatPanel.MO[MOindex] = iPatPanel.MO_fal;     
+	    // Stop rotating
+	    iPatPanel.permit[MOindex] = false;
 		iPatPanel.rotate_index[MOindex] = 0;
 		iPatPanel.MOimageH[MOindex]=iPatPanel.MO[MOindex].getHeight(null);
 		iPatPanel.MOimageW[MOindex]=iPatPanel.MO[MOindex].getWidth(null);
 		iPatPanel.MOname[MOindex].setLocation(iPatPanel.MOimageX[MOindex], iPatPanel.MOimageY[MOindex]+ iPatPanel.MOimageH[MOindex]);
 		System.out.println("done");
 		Configuration.process[MOindex].destroy();
-		if(consecutive){
-    	  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, con_command, WD, Project, true, 
-    	  			false, null, false);
+		// Run next procedure if needed
+		if(con_command!=null){
+    	  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, WD, Project, 
+    	  												con_command, true, null, false);
     	  	iPatPanel.multi_run[MOindex].start();
 		}
 	}
@@ -339,4 +340,53 @@ class SortedListModel extends AbstractListModel {
 	    }
 	    return removed;
 	 }
+}
+
+class Fade_timer extends Timer{
+	boolean actived = false, out = false;
+	Timer timer_in, timer_out;
+	public Fade_timer(int delay, AlphaLabel label, ActionListener listener) {
+		super(delay, listener);
+		timer_in = new Timer(30, new ActionListener() {
+			float alpha = 0;
+			@Override
+		    public void actionPerformed(ActionEvent ae) {
+		    		if(label.getAlpha() <.9f){
+		    			alpha += .1f;
+		    			label.setAlpha(alpha);
+		    		}else{
+		    			timer_in.stop();
+		    			out = true;
+		    		}					
+		    }
+		});
+		timer_out = new Timer(30, new ActionListener() {
+			float alpha = 1.0f;
+			@Override
+		    public void actionPerformed(ActionEvent ae) {
+		    		if(label.getAlpha() >.1f){
+		    			alpha -= .1f;
+		    			label.setAlpha(alpha);
+		    		}else{
+		    			label.setAlpha(0f);
+		    			timer_out.stop();
+		    		}				
+		    }
+		});
+	}
+	public void fade_in(){
+		timer_in.start();
+	}
+	public void fade_out(){
+		timer_out.start();
+	}
+	public void setActived(boolean active){
+		actived = active;
+	}
+	public boolean isActived(){
+		return actived;
+	}
+	public boolean TimeToOut(){
+		return out;
+	}
 }

@@ -19,16 +19,18 @@ file.fragment = as.numeric(args[17])
 wd = args[18]
 lib = args[19]
 format = args[20]
+#multi = as.logical(args[21])
 arg_length = 20
 
-# G.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/demo_data/VCF/data.vcf"
+# G.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/demo_data/Hapmap/data.hmp"
 # GM.path = "NULL"
 # GD.path = "NULL"
-# Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/demo_data/VCF/data.txt"
+# Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/demo_data/Hapmap/data.txt"
 # K.path = "NULL"
 # SNP.test = TRUE
 # C.path = "NULL"
 # PCA = 3
+# C.inher = as.numeric("NULL")
 # ki.c = 'average'
 # ki.g = 'Mean'
 # g.from = 1
@@ -39,8 +41,9 @@ arg_length = 20
 # file.fragment = 512
 # wd = "/Users/Poissonfish/Desktop/test/gapit"
 # lib = "/Users/Poissonfish/git/iPat/libs/"
-# format = "VCF"
-# args = c(1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3)
+# format = "Hapmap"
+# #multi = TRUE
+# args = c(1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,1,2,3)
 
 setwd(lib)
 list.of.packages <- c("MASS", "data.table", "magrittr", "gplots", "compiler", "scatterplot3d", "R.utils")
@@ -64,7 +67,62 @@ source("./*Function_GAPIT.R")
 
 setwd(wd)
 # Select Phenotype
-Y.file = read.table(Y.path, head=TRUE)
+Y.file = read.table(Y.path, head=TRUE)    #Have taxa names
+
+# if(multi){
+#   nT = ncol(Y.file) - 1
+#   # Imputation by mean
+#   for(i in 2:ncol(Y.file)){
+#     mean = mean(Y.file[,i] %>% na.omit())
+#     na_index = Y.file[,i] %>% is.na()
+#     Y.file[na_index,i] = mean 
+#   }
+#   # PCA
+#   Y.PCA = prcomp(Y.file[,-1])
+#   Y.eigvec = Y.PCA$rotation
+#   Y.eigval = (Y.PCA$sdev)^2
+#   cum.var = cumsum(Y.eigval)/sum(Y.eigval)
+#   pca.index = 1 : (which(cum.var > .9) %>% min)
+#   Y.tran = Y.PCA$x[,pca.index] %>% as.matrix
+#   Y = data.frame(Y.file[,1],Y.tran)
+#   npc = ncol(Y) - 1
+#   m = ifelse(is.null(G), ncol(GD) - 1, nrow(G) - 1)
+#   array.effect = matrix(ncol = npc, nrow = m)
+#   # GAPIT
+#   for (i in 1 : npc){
+#     x=GAPIT(
+#       Y = Y[,c(1,1+i)],
+#       G = G,
+#       GM = GM,
+#       GD = GD,
+#       KI = K,
+#       SNP.test = SNP.test,
+#       CV = C,
+#       CV.Inheritance = C.inher,
+#       PCA.total = PCA,
+#       kinship.cluster = ki.c,
+#       kinship.group = ki.g,
+#       group.from = g.from,
+#       group.to = g.to,
+#       group.by = g.by,
+#       Model.selection = model.s,
+#       SNP.fraction = snp.fraction,
+#       file.fragment = file.fragment,
+#       file.output = F
+#     )
+#     u.effect = x$effect.snp
+#     u.effect[is.na(u.effect)] = 0
+#     array.effect[,i] = u.effect
+#   }
+#   # Real effects recover
+#   real.effect = array.effect %*% t(Y.eigvec[, pca.index])
+#   for (i in 1 : nT){
+
+#   }
+# # Y.recover = (t(Y.tran %*% t(Y.eigvec)) + PCA$center) %>% t()
+# }
+
+# Subset traits
 trait = c()
 if(length(args)>arg_length){
   for (i in (arg_length+1):length(args)){
@@ -73,6 +131,7 @@ if(length(args)>arg_length){
   print(trait)
   Y.file = Y.file[,c(1,trait+1)]
 }
+trait_names = names(Y.file)[-1]
 
 # Format free
 switch(format, 
@@ -102,25 +161,27 @@ if(is.na(C.inher)) C.inher = NULL else C.inher = C.inher
 
 print('GAPIT start')
 tryCatch(
-  {x=GAPIT(
-    Y = Y.file,
-    G = G,
-    GM = GM,
-    GD = GD,
-    KI = K,
-    SNP.test = SNP.test,
-    CV = C,
-    CV.Inheritance = C.inher,
-    PCA.total = PCA,
-    kinship.cluster = ki.c,
-    kinship.group = ki.g,
-    group.from = g.from,
-    group.to = g.to,
-    group.by = g.by,
-    Model.selection = model.s,
-    SNP.fraction = snp.fraction,
-    file.fragment = file.fragment
-  )},error = function(e){
+  {for (i in 1:length(trait_names)){   
+      x=GAPIT(
+        Y = Y.file[,c(1,1+i)],
+        G = G,
+        GM = GM,
+        GD = GD,
+        KI = K,
+        SNP.test = SNP.test,
+        CV = C,
+        CV.Inheritance = C.inher,
+        PCA.total = PCA,
+        kinship.cluster = ki.c,
+        kinship.group = ki.g,
+        group.from = g.from,
+        group.to = g.to,
+        group.by = g.by,
+        Model.selection = model.s,
+        SNP.fraction = snp.fraction,
+        file.fragment = file.fragment,
+        memo= trait_names[i]
+  )}},error = function(e){
     print(e)
   }
 )

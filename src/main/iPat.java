@@ -51,17 +51,16 @@ public class iPat {
 		String OS = System.getProperty("os.name");
 		System.out.println("You're runngin iPat on "+ OS);// Mac OS X, 
 		JFrame main = new JFrame();
-
 		//Set to center
 		main.setSize(Wide, Heigth);
 		Dimension windowSize = main.getSize();
-       		GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
-       		Point centerPoint = local_env.getCenterPoint();
-       		int dx = centerPoint.x - windowSize.width / 2;
-        		int dy = centerPoint.y - windowSize.height / 2;    
+       	GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+       	Point centerPoint = local_env.getCenterPoint();
+       	int dx = centerPoint.x - windowSize.width / 2;
+        int dy = centerPoint.y - windowSize.height / 2;    
 
 		main.setResizable(false);
-        		main.setLocation(dx, dy);
+        main.setLocation(dx, dy);
 		main.setLayout(new BorderLayout());
 		main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Container cPane = main.getContentPane();
@@ -151,7 +150,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	JLayeredPane nullPanel;
 	JPanel buttonPanel;
 	 
-	JLabel iPat = new JLabel();
+	AlphaLabel iPat = new AlphaLabel();
 
 	public static FileDialog chooser;
 	static String[] TBfile= new String[TBMAX];
@@ -231,7 +230,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	//settingframe model_frame;
 	Preferences pref = Preferences.userRoot().node("/iPat"); 
 	
-    	//object select
+    //object select
 	int TBindex_select = 0;
 	int MOindex_select = 0;
     	int object_selected = -1;   //1 table, 2 model
@@ -243,43 +242,20 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	static boolean[] permit = new boolean[MOMAX];
 	static boolean running = false;	
 	Timer gear_rotate;
+	
 	//periodically repaint (delcare after fill value in permit)
 	Timer periodically_repaint;
 	//hint_object
-	boolean hint_ob_b=false,  //check if run at once  
-		hint_ob_out = false; //check if going to fadeout
-	float hint_ob_alpha = 0;
-	AlphaLabel hint_ob = new AlphaLabel();
-	Timer hint_ob_timer_in;
-	Timer hint_ob_timer_out;
-	Timer hint_ob_main;
-	//hint_tr
-	boolean hint_tr_b=false,  //check if run at once  
-			hint_tr_out = false; //check if going to fadeout
-	float hint_tr_alpha = 0;
-	AlphaLabel hint_tr = new AlphaLabel();
-	Timer hint_tr_timer_in;
-	Timer hint_tr_timer_out;
-	Timer hint_tr_main;
+	AlphaLabel hint_drag_label = new AlphaLabel();
+	Fade_timer hint_drag_timer;
 	//hint_model
-	boolean hint_mo_b=false,  //check if run at once  
-			hint_mo_out = false, //check if going to fadeout
-			hint_mo_run = false;
-	float hint_mo_alpha = 0;
 	static int link_model = 0;
-	AlphaLabel hint_mo = new AlphaLabel();
-	Timer hint_mo_timer_in;
-	Timer hint_mo_timer_out;
-	Timer hint_mo_main;
-	//hint_table
-	boolean hint_tb_b=false,  //check if run at once  
-			hint_tb_out = false;
-	static boolean hint_tb_link = false;
-	float hint_tb_alpha = 0;
-	AlphaLabel hint_tb = new AlphaLabel();
-	Timer hint_tb_timer_in;
-	Timer hint_tb_timer_out;
-	Timer hint_tb_main;
+	AlphaLabel hint_model_label = new AlphaLabel();
+	Fade_timer hint_model_timer;
+	//hint_trash
+	AlphaLabel hint_trash_label = new AlphaLabel();
+	Fade_timer hint_trash_timer;
+	
 	//multi-thread
 	static BGThread[] multi_run = new BGThread[MOMAX]; 
 	//Console panel
@@ -370,6 +346,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		try{
 			iconIP = ImageIO.read(getClass().getResource("resources/iPat.png"));
 			iPat.setIcon(new ImageIcon(iconIP));
+			iPat.setAlpha((float)0.5);
 		} catch (IOException ex){}
 		try{
 			for(int i=0; i<10; i++){
@@ -390,10 +367,9 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			hint_trash = ImageIO.read(this.getClass().getResourceAsStream("resources/hint_trash.png"));	
 			hint_model = ImageIO.read(this.getClass().getResourceAsStream("resources/hint_model.png"));	
 			hint_table =  ImageIO.read(this.getClass().getResourceAsStream("resources/hint_link.png"));	
-			hint_tr.setIcon(new ImageIcon(hint_trash));
-			hint_ob.setIcon(new ImageIcon(hint_object));
-			hint_tb.setIcon(new ImageIcon(hint_table));
-			hint_mo.setIcon(new ImageIcon(hint_model));
+			hint_trash_label.setIcon(new ImageIcon(hint_trash));
+			hint_drag_label.setIcon(new ImageIcon(hint_object));
+			hint_model_label.setIcon(new ImageIcon(hint_model));
 		} catch (IOException ex){}
 	
 		for (int i=1; i<14; i++){
@@ -413,26 +389,22 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		startPanel.setPreferredSize(new Dimension(Wide, Heigth));	
 		startPanel.add(iPat, new Integer(4));
 		startPanel.add(trashl, new Integer(3));
-		startPanel.add(hint_ob, new Integer(2));		
-		startPanel.add(hint_tr, new Integer(1));		
-		startPanel.add(hint_tb, new Integer(5));		
-		startPanel.add(hint_mo, new Integer(6));		
+		startPanel.add(hint_drag_label, new Integer(2));		
+		startPanel.add(hint_trash_label, new Integer(1));		
+		startPanel.add(hint_model_label, new Integer(6));		
 
-		hint_ob.setBounds(new Rectangle(0, 0, hint_object.getWidth(null), hint_object.getHeight(null)));
-		hint_ob.setVisible(true);	
-		hint_tr.setBounds(new Rectangle(0, 0, hint_trash.getWidth(null), hint_trash.getHeight(null)));
-		hint_tr.setVisible(true);	
-		hint_tb.setBounds(new Rectangle(0, 0, hint_table.getWidth(null), hint_table.getHeight(null)));
-		hint_tb.setVisible(true);	
-		hint_mo.setBounds(new Rectangle(0, 0, hint_model.getWidth(null), hint_model.getHeight(null)));
-		hint_mo.setVisible(true);	
+		hint_drag_label.setBounds(new Rectangle(0, 0, hint_object.getWidth(null), hint_object.getHeight(null)));
+		hint_drag_label.setVisible(true);	
+		hint_trash_label.setBounds(new Rectangle(0, 0, hint_trash.getWidth(null), hint_trash.getHeight(null)));
+		hint_trash_label.setVisible(true);	
+		hint_model_label.setBounds(new Rectangle(0, 0, hint_model.getWidth(null), hint_model.getHeight(null)));
+		hint_model_label.setVisible(true);	
 		trashl.setBounds(new Rectangle(-100,-100, trashW, trashH));
 		trashl.setVisible(true);	
 		
-		hint_ob.setAlpha(0);
-		hint_tr.setAlpha(0);
-		hint_tb.setAlpha(0);
-		hint_mo.setAlpha(0);
+		hint_drag_label.setAlpha(0);
+		hint_trash_label.setAlpha(0);
+		hint_model_label.setAlpha(0);
 		
 		iPat.setBounds(new Rectangle(510, 10, iconIP.getWidth(this), iconIP.getHeight(this))); 
 		
@@ -471,12 +443,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		//LAYOUT.END
 		////////////
 		////////////
-
-		//////////////
-	
-
-	    	//////////
-
 		gear_rotate = new Timer(50, new ActionListener() {
 			int i=0;
 		    @Override
@@ -503,185 +469,52 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		    }
 		});	
 		
-		hint_ob_timer_in = new Timer(30, new ActionListener() {
-			float alpha = 0;
-			@Override
-		    public void actionPerformed(ActionEvent ae) {
-		    		if(hint_ob.getAlpha() <.9f){
-		    			alpha += .1f;
-		    			hint_ob.setAlpha(alpha);
-			    		repaint();
-		    		}else{
-		    			hint_ob_timer_in.stop();
-		    			hint_ob_out = true;
-		    		}					
-		    }
-		});
-		hint_ob_timer_out = new Timer(30, new ActionListener() {
-			float alpha = 1.0f;
-			@Override
-		    public void actionPerformed(ActionEvent ae) {
-		    		if(hint_ob.getAlpha() >.1f){
-		    			alpha -= .1f;
-		    			hint_ob.setAlpha(alpha); 
-			    		repaint();
-		    		}else{
-		    			hint_ob.setAlpha(0f);
-		    			hint_ob_timer_out.stop();
-		    		}				
-		    }
-		});
-		hint_ob_main = new Timer(7000, new ActionListener() {
+		hint_drag_timer = new Fade_timer(7000, hint_drag_label, new ActionListener() {
 			@Override
 		    public void actionPerformed(ActionEvent ae) {
 					repaint();
-					if(!hint_ob_b && TBcount < 2 && MOcount <1 ){
-						hint_ob_b = true;
-						hint_ob_timer_in.start();
-					}else if(hint_ob_out){
-						hint_ob_timer_out.start();
+					if(!hint_drag_timer.isActived() && TBcount < 2 && MOcount <1){
+						hint_drag_timer.setActived(true);
+						hint_drag_timer.fade_in();
+					}else if(hint_drag_timer.TimeToOut()){
+						System.out.println("out");
+						hint_drag_timer.fade_out();
+						hint_drag_timer.stop();
 					}				
 		    }
 		});
-		
-		hint_tr_timer_in = new Timer(30, new ActionListener() {
-			float alpha = 0;
-			@Override
-		    public void actionPerformed(ActionEvent ae) {
-		    		if(hint_tr.getAlpha() <.9f){
-		    			alpha += .1f;
-		    			hint_tr.setAlpha(alpha);
-			    		repaint();
-		    		}else{
-		    			hint_tr_timer_in.stop();
-		    			hint_tr_out = true;
-		    		}					
-		    }
-		});
-		hint_tr_timer_out = new Timer(30, new ActionListener() {
-			float alpha = 1.0f;
-			@Override
-		    public void actionPerformed(ActionEvent ae) {
-		    		if(hint_tr.getAlpha() >.1f){
-		    			alpha -= .1f;
-		    			hint_tr.setAlpha(alpha); 
-			    		repaint();
-		    		}else{
-		    			hint_tr.setAlpha(0f);
-		    			hint_tr_timer_out.stop();
-		    		}					
-		    }
-		}); 
-		hint_tr_main = new Timer(7003, new ActionListener() {
+		hint_model_timer= new Fade_timer(7002, hint_model_label, new ActionListener() {
 			@Override
 		    public void actionPerformed(ActionEvent ae) {
 					repaint();
-					if(!hint_tr_b && (TBcount+MOcount>4) &&
-							!hint_tb_timer_in.isRunning() &&
-							!hint_mo_timer_in.isRunning() &&
-							!hint_tr_timer_in.isRunning() ){
-						hint_tr_b = true;
-						hint_tr_timer_in.start();
-					}else if(hint_tr_out){
-						hint_tr_timer_out.start();
+					if(!hint_model_timer.isActived() && 
+						!hint_drag_timer.isRunning() && MOcount>0 && check_model_linked()!=0){
+						hint_model_timer.setActived(true);
+						hint_model_timer.fade_in();
+					}else if(hint_model_timer.TimeToOut()){
+						hint_model_timer.fade_out();
+						hint_model_timer.stop();
 					}				
 		    }
 		});
-		
-		hint_mo_timer_in = new Timer(30, new ActionListener() {
-			float alpha = 0;
-			@Override
-		    public void actionPerformed(ActionEvent ae) {
-		    		if(hint_mo.getAlpha() <.9f){
-		    			alpha += .1f;
-		    			hint_mo.setAlpha(alpha);
-			    		repaint();
-		    		}else{
-		    			hint_mo_timer_in.stop();
-		    			hint_mo_out = true;
-		    		}				
-		    }
-		});
-		hint_mo_timer_out = new Timer(30, new ActionListener() {
-			float alpha = 1.0f;
-			@Override
-		    public void actionPerformed(ActionEvent ae) {
-		    		if(hint_mo.getAlpha() >.1f){
-		    			alpha -= .1f;
-		    			hint_mo.setAlpha(alpha); 
-			    		repaint();
-		    		}else{
-		    			hint_mo.setAlpha(0f);
-						link_model = 0;
-		    			hint_mo_timer_out.stop();
-		    		}					
-		    }
-		});
-		hint_mo_main = new Timer(7002, new ActionListener() {
+		hint_trash_timer = new Fade_timer(7003, hint_trash_label, new ActionListener() {
 			@Override
 		    public void actionPerformed(ActionEvent ae) {
 					repaint();
-					if(!hint_mo_b && MOcount>0 && check_model_linked()!=0 && !hint_mo_run &&
-							!hint_tb_timer_in.isRunning() &&
-							!hint_ob_timer_in.isRunning() &&
-							!hint_tr_timer_in.isRunning() ){
-						hint_mo_b = true;
-						hint_mo_timer_in.start();
-					}else if(hint_mo_out){
-						hint_mo_timer_out.start();
+					if(!hint_trash_timer.isActived() && hint_drag_timer.isActived()  && hint_model_timer.isActived() &&
+						!hint_model_timer.isRunning() && (TBcount + MOcount > 4)){
+						hint_trash_timer.setActived(true);
+						hint_trash_timer.fade_in();
+					}else if(hint_trash_timer.TimeToOut()){
+						hint_trash_timer.fade_out();
+						hint_trash_timer.stop();
 					}				
 		    }
 		});
-		
-		hint_tb_timer_in = new Timer(30, new ActionListener() {
-			float alpha = 0;
-			@Override
-		    public void actionPerformed(ActionEvent ae) {
-		    		if(hint_tb.getAlpha() <.9f){
-		    			alpha += .1f;
-		    			hint_tb.setAlpha(alpha);
-			    		repaint();
-		    		}else{
-		    			hint_tb_timer_in.stop();
-		    			hint_tb_out = true;
-		    		}					
-		    }
-		});
-		hint_tb_timer_out = new Timer(30, new ActionListener() {
-			float alpha = 1.0f;
-			@Override
-		    public void actionPerformed(ActionEvent ae) {
-		    		if(hint_tb.getAlpha() >.1f){
-		    			alpha -= .1f;
-		    			hint_tb.setAlpha(alpha); 
-			    		repaint();
-		    		}else{
-		    			hint_tb.setAlpha(0f);
-		    			hint_tb_timer_out.stop();
-		    		}				
-		    }
-		});
-		hint_tb_main = new Timer(7001, new ActionListener() {
-			@Override
-		    public void actionPerformed(ActionEvent ae) {
-					repaint();
-					if(!hint_tb_b && TBcount>0 && !hint_tb_link &&
-							!hint_ob_timer_in.isRunning() &&
-							!hint_mo_timer_in.isRunning() &&
-							!hint_tr_timer_in.isRunning() ){
-						hint_tb_b = true;
-						hint_tb_timer_in.start();
-					}else if(hint_tb_out){
-						hint_tb_timer_out.start();
-					}			
-		    }
-		});
-
 		periodically_repaint.start();
-		hint_ob_main.start();
-		hint_tr_main.start();
-		hint_tb_main.start();
-		hint_mo_main.start();
+		hint_drag_timer.start();
+		hint_model_timer.start();
+		hint_trash_timer.start();
 
 		this.addMouseListener(new MouseAdapter(){		
 			@Override
@@ -753,15 +586,18 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			   		Arrays.fill(type, 0);
 			   		try {
 						format = catch_files(type);
-					} catch (IOException e1) {e1.printStackTrace();}				
-			   		hint_mo_run = true;
+					} catch (IOException e1) {e1.printStackTrace();}	
 					try {
 						if(format != FORMAT.NA){
 							MO[MOindex] = MOimage;
 							System.out.println("C: "+TBfile[type[0]]+"; K: "+TBfile[type[1]]);
 							model_frame = new Configuration(MOindex, format, file_index, 
 															type[0], type[1]);
-					  		model_frame.setBounds(300, 100, 450, 700);
+					       	GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+							Point centerPoint = local_env.getCenterPoint();
+				       		int dx = centerPoint.x - 550 / 2;
+				        	int dy = centerPoint.y - 350 / 2;  
+					  		model_frame.setBounds(dx, dy, 550, 350);
 					   		model_frame.setResizable(true);
 					   		model_frame.setVisible(true);
 						}else{
@@ -1002,11 +838,9 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 
 	@Override
 	protected void paintComponent(Graphics g) {	
-		if(hint_mo_b){
-			hint_mo.setBounds(new Rectangle(MOimageX[link_model]-85, MOimageY[link_model]-120, hint_model.getWidth(null), hint_model.getHeight(null)));
-    	}else if(hint_tb_b){
-			hint_tb.setBounds(new Rectangle(TBimageX[1]-85, TBimageY[1]-120, hint_table.getWidth(null), hint_table.getHeight(null)));
-    	}
+		if(hint_model_timer.isActived()){
+			hint_model_label.setBounds(new Rectangle(MOimageX[link_model]-85, MOimageY[link_model]-120, hint_model.getWidth(null), hint_model.getHeight(null)));
+		}
     	
 	    super.paintComponent(g);	
 	    g.setColor(ovalcolor);
@@ -2114,12 +1948,12 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				}
 				if(BED!=-1 && BIM!=-1 && FAM!=-1){
 					int P = 6 - BED - BIM - FAM;
-					if(Math.abs(row_count[FAM]-row_count[P]) < 1){file_index[P].file = Findex.FILE.P; format = FORMAT.PLink_Binary;}						
+					if(Math.abs(row_count[FAM]-row_count[P]) < 2){file_index[P].file = Findex.FILE.P; format = FORMAT.PLink_Binary;}						
 				}
 				break;
 		}
 		System.out.println("It's format "+format);
-		System.out.println(file_index[0].file+" "+file_index[1].file+" "+file_index[2].file);
+		System.out.println(file_index[0].file+" "+file_index[1].file+" "+file_index[2].file+" "+file_index[3].file);
 		return format;		
 	} 
 	

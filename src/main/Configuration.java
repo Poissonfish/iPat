@@ -46,6 +46,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	
 	ListPanel panel_phenotype_g;
 	String[] rowP_g;
+	Group_CheckBox multi_g = new Group_CheckBox("PCA transformation for multiple traits");
 	
 	JPanel panel_co;
 	Group_Value PCA = new Group_Value("PCA.total");
@@ -170,11 +171,10 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				case BIM:	BIM_name = iPatPanel.TBfile[file_index[i].tb]; break;
 			}
 		}
-		JScrollPane pane_gapit = null;
-		JScrollPane pane_farm = null;
-		JScrollPane pane_plink = null;
-		JScrollPane pane_rrblup = null;
-		JScrollPane pane_convert= null;
+		JPanel pane_gapit = null;
+		JPanel pane_farm = null;
+		JPanel pane_plink = null;
+		JPanel pane_rrblup = null;
 		
 		pref = Preferences.userRoot().node("/ipat"); 
 		switch(format){
@@ -196,7 +196,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				pane_gapit = config_gapit();
 				pane_farm = config_farm();
 				pane_plink = config_plink();
-				pane_rrblup = config_rrblup();
+				pane_rrblup = config_rrblup(); 
 				file_format = "VCF";
 				break;
 			case PLink_ASCII:
@@ -227,7 +227,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		addWindowListener(this);
 	}	
 	
-	public JScrollPane config_gapit() throws IOException{
+	public JPanel config_gapit() throws IOException{
 		go_gapit.setFont(new Font("Ariashowpril", Font.BOLD, 40));		
 		///////////////////////////////////////////////////////////////////////////////////////
 		wd_panel = new JPanel(new MigLayout("fillx", "[][grow]"));
@@ -238,14 +238,30 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		wd_panel.add(WD_g.browse, "cell 1 3 1 1");
 		Project_g.longfield.setText("Project "+ MOindex);
 		wd_panel.add(format_g, "cell 0 4 2 1");
+		switch(iPatPanel.format){
+		case Numeric: case Hapmap:
+			format_g.setText("The format is "+iPatPanel.format); break;
+		default:
+			format_g.setText("The format is "+iPatPanel.format+" (Conversion required)"); break;
+		}	
 		format_g.setText("The format is "+iPatPanel.format);
 		wd_panel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_phenotype_g = new ListPanel("Traits", "Excluded");
 		String text = iPatPanel.read_lines(P_name, 1)[0];
 		rowP_g = text.split("\t");
-		for(int i = 1; i < rowP_g.length ; i++){
-			panel_phenotype_g.addElement(rowP_g[i]);
+		if(rowP_g.length<=1) rowP_g = text.split(" ");
+		switch(iPatPanel.format){
+		case PLink_Binary:
+			for(int i = 2; i < rowP_g.length ; i++){
+				panel_phenotype_g.addElement(rowP_g[i]);
+			}
+			break;
+		default:
+			for(int i = 1; i < rowP_g.length ; i++){
+				panel_phenotype_g.addElement(rowP_g[i]);
+			}
+			break;
 		}		
 		panel_phenotype_g.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Phenotype", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
 		///////////////////////////////////////////////////////////////////////////////////////
@@ -307,26 +323,24 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		panel_advance.add(model_selection_s, "cell 0 2 2 1, align c");
 		panel_advance.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Advance", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
+		JTabbedPane pane = new JTabbedPane();
+		pane.addTab("Project", wd_panel);
+		pane.addTab("Phenotype", panel_phenotype_g);
+		pane.addTab("Covariates", panel_co);
+		pane.addTab("Filter", panel_filter_g);
+		pane.addTab("Model", panel_CMLM);
+		pane.addTab("Advance", panel_advance);	
 		main_panel = new JPanel(new MigLayout("fillx", "[grow]"));
 		main_panel.add(go_gapit, "dock north");
-		main_panel.add(wd_panel, "cell 0 0, grow");
-		main_panel.add(panel_phenotype_g, "cell 0 1, grow");
-		main_panel.add(panel_co, "cell 0 2, grow");
-		main_panel.add(panel_filter_g, "cell 0 3, grow");
-		main_panel.add(panel_CMLM, "cell 0 4, grow");
-		main_panel.add(panel_advance, "cell 0 5, grow");	
+		main_panel.add(pane, "cell 0 0, grow");
 		///////////////////////////////////////////////////////////////////////////////////////
-		JScrollPane pane = new JScrollPane(main_panel,  
-					ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,  
-					ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		pane.getVerticalScrollBar().setUnitIncrement(16); //scrolling sensitive
 		pref = Preferences.userRoot().node("/ipat"); 
 		go_gapit.addActionListener(this);
 		WD_g.browse.addActionListener(this);
-		return pane;
+		return main_panel;
 	}
 	
-	public JScrollPane config_farm() throws IOException{
+	public JPanel config_farm() throws IOException{
 		go_farm.setFont(new Font("Ariashowpril", Font.BOLD, 40));	
 		wd_panel_farm = new JPanel(new MigLayout("fillx", "[][grow]"));
 		wd_panel_farm.add(Project_f.name, "cell 0 0 2 1");
@@ -346,9 +360,15 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_phenotype_f = new ListPanel("Traits", "Excluded");
 		String text = iPatPanel.read_lines(P_name, 1)[0];
-		rowP_f = text.split("\t");
-		for(int i = 1; i < rowP_f.length ; i++){
-				panel_phenotype_f.addElement(rowP_f[i]);
+		rowP_f = text.split("\t"); 
+		if(rowP_f.length<=1) rowP_f = text.split(" ");
+		switch(iPatPanel.format){
+		case PLink_Binary:
+			for(int i = 2; i < rowP_f.length ; i++){panel_phenotype_f.addElement(rowP_g[i]);}
+			break;
+		default:
+			for(int i = 1; i < rowP_f.length ; i++){panel_phenotype_f.addElement(rowP_g[i]);}
+			break;
 		}		
 		panel_phenotype_f.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Phenotype", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
 		///////////////////////////////////////////////////////////////////////////////////////
@@ -373,29 +393,22 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		panel_adv_farm.add(maxloop.field,  "cell 1 1, align l");;
 		panel_adv_farm.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Advance", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
+		JTabbedPane pane = new JTabbedPane();
+		pane.addTab("Project", wd_panel_farm);
+		pane.addTab("Phenotype", panel_phenotype_f);
+		pane.addTab("Covariates", panel_co_f);
+		pane.addTab("Filter", panel_filter_f);
+		pane.addTab("Advance", panel_adv_farm);	
 		main_panel_farm = new JPanel(new MigLayout("fillx", "[grow]"));
 		main_panel_farm.add(go_farm, "dock north");
-		main_panel_farm.add(wd_panel_farm, "cell 0 0, grow");
-		main_panel_farm.add(panel_phenotype_f, "cell 0 1, grow");
-		if(C_provided != 0){
-			main_panel_farm.add(panel_co_f, "cell 0 2, grow");
-			main_panel_farm.add(panel_filter_f, "cell 0 3, grow");
-			main_panel_farm.add(panel_adv_farm, "cell 0 4, grow");
-		}else{
-			main_panel_farm.add(panel_filter_f, "cell 0 2, grow");
-			main_panel_farm.add(panel_adv_farm, "cell 0 3, grow");	
-		}
+		main_panel_farm.add(pane, "cell 0 0, grow");
 		///////////////////////////////////////////////////////////////////////////////////////
-		JScrollPane pane = new JScrollPane(main_panel_farm,  
-					ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,  
-					ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		pane.getVerticalScrollBar().setUnitIncrement(16); //scrolling sensitive
 		go_farm.addActionListener(this);
 		WD_f.browse.addActionListener(this);
-		return pane;
+		return main_panel_farm;
 	}
 	
-	public JScrollPane config_plink(){
+	public JPanel config_plink(){
 		go_p.setFont(new Font("Ariashowpril", Font.BOLD, 40));
 		panel_wd_p = new JPanel(new MigLayout("fillx", "[][grow]"));
 		panel_wd_p.add(Project_p.name, "cell 0 0 2 1");
@@ -421,22 +434,19 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		panel_filter_p.add(ci_p.combo, "cell 1 4, align l");		
 		panel_filter_p.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Filter", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
+		JTabbedPane pane = new JTabbedPane();
+		pane.addTab("Project", panel_wd_p);
+		pane.addTab("Filter", panel_filter_p);	
 		main_panel_p = new JPanel(new MigLayout("fillx", "[grow]"));
 		main_panel_p.add(go_p, "dock north");
-		main_panel_p.add(panel_wd_p, "cell 0 0, grow");
-		main_panel_p.add(panel_filter_p, "cell 0 1, grow");
+		main_panel_p.add(pane, "cell 0 0, grow");
 		///////////////////////////////////////////////////////////////////////////////////////
-		JScrollPane pane = new JScrollPane(main_panel_p,  
-				ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,  
-				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		pane.getVerticalScrollBar().setUnitIncrement(16); //scrolling sensitive
-		
 		go_p.addActionListener(this);	
 		WD_p.browse.addActionListener(this);
-		return pane;
+		return main_panel_p;
 	}
 	
-	public JScrollPane config_rrblup() throws IOException{
+	public JPanel config_rrblup() throws IOException{
 		go_r.setFont(new Font("Ariashowpril", Font.BOLD, 40));	
 		wd_panel_r = new JPanel(new MigLayout("fillx", "[][grow]"));
 		wd_panel_r.add(Project_r.name, "cell 0 0 2 1");
@@ -448,9 +458,9 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		wd_panel_r.add(format_r, "cell 0 4 2 1");
 		switch(iPatPanel.format){
 		case Numeric:
-			format_f.setText("The format is "+iPatPanel.format); break;
+			format_r.setText("The format is "+iPatPanel.format); break;
 		default:
-			format_f.setText("The format is "+iPatPanel.format+"(Conversion required)"); break;
+			format_r.setText("The format is "+iPatPanel.format+"(Conversion required)"); break;
 		}
 		format_r.setText("The format is "+iPatPanel.format);
 		wd_panel_r.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
@@ -463,32 +473,18 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		}		
 		panel_phenotype_r.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Phenotype", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
 		///////////////////////////////////////////////////////////////////////////////////////
+		JTabbedPane pane = new JTabbedPane();
+		pane.addTab("Project", wd_panel_r);
+		pane.addTab("Phenotype", panel_phenotype_r);	
 		main_panel_r = new JPanel(new MigLayout("fillx", "[grow]"));
 		main_panel_r.add(go_r, "dock north");
-		main_panel_r.add(wd_panel_r, "cell 0 0, grow");
-		main_panel_r.add(panel_phenotype_r, "cell 0 1, grow");
+		main_panel_r.add(pane, "cell 0 0, grow");
 		///////////////////////////////////////////////////////////////////////////////////////
-		JScrollPane pane = new JScrollPane(main_panel_r,  
-					ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,  
-					ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		pane.getVerticalScrollBar().setUnitIncrement(16); //scrolling sensitive
 		go_r.addActionListener(this);
 		WD_r.browse.addActionListener(this);
-		return pane;
+		return main_panel_r;
 	}
 	
-	public JScrollPane config_convert(){
-		panel_select = new ListPanel("Traits", "");
-		String[] items = {"one", "two", "three"};
-		panel_select.addElements(items);
-		JScrollPane pane = new JScrollPane(panel_select,  
-				ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,  
-				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		pane.getVerticalScrollBar().setUnitIncrement(16); //scrolling sensitive		
-		WD_c.browse.addActionListener(this);
-		return pane;
-	}
-
 	@Override
 	public void actionPerformed(ActionEvent ip){
 	      	Object source = ip.getSource();	
@@ -497,17 +493,19 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	    	 	save();
 	    	  	showConsole(MOindex, Project_g.longfield.getText(), WD_g.field.getText());	            
 	    	  	String[] Command = run_GAPIT(iPatPanel.file_index);
-	    	  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, Command, WD_g.field.getText(), Project_g.longfield.getText(), true, false, null, null);
+	    	  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, WD_g.field.getText(), Project_g.longfield.getText(), 
+	    	  												Command, true, null, null);
 	    	  	iPatPanel.multi_run[MOindex].start();
 	    	  	this.dispose(); 	  		      
 	      	}else if(source == WD_g.browse){
 	    	  	WD_g.setPath(true);
-	      	//Farm
+	      	//FarmCPU
 	      	}else if(source == go_farm){
 	    	  	save();
 	    	  	showConsole(MOindex, Project_f.longfield.getText(), WD_f.field.getText());	            
 	    	  	String[] Command = run_Farm(iPatPanel.file_index);
-	    	  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, Command, WD_f.field.getText(), Project_f.longfield.getText(), true, false, null, null);
+	    	  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, WD_f.field.getText(), Project_f.longfield.getText(), 
+	    	  												Command, true, null, null);
 	    	  	iPatPanel.multi_run[MOindex].start();
 	    	  	this.dispose(); 
 	    	 }else if(source == WD_f.browse){
@@ -517,19 +515,26 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	    	  	save();
 	    	  	showConsole(MOindex, Project_p.longfield.getText(), WD_p.field.getText());	            
 	    	  	String[] Command = run_PLink(iPatPanel.file_index);
-	    	  	System.out.println("Plink Begin");
+	    	  	//get number of traits
+	    	  	String text = null;
+				try {text = iPatPanel.read_lines(P_name, 1)[0];} catch (IOException e) {e.printStackTrace();}
+	    		rowP_f = text.split("\t");
+	    		if(rowP_f.length<=1) rowP_f = text.split(" ");
 	    	  	String[] plot_com = {"", iPatPanel.jar.getParent()+"/libs/PLinkPlots.R",
-			  	         WD_p.field.getText(), Project_p.longfield.getText(), "3", iPatPanel.jar.getParent()+"/libs/"};
-	    	  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, Command, WD_p.field.getText(), Project_p.longfield.getText(), false, true, plot_com, true);
+			  	         WD_p.field.getText(), Project_p.longfield.getText(), String.valueOf(rowP_f.length), P_name, BED_name,iPatPanel.jar.getParent()+"/libs/"};
+	    	  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, WD_p.field.getText(), Project_p.longfield.getText(), 
+	    	  									 			Command, false, plot_com, true);
 	    	  	iPatPanel.multi_run[MOindex].start();    	
 	    	  	this.dispose(); 	
 	      	}else if(source == WD_p.browse){
-	    	 	WD_p.setPath(true);    
+	    	 	WD_p.setPath(true);   
+	    	//rrBLUP
 	      	}else if(source == go_r){
 	    	  	save();
 	    	  	showConsole(MOindex, Project_r.longfield.getText(), WD_r.field.getText());	            
 	    	  	String[] Command = run_rrBLUP(iPatPanel.file_index);
-	    	  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, Command, WD_r.field.getText(), Project_r.longfield.getText(), true, false, null, null);
+	    	  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, WD_r.field.getText(), Project_r.longfield.getText(), 
+	    	  												Command, true, null, null);
 	    	  	iPatPanel.multi_run[MOindex].start();
 	    	  	this.dispose(); 	
 	      	}else if(source == WD_r.browse){
