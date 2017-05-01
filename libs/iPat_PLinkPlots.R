@@ -99,6 +99,7 @@ tryCatch(
     #   }
     #   CV = ifelse(is.null(ncol(C)), cbind(Y[,1],GD_sig), cbind(Y[,1], GD_sig, C))
     # }
+    
     #GAPIT do prediction
     Y = read.table(Y.path, head = T)
     GD = data.frame(taxa = Y[,1],GD)
