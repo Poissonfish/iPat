@@ -1,3 +1,4 @@
+# Input arguments
 args = commandArgs(trailingOnly=TRUE)
 G.path = args[1]
 GM.path = args[2]
@@ -21,7 +22,6 @@ lib = args[19]
 format = args[20]
 #multi = as.logical(args[21])
 arg_length = 20
-
 # G.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/demo_data/Hapmap/data.hmp"
 # GM.path = "NULL"
 # GD.path = "NULL"
@@ -45,6 +45,7 @@ arg_length = 20
 # #multi = TRUE
 # args = c(1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,1,2,3)
 
+# Load libraries
 setwd(lib)
 list.of.packages <- c("MASS", "data.table", "magrittr", "gplots", "compiler", "scatterplot3d", "R.utils")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -66,9 +67,70 @@ source("./*Function_FarmCPU.R")
 source("./*Function_GAPIT.R")
 
 setwd(wd)
-# Select Phenotype
-Y.file = read.table(Y.path, head=TRUE)    #Have taxa names
+# Subset Phenotype
+Y = read.table(Y.path, head=TRUE)
+trait = c()
+if(length(args) > arg_length){
+  for (i in (arg_length+1):length(args)){
+    trait = c(trait, as.numeric(args[i])) 
+  }
+  Y = Y[,c(1,trait+1)]
+}
+trait_names = names(Y)[-1]
 
+# Format free
+switch(format, 
+  VCF = { sprintf("chmod 777 %s/blink", lib) %>% system()
+          vcf = substring(GD.path, 1, nchar(GD.path)-4)
+          sprintf("%s/blink --file %s --compress --vcf", lib, vcf) %>% system()
+          sprintf("%s/blink --file %s --recode --out %s --numeric", lib, vcf, vcf) %>% system()
+          GD = read.table(sprintf("%s.dat", vcf)) %>% t() %>% data.frame(Y[,1], .)
+          GM = read.table(sprintf("%s.map", vcf), head = TRUE)},
+  PLink_ASCII = {
+
+  },
+  PLink_Binary = {
+
+  }, {
+    # Hapmap or Numeric (Default)
+    if(G.path=="NULL"){G=NULL}else{G=read.delim(G.path, head=FALSE)}
+    if(GM.path=="NULL"){GM=NULL}else{GM=read.table(GM.path, head=TRUE)}
+    if(GD.path=="NULL"){GD=NULL}else{GD=read.table(GD.path, head=TRUE)}
+  }
+)
+
+# Covariates
+if(C.path=="NULL"){C=NULL}else{C=read.table(C.path, head=TRUE)}
+if(K.path=="NULL"){K=NULL}else{K=read.table(D.path, head=FALSE)}
+if(is.na(C.inher)) C.inher = NULL else C.inher = C.inher
+
+# GAPIT
+tryCatch({
+  for (i in 1:length(trait_names)){   
+      x=GAPIT(
+        Y = Y.file[,c(1,1+i)],
+        G = G,
+        GM = GM,
+        GD = GD,
+        KI = K,
+        SNP.test = SNP.test,
+        CV = C,
+        CV.Inheritance = C.inher,
+        PCA.total = PCA,
+        kinship.cluster = ki.c,
+        kinship.group = ki.g,
+        group.from = g.from,
+        group.to = g.to,
+        group.by = g.by,
+        Model.selection = model.s,
+        SNP.fraction = snp.fraction,
+        file.fragment = file.fragment,
+        memo= trait_names[i])
+  }
+},error = function(e){
+    print(e)
+})
+print(warnings())
 # if(multi){
 #   nT = ncol(Y.file) - 1
 #   # Imputation by mean
@@ -121,68 +183,3 @@ Y.file = read.table(Y.path, head=TRUE)    #Have taxa names
 #   }
 # # Y.recover = (t(Y.tran %*% t(Y.eigvec)) + PCA$center) %>% t()
 # }
-
-# Subset traits
-trait = c()
-if(length(args)>arg_length){
-  for (i in (arg_length+1):length(args)){
-    trait = c(trait, as.numeric(args[i])) 
-  }
-  print(trait)
-  Y.file = Y.file[,c(1,trait+1)]
-}
-trait_names = names(Y.file)[-1]
-
-# Format free
-switch(format, 
-  VCF = {
-    sprintf("chmod 777 %s/blink", lib) %>% system()
-    vcf = substring(G.path, 1, nchar(G.path)-4)
-    sprintf("%s/blink --file %s --compress --vcf", lib, vcf) %>% system()
-    sprintf("%s/blink --file %s --recode --out %s --numeric", lib, vcf, vcf) %>% system()
-    GD = read.table(sprintf("%s.dat", vcf)) %>% t() %>% data.frame(Y.file[,1], .)
-    GM = read.table(sprintf("%s.map", vcf), head = TRUE)
-    G = NULL
-  },
-  PLink_ASCII = {
-
-  },
-  PLink_Binary = {
-
-  }, {
-    if(G.path=="NULL"){G=NULL}else{G=read.delim(G.path, head=FALSE)}
-    if(GM.path=="NULL"){GM=NULL}else{GM=read.table(GM.path, head=TRUE)}
-    if(GD.path=="NULL"){GD=NULL}else{GD=read.table(GD.path, head=TRUE)}
-  }
-)
-if(C.path=="NULL"){C=NULL}else{C=read.table(C.path, head=TRUE)}
-if(K.path=="NULL"){K=NULL}else{K=read.table(D.path, head=FALSE)}
-if(is.na(C.inher)) C.inher = NULL else C.inher = C.inher
-
-print('GAPIT start')
-tryCatch(
-  {for (i in 1:length(trait_names)){   
-      x=GAPIT(
-        Y = Y.file[,c(1,1+i)],
-        G = G,
-        GM = GM,
-        GD = GD,
-        KI = K,
-        SNP.test = SNP.test,
-        CV = C,
-        CV.Inheritance = C.inher,
-        PCA.total = PCA,
-        kinship.cluster = ki.c,
-        kinship.group = ki.g,
-        group.from = g.from,
-        group.to = g.to,
-        group.by = g.by,
-        Model.selection = model.s,
-        SNP.fraction = snp.fraction,
-        file.fragment = file.fragment,
-        memo= trait_names[i]
-  )}},error = function(e){
-    print(e)
-  }
-)
-print(warnings())

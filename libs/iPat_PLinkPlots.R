@@ -105,11 +105,7 @@ tryCatch(
 
     GD_sig = as.data.frame(GD_sig)
     for(t in 1:trait){
-      pred <- GAPIT(
-        '
-
-
-        
+      pred <- GAPIT(  
       Y = Y[,c(1,2+t)],
       GM = GM,
       GD = GD,
