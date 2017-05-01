@@ -136,7 +136,24 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		
 	ListPanel panel_phenotype_r;
 	String[] rowP_r;	
+	///////////////////////////////////////////////////////////////////////////////////////	
+	//Config BGLR
+	JPanel main_panel_b;
+	JButton go_b = new JButton("GO");
 	
+	JPanel wd_panel_b;
+	Group_Value Project_b = new Group_Value("Task name");
+	Group_Path WD_b = new Group_Path("Output Directory");
+	JLabel format_b = new JLabel("");
+	
+	ListPanel panel_phenotype_b;
+	String[] rowP_b;
+	
+	JPanel panel_iteration_b;
+	Group_Combo niter_b = new Group_Combo("Number of iterations", 
+			new String[]{"1200", "1500", "2000", "5000", "12000"});
+	Group_Combo burnin_b = new Group_Combo("Burn-In",
+			new String[]{"200", "500", "700", "1000", "2000"});
 	///////////////////////////////////////////////////////////////////////////////////////	
 	//Config convert
 	JPanel main_panel_c;
@@ -175,6 +192,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		JPanel pane_farm = null;
 		JPanel pane_plink = null;
 		JPanel pane_rrblup = null;
+		JPanel pane_bglr = null;
 		
 		pref = Preferences.userRoot().node("/ipat"); 
 		switch(format){
@@ -183,6 +201,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				pane_farm = config_farm();
 				pane_plink = config_plink();
 				pane_rrblup = config_rrblup();
+				pane_bglr = config_BGLR();
 				file_format = "Hapmap";
 				break;
 			case Numeric:
@@ -190,6 +209,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				pane_farm = config_farm();
 				pane_plink = config_plink();
 				pane_rrblup = config_rrblup();
+				pane_bglr = config_BGLR();
 				file_format = "Numeric";
 				break;
 			case VCF:
@@ -197,6 +217,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				pane_farm = config_farm();
 				pane_plink = config_plink();
 				pane_rrblup = config_rrblup(); 
+				pane_bglr = config_BGLR();
 				file_format = "VCF";
 				break;
 			case PLink_ASCII:
@@ -204,6 +225,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				pane_farm = config_farm();
 				pane_plink = config_plink();
 				pane_rrblup = config_rrblup();
+				pane_bglr = config_BGLR();
 				file_format = "PLink_ASCII";
 				break;
 			case PLink_Binary:
@@ -211,6 +233,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				pane_farm = config_farm();
 				pane_plink = config_plink();
 				pane_rrblup = config_rrblup();
+				pane_bglr = config_BGLR();
 				file_format = "PLink_Binary";
 				break;
 		}	
@@ -219,6 +242,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
         	mainPane.addTab("FarmCPU", pane_farm);
         	mainPane.addTab("PLINK", pane_plink);
         	mainPane.addTab("rrBLUP", pane_rrblup);
+        	mainPane.addTab("BGLR", pane_bglr);
+
 		this.setContentPane(mainPane);
 		this.setTitle("Configuration");
 		this.pack();
@@ -354,7 +379,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		case Numeric:
 			format_f.setText("The format is "+iPatPanel.format); break;
 		default:
-			format_f.setText("The format is "+iPatPanel.format+"(Conversion required)"); break;
+			format_f.setText("The format is "+iPatPanel.format+" (Conversion required)"); break;
 		}
 		wd_panel_farm.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
@@ -460,9 +485,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		case Numeric:
 			format_r.setText("The format is "+iPatPanel.format); break;
 		default:
-			format_r.setText("The format is "+iPatPanel.format+"(Conversion required)"); break;
+			format_r.setText("The format is "+iPatPanel.format+" (Conversion required)"); break;
 		}
-		format_r.setText("The format is "+iPatPanel.format);
 		wd_panel_r.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_phenotype_r = new ListPanel("Traits", "Excluded");
@@ -483,6 +507,52 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		go_r.addActionListener(this);
 		WD_r.browse.addActionListener(this);
 		return main_panel_r;
+	}
+	
+	public JPanel config_BGLR() throws IOException{
+		go_b.setFont(new Font("Ariashowpril", Font.BOLD, 40));	
+		wd_panel_b = new JPanel(new MigLayout("fillx", "[][grow]"));
+		wd_panel_b.add(Project_b.name, "cell 0 0 2 1");
+		wd_panel_b.add(Project_b.longfield, "cell 0 1 2 1");
+		wd_panel_b.add(WD_b.name,  "cell 0 2 2 1");
+		wd_panel_b.add(WD_b.field, "cell 0 3 1 1");
+		wd_panel_b.add(WD_b.browse, "cell 1 3 1 1");
+		Project_b.longfield.setText("Project "+ MOindex);
+		wd_panel_b.add(format_b, "cell 0 4 2 1");
+		switch(iPatPanel.format){
+		case Numeric:
+			format_b.setText("The format is "+iPatPanel.format); break;
+		default:
+			format_b.setText("The format is "+iPatPanel.format+" (Conversion required)"); break;
+		}
+		wd_panel_b.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
+		///////////////////////////////////////////////////////////////////////////////////////
+		panel_phenotype_b = new ListPanel("Traits", "Excluded");
+		String text = iPatPanel.read_lines(P_name, 1)[0];
+		rowP_b = text.split("\t");
+		for(int i = 1; i < rowP_b.length ; i++){
+			panel_phenotype_b.addElement(rowP_b[i]);
+		}		
+		panel_phenotype_b.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Phenotype", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
+		///////////////////////////////////////////////////////////////////////////////////////
+		panel_iteration_b = new JPanel(new MigLayout("fillx"));
+		panel_iteration_b.add(niter_b.name, "cell 0 1, align r");
+		panel_iteration_b.add(niter_b.combo, "cell 1 1, align l");
+		panel_iteration_b.add(burnin_b.name, "cell 0 2, align r");
+		panel_iteration_b.add(burnin_b.combo, "cell 1 2, align l");
+		panel_iteration_b.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Iteration", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
+		///////////////////////////////////////////////////////////////////////////////////////
+		JTabbedPane pane = new JTabbedPane();
+		pane.addTab("Project", wd_panel_b);
+		pane.addTab("Phenotype", panel_phenotype_b);
+		pane.addTab("Iteration", panel_iteration_b);
+		main_panel_b = new JPanel(new MigLayout("fillx", "[grow]"));
+		main_panel_b.add(go_b, "dock north");
+		main_panel_b.add(pane, "cell 0 0, grow");
+		///////////////////////////////////////////////////////////////////////////////////////
+		go_b.addActionListener(this);
+		WD_b.browse.addActionListener(this);
+		return main_panel_b;
 	}
 	
 	@Override
@@ -520,7 +590,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				try {text = iPatPanel.read_lines(P_name, 1)[0];} catch (IOException e) {e.printStackTrace();}
 	    		rowP_f = text.split("\t");
 	    		if(rowP_f.length<=1) rowP_f = text.split(" ");
-	    	  	String[] plot_com = {"", iPatPanel.jar.getParent()+"/libs/PLinkPlots.R",
+	    	  	String[] plot_com = {"", iPatPanel.jar.getParent()+"/libs/iPat_PLinkPlots.R",
 			  	         WD_p.field.getText(), Project_p.longfield.getText(), String.valueOf(rowP_f.length), P_name, BED_name,iPatPanel.jar.getParent()+"/libs/"};
 	    	  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, WD_p.field.getText(), Project_p.longfield.getText(), 
 	    	  									 			Command, false, plot_com, true);
@@ -539,9 +609,19 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	    	  	this.dispose(); 	
 	      	}else if(source == WD_r.browse){
 	    	  	WD_r.setPath(true);    
-	      	}	
+	      	}else if(source == go_b){
+	      		save();
+	    	  	showConsole(MOindex, Project_b.longfield.getText(), WD_b.field.getText());	            
+	    	  	String[] Command = run_BGLR(iPatPanel.file_index);
+	    	  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, WD_b.field.getText(), Project_b.longfield.getText(), 
+	    	  												Command, true, null, null);
+	    	  	iPatPanel.multi_run[MOindex].start();
+	    	  	this.dispose(); 	
+	      	}else if(source == WD_b.browse){
+	      		WD_b.setPath(true);
+	      	}
 	}
-
+	
 	String[] run_GAPIT(Findex[] file_index){
 		String model_selection_string = "";
 		String 	K = "NULL", C = "NULL", C_inher = "NULL",
@@ -603,7 +683,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		}
         System.out.println("running gapit"); 
         // Command input
-        String[] command = {"", iPatPanel.jar.getParent()+"/libs/Gapit.R",
+        String[] command = {"", iPatPanel.jar.getParent()+"/libs/iPat_Gapit.R",
         		G_name, GM_name, GD_name, P_name, K, SNP_test, C, PCA_count, C_inher,
         		ki_c, ki_g, g_from, g_to, g_by, 
         		model_selection_string, SNP_fraction, file_fragment, WD_g.field.getText(), iPatPanel.jar.getParent()+"/libs/", file_format};  
@@ -660,7 +740,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				break;
 		}
         System.out.println("running FarmCPU");  
-        String[] command = {"", iPatPanel.jar.getParent()+"/libs/FarmCPU.R",
+        String[] command = {"", iPatPanel.jar.getParent()+"/libs/iPat_FarmCPU.R",
         		GM_name, GD_name, P_name, C, C_inher,
         		method_b, maxloop_run, maf_cal, maf_threshold, WD_f.field.getText(), iPatPanel.jar.getParent()+"/libs/", file_format}; 
         String[] whole = (String[])ArrayUtils.addAll(command, indexp);
@@ -705,7 +785,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	
 	String[] run_rrBLUP(Findex[] file_index){
 		String 	WD = "", Project_name = "";
-		////// Multiple trait
+		// Multiple trait
 		String[] out = panel_phenotype_r.getElement(); //get remain traits
 		String[] indexp = new String[out.length]; //create array for index
 		for (int i = 0; i < out.length; i++){
@@ -714,8 +794,44 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		
 		System.out.println("running rrBLUP"); 
 	    // Command input
-	    String[] command = {"", iPatPanel.jar.getParent()+"/libs/rrBLUP.R",
+	    String[] command = {"", iPatPanel.jar.getParent()+"/libs/iPat_rrBLUP.R",
 	     					GD_name, P_name, WD_r.field.getText(), iPatPanel.jar.getParent()+"/libs/", file_format};  
+	    String[] whole = (String[])ArrayUtils.addAll(command, indexp);
+	    return whole;
+	}
+	
+	String[] run_BGLR(Findex[] file_index){
+		String 	WD = "", Project_name = "", 
+				C = "", niter = "", burn = "";
+		// Multiple trait
+		String[] out = panel_phenotype_b.getElement(); //get remain traits
+		String[] indexp = new String[out.length]; //create array for index
+		for (int i = 0; i < out.length; i++){
+			indexp[i] = Integer.toString(Arrays.asList(rowP_b).indexOf(out[i])); // get selected index
+		}
+		niter = (String)niter_b.combo.getSelectedItem();
+		burn = (String)burnin_b.combo.getSelectedItem();
+		
+		// Format 
+		switch(iPatPanel.format){
+		case Hapmap:
+			GD_name = G_name;
+			break;
+		case VCF:
+			GD_name = VCF_name; 
+			break;
+		case PLink_ASCII:
+			break;
+		case PLink_Binary:
+			break;
+		}		
+
+		C = C_provided != 0 ? iPatPanel.TBfile[C_provided] : "NULL";
+		
+		System.out.println("running BGLR"); 
+	    // Command input
+	    String[] command = {"", iPatPanel.jar.getParent()+"/libs/iPat_BGLR.R",
+	     					GM_name, GD_name, P_name, C, niter, burn, WD_b.field.getText(), iPatPanel.jar.getParent()+"/libs/", file_format};  
 	    String[] whole = (String[])ArrayUtils.addAll(command, indexp);
 	    return whole;
 	}
@@ -744,8 +860,6 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 			}
 		});  
 	}
-	
-	
 	
 	public void remove(){
 		

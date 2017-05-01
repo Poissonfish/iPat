@@ -11,6 +11,19 @@ lib = args[8]
 format = args[9]
 arg_length = 9
 
+# Simulation
+# GM.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.map"
+# GD.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.dat"
+# Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.txt"
+# C.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/covariate.txt"
+# iter = 1500
+# burn = 200
+# wd = "/Users/Poissonfish/Desktop/test/bglr"
+# lib = "/Users/Poissonfish/git/iPat/libs/"
+# format = "Numeric"
+# arg_length = 9
+# args = c(1,2,3,4,5,6,7,8,9,3,1) 
+
 # Load libraries
 setwd(lib)
 list.of.packages <- c("BGLR", "MASS", "data.table", "magrittr", "gplots", "compiler", "scatterplot3d", "R.utils")
@@ -67,7 +80,7 @@ switch(format,
   }, {
   	# Numeric (Default)
 	if(GM.path == "NULL"){GM = NULL}else{GM = fread(GM.path, head = TRUE)}
-	if(GD.path == "NULL"){GD = NULL}else{GD = fread(GD.path, head = TRUE)}
+	if(GD.path == "NULL"){GD = NULL}else{GD = fread(GD.path, head = TRUE) %>% as.data.frame}
   }
 )
 
@@ -76,27 +89,23 @@ if(is.character(GD[,1])){
   GD = GD[,-1]
 }
 
-# Define ETA list used in BGLR
-ETA <- list(
-	list(X = GD, model="BL")
-)
-
-# Covariates
+# Covariates and define ETA used in BGLR
 if(C.path == "NULL"){
 	C = NULL
+	ETA = list(list(X = GD, model="BL"))
 }else{
-	C = fread(C.path, head = TRUE)
-	ETA = list(ETA, list(X = C, model="FIXED")
+	C = fread(C.path, head = TRUE) %>% as.data.frame
+	ETA = list(list(X = GD, model="BL"), list(X = C, model="FIXED"))
 }
 
 # BGLR
 tryCatch({
 	for (i in 1:length(trait_names)){
-		blr = BGLR(y = Y[,2], 
+		blr = BGLR(y = Y[,1+i], 
 				   ETA = ETA, 
-				   nIter = iter, burnIn = burn, rmExistingFiles = FALSE) 
-		P = blr$ETA[[2]]$tau2
-		myGI.MP=cbind(GM[,-1], 1/(exp(10000*P)))
+				   nIter = iter, burnIn = burn) 
+		P = blr$ETA[[1]]$tau2
+		myGI.MP=cbind(GM[,-1], 1/(exp(10000*P))) %>% as.data.frame
 		GAPIT.Manhattan(GI.MP = myGI.MP, name.of.trait = sprintf("%s", trait_names[i]))
 		GAPIT.QQ(P, name.of.trait = sprintf("%s", trait_names[i]))
 	}
