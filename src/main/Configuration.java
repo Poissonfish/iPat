@@ -25,7 +25,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	String  P_name = "NULL", G_name = "NULL", GD_name = "NULL", GM_name = "NULL",
 			C_name = "", K_name = "",
 			VCF_name = "", PED_name = "", MAP_name = "",
-			BED_name = "", FAM_name = "", BIM_name = "";
+			BED_name = "", FAM_name = "", BIM_name = "", 
+			R_exe = "";
 	int C_provided = 0, K_provided = 0;
     int MOindex = 0;
     String file_format = "";
@@ -188,6 +189,12 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				case BIM:	BIM_name = iPatPanel.TBfile[file_index[i].tb]; break;
 			}
 		}
+		switch(iPat.UserOS.type){
+			case Windows: 	R_exe = "Rscript"; break;
+			case Mac: 		R_exe = "/usr/local/bin/Rscript"; break;
+			case Linux: 	R_exe = "/usr/local/bin/Rscript"; break;
+		}
+		
 		JPanel pane_gapit = null;
 		JPanel pane_farm = null;
 		JPanel pane_plink = null;
@@ -219,7 +226,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				pane_rrblup = config_rrblup(); 
 				pane_bglr = config_BGLR();
 				file_format = "VCF";
-				break;
+				   break;
 			case PLink_ASCII:
 				pane_gapit = config_gapit();
 				pane_farm = config_farm();
@@ -264,10 +271,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		Project_g.longfield.setText("Project "+ MOindex);
 		wd_panel.add(format_g, "cell 0 4 2 1");
 		switch(iPatPanel.format){
-		case Numeric: case Hapmap:
-			format_g.setText("The format is "+iPatPanel.format); break;
-		default:
-			format_g.setText("The format is "+iPatPanel.format+" (Conversion required)"); break;
+			case Numeric: case Hapmap: format_g.setText("The format is "+iPatPanel.format); break;
+			default: format_g.setText("The format is "+iPatPanel.format+" (Conversion required)"); break;
 		}	
 		format_g.setText("The format is "+iPatPanel.format);
 		wd_panel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
@@ -278,15 +283,9 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		if(rowP_g.length<=1) rowP_g = text.split(" ");
 		switch(iPatPanel.format){
 		case PLink_Binary:
-			for(int i = 2; i < rowP_g.length ; i++){
-				panel_phenotype_g.addElement(rowP_g[i]);
-			}
-			break;
+			for(int i = 2; i < rowP_g.length ; i++){panel_phenotype_g.addElement(rowP_g[i]);} break;
 		default:
-			for(int i = 1; i < rowP_g.length ; i++){
-				panel_phenotype_g.addElement(rowP_g[i]);
-			}
-			break;
+			for(int i = 1; i < rowP_g.length ; i++){panel_phenotype_g.addElement(rowP_g[i]);} break;
 		}		
 		panel_phenotype_g.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Phenotype", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
 		///////////////////////////////////////////////////////////////////////////////////////
@@ -376,10 +375,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		Project_f.longfield.setText("Project "+ MOindex);
 		wd_panel_farm.add(format_f, "cell 0 4 2 1");
 		switch(iPatPanel.format){
-		case Numeric:
-			format_f.setText("The format is "+iPatPanel.format); break;
-		default:
-			format_f.setText("The format is "+iPatPanel.format+" (Conversion required)"); break;
+			case Numeric: format_f.setText("The format is "+iPatPanel.format); break;
+			default: format_f.setText("The format is "+iPatPanel.format+" (Conversion required)"); break;
 		}
 		wd_panel_farm.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
@@ -482,10 +479,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		Project_r.longfield.setText("Project "+ MOindex);
 		wd_panel_r.add(format_r, "cell 0 4 2 1");
 		switch(iPatPanel.format){
-		case Numeric:
-			format_r.setText("The format is "+iPatPanel.format); break;
-		default:
-			format_r.setText("The format is "+iPatPanel.format+" (Conversion required)"); break;
+			case Numeric: format_r.setText("The format is "+iPatPanel.format); break;
+			default: format_r.setText("The format is "+iPatPanel.format+" (Conversion required)"); break;
 		}
 		wd_panel_r.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
@@ -520,10 +515,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		Project_b.longfield.setText("Project "+ MOindex);
 		wd_panel_b.add(format_b, "cell 0 4 2 1");
 		switch(iPatPanel.format){
-		case Numeric:
-			format_b.setText("The format is "+iPatPanel.format); break;
-		default:
-			format_b.setText("The format is "+iPatPanel.format+" (Conversion required)"); break;
+			case Numeric: format_b.setText("The format is "+iPatPanel.format); break;
+			default: format_b.setText("The format is "+iPatPanel.format+" (Conversion required)"); break;
 		}
 		wd_panel_b.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
 		///////////////////////////////////////////////////////////////////////////////////////
@@ -590,7 +583,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				try {text = iPatPanel.read_lines(P_name, 1)[0];} catch (IOException e) {e.printStackTrace();}
 	    		rowP_f = text.split("\t");
 	    		if(rowP_f.length<=1) rowP_f = text.split(" ");
-	    	  	String[] plot_com = {"", iPatPanel.jar.getParent()+"/libs/iPat_PLinkPlots.R",
+	    	  	String[] plot_com = {R_exe, iPatPanel.jar.getParent()+"/libs/iPat_PLinkPlots.R",
 			  	         WD_p.field.getText(), Project_p.longfield.getText(), String.valueOf(rowP_f.length), P_name, BED_name,iPatPanel.jar.getParent()+"/libs/"};
 	    	  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, WD_p.field.getText(), Project_p.longfield.getText(), 
 	    	  									 			Command, false, plot_com, true);
@@ -608,7 +601,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	    	  	iPatPanel.multi_run[MOindex].start();
 	    	  	this.dispose(); 	
 	      	}else if(source == WD_r.browse){
-	    	  	WD_r.setPath(true);    
+	    	  	WD_r.setPath(true); 
+	    	//BGLR
 	      	}else if(source == go_b){
 	      		save();
 	    	  	showConsole(MOindex, Project_b.longfield.getText(), WD_b.field.getText());	            
@@ -683,7 +677,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		}
         System.out.println("running gapit"); 
         // Command input
-        String[] command = {"", iPatPanel.jar.getParent()+"/libs/iPat_Gapit.R",
+        String[] command = {R_exe, iPatPanel.jar.getParent()+"/libs/iPat_Gapit.R",
         		G_name, GM_name, GD_name, P_name, K, SNP_test, C, PCA_count, C_inher,
         		ki_c, ki_g, g_from, g_to, g_by, 
         		model_selection_string, SNP_fraction, file_fragment, WD_g.field.getText(), iPatPanel.jar.getParent()+"/libs/", file_format};  
@@ -740,7 +734,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				break;
 		}
         System.out.println("running FarmCPU");  
-        String[] command = {"", iPatPanel.jar.getParent()+"/libs/iPat_FarmCPU.R",
+        String[] command = {R_exe, iPatPanel.jar.getParent()+"/libs/iPat_FarmCPU.R",
         		GM_name, GD_name, P_name, C, C_inher,
         		method_b, maxloop_run, maf_cal, maf_threshold, WD_f.field.getText(), iPatPanel.jar.getParent()+"/libs/", file_format}; 
         String[] whole = (String[])ArrayUtils.addAll(command, indexp);
@@ -794,7 +788,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		
 		System.out.println("running rrBLUP"); 
 	    // Command input
-	    String[] command = {"", iPatPanel.jar.getParent()+"/libs/iPat_rrBLUP.R",
+	    String[] command = {R_exe, iPatPanel.jar.getParent()+"/libs/iPat_rrBLUP.R",
 	     					GD_name, P_name, WD_r.field.getText(), iPatPanel.jar.getParent()+"/libs/", file_format};  
 	    String[] whole = (String[])ArrayUtils.addAll(command, indexp);
 	    return whole;
@@ -830,7 +824,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		
 		System.out.println("running BGLR"); 
 	    // Command input
-	    String[] command = {"", iPatPanel.jar.getParent()+"/libs/iPat_BGLR.R",
+	    String[] command = {R_exe, iPatPanel.jar.getParent()+"/libs/iPat_BGLR.R",
 	     					GM_name, GD_name, P_name, C, niter, burn, WD_b.field.getText(), iPatPanel.jar.getParent()+"/libs/", file_format};  
 	    String[] whole = (String[])ArrayUtils.addAll(command, indexp);
 	    return whole;
@@ -907,7 +901,6 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		pref.putInt("maf_f", maf_f.combo.getSelectedIndex());
 		// PLINK
 		pref.put("WD_p", WD_p.field.getText());
-		
 		System.out.println("SAVE");
 	}
 	

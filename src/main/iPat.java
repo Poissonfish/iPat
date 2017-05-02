@@ -45,11 +45,20 @@ public class iPat {
 	static int Heigth=700;
 	static int PHeight=190;
 	static String folder_path = new String("path");
+	static String OS_string;
+	public static OS UserOS = new OS();
 	public static iPatPanel ipat;
 	public static void main(String[] args){  
 		System.out.println("Welcome to iPat!");
-		String OS = System.getProperty("os.name");
-		System.out.println("You're runngin iPat on "+ OS);// Mac OS X, 
+		OS_string = System.getProperty("os.name");
+		if(OS_string.toUpperCase().contains("WINDOWS")){
+			UserOS.type = OS.TYPE.Windows;
+		}else if(OS_string.toUpperCase().contains("MAC")){
+			UserOS.type = OS.TYPE.Mac;
+		}else{
+			UserOS.type = OS.TYPE.Linux;
+		}
+		System.out.println("You're runngin iPat on "+ UserOS.type);// Mac OS X, Windows 10
 		JFrame main = new JFrame();
 		//Set to center
 		main.setSize(Wide, Heigth);
@@ -1898,7 +1907,10 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 									  col_count[1] - row_count[0] == 11 || col_count[1] - row_count[0] == 10};
 				boolean[] NUM_con = {Arrays.asList(row2[0]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[0]) < 5,
 									 Arrays.asList(row2[1]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[1]) < 5};
-				
+				System.out.println(col_count[0]);
+				System.out.println(col_count[1]);
+				System.out.println(row_count[0]);
+				System.out.println(row_count[1]);
 				if(partial_true(VCF_con)){
 					file_index[0].file = VCF_con[0]?Findex.FILE.VCF:Findex.FILE.P;
 					file_index[1].file = VCF_con[1]?Findex.FILE.VCF:Findex.FILE.P;
