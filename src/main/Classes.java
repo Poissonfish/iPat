@@ -10,6 +10,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -126,6 +127,15 @@ class Findex{
 	}
 }
 
+class OS{
+	public static enum TYPE{
+		Mac, Windows, Linux, Unknown
+	}
+	public TYPE type = TYPE.Unknown;
+	public OS(){
+	}
+}
+
 class BGThread extends Thread{
 	int MOindex;
 	String WD;
@@ -144,65 +154,51 @@ class BGThread extends Thread{
 	}
 	@Override
 	public void run(){
-		int int_error = 0, loop_error = 0;
-      	String line = ""; Boolean Suc_or_Fal = true;
-        PrintWriter errWriter = null;
-        String[] path = {"/usr/local/bin/Rscript", "/usr/bin/Rsciprt", "/usr/Rscript"};
-		
+      	String line = ""; Boolean Suc_or_Fal = true;	
         iPatPanel.permit[MOindex] = true;
 		iPatPanel.rotate_index[MOindex] = 1;
 		Configuration.runtime[MOindex] = Runtime.getRuntime();
 		
 		// Execute the command
-		if(R){
-			//Check the correct path until it can locate R
-	        while(int_error == 0){
-	        	command[0] = path[loop_error];
-	        	try{
-	        		Configuration.process[MOindex] = Configuration.runtime[MOindex].exec(command);
-	                int_error = Configuration.process[MOindex].getErrorStream().read();
-	        	}catch (IOException e1) {e1.printStackTrace();}
-	        	++loop_error;
-	        }
-		}else{
-			try{
-        		Configuration.process[MOindex] = Configuration.runtime[MOindex].exec(command);
-        	}catch (IOException e1) {e1.printStackTrace();}
-		}     	
-        // check command	
-        for (int i = 0; i<command.length; i++){
-        	  iPatPanel.text_console[MOindex].append(command[i]+" ");
-        }
+		try{Configuration.process[MOindex] = Configuration.runtime[MOindex].exec(command);
+    	}catch (IOException e1) {e1.printStackTrace();}
+		     	
+        // Print command	
+        for (int i = 0; i<command.length; i++){iPatPanel.text_console[MOindex].append(command[i]+" ");}
         iPatPanel.text_console[MOindex].append(System.getProperty("line.separator"));
         iPatPanel.text_console[MOindex].setCaretPosition(iPatPanel.text_console[MOindex].getDocument().getLength());	   	
 
         try {
+        	// Print output message to the panel
         	System.out.println("begin to print");
     	    BufferedReader input_stream = new BufferedReader(new InputStreamReader(Configuration.process[MOindex].getInputStream()));
-            BufferedReader error_stream= new BufferedReader(new InputStreamReader(Configuration.process[MOindex].getErrorStream()));
+            BufferedReader error_stream = new BufferedReader(new InputStreamReader(Configuration.process[MOindex].getErrorStream()));
 	        while((line = input_stream.readLine()) != null){
-	            System.out.println(line);
 	            iPatPanel.text_console[MOindex].append(line+ System.getProperty("line.separator"));
 	            iPatPanel.text_console[MOindex].setCaretPosition(iPatPanel.text_console[MOindex].getDocument().getLength());
 	        }
-        	System.out.println("wait");
 	        Configuration.process[MOindex].waitFor();        
-        	System.out.println("finish");
-	        while((line = error_stream.readLine()) != null){
-	        	File error = new File(WD+"/"+Project+".err");
-	            errWriter = new PrintWriter(error.getAbsoluteFile());
-	            errWriter.println(line);  
-	        }    
-        	System.out.println("output");
-	       // errWriter.close();	      
+        	
+	        // Direct error to a file
+	        PrintWriter errWriter = new PrintWriter(new BufferedWriter(new FileWriter(WD+"/"+Project+".err", true)));
+        	try{
+        		// Print error if there is any error message
+    	        while((line = error_stream.readLine()) != null){
+    	        	errWriter.println(line);
+    	        	Suc_or_Fal = false;
+    	        	System.out.println("failed");
+    	        }	
+        	}catch(IOException e){}
+        	if(!Suc_or_Fal){errWriter.close();}
+
+        	// Direct output to a file from panel
 	        File outfile = new File(WD+"/"+Project+".log");
-            FileWriter outWriter = new FileWriter(outfile.getAbsoluteFile(),true);
+            FileWriter outWriter = new FileWriter(outfile.getAbsoluteFile(), false);
             iPatPanel.text_console[MOindex].write(outWriter);
-		} catch (IOException | InterruptedException e1) {	
-        	Suc_or_Fal = false;
-        	System.out.println("failed");
+        } catch (IOException | InterruptedException e1) {	
 			e1.printStackTrace();
-		}				
+		}	 
+        
         // Indicator
 	    if(Suc_or_Fal) iPatPanel.MO[MOindex] = iPatPanel.MO_suc; else iPatPanel.MO[MOindex] = iPatPanel.MO_fal;     
 	    // Stop rotating
