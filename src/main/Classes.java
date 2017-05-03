@@ -185,7 +185,7 @@ class BGThread extends Thread{
         		// Print error if there is any error message
     	        while((line = error_stream.readLine()) != null){
     	        	errWriter.println(line);
-    	        	Suc_or_Fal = false;
+    	        	if(line.toUpperCase().indexOf("ERROR") > 0) Suc_or_Fal = false;
     	        	System.out.println("failed");
     	        }	
         	}catch(IOException e){}
@@ -197,6 +197,7 @@ class BGThread extends Thread{
             iPatPanel.text_console[MOindex].write(outWriter);
         } catch (IOException | InterruptedException e1) {	
 			e1.printStackTrace();
+        	Suc_or_Fal = false;
 		}	 
         
         // Indicator

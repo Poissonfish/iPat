@@ -63,9 +63,9 @@ tryCatch({
   library(R.utils)
   library(data.table)
   library(magrittr)
-  source("./*Function_EMMA.R")
-  source("./*Function_FarmCPU.R")
-  source("./*Function_GAPIT.R")
+  source("./Function_EMMA.R")
+  source("./Function_FarmCPU.R")
+  source("./Function_GAPIT.R")
 
   setwd(wd)
   # Subset Phenotype
@@ -108,7 +108,7 @@ tryCatch({
   # GAPIT
     for (i in 1:length(trait_names)){   
         x=GAPIT(
-          Y = Y.file[,c(1,1+i)],
+          Y = Y[,c(1,1+i)],
           G = G,
           GM = GM,
           GD = GD,
