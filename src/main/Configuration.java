@@ -841,7 +841,11 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
         iPatPanel.frame_console[MOindex]  = new JFrame();
         iPatPanel.frame_console[MOindex].setContentPane(iPatPanel.scroll_console[MOindex]);
         iPatPanel.frame_console[MOindex].setTitle(title);
-        iPatPanel.frame_console[MOindex].setSize(700,350);
+        GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		Point centerPoint = local_env.getCenterPoint();
+   		int dx = centerPoint.x - 500 / 2;
+    	int dy = centerPoint.y - 350 / 2;  
+  		iPatPanel.frame_console[MOindex].setBounds(dx-100, dy, 500, 350);
         iPatPanel.frame_console[MOindex].setVisible(true); 
         iPatPanel.frame_console[MOindex].addWindowListener(new WindowAdapter(){
 			@Override

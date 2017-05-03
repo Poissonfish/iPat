@@ -28,10 +28,10 @@ tryCatch({
   library(gplots)
   library(scatterplot3d)
   library(R.utils)
-  source("./*Function_EMMA.R")
-  source("./*Function_GAPIT.R")
-  source("./*Function_FarmCPU.R")
-  source("./*Function_LDRemove.R")
+  source("./Function_EMMA.R")
+  source("./Function_GAPIT.R")
+  source("./Function_FarmCPU.R")
+  source("./Function_LDRemove.R")
   
   setwd(wd)
   for (t in 1:trait){

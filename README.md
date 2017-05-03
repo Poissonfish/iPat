@@ -1,6 +1,8 @@
 # Intelligent Prediction and Association Tool
 
 <p align="center"><img src = "./res/icon.png" width = 200></p>
+<p align="center"><img src = "./res/demo.gif"></p>
+
 
 ## [Download iPat](http://zzlab.net/iPat/iPat.zip)
 ## [Demo data](http://zzlab.net/iPat/demo.zip)
