@@ -37,6 +37,10 @@ import net.miginfocom.swing.MigLayout;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+
 import javax.swing.filechooser.FileSystemView;
 import java.util.List;
 
@@ -162,6 +166,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	AlphaLabel iPat_title = new AlphaLabel();
 
 	public static FileDialog chooser;
+	public static DirectoryDialog dchooser;
+
 	static String[] TBfile= new String[TBMAX];
 	int[] TBvalue= new int[TBMAX];
 	static String[] MOfile= new String[MOMAX];
@@ -1434,20 +1440,41 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	}
 	public static File iPatChooser(String title, boolean DirOnly){
 		File selectedfile = null;
-		if(!DirOnly){
-			chooser = new FileDialog(new JFrame(), title, FileDialog.LOAD);   
-			chooser.setVisible(true);   
-		    if(chooser!=null){   
-		    	selectedfile = chooser.getFiles()[0];
-		    }
+		if(DirOnly){
+			switch(iPat.UserOS.type){
+			case Windows:
+				Display display = new Display();
+			    Shell shell = new Shell(display);
+			    DirectoryDialog dialog = new DirectoryDialog(shell);
+			    
+			    shell.setMinimized(true);
+			    shell.setMinimized(false);
+			    shell.setActive();
+			    dialog.setFilterPath("c:\\"); // Windows specific
+			    System.out.println("RESULT=" + dialog.open());
+			    while (!shell.isDisposed()) {
+			      if (!display.readAndDispatch())
+			        display.sleep();
+			    }
+			    display.dispose();  
+			    shell.dispose();
+			    break;
+			default:
+				System.setProperty("apple.awt.fileDialogForDirectories", "true");
+				chooser = new FileDialog(new JFrame(), title, FileDialog.LOAD);   
+				chooser.setVisible(true);   
+			    if(chooser!=null){   
+			    	selectedfile = chooser.getFiles()[0];
+			    }
+				System.setProperty("apple.awt.fileDialogForDirectories", "false");
+				break;
+			}
 		}else{
-			System.setProperty("apple.awt.fileDialogForDirectories", "true");
 			chooser = new FileDialog(new JFrame(), title, FileDialog.LOAD);   
 			chooser.setVisible(true);   
 		    if(chooser!=null){   
 		    	selectedfile = chooser.getFiles()[0];
 		    }
-			System.setProperty("apple.awt.fileDialogForDirectories", "false");
 		}	
 		return selectedfile;
 	}
