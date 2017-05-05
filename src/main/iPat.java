@@ -104,7 +104,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	static int[] TBimageY= new int[TBMAX];
 	static 	int[] TBimageH= new int[TBMAX];
 	static int[] TBimageW= new int[TBMAX];
-	
+	// 
 	//1=combined or not(-1,1), 
 	//2= coindex, 
 	//3=subcombined or not (-1,1) 
@@ -634,7 +634,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				int y=ee.getY();		
     			//To compute whether the objects should be created
 				 								 //case 1
-				if( (TBindex!=0|MOindex!=0) && 	 //且正在選某個物件
+				if( (TBindex!=0|MOindex!=0) && 	 //ä¸”æ­£åœ¨é�¸æŸ�å€‹ç‰©ä»¶
 					 link_case == 1 && !removeornot){		//sure to link something		
 					System.out.println("unlink-unlink");
 						//self sure
@@ -681,7 +681,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 						COcount++;
 						link_case = -1;						
 														 //case 2
-				}else if((TBindex!=0|MOindex!=0) && 	 //且正在選某個物件
+				}else if((TBindex!=0|MOindex!=0) && 	 //ä¸”æ­£åœ¨é�¸æŸ�å€‹ç‰©ä»¶
 						  link_case == 2 && !removeornot){			
 					System.out.println("unlink-link");
 					//self sure
@@ -724,12 +724,12 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 					linklineindex++;
 					link_case = -1;				
 														 //case 3
-				}else if((TBindex!=0|MOindex!=0) && 	 //且正在選某個物件
+				}else if((TBindex!=0|MOindex!=0) && 	 //ä¸”æ­£åœ¨é�¸æŸ�å€‹ç‰©ä»¶
 						  link_case == 3 && !removeornot){			
 					System.out.println("link-link");
 					link_case = -1;
 														 //case 4		
-				}else if((TBindex!=0|MOindex!=0) && 	 //且正在選某個物件
+				}else if((TBindex!=0|MOindex!=0) && 	 //ä¸”æ­£åœ¨é�¸æŸ�å€‹ç‰©ä»¶
 						  link_case == 4 && !removeornot){			
 					System.out.println("link-unlink");
 					//self sure
