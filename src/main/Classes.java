@@ -159,9 +159,11 @@ class BGThread extends Thread{
 		iPatPanel.rotate_index[MOindex] = 1;
 		Configuration.runtime[MOindex] = Runtime.getRuntime();
 		
-		// Execute the command
-		try{Configuration.process[MOindex] = Configuration.runtime[MOindex].exec(command);
-    	}catch (IOException e1) {e1.printStackTrace();}
+		if(iPatPanel.debug){
+			// Execute the command
+			try{Configuration.process[MOindex] = Configuration.runtime[MOindex].exec(command);
+	    	}catch (IOException e1) {e1.printStackTrace();}	
+		}
 		     	
         // Print command	
         for (int i = 0; i<command.length; i++){iPatPanel.text_console[MOindex].append(command[i]+" ");}
@@ -181,15 +183,17 @@ class BGThread extends Thread{
         	
 	        // Direct error to a file
 	        PrintWriter errWriter = new PrintWriter(new BufferedWriter(new FileWriter(WD+"/"+Project+".err", true)));
-        	try{
+        	boolean err_close = false;
+	        try{
         		// Print error if there is any error message
     	        while((line = error_stream.readLine()) != null){
+    	        	err_close = true;
     	        	errWriter.println(line);
-    	        	if(line.toUpperCase().indexOf("ERROR") > 0) Suc_or_Fal = false;
+    	        	if(line.toUpperCase().indexOf("ERROR") >= 0) Suc_or_Fal = false;
     	        	System.out.println("failed");
     	        }	
         	}catch(IOException e){}
-        	if(!Suc_or_Fal){errWriter.close();}
+        	if(err_close){errWriter.close();}
 
         	// Direct output to a file from panel
 	        File outfile = new File(WD+"/"+Project+".log");

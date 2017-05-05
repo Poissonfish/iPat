@@ -41,7 +41,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JButton go_gapit = new JButton("GO");
 	
 	JPanel wd_panel;
-	Group_Value Project_g = new Group_Value("Task name");
+	Group_Value Project_g = new Group_Value("Project name");
 	Group_Path WD_g = new Group_Path("Output Directory");
 	JLabel format_g = new JLabel("");
 	
@@ -80,7 +80,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JButton go_farm= new JButton("GO");
 
 	JPanel wd_panel_farm;
-	Group_Value Project_f = new Group_Value("Task name");
+	Group_Value Project_f = new Group_Value("Project name");
 	Group_Path WD_f = new Group_Path("Output Directory");
 	JLabel format_f = new JLabel("");
 	
@@ -107,7 +107,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JButton go_p = new JButton("GO");
 	
 	JPanel panel_wd_p;
-	Group_Value Project_p = new Group_Value("Task name");
+	Group_Value Project_p = new Group_Value("Project name");
 	Group_Path WD_p = new Group_Path("Output Directory");
 	JLabel format_p = new JLabel("");
  
@@ -131,7 +131,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JButton go_r = new JButton("GO");
 		
 	JPanel wd_panel_r;
-	Group_Value Project_r = new Group_Value("Task name");
+	Group_Value Project_r = new Group_Value("Project name");
 	Group_Path WD_r = new Group_Path("Output Directory");
 	JLabel format_r = new JLabel("");
 		
@@ -143,7 +143,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JButton go_b = new JButton("GO");
 	
 	JPanel wd_panel_b;
-	Group_Value Project_b = new Group_Value("Task name");
+	Group_Value Project_b = new Group_Value("Project name");
 	Group_Path WD_b = new Group_Path("Output Directory");
 	JLabel format_b = new JLabel("");
 	
@@ -160,7 +160,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	JPanel main_panel_c;
 	JPanel panel_wd_c;
 	ListPanel panel_select;
-	Group_Value Project_c = new Group_Value("Task name");
+	Group_Value Project_c = new Group_Value("Project name");
 	Group_Path WD_c = new Group_Path("Output Directory");
 	
 	///////////////////////////////////////////////////////////////////////////////////////	
@@ -354,11 +354,10 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		pane.addTab("Filter", panel_filter_g);
 		pane.addTab("Model", panel_CMLM);
 		pane.addTab("Advance", panel_advance);	
-		main_panel = new JPanel(new MigLayout("fillx", "[grow]"));
-		main_panel.add(go_gapit, "dock north");
+		main_panel = new JPanel(new MigLayout("fill", "[grow]"));
+		main_panel.add(go_gapit, "dock east");
 		main_panel.add(pane, "cell 0 0, grow");
 		///////////////////////////////////////////////////////////////////////////////////////
-		pref = Preferences.userRoot().node("/ipat"); 
 		go_gapit.addActionListener(this);
 		WD_g.browse.addActionListener(this);
 		return main_panel;
@@ -421,8 +420,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		pane.addTab("Covariates", panel_co_f);
 		pane.addTab("Filter", panel_filter_f);
 		pane.addTab("Advance", panel_adv_farm);	
-		main_panel_farm = new JPanel(new MigLayout("fillx", "[grow]"));
-		main_panel_farm.add(go_farm, "dock north");
+		main_panel_farm = new JPanel(new MigLayout("fill", "[grow]"));
+		main_panel_farm.add(go_farm, "dock east");
 		main_panel_farm.add(pane, "cell 0 0, grow");
 		///////////////////////////////////////////////////////////////////////////////////////
 		go_farm.addActionListener(this);
@@ -459,8 +458,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		JTabbedPane pane = new JTabbedPane();
 		pane.addTab("Project", panel_wd_p);
 		pane.addTab("Filter", panel_filter_p);	
-		main_panel_p = new JPanel(new MigLayout("fillx", "[grow]"));
-		main_panel_p.add(go_p, "dock north");
+		main_panel_p = new JPanel(new MigLayout("fill", "[grow]"));
+		main_panel_p.add(go_p, "dock east");
 		main_panel_p.add(pane, "cell 0 0, grow");
 		///////////////////////////////////////////////////////////////////////////////////////
 		go_p.addActionListener(this);	
@@ -495,8 +494,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		JTabbedPane pane = new JTabbedPane();
 		pane.addTab("Project", wd_panel_r);
 		pane.addTab("Phenotype", panel_phenotype_r);	
-		main_panel_r = new JPanel(new MigLayout("fillx", "[grow]"));
-		main_panel_r.add(go_r, "dock north");
+		main_panel_r = new JPanel(new MigLayout("fill", "[grow]"));
+		main_panel_r.add(go_r, "dock east");
 		main_panel_r.add(pane, "cell 0 0, grow");
 		///////////////////////////////////////////////////////////////////////////////////////
 		go_r.addActionListener(this);
@@ -523,9 +522,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		panel_phenotype_b = new ListPanel("Traits", "Excluded");
 		String text = iPatPanel.read_lines(P_name, 1)[0];
 		rowP_b = text.split("\t");
-		for(int i = 1; i < rowP_b.length ; i++){
-			panel_phenotype_b.addElement(rowP_b[i]);
-		}		
+		for(int i = 1; i < rowP_b.length ; i++) panel_phenotype_b.addElement(rowP_b[i]);
 		panel_phenotype_b.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Phenotype", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_iteration_b = new JPanel(new MigLayout("fillx"));
@@ -539,8 +536,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		pane.addTab("Project", wd_panel_b);
 		pane.addTab("Phenotype", panel_phenotype_b);
 		pane.addTab("Iteration", panel_iteration_b);
-		main_panel_b = new JPanel(new MigLayout("fillx", "[grow]"));
-		main_panel_b.add(go_b, "dock north");
+		main_panel_b = new JPanel(new MigLayout("fill", "[grow]"));
+		main_panel_b.add(go_b, "dock east");
 		main_panel_b.add(pane, "cell 0 0, grow");
 		///////////////////////////////////////////////////////////////////////////////////////
 		go_b.addActionListener(this);
