@@ -104,7 +104,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	static int[] TBimageY= new int[TBMAX];
 	static 	int[] TBimageH= new int[TBMAX];
 	static int[] TBimageW= new int[TBMAX];
-	// 
+	
 	//1=combined or not(-1,1), 
 	//2= coindex, 
 	//3=subcombined or not (-1,1) 
@@ -159,7 +159,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	JLayeredPane nullPanel;
 	JPanel buttonPanel;
 	 
-	AlphaLabel iPat = new AlphaLabel();
+	AlphaLabel iPat_title = new AlphaLabel();
 
 	public static FileDialog chooser;
 	static String[] TBfile= new String[TBMAX];
@@ -237,7 +237,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	String[] File_names;
 	File[] File_paths = new File[30];
 	//settingframe model_frame;
-	Preferences pref = Preferences.userRoot().node("/iPat"); 
 	
     //object select
 	int TBindex_select = 0;
@@ -293,6 +292,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		NA, Hapmap, Numeric, VCF, PLink_ASCII, PLink_Binary
 	}
 	public static FORMAT format = FORMAT.NA;
+	
+	public static boolean debug = false, first_d = false;
 	
 	public iPatPanel(int Wideint, int Heigthint, int pH){
 		this.Wide=Wideint;
@@ -354,8 +355,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
         
 		try{
 			iconIP = ImageIO.read(getClass().getResource("resources/iPat.png"));
-			iPat.setIcon(new ImageIcon(iconIP));
-			iPat.setAlpha((float)0.5);
+			iPat_title.setIcon(new ImageIcon(iconIP));
+			iPat_title.setAlpha((float)0.5);
 		} catch (IOException ex){}
 		try{
 			for(int i=0; i<10; i++){
@@ -389,14 +390,14 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		////////////
 		//LAYOUT.START
 		////////////
-		iPat.setOpaque(false);	
+		iPat_title.setOpaque(false);	
 
 		trashl = new JLabel(new ImageIcon(Trash[0]));	
 		startPanel = new JLayeredPane();
 		nullPanel= new JLayeredPane();
 		
 		startPanel.setPreferredSize(new Dimension(Wide, Heigth));	
-		startPanel.add(iPat, new Integer(4));
+		startPanel.add(iPat_title, new Integer(4));
 		startPanel.add(trashl, new Integer(3));
 		startPanel.add(hint_drag_label, new Integer(2));		
 		startPanel.add(hint_trash_label, new Integer(1));		
@@ -415,7 +416,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		hint_trash_label.setAlpha(0);
 		hint_model_label.setAlpha(0);
 		
-		iPat.setBounds(new Rectangle(510, 10, iconIP.getWidth(this), iconIP.getHeight(this))); 
+		iPat_title.setBounds(new Rectangle(510, 10, iconIP.getWidth(this), iconIP.getHeight(this))); 
 		
 		//this.setLayout(new MigLayout("debug, fill","[grow]","[grow]"));
 		this.setLayout(null);
@@ -446,7 +447,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		Arrays.fill(permit, false);
 		for(int i = 0; i<maxfile; i++){
 			file_index[i] = new Findex();	
-		}	
+		}
+		
 		////////////
 		////////////
 		//LAYOUT.END
@@ -605,9 +607,9 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 					       	GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
 							Point centerPoint = local_env.getCenterPoint();
 				       		int dx = centerPoint.x - 550 / 2;
-				        	int dy = centerPoint.y - 350 / 2;  
-					  		model_frame.setBounds(dx, dy, 550, 350);
-					   		model_frame.setResizable(true);
+				        	int dy = centerPoint.y - 270 / 2;  
+					  		model_frame.setBounds(dx, dy, 550, 270);
+					   		model_frame.setResizable(false);
 					   		model_frame.setVisible(true);
 						}else{
 							JOptionPane.showMessageDialog(wrong_formate,
@@ -1773,6 +1775,15 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			}else{
 				gear_rotate.start();
 			}
+		}
+		if(first_d && key == 66){
+			debug = !debug; 
+			first_d = false;
+			System.out.println("debug: "+debug);
+		}else if(key == 68){
+			first_d = true; 
+		}else{
+			first_d = false;
 		}
 	}
 
