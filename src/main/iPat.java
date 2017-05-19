@@ -1,24 +1,20 @@
 package main;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.TimerTask;
-import java.util.prefs.Preferences;
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.FileDialog;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
@@ -27,22 +23,48 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
-import java.awt.image.*;
-import javax.imageio.*;
-import javax.swing.*;
-import javax.swing.border.*;
-import net.miginfocom.swing.MigLayout;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-
-import javax.swing.filechooser.FileSystemView;
-import java.util.List;
 
 public class iPat {
 	static int Wide=1200;
@@ -166,7 +188,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	AlphaLabel iPat_title = new AlphaLabel();
 
 	public static FileDialog chooser;
-	public static DirectoryDialog dchooser;
 
 	static String[] TBfile= new String[TBMAX];
 	int[] TBvalue= new int[TBMAX];
@@ -1443,21 +1464,16 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		if(DirOnly){
 			switch(iPat.UserOS.type){
 			case Windows:
-				Display display = new Display();
-			    Shell shell = new Shell(display);
-			    DirectoryDialog dialog = new DirectoryDialog(shell);
-			    
-			    shell.setMinimized(true);
-			    shell.setMinimized(false);
-			    shell.setActive();
-			    dialog.setFilterPath("c:\\"); // Windows specific
-			    System.out.println("RESULT=" + dialog.open());
-			    while (!shell.isDisposed()) {
-			      if (!display.readAndDispatch())
-			        display.sleep();
-			    }
-			    display.dispose();  
-			    shell.dispose();
+				int flag;
+				JFileChooser fc = new JFileChooser();
+				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);//只能选择目录
+				String path=null;
+				File f=null;
+				flag=fc.showOpenDialog(null);     
+				if(flag==JFileChooser.APPROVE_OPTION){
+		            f=fc.getSelectedFile();    
+		            selectedfile = new File(f.getPath());
+		        }      
 			    break;
 			default:
 				System.setProperty("apple.awt.fileDialogForDirectories", "true");
@@ -1803,6 +1819,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				gear_rotate.start();
 			}
 		}
+		// Debug: press "d", then "b" to activate
 		if(first_d && key == 66){
 			debug = !debug; 
 			first_d = false;

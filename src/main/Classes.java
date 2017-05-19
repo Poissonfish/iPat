@@ -159,20 +159,22 @@ class BGThread extends Thread{
 		iPatPanel.rotate_index[MOindex] = 1;
 		Configuration.runtime[MOindex] = Runtime.getRuntime();
 		
+		// Execute the command
+		try{Configuration.process[MOindex] = Configuration.runtime[MOindex].exec(command);
+    	}catch (IOException e1) {e1.printStackTrace();}	
+		
 		if(iPatPanel.debug){
-			// Execute the command
-			try{Configuration.process[MOindex] = Configuration.runtime[MOindex].exec(command);
-	    	}catch (IOException e1) {e1.printStackTrace();}	
-		}
+			// Print command	
+			System.out.println("print debug command");
+			for (int i = 0; i<command.length; i++){iPatPanel.text_console[MOindex].append(command[i]+" ");}
+	    }
 		     	
-        // Print command	
-        for (int i = 0; i<command.length; i++){iPatPanel.text_console[MOindex].append(command[i]+" ");}
         iPatPanel.text_console[MOindex].append(System.getProperty("line.separator"));
         iPatPanel.text_console[MOindex].setCaretPosition(iPatPanel.text_console[MOindex].getDocument().getLength());	   	
 
         try {
         	// Print output message to the panel
-        	System.out.println("begin to print");
+        	System.out.println("begin to print, "+MOindex);
     	    BufferedReader input_stream = new BufferedReader(new InputStreamReader(Configuration.process[MOindex].getInputStream()));
             BufferedReader error_stream = new BufferedReader(new InputStreamReader(Configuration.process[MOindex].getErrorStream()));
 	        while((line = input_stream.readLine()) != null){
