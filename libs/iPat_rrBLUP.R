@@ -91,7 +91,7 @@ tryCatch({
                   sep = '\t')
     }
   }
+  print(warnings())
 }, error = function(e){
     stop(e)
 })
-print(warnings())

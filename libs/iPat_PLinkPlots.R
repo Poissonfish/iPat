@@ -118,7 +118,7 @@ tryCatch({
     memo= sprintf("Trait_%d", t)
     )
   } 
-
+  print(warnings())
 # ./blink --file mydata --compress --out mydata --plink
 # ./blink --file mydata --recode --out num --numeric
 
@@ -129,4 +129,3 @@ tryCatch({
 }, error = function(e){
     print(e)
 })
-print(warnings())

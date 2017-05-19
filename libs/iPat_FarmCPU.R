@@ -151,7 +151,7 @@ tryCatch({
       memo= trait_names[i]
     )
   }
+  print(warnings())
 },error = function(e){
     stop(e)
 })
-print(warnings())

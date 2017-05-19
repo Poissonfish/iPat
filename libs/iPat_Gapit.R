@@ -127,10 +127,11 @@ tryCatch({
           file.fragment = file.fragment,
           memo= trait_names[i])
     }
+  print(warnings())
 }, error = function(e){
     stop(e)
 })
-print(warnings())
+
 # if(multi){
 #   nT = ncol(Y.file) - 1
 #   # Imputation by mean
