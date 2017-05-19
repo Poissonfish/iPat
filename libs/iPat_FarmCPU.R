@@ -63,14 +63,19 @@ tryCatch({
   trait_names = names(Y)[-1]
 
   # Format-free
+  OS.Windows = FALSE
+  switch(Sys.info()[['sysname']],
+    Windows= {OS.Windows = TRUE}, # Windows
+    Linux  = { }, # Linux
+    Darwin = { }) # MacOS
   switch(format, 
-    Hapmap = {sprintf("chmod 777 %s/blink", lib) %>% system()
+    Hapmap = {if(!OS.Windows){sprintf("chmod 777 %s/blink", lib) %>% system()}
               hmp = substring(GD.path, 1, nchar(GD.path)-4)
               sprintf("%s/blink --file %s --compress --hapmap", lib, hmp) %>% system()
               sprintf("%s/blink --file %s --recode --out %s --numeric", lib, hmp, hmp) %>% system()
               GD = read.table(sprintf("%s.dat", hmp)) %>% t() %>% data.frame(Y[,1], .)
               GM = read.table(sprintf("%s.map", hmp), head = TRUE)}, 
-    VCF = { sprintf("chmod 777 %s/blink", lib) %>% system()
+    VCF = { if(!OS.Windows){sprintf("chmod 777 %s/blink", lib) %>% system()}
             vcf = substring(GD.path, 1, nchar(GD.path)-4)
             sprintf("%s/blink --file %s --compress --vcf", lib, vcf) %>% system()
             sprintf("%s/blink --file %s --recode --out %s --numeric", lib, vcf, vcf) %>% system()
