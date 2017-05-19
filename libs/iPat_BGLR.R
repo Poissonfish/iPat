@@ -109,7 +109,7 @@ tryCatch({
 		GAPIT.Manhattan(GI.MP = myGI.MP, name.of.trait = sprintf("%s", trait_names[i]))
 		GAPIT.QQ(P, name.of.trait = sprintf("%s", trait_names[i]))
 	}
+	print(warnings())
 }, error = function(e){
 	stop(e)	
 })
-print(warnings())
