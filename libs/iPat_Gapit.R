@@ -45,6 +45,17 @@ arg_length = 20
 # #multi = TRUE
 # args = c(1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,1,2,3)
 
+# Rscript C:\Users\Poissonfish\git\iPat/libs/iPat_Gapit.R  NULL NULL  NULL TRUE NULL 3 NULL average Mean 1 1 10 FALSE 1 512 
+# wd = "C:\Users\Poissonfish\Desktop\test\gapit"
+# GD.path = "C:\Users\Poissonfish\Downloads\Demo_data\VCF\data.vcf"
+# lib = "C:\Users\Poissonfish\git\iPat/libs/"
+# [1] "C:\\Users\\Poissonfish\\Downloads\\Demo_data\\VCF\\data.vcf"
+print(G.path)
+print(GM.path)
+print(GD.path)
+
+print(Y.path)
+
 tryCatch({
   # Load libraries
   setwd(lib)
@@ -80,11 +91,17 @@ tryCatch({
   trait_names = names(Y)[-1]
 
   # Format free
+  OS.Windows = FALSE
+  switch(Sys.info()[['sysname']],
+    Windows= {OS.Windows = TRUE}, # Windows
+    Linux  = { }, # Linux
+    Darwin = { }) # MacOS
   switch(format, 
-    VCF = { sprintf("chmod 777 %s/blink", lib) %>% system()
+    VCF = { if(!OS.Windows){sprintf("chmod 777 %s/blink", lib) %>% system()}
             vcf = substring(GD.path, 1, nchar(GD.path)-4)
             sprintf("%s/blink --file %s --compress --vcf", lib, vcf) %>% system()
             sprintf("%s/blink --file %s --recode --out %s --numeric", lib, vcf, vcf) %>% system()
+            G = NULL
             GD = read.table(sprintf("%s.dat", vcf)) %>% t() %>% data.frame(Y[,1], .)
             GM = read.table(sprintf("%s.map", vcf), head = TRUE)},
     PLink_ASCII = {

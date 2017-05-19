@@ -665,7 +665,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		// Format 
 		switch(iPatPanel.format){
 			case VCF:
-				G_name = VCF_name; 
+				GD_name = VCF_name; 
 				break;
 			case PLink_ASCII:
 				break;
