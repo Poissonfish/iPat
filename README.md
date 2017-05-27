@@ -27,7 +27,7 @@
 
 > 2-8 [Files remove](#delete)
 
-#### 3. [GWAS and GS](#gwas)
+#### 3. [GWAS, GS and BSA](#gwas)
 > 3-1 [GAPIT](#gapit)
 
 > 3-2 [FarmCPU](#farm)
@@ -35,6 +35,10 @@
 > 3.3 [PLINK](#plink)
 
 > 3.4 [rrBLUP](#rrblup)
+
+> 3.5 [BGLR](#bglr)
+
+> 3.6 [BSA](#bsa) 
 
 #### 4. [Support](#support)
 #### 5. [Citation](#cite)
@@ -151,6 +155,20 @@ Tools implemented in iPat allow users to do genome-wide associate study (GWAS) a
 ### 3.4 rrBLUP|Category|Parameters|	Definitions| Default|
 |:--|:---|:---|:--:|
 |Subset|Subset of traits data|Users can select all or partial of traits to be analyzed|All traits|
+
+<a name="bglr"></a>
+### 3.5 BGLR
+|Category|Parameter| Definitions| Default|
+|:--|:---|:---|:--:|
+|Subset|Subset of traits data|Users can select all or partial of traits to be analyzed|All traits|
+|BGLR|Number of iterations| Number of iterations|1200|
+|BGLR|Burn-In| Iteration of burn-in|200|
+
+<a name="bsa"></a>
+### 3.6 BSA
+|Category|Parameter| Definitions| Default|
+|:--|:---|:---|:--:|
+|BSA|Windows Size|A smoothing coefficient for G statistics|5KB|
 
 
 <a name="support"></a>## 4 Support

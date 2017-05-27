@@ -933,6 +933,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		method_bin.combo.setSelectedIndex(pref.getInt("method_bin_f", 0));
 		maxloop.field.setText(pref.get("maxloop_f", "10"));
 		maf_f.combo.setSelectedIndex(pref.getInt("maf_f", 0));
+		// rrBLUP
+		WD_r.field.setText(pref.get("WD_r", "~/"));
 		// PLINK
 		WD_p.field.setText(pref.get("WD_p", "~/"));
 		// BGLR
@@ -960,6 +962,8 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		pref.putInt("method_bin_f", method_bin.combo.getSelectedIndex());
 		pref.put("maxloop_f", maxloop.field.getText());
 		pref.putInt("maf_f", maf_f.combo.getSelectedIndex());
+		// rrBLUP
+		pref.put("WD_r", WD_r.field.getText());
 		// PLINK
 		pref.put("WD_p", WD_p.field.getText());
 		// BGLR
