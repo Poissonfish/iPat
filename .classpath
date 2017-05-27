@@ -6,6 +6,5 @@
 	<classpathentry exported="true" kind="lib" path="libs/miglayout-4.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/trident.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/commons-lang3-3.0.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/org.eclipse.swt"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

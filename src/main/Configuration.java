@@ -156,6 +156,17 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	Group_Combo burnin_b = new Group_Combo("Burn-In",
 			new String[]{"200", "500", "700", "1000", "2000"});
 	///////////////////////////////////////////////////////////////////////////////////////	
+	JPanel main_panel_bsa;
+	JButton go_bsa = new JButton("GO");
+	JPanel wd_panel_bsa;
+	Group_Value Project_bsa = new Group_Value("Project name");
+	Group_Path WD_bsa = new Group_Path("Output Directory");
+	
+	JPanel panel_gstat;
+	Group_Combo ws_bsa = new Group_Combo("Window size for smoothing", 
+			new String[]{"10KB", "50KB", "100KB", "300KB", "500KB", "1000KB"});
+	
+	///////////////////////////////////////////////////////////////////////////////////////	
 	//Config convert
 	JPanel main_panel_c;
 	JPanel panel_wd_c;
@@ -200,57 +211,45 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		JPanel pane_plink = null;
 		JPanel pane_rrblup = null;
 		JPanel pane_bglr = null;
-		
+		JPanel pane_bsa = null;
+ 		
 		pref = Preferences.userRoot().node("/ipat"); 
+		JTabbedPane mainPane = new JTabbedPane();
 		switch(format){
-			case Hapmap:
-				pane_gapit = config_gapit();
-				pane_farm = config_farm();
-				pane_plink = config_plink();
-				pane_rrblup = config_rrblup();
-				pane_bglr = config_BGLR();
-				file_format = "Hapmap";
+			case Hapmap: 
+				file_format = "Hapmap"; 
+				pane_gapit = config_gapit(); mainPane.addTab("GAPIT", pane_gapit);
+				pane_farm = config_farm(); mainPane.addTab("FarmCPU", pane_farm);
+				pane_rrblup = config_rrblup(); mainPane.addTab("rrBLUP", pane_rrblup);
+				pane_bglr = config_BGLR(); mainPane.addTab("BGLR", pane_bglr);
 				break;
-			case Numeric:
-				pane_gapit = config_gapit();
-				pane_farm = config_farm();
-				pane_plink = config_plink();
-				pane_rrblup = config_rrblup();
-				pane_bglr = config_BGLR();
-				file_format = "Numeric";
+			case Numeric: 
+				file_format = "Numeric"; 
+				pane_gapit = config_gapit(); mainPane.addTab("GAPIT", pane_gapit);
+				pane_farm = config_farm(); mainPane.addTab("FarmCPU", pane_farm);
+				pane_rrblup = config_rrblup(); mainPane.addTab("rrBLUP", pane_rrblup);
+				pane_bglr = config_BGLR(); mainPane.addTab("BGLR", pane_bglr);
+	        	break;
+			case VCF: 
+				file_format = "VCF"; 
+				pane_gapit = config_gapit(); mainPane.addTab("GAPIT", pane_gapit);
+				pane_farm = config_farm(); mainPane.addTab("FarmCPU", pane_farm);
+				pane_rrblup = config_rrblup(); mainPane.addTab("rrBLUP", pane_rrblup);
+				pane_bglr = config_BGLR(); mainPane.addTab("BGLR", pane_bglr);
+	        	break;
+			case PLink_ASCII: 
+				file_format = "PLink_ASCII"; 
+				pane_plink = config_plink(); mainPane.addTab("PLINK", pane_plink);
 				break;
-			case VCF:
-				pane_gapit = config_gapit();
-				pane_farm = config_farm();
-				pane_plink = config_plink();
-				pane_rrblup = config_rrblup(); 
-				pane_bglr = config_BGLR();
-				file_format = "VCF";
-				   break;
-			case PLink_ASCII:
-				pane_gapit = config_gapit();
-				pane_farm = config_farm();
-				pane_plink = config_plink();
-				pane_rrblup = config_rrblup();
-				pane_bglr = config_BGLR();
-				file_format = "PLink_ASCII";
+			case PLink_Binary: 
+				file_format = "PLink_Binary"; 
+				pane_plink = config_plink(); mainPane.addTab("PLINK", pane_plink);
 				break;
-			case PLink_Binary:
-				pane_gapit = config_gapit();
-				pane_farm = config_farm();
-				pane_plink = config_plink();
-				pane_rrblup = config_rrblup();
-				pane_bglr = config_BGLR();
-				file_format = "PLink_Binary";
+			case BSA:
+				file_format = "BSA";
+				pane_bsa = config_BSA(); mainPane.addTab("BSA", pane_bsa);
 				break;
-		}	
-        	JTabbedPane mainPane = new JTabbedPane();
-        	mainPane.addTab("GAPIT", pane_gapit);
-        	mainPane.addTab("FarmCPU", pane_farm);
-        	mainPane.addTab("PLINK", pane_plink);
-        	mainPane.addTab("rrBLUP", pane_rrblup);
-        	mainPane.addTab("BGLR", pane_bglr);
-
+		}		
 		this.setContentPane(mainPane);
 		this.setTitle("Configuration");
 		this.pack();
@@ -545,6 +544,35 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		return main_panel_b;
 	}
 	
+	public JPanel config_BSA() throws IOException{
+		go_bsa.setFont(new Font("Ariashowpril", Font.BOLD, 40));	
+		wd_panel_bsa = new JPanel(new MigLayout("fillx", "[][grow]"));
+		wd_panel_bsa.add(Project_bsa.name, "cell 0 0 2 1");
+		wd_panel_bsa.add(Project_bsa.longfield, "cell 0 1 2 1");
+		wd_panel_bsa.add(WD_bsa.name,  "cell 0 2 2 1");
+		wd_panel_bsa.add(WD_bsa.field, "cell 0 3 1 1");
+		wd_panel_bsa.add(WD_bsa.browse, "cell 1 3 1 1");
+		Project_bsa.longfield.setText("Project "+ MOindex);
+		wd_panel_bsa.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
+		///////////////////////////////////////////////////////////////////////////////////////
+		panel_gstat = new JPanel(new MigLayout("fillx"));
+		panel_gstat.add(ws_bsa.name, "cell 0 1, align r");
+		panel_gstat.add(ws_bsa.combo, "cell 1 1, align l");
+		ws_bsa.combo.setSelectedIndex(1);
+		panel_gstat.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Smoothing", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
+		///////////////////////////////////////////////////////////////////////////////////////
+		JTabbedPane pane = new JTabbedPane();
+		pane.addTab("Project", wd_panel_bsa);
+		pane.addTab("Smoothing", panel_gstat);
+		main_panel_bsa = new JPanel(new MigLayout("fill", "[grow]"));
+		main_panel_bsa.add(go_bsa, "dock east");
+		main_panel_bsa.add(pane, "cell 0 0, grow");
+		///////////////////////////////////////////////////////////////////////////////////////
+		go_bsa.addActionListener(this);
+		WD_bsa.browse.addActionListener(this);
+		return main_panel_bsa;
+	}
+	
 	@Override
 	public void actionPerformed(ActionEvent ip){
 	      	Object source = ip.getSource();	
@@ -610,7 +638,18 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	    	  	this.dispose(); 	
 	      	}else if(source == WD_b.browse){
 	      		WD_b.setPath(true);
-	      	}
+	      	//BSA
+			}else if(source == go_bsa){
+		  		save();
+			  	showConsole(MOindex, Project_bsa.longfield.getText(), WD_bsa.field.getText());	            
+			  	String[] Command = run_BSA(iPatPanel.file_index);
+			  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, WD_bsa.field.getText(), Project_bsa.longfield.getText(), 
+			  												Command, true, null, null);
+			  	iPatPanel.multi_run[MOindex].start();
+			  	this.dispose(); 	
+		  	}else if(source == WD_bsa.browse){
+		  		WD_bsa.setPath(true);
+		  	}   	
 	}
 	
 	String[] run_GAPIT(Findex[] file_index){
@@ -827,6 +866,23 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	    return whole;
 	}
 	
+	String[] run_BSA(Findex[] file_index){
+		String WS = "";
+		switch(ws_bsa.combo.getSelectedIndex()){
+			case 0: WS = "10000"; break;
+			case 1: WS = "50000"; break;
+			case 2: WS = "100000"; break;
+			case 3: WS = "300000"; break;
+			case 4: WS = "500000"; break;
+			case 5: WS = "1000000"; break;
+		}
+		System.out.println("running BSA"); 
+	    // Command input
+	    String[] command = {R_exe, iPatPanel.jar.getParent()+"/libs/iPat_BSA.R",
+	     					GM_name, GD_name, WS, Project_bsa.longfield.getText(), WD_bsa.field.getText(), iPatPanel.jar.getParent()+"/libs/"};  
+	    return command;
+	}
+	
 	public void showConsole(int MOindex, String title, String MOPath){
 		iPatPanel.MOname[MOindex].setText(title);
 		iPatPanel.MOfile[MOindex] = MOPath;
@@ -879,6 +935,10 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		maf_f.combo.setSelectedIndex(pref.getInt("maf_f", 0));
 		// PLINK
 		WD_p.field.setText(pref.get("WD_p", "~/"));
+		// BGLR
+		WD_b.field.setText(pref.get("WD_b", "~/"));
+		// BSA
+		WD_bsa.field.setText(pref.get("WD_bsa", "~/"));
 		System.out.println("LOAD");	
 	}
 	
@@ -902,6 +962,10 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		pref.putInt("maf_f", maf_f.combo.getSelectedIndex());
 		// PLINK
 		pref.put("WD_p", WD_p.field.getText());
+		// BGLR
+		pref.put("WD_b", WD_b.field.getText());
+		// BSA
+		pref.put("WD_bsa", WD_bsa.field.getText());
 		System.out.println("SAVE");
 	}
 	
