@@ -62,10 +62,6 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
-import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-
 public class iPat {
 	static int Wide=1200;
 	static int Heigth=700;
@@ -84,7 +80,7 @@ public class iPat {
 		}else{
 			UserOS.type = OS.TYPE.Linux;
 		}
-		System.out.println("You're runngin iPat on "+ UserOS.type);// Mac OS X, Windows 10
+		System.out.println("You're running iPat on "+ UserOS.type);// Mac OS X, Windows 10
 		JFrame main = new JFrame();
 		//Set to center
 		main.setSize(Wide, Heigth);
@@ -96,6 +92,7 @@ public class iPat {
 
 		main.setResizable(false);
         main.setLocation(dx, dy);
+        System.out.println("x: " + dx + "y: " + dy);
 		main.setLayout(new BorderLayout());
 		main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Container cPane = main.getContentPane();
@@ -116,7 +113,7 @@ public class iPat {
 	            		Component c = (Component)evt.getSource();
 	            		System.out.println("H: "+c.getHeight()+" W: "+c.getWidth()); 
 	        		}	
-		});			 
+		});	
 	}
 }
 
@@ -316,7 +313,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	}
 	////
 	public static enum FORMAT{
-		NA, Hapmap, Numeric, VCF, PLink_ASCII, PLink_Binary
+		NA, Hapmap, Numeric, VCF, PLink_ASCII, PLink_Binary, BSA
 	}
 	public static FORMAT format = FORMAT.NA;
 	
@@ -368,7 +365,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	        		}
 			@Override
 			public void dragOver(DropTargetDragEvent event) {}
-		          	@Override
+		        @Override
 		       	public void dropActionChanged(DropTargetDragEvent event) {}
 		    	@Override
 		    	public void dragEnter(DropTargetDragEvent dtde) {}
@@ -598,8 +595,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 							TB[TBindex] = TB_C;
 							TBimageH[TBindex] = TB[TBindex].getHeight(null);
 							TBimageW[TBindex] = TB[TBindex].getWidth(null);
-							TBimageX[TBindex]-=adx;
-							TBimageY[TBindex]-=ady;
+							TBimageX[TBindex] -= adx;
+							TBimageY[TBindex] -= ady;
 							break;
 						case C:
 							TBtype[TBindex] = Findex.FILE.K;
@@ -612,8 +609,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 							TB[TBindex] = TBimage;
 							TBimageH[TBindex] = TB[TBindex].getHeight(null);
 							TBimageW[TBindex] = TB[TBindex].getWidth(null);
-							TBimageX[TBindex]+=adx;
-							TBimageY[TBindex]+=ady;
+							TBimageX[TBindex] += adx;
+							TBimageY[TBindex] += ady;
 							break;
 					}
 					repaint();
@@ -1962,6 +1959,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 									  col_count[1] - row_count[0] == 11 || col_count[1] - row_count[0] == 10};
 				boolean[] NUM_con = {Arrays.asList(row2[0]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[0]) < 5,
 									 Arrays.asList(row2[1]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[1]) < 5};
+				boolean[] BSA_con = {TBfile[file_index[0].tb].toUpperCase().endsWith("BSA") && TBfile[file_index[1].tb].toUpperCase().endsWith("MAP"),  
+									 TBfile[file_index[1].tb].toUpperCase().endsWith("BSA") && TBfile[file_index[0].tb].toUpperCase().endsWith("MAP")};
 				System.out.println(col_count[0]);
 				System.out.println(col_count[1]);
 				System.out.println(row_count[0]);
@@ -1978,6 +1977,10 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 					file_index[0].file = NUM_con[0]?Findex.FILE.GD:Findex.FILE.P;
 					file_index[1].file = NUM_con[1]?Findex.FILE.GD:Findex.FILE.P;
 					format = FORMAT.Numeric;	
+				}else if(partial_true(BSA_con)){
+					file_index[0].file = BSA_con[0]?Findex.FILE.GD:Findex.FILE.GM;
+					file_index[1].file = BSA_con[1]?Findex.FILE.GD:Findex.FILE.GM;
+					format = FORMAT.BSA;	
 				}
 				break;
 			case 3:	
