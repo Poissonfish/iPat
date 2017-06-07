@@ -17,6 +17,14 @@
 # Table of Contents
 <!-- vscode-markdown-toc -->
 #### 1. [Getting start](#get_start)
+> 1-1 [Operation environment](#env)
+
+> 1-2 [Windows users](#win)
+
+> 1-3 [Mac OS users](#mac)
+
+> 1-4 [Launch iPat](#launch)
+
 #### 2. [Interface](#interface)
 > 2-1 [Import files](#import_files)
 
@@ -34,7 +42,7 @@
 
 > 2-8 [Files remove](#delete)
 
-#### 3. [GWAS and GS](#gwas)
+#### 3. [GWAS, GS and BSA](#gwas)
 > 3-1 [GAPIT](#gapit)
 
 > 3-2 [FarmCPU](#farm)
@@ -42,6 +50,10 @@
 > 3.3 [PLINK](#plink)
 
 > 3.4 [rrBLUP](#rrblup)
+
+> 3.5 [BGLR](#bglr)
+
+> 3.6 [BSA](#bsa) 
 
 #### 4. [Support](#support)
 #### 5. [Citation](#cite)
@@ -56,17 +68,46 @@
 <div style="page-break-after: always;"></div>
 
 <a name="get_start"></a>
-## 1. Getting start 
-* Before launching iPat, remember to place folder 'libs' to the path where 'iPat.jar' exists. iPat can function normally only when it is in the same folder as ‘libs’.
+## 1. Getting start
 
-* The operation environment need to meet the following requirement:
-	* Operation System: Mac OS X.
+<a name="env"></a>
+### 1.1 Operation environment
+* Before launching iPat, remember to place folder 'libs' to the directory where 'iPat.jar' exists. iPat can function normally only when both 'libs' and 'iPat.jar' are located in the same folder.
+<p align="center"><p align="center"><img src = "./res/libs_mac.png" width = 700></p>
+* The operation environment need to meet the following requirement:
+	* Operation System: Windows and Mac OS X.
 	* [Java Runtime Environment (JRE)](http://www.oracle.com/technetwork/java/javase/downloads/index.html): Version 8 or later.
 	* [R](https://www.r-project.org): Version 3.4.0 or later. 
 
-* After set up all the thing mentioned previously, iPat is now ready to go. Double-click on 'iPat.jar' to launch iPat.
+<a name="win"></a>
+### 1.2 Windows users
+* If you can call R from the commnad-line window (cmd.exe) by typing "R" or "r", then you can skip to section 1.4. Otherwise, please follow the instruction below to get your system compatible with iPat.
 
-<p align="center"><p align="center"><img src = "./res/libs.png" width = 700></p>
+* Open R software, and type ```R.home("bin")``` in the console. It will return a path to the executable R. Copy this path to the clipboard.
+<p align="center"><p align="center"><img src = "./res/rconsole.png" width = 700></p>
+
+* Search keyword "system" from Windows, and open "System".
+<p align="center"><p align="center"><img src = "./res/search.png" width = 350></p>
+
+* Then select "Advanced system settings" at the left side of the panel.
+<p align="center"><p align="center"><img src = "./res/system.png" width = 700></p>
+
+* And click "Environment Variable..." at the bottom-right area.
+<p align="center"><p align="center"><img src = "./res/advance.png" width = 450></p>
+
+* The pop-up windows will display two set of system variables. Highligh the system variable "Path" at the bottom list, and click "Edit". 
+<p align="center"><p align="center"><img src = "./res/env.png" width = 450></p>
+
+* Almost there. Click "new" and paste the path you got from the clipboard, then click "OK" to save the configuration.
+<p align="center"><p align="center"><img src = "./res/rhome.png" width = 450></p>
+
+<a name="mac"></a>
+### 1.3 Mac OS users
+* For the users who run iPat on Mac OS, there's no need to do extra adjustment in your system.
+
+<a name="launch"></a>
+### 1.4 Launch iPat
+* After setting up the required environment mentioned above, iPat is now ready to go. Double clicking on 'iPat.jar' to launch iPat.
 
 <div style="page-break-after: always;"></div>
 <a name="interface"></a>
@@ -212,6 +253,20 @@ Tools implemented in iPat allow users to do genome-wide associate study (GWAS) a
 |Category|Parameters|	Definitions| Default|
 |:--|:---|:---|:--:|
 |Subset|Subset of traits data|Users can select all or partial of traits to be analyzed|All traits|
+
+<a name="bglr"></a>
+### 3.5 BGLR
+|Category|Parameter| Definitions| Default|
+|:--|:---|:---|:--:|
+|Subset|Subset of traits data|Users can select all or partial of traits to be analyzed|All traits|
+|BGLR|Number of iterations| Number of iterations|1200|
+|BGLR|Burn-In| Iteration of burn-in|200|
+
+<a name="bsa"></a>
+### 3.6 BSA
+|Category|Parameter| Definitions| Default|
+|:--|:---|:---|:--:|
+|BSA|Windows Size|A smoothing coefficient for G statistics|5KB|
 
 <div style="page-break-after: always;"></div>
 <a name="support"></a>
