@@ -10,6 +10,14 @@
 
 # Table of Contents
 #### 1. [Getting start](#get_start)
+> 1-1 [Operation environment](#env)
+
+> 1-2 [Windows users](#win)
+
+> 1-3 [Mac OS users](#mac)
+
+> 1-4 [Launch iPat](#launch)
+
 #### 2. [Interface](#interface)
 > 2-1 [Import files](#import_files)
 
@@ -47,15 +55,46 @@
 <br><br><br>
 
 <a name="get_start"></a>
-## 1. Getting start 
-* Before launching iPat, remember to place folder 'libs' to the path where 'iPat.jar' exists. iPat can function normally only when it is in the same folder as ‘libs’.
+## 1. Getting start
+
+<a name="env"></a>
+### 1.1 Operation environment
+* Before launching iPat, remember to place folder 'libs' to the directory where 'iPat.jar' exists. iPat can function normally only when both 'libs' and 'iPat.jar' are located in the same folder.
+<p align="center"><p align="center"><img src = "./res/libs_mac.png" width = 700></p>
 * The operation environment need to meet the following requirement:
-	* Operation System: Mac OS X.
+	* Operation System: Windows and Mac OS X.
 	* [Java Runtime Environment (JRE)](http://www.oracle.com/technetwork/java/javase/downloads/index.html): Version 8 or later.
 	* [R](https://www.r-project.org): Version 3.4.0 or later. 
-* After set up all the thing mentioned previously, iPat is now ready to go. Double-click on 'iPat.jar' to launch iPat.
 
-<p align="center"><p align="center"><img src = "./res/libs.png" width = 700></p>
+<a name="win"></a>
+### 1.2 Windows users
+* If you can call R from the commnad-line window (cmd.exe) by typing "R" or "r", then you can skip to section 1.4. Otherwise, please follow the instruction below to get your system compatible with iPat.
+
+* Open R software, and type ```R.home("bin")``` in the console. It will return a path to the executable R. Copy this path to the clipboard.
+<p align="center"><p align="center"><img src = "./res/rconsole.png" width = 700></p>
+
+* Search keyword "system" from Windows, and open "System".
+<p align="center"><p align="center"><img src = "./res/search.png" width = 350></p>
+
+* Then select "Advanced system settings" at the left side of the panel.
+<p align="center"><p align="center"><img src = "./res/system.png" width = 700></p>
+
+* And click "Environment Variable..." at the bottom-right area.
+<p align="center"><p align="center"><img src = "./res/advance.png" width = 450></p>
+
+* The pop-up windows will display two set of system variables. Highligh the system variable "Path" at the bottom list, and click "Edit". 
+<p align="center"><p align="center"><img src = "./res/env.png" width = 450></p>
+
+* Almost there. Click "new" and paste the path you got from the clipboard, then click "OK" to save the configuration.
+<p align="center"><p align="center"><img src = "./res/rhome.png" width = 450></p>
+
+<a name="mac"></a>
+### 1.3 Mac OS users
+* For the users who run iPat on Mac OS, there's no need to do extra adjustment in your system.
+
+<a name="launch"></a>
+### 1.4 Launch iPat
+* After setting up the required environment mentioned above, iPat is now ready to go. Double clicking on 'iPat.jar' to launch iPat.
 
 <a name="interface"></a>
 ## 2. Interface
@@ -96,7 +135,7 @@
 
 * At the top of the panel, users can select a tool to perform GWAS or genomic prediction.  * A hint will pop up for each argument when the cursor hovers over the arguments’ name.
 
-<p align="center"><img src = "./res/config.png" width = 400></p>
+<p align="center"><img src = "./res/config.png" width = 700></p>
 
 <a name="run"></a>### 2.6 *Run an analysis*
 * After defining the analysis, user can start to run the procedure by clicking ‘GO’ at the top of the panel.* Each task will generate a console window while running the analysis. User can track the progress of the task from window messages.* iPat also capable of multitasking. Users can arrange another project even when the previous one have not done yet.<p align="center"><img src = "./res/multi.png" width = 700></p>
@@ -105,7 +144,7 @@
 ### 2.7 *Check the result*
 * When iPat complete a project, the gear icon will show a green dot if the task run successfully without any error occurred. Otherwise it will show a red dot at its top-left to notify users that there’re existing at least one error message during the analysis.
 
-<p align="center"><img src = "./res/indicator.png" width = 700></p>
+<p align="center"><img src = "./res/indicator.png" width = 500></p>
 * Users can check the result by double clicking on the gear icon, which will directe users to the folder where the output files generated.
 
 <p align="center"><img src = "./res/output.png" width = 500></p>
