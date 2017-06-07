@@ -7,8 +7,8 @@
 
 <h1 style="text-align:center">Intelligent Prediction and Association Tool</h1>
 
-<h3 style="text-align:center">(Version 1.1)</h3>
-<h3 style="text-align:center">Last updated on Apr 24, 2017</h3>
+<h3 style="text-align:center">(Version 1.2)</h3>
+<h3 style="text-align:center">Last updated on May 26, 2017</h3>
 
 <br><br><br>
 
