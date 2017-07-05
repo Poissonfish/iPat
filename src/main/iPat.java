@@ -176,7 +176,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			MOimage, Prefbar, MO_suc, MO_fal, 
 			hint_object, hint_trash, hint_model, hint_table,
 			iconIP;
-	
 	JLayeredPane startPanel;
 	JPanel mainPanel;	
 	JLayeredPane nullPanel;

@@ -10,7 +10,7 @@
 <h3 style="text-align:center">(Version 1.2)</h3>
 <h3 style="text-align:center">Last updated on May 26, 2017</h3>
 
-<br><br><br>
+<br><br>
 
 <div style="page-break-after: always;"></div>
 
@@ -83,23 +83,26 @@
 ### 1.2 Windows users
 * If you can call R from the commnad-line window (cmd.exe) by typing "R" or "r", then you can skip to section 1.4. Otherwise, please follow the instruction below to get your system compatible with iPat.
 
+<div style="page-break-after: always;"></div>
 * Open R software, and type ```R.home("bin")``` in the console. It will return a path to the executable R. Copy this path to the clipboard.
-<p align="center"><p align="center"><img src = "./res/rconsole.png" width = 700></p>
+<p align="center"><p align="center"><img src = "./res/rconsole.png" width = 450></p>
 
 * Search keyword "system" from Windows, and open "System".
-<p align="center"><p align="center"><img src = "./res/search.png" width = 350></p>
+<p align="center"><p align="center"><img src = "./res/search.png" width = 250></p>
 
+<div style="page-break-after: always;"></div>
 * Then select "Advanced system settings" at the left side of the panel.
-<p align="center"><p align="center"><img src = "./res/system.png" width = 700></p>
+<p align="center"><p align="center"><img src = "./res/system.png" width = 550></p>
 
 * And click "Environment Variable..." at the bottom-right area.
-<p align="center"><p align="center"><img src = "./res/advance.png" width = 450></p>
+<p align="center"><p align="center"><img src = "./res/advance.png" width = 350></p>
 
+<div style="page-break-after: always;"></div>
 * The pop-up windows will display two set of system variables. Highligh the system variable "Path" at the bottom list, and click "Edit". 
-<p align="center"><p align="center"><img src = "./res/env.png" width = 450></p>
+<p align="center"><p align="center"><img src = "./res/env.png" width = 350></p>
 
 * Almost there. Click "new" and paste the path you got from the clipboard, then click "OK" to save the configuration.
-<p align="center"><p align="center"><img src = "./res/rhome.png" width = 450></p>
+<p align="center"><p align="center"><img src = "./res/rhome.png" width = 350></p>
 
 <a name="mac"></a>
 ### 1.3 Mac OS users

@@ -46,7 +46,6 @@ class AlphaLabel extends JLabel {
         super.paintComponent(g2);
     }
 }
-
 class Group_Value{
 	public JLabel name = new JLabel();
 	public JTextField longfield = new JTextField(10);
@@ -116,7 +115,6 @@ class Group_Path{
 		field.setText(selectedfile.getAbsolutePath());
 	}
 }
-
 class Findex{
 	public static enum FILE{
 		unknown, P, G, GD, GM, VCF, PED, MAP, BED, FAM, BIM, TB, C, K, 
@@ -224,7 +222,6 @@ class BGThread extends Thread{
 		}
 	}
 }
-
 
 class ListPanel extends JPanel implements ActionListener{
 	JList list_items, list_selected;

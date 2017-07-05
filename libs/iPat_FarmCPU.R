@@ -14,20 +14,20 @@ lib = args[11]
 format = args[12]
 arg_length = 12
 
-GM.path= "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.map"
-GD.path= "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.dat"
-Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.txt"
-C.path = "NULL"
-C.inher = "NULL"%>%as.numeric
-method.bin = "optimum"
-maxLoop=as.numeric("10")
-MAF.calculate = as.logical("TRUE")
-maf.threshold=as.numeric("0.05")
-wd="/Users/Poissonfish/Desktop/test/farm"
-lib = "/Users/Poissonfish/git/iPat/libs/"
-format = "Numeric"
-args = c(1,2,3,4,5,6,7,8,9,0,1,2,1) 
-arg_length = 12
+# GM.path= "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.map"
+# GD.path= "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.dat"
+# Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.txt"
+# C.path = "NULL"
+# C.inher = "NULL"%>%as.numeric
+# method.bin = "optimum"
+# maxLoop=as.numeric("10")
+# MAF.calculate = as.logical("TRUE")
+# maf.threshold=as.numeric("0.05")
+# wd="/Users/Poissonfish/Desktop/test/farm"
+# lib = "/Users/Poissonfish/git/iPat/libs/"
+# format = "Numeric"
+# args = c(1,2,3,4,5,6,7,8,9,0,1,2,1) 
+# arg_length = 12
 
 tryCatch({
   # Load libraries
