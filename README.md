@@ -116,11 +116,9 @@
 
 * ***Imported file set must have identical filenames and correct extension name if they need to be converted to a proper format.*** For example, if you want to perform GWAS using VCF format in FarmCPU, which is a package only support files in numerical format, the input files set should be named as: **data.vcf** and **data.txt**. 
 
-* The table below shows further information of required data in each format:
+* The table below shows further information of valid datasets in different formats: 
 
 <center>
-
-#### Valid datasets for different formats 
 
 |Format |File 1<br>(required)|File 2<br>(required)|File 3<br>(required)|File 4<br>(required)| Optional|
 |:-:|:-:|:-:|:-:|:-:|:-:|
