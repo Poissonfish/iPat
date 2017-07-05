@@ -109,7 +109,7 @@
 ### 2.2 *Create a project*
 * After importing the files, double clicking on anywhere in iPat to create a new project (a gear icon).
 * Build a project by dragging a files over the project icon. A dashline will be shown between the file and project, which mean this file has been already included in this project. <p align="center"><img src = "./res/linkages.png" width = 250></p>
-* A valid project must include a certain number of required files (see the table in section 2.3), ***no less, no more. ***Otherwise iPat won't work and will return an error message.
+* A valid project must include a certain number of required files (see the table in section 2.3), **no less, no more.** Otherwise iPat won't work and will return an error message.
 
 ### 2.3 *File formats*
 * iPat can recognize and work fine with different formats, which include hapmap, numeric, vcf and plink.
@@ -119,7 +119,9 @@
 * The table below shows further information of required data in each format:
 
 <center>
+
 #### Valid datasets for different formats 
+
 |Format |File 1<br>(required)|File 2<br>(required)|File 3<br>(required)|File 4<br>(required)| Optional|
 |:-:|:-:|:-:|:-:|:-:|:-:|
 |Hapmap|Genotype<br>(.hmp)|Phenotype<br>(.txt)| None | None | Covariates or Kinship<br>(Read **section 2.4** for detail)|
@@ -127,6 +129,7 @@
 |VCF   |Genotype<br>(.vcf)|Phenotype<br>(.txt)| None | None | Covariates or Kinship<br>(Read **section 2.4** for detail)|
 |PLINK<br>(binary)|Genotype<br>(.bed)|Phenotype<br>(.txt)|Map information (.bim)| Individual information<br>(.fam)| Covariates or Kinship<br>(Read **section 2.4** for detail)|
 |BSA|Reads count<br>(.bsa)|Map information (.map)| None | None | None|
+
 </center><a name="C_K"></a>### 2.4 *Covariates and kinship** Users are allowed to add covariates into the project. Right clicking on the file can change the file type.
 <p align="center"><img src = "./res/ck.png" width = 400></p>
 * Label “C” stands for covariate, and Label “K” is indicated as kinship.<p align="center"><img src = "./res/ck2.png" width = 250></p>
