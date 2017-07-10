@@ -223,6 +223,22 @@ class BGThread extends Thread{
 	}
 }
 
+class covPanel extends JPanel{
+	public Group_Combo[] CO;
+	public covPanel(int size, String[] co_names, String[] methods){
+		this.setLayout(new MigLayout("fillx"));
+		CO = new Group_Combo[size];
+		for(int i = 0; i < size; i++){
+			CO[i] = new Group_Combo(co_names[i], methods);
+			this.add(CO[i].name);
+			this.add(CO[i].combo, "wrap");
+		}
+	}
+	public String getSelected(int index){
+		return (String)CO[index].combo.getSelectedItem();
+	}
+}
+
 class ListPanel extends JPanel implements ActionListener{
 	JList list_items, list_selected;
 	JButton button_in, button_out;
@@ -280,7 +296,7 @@ class ListPanel extends JPanel implements ActionListener{
         panel_buttons.add(button_out, "cell 0 1, align c");
         button_in.addActionListener(this);
         button_out.addActionListener(this);
-        
+
         this.setLayout(new MigLayout("fill"));
         this.add(panel_items, "cell 0 0, grow");
         this.add(panel_buttons, "cell 1 0, grow");
