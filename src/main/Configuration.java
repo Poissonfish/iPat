@@ -138,23 +138,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	ListPanel panel_phenotype_r;
 	String[] rowP_r;	
 	///////////////////////////////////////////////////////////////////////////////////////	
-	//Config BGLR
-	JPanel main_panel_b;
-	JButton go_b = new JButton("GO");
 	
-	JPanel wd_panel_b;
-	Group_Value Project_b = new Group_Value("Project name");
-	Group_Path WD_b = new Group_Path("Output Directory");
-	JLabel format_b = new JLabel("");
-	
-	ListPanel panel_phenotype_b;
-	String[] rowP_b;
-	
-	JPanel panel_iteration_b;
-	Group_Combo niter_b = new Group_Combo("Number of iterations", 
-			new String[]{"1200", "1500", "2000", "5000", "12000"});
-	Group_Combo burnin_b = new Group_Combo("Burn-In",
-			new String[]{"200", "500", "700", "1000", "2000"});
 	///////////////////////////////////////////////////////////////////////////////////////	
 	JPanel main_panel_bsa;
 	JButton go_bsa = new JButton("GO");
@@ -237,10 +221,6 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 				pane_rrblup = config_rrblup(); mainPane.addTab("rrBLUP", pane_rrblup);
 				pane_bglr = config_BGLR(); mainPane.addTab("BGLR", pane_bglr);
 	        	break;
-			case PLink_ASCII: 
-				file_format = "PLink_ASCII"; 
-				pane_plink = config_plink(); mainPane.addTab("PLINK", pane_plink);
-				break;
 			case PLink_Binary: 
 				file_format = "PLink_Binary"; 
 				pane_plink = config_plink(); mainPane.addTab("PLINK", pane_plink);
@@ -502,8 +482,37 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		return main_panel_r;
 	}
 	
+	//Config BGLR
+		JPanel main_panel_b;
+		JButton go_b = new JButton("GO");
+		
+		JPanel wd_panel_b;
+		Group_Value Project_b = new Group_Value("Project name");
+		Group_Path WD_b = new Group_Path("Output Directory");
+		JLabel format_b = new JLabel("");
+		
+		ListPanel panel_phenotype_b;
+		String[] rowP_b;
+		
+		covPanel panel_covariates_b; 
+		String[] bglr_model = {"FIXED", "BRR", "BayesA", "BL", "BayesB", "BayesC", "OMIT IT"};
+		String[] CO_names_b;
+
+		JPanel panel_args_b;
+		Group_Combo model_b = new Group_Combo("Model of the Predictor (Markers)", 
+				new String[]{"BRR", "BayesA", "BL", "BayesB", "BayesC", "FIXED"});
+		Group_Combo response_b = new Group_Combo("response_type", 
+				new String[]{"gaussian", "ordinal"});
+		Group_Combo niter_b = new Group_Combo("nIter", 
+				new String[]{"1200", "1500", "2000", "5000", "12000"});
+		Group_Combo burnin_b = new Group_Combo("burnIn",
+				new String[]{"200", "500", "700", "1000", "2000"});
+		Group_Combo thin_b = new Group_Combo("thin", 
+				new String[]{"1", "2", "5", "10"}); // 5
 	public JPanel config_BGLR() throws IOException{
 		go_b.setFont(new Font("Ariashowpril", Font.BOLD, 40));	
+		JTabbedPane pane = new JTabbedPane();
+		///////////////////////////////////////////////////////////////////////////////////////
 		wd_panel_b = new JPanel(new MigLayout("fillx", "[][grow]"));
 		wd_panel_b.add(Project_b.name, "cell 0 0 2 1");
 		wd_panel_b.add(Project_b.longfield, "cell 0 1 2 1");
@@ -517,24 +526,39 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 			default: format_b.setText("The format is "+iPatPanel.format+" (Conversion required)"); break;
 		}
 		wd_panel_b.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Project", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));
+		pane.addTab("Project", wd_panel_b);
 		///////////////////////////////////////////////////////////////////////////////////////
 		panel_phenotype_b = new ListPanel("Traits", "Excluded");
 		String text = iPatPanel.read_lines(P_name, 1)[0];
 		rowP_b = text.split("\t");
 		for(int i = 1; i < rowP_b.length ; i++) panel_phenotype_b.addElement(rowP_b[i]);
 		panel_phenotype_b.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Phenotype", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
-		///////////////////////////////////////////////////////////////////////////////////////
-		panel_iteration_b = new JPanel(new MigLayout("fillx"));
-		panel_iteration_b.add(niter_b.name, "cell 0 1, align r");
-		panel_iteration_b.add(niter_b.combo, "cell 1 1, align l");
-		panel_iteration_b.add(burnin_b.name, "cell 0 2, align r");
-		panel_iteration_b.add(burnin_b.combo, "cell 1 2, align l");
-		panel_iteration_b.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Iteration", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
-		///////////////////////////////////////////////////////////////////////////////////////
-		JTabbedPane pane = new JTabbedPane();
-		pane.addTab("Project", wd_panel_b);
 		pane.addTab("Phenotype", panel_phenotype_b);
-		pane.addTab("Iteration", panel_iteration_b);
+		///////////////////////////////////////////////////////////////////////////////////////
+		String CO_head;
+		if(C_provided != 0){
+			CO_head = iPatPanel.read_lines(C_name, 1)[0];
+			CO_names_b = CO_head.split("\t");
+			panel_covariates_b = new covPanel(CO_names_b.length, CO_names_b, bglr_model);
+			panel_covariates_b.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Covariates", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
+			pane.addTab("Covariates", panel_covariates_b);
+		}
+		///////////////////////////////////////////////////////////////////////////////////////
+		panel_args_b = new JPanel(new MigLayout("fillx"));
+		panel_args_b.add(model_b.name, "cell 0 1, align r");
+		panel_args_b.add(model_b.combo, "cell 1 1, align l");
+		panel_args_b.add(response_b.name, "cell 0 2, align r");
+		panel_args_b.add(response_b.combo, "cell 1 2, align l");
+		panel_args_b.add(niter_b.name, "cell 0 3, align r");
+		panel_args_b.add(niter_b.combo, "cell 1 3, align l");
+		panel_args_b.add(burnin_b.name, "cell 0 4, align r");
+		panel_args_b.add(burnin_b.combo, "cell 1 4, align l");
+		thin_b.combo.setSelectedItem("5");
+		panel_args_b.add(thin_b.name, "cell 0 5, align r");
+		panel_args_b.add(thin_b.combo, "cell 1 5, align l");
+		panel_args_b.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Input Arguments", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
+		pane.addTab("BGLR input", panel_args_b);
+		///////////////////////////////////////////////////////////////////////////////////////
 		main_panel_b = new JPanel(new MigLayout("fill", "[grow]"));
 		main_panel_b.add(go_b, "dock east");
 		main_panel_b.add(pane, "cell 0 0, grow");
@@ -543,6 +567,60 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 		WD_b.browse.addActionListener(this);
 		return main_panel_b;
 	}
+	String[] run_BGLR(Findex[] file_index){
+		String 	WD = "", Project_name = "", 
+				C = "", CO_model = "", K = "", 
+				model = "", response = "",
+				niter = "", burn = "", thin = "";
+		
+		// Subset traits
+		String[] out = panel_phenotype_b.getElement(); //get remain traits
+		String indexp = "";
+		if(out.length == 0){
+			indexp = "NA";
+		}else{
+			for (int i = 0; i < out.length; i++){indexp = indexp + Integer.toString(Arrays.asList(rowP_b).indexOf(out[i])) + "sep";} // get selected index
+		}
+	
+		// Covariates
+		if(C_provided != 0){
+			C = iPatPanel.TBfile[C_provided];
+			for (int i = 0; i < CO_names_b.length; i++){CO_model = CO_model + panel_covariates_b.getSelected(i) + "sep";}
+		}else{
+			C = "NA";
+		}
+		
+		// Kinship
+		K = K_provided != 0 ? K_name:"NA"; 
+		
+		// Input args
+		model = (String)model_b.combo.getSelectedItem();
+		response = (String)response_b.combo.getSelectedItem();
+		niter = (String)niter_b.combo.getSelectedItem();
+		burn = (String)burnin_b.combo.getSelectedItem();
+		thin = (String)thin_b.combo.getSelectedItem();
+			
+		// Format 
+		switch(iPatPanel.format){
+		case Hapmap:
+			GD_name = G_name;
+			break;
+		case VCF:
+			GD_name = VCF_name; 
+			break;
+		case PLink_Binary:
+			break;
+		}		
+		
+		System.out.println("running BGLR"); 
+	    // Command input
+	    String[] command = {R_exe, iPatPanel.jar.getParent()+"/libs/iPat_BGLR.R",
+	     					GD_name, P_name, indexp, C, CO_model, K, model, response, niter, burn, thin, 
+	     					Project_b.longfield.getText(), WD_b.field.getText(), iPatPanel.jar.getParent()+"/libs/", file_format};  
+	    String[] whole = (String[])ArrayUtils.addAll(command);
+	    return whole;
+	}
+	
 	
 	public JPanel config_BSA() throws IOException{
 		go_bsa.setFont(new Font("Ariashowpril", Font.BOLD, 40));	
@@ -830,41 +908,7 @@ public class Configuration extends JFrame implements ActionListener, WindowListe
 	    return whole;
 	}
 	
-	String[] run_BGLR(Findex[] file_index){
-		String 	WD = "", Project_name = "", 
-				C = "", niter = "", burn = "";
-		// Multiple trait
-		String[] out = panel_phenotype_b.getElement(); //get remain traits
-		String[] indexp = new String[out.length]; //create array for index
-		for (int i = 0; i < out.length; i++){
-			indexp[i] = Integer.toString(Arrays.asList(rowP_b).indexOf(out[i])); // get selected index
-		}
-		niter = (String)niter_b.combo.getSelectedItem();
-		burn = (String)burnin_b.combo.getSelectedItem();
-		
-		// Format 
-		switch(iPatPanel.format){
-		case Hapmap:
-			GD_name = G_name;
-			break;
-		case VCF:
-			GD_name = VCF_name; 
-			break;
-		case PLink_ASCII:
-			break;
-		case PLink_Binary:
-			break;
-		}		
-
-		C = C_provided != 0 ? iPatPanel.TBfile[C_provided] : "NULL";
-		
-		System.out.println("running BGLR"); 
-	    // Command input
-	    String[] command = {R_exe, iPatPanel.jar.getParent()+"/libs/iPat_BGLR.R",
-	     					GM_name, GD_name, P_name, C, niter, burn, WD_b.field.getText(), iPatPanel.jar.getParent()+"/libs/", file_format};  
-	    String[] whole = (String[])ArrayUtils.addAll(command, indexp);
-	    return whole;
-	}
+	
 	
 	String[] run_BSA(Findex[] file_index){
 		String WS = "";

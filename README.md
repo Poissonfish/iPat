@@ -117,7 +117,7 @@
  
 * ***A fileset included in one project must have identical filenames and correct extension name if they need to be converted to a proper format.*** For example, if you want to perform GWAS using VCF format in FarmCPU, which is a package only support files in numerical format, the input fileset should be named as: **data.vcf** and **data.txt**. 
 
-* The table below shows further information of valid datasets in different formats: 
+* Further details about valid datasets in different formats are given below:
 
 <center>
 
@@ -131,8 +131,9 @@
 
 </center><a name="C_K"></a>### 2.4 *Covariates and kinship** It's **optional** that users can add **user-define** covariates or kinship into the project. Right clicking on the file to tell iPat what type of file it is. (i.e. covariates, kinship or a basic required file)
 <p align="center"><img src = "./res/ck.png" width = 400></p>
-* The file labeled “C” stands for a covariate file, while files labeled “K” is identified as a kinship file by iPat. For the example of a valid project below (Left one), the file "covariate.txt" and "kinship.txt" are treated as covariates and a kinship in this project, respectively. Each project can contain **multiple** covariate files and **one** single kinship.
 
+* Covariates provided by users will be treated as **fixed effect** in the selected model except in BGLR. 
+* The file labeled “C” stands for a covariate file, while files labeled “K” is identified as a kinship file by iPat. For the example of a valid project below (Left one), the file "covariate.txt" and "kinship.txt" are treated as covariates and a kinship in this project, respectively. Each project can contain **multiple** covariate files and **one** single kinship.
 
 * Be aware that apart from the basic required file (i.e. phenotype or genotype), optional files must be properly labeled in a project.<p align="center"><img src = "./res/ck_case.png" Height = 230></p>
 
@@ -145,7 +146,7 @@
 |GAPIT|VanRaden (VanRaden, 2008),  <br> Loiselle (Loiselle *et al.*, 1995) <br> or EMMA (Kang *et al.*, 2008)|
 |FarmCPU|FARM-CPU (Liu *et al.*, 2016)|
 |PLINK|User-provided|
-|rrBLUP||
+|rrBLUP|VanRaden (VanRaden, 2008)|
 |BGLR|User-provided|
 
 </center>
@@ -153,7 +154,6 @@
 
 <a name="input"></a>
 ### 2.5 *Define input arguments** After linking every files needed in the project, right click on the project to open a configuration panel.
-
 * At the top of the panel, users can select a tool to perform GWAS or genomic prediction.  * A hint will pop up for each argument when the cursor hovers over the arguments’ name.
 
 <p align="center"><img src = "./res/config.png" width = 700></p>
@@ -221,8 +221,8 @@ Tools implemented in iPat allow users to do genome-wide associate study (GWAS) a
 |Category|Parameter| Definitions| Default|
 |:--|:---|:---|:--:|
 |Subset|Subset of traits data|Users can select all or partial of traits to be analyzed|All traits|
-|BGLR|Number of iterations| Number of iterations|1200|
-|BGLR|Burn-In| Iteration of burn-in|200|
+|BGLR|nIter| The number of iterations of the sampler|1200|
+|BGLR|burnIn| The number of samples discarded|200|
 
 <a name="bsa"></a>
 ### 3.6 BSA
