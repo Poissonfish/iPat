@@ -1,32 +1,27 @@
 # Input arguments
-args = commandArgs(trailingOnly=TRUE)
-GD.path = args[1]
-Y.path = args[2]
-Y.index = args[3]
-C.path = args[4]
-C.model = args[5]
-K.path = args[6]
-model = args[7]
-response = args[8]
-iter = as.numeric(args[9])
-burn = as.numeric(args[10])
-thin = as.numeric(args[11])
-project = args[12]
-wd = args[13]
-lib = args[14]
-format = args[15]
-
-# Simulation
-GM.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.map"
-GD.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.dat"
-Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.txt"
-Y.index = "3sep2sep"
-C.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/covariate.txt"
-iter = 1500
-burn = 200
-wd = "/Users/Poissonfish/Desktop/test/bglr"
-lib = "/Users/Poissonfish/git/iPat/libs/"
-format = "Numeric"
+	args = commandArgs(trailingOnly=TRUE)
+# Common args
+	project = args[1]
+	wd = args[2]
+	lib = args[3]
+	format = args[4]
+	ms = as.numeric(args[5])
+	maf  = as.numeric(args[6])
+	Y.path = args[7]
+	Y.index = args[8]
+	GD.path = args[9]
+	GM.path  = args[10]
+	C.path = args[11]
+	C.index = args[12]
+	K.path  = args[13]
+	FAM.path  = args[14]
+	BIM.path  = args[15]
+# Method specific args
+	model = args[16]
+	response = args[17]
+	nIter = as.numeric(args[18])
+	burnIn = as.numeric(args[19])
+	thin = as.numeric(args[20])
 
 tryCatch({
 	# Load libraries
@@ -72,53 +67,60 @@ tryCatch({
 	            hmp = substring(GD.path, 1, nchar(GD.path)-4)
 	            sprintf("%s/blink --file %s --compress --hapmap", lib, hmp) %>% system()
 	            sprintf("%s/blink --file %s --recode --out %s --numeric", lib, hmp, hmp) %>% system()
-	            GD = read.table(sprintf("%s.dat", hmp)) %>% t() %>% data.frame(Y[,1], .)
-	            GM = read.table(sprintf("%s.map", hmp), head = TRUE)}, 
+	            GD = fread(sprintf("%s.dat", hmp)) %>% t() %>% data.frame(Y[,1], .)},
 	  VCF = { if(!OS.Windows){sprintf("chmod 777 %s/blink", lib) %>% system()}
 	          vcf = substring(GD.path, 1, nchar(GD.path)-4)
 	          sprintf("%s/blink --file %s --compress --vcf", lib, vcf) %>% system()
 	          sprintf("%s/blink --file %s --recode --out %s --numeric", lib, vcf, vcf) %>% system()
-	          GD = read.table(sprintf("%s.dat", vcf)) %>% t() %>% data.frame(Y[,1], .)
-	          GM = read.table(sprintf("%s.map", vcf), head = TRUE)},
+	          GD = fread(sprintf("%s.dat", vcf)) %>% t() %>% data.frame(Y[,1], .)},
 	  PLink_Binary = {
-
 	  }, {
 	  	# Numeric (Default)
-		if(GM.path == "NULL"){GM = NULL}else{GM = fread(GM.path) %>% as.data.frame}
-		if(GD.path == "NULL"){GD = NULL}else{GD = fread(GD.path) %>% as.data.frame}
+		GD = fread(GD.path) %>% as.data.frame()
 	  }
 	)
+
+	# QC
 
 	# Trim data 
 	if(is.character(GD[,1])){
 	  GD = GD[,-1]
 	}
 
-	# Covariates and define ETA used in BGLR
-	if(C.path == "NULL"){
-		C = NULL
-		ETA = list(list(X = GD, model="BL"))
-	}else{
-		C = fread(C.path, head = TRUE) %>% as.data.frame
-		ETA = list(list(X = GD, model="BL"), list(X = C, model="FIXED"))
-	}
-
-
-# saveAt (character)
-# thin
-
+	# Define ETA in BGLR
+	ETA = list(list(X = GD, model = model))
+		## Covariates
+		if(C.path != "NA"){
+			C = fread(C.path) %>% as.data.frame()
+			C.model.name = C.index %>% strsplit(split = "sep") %>% do.call(c, .)
+			for (i in 1:ncol(C)){
+				if(C.model.name[i] != "OMIT IT"){
+					length(ETA) = length(ETA) + 1
+					ETA[[length(ETA)]] = list(X = C[,i], model = C.model.name[i])
+				}
+			}
+		}
+		## Kinship
+		if(K.path != "NA"){
+			K = fread(K.path) %>% as.data.frame()
+			length(ETA) = length(ETA) + 1
+			ETA[[length(ETA)]] = list(K = K, model = "RKHS")
+		}
 
 	# BGLR
-	for (i in 1:length(trait_names)){
-		blr = BGLR(y = Y[,1+i], 
-				   ETA = ETA, 
-				   nIter = iter, burnIn = burn) 
-		P = blr$ETA[[1]]$tau2
-		myGI.MP=cbind(GM[,-1], 1/(exp(10000*P))) %>% as.data.frame
-		GAPIT.Manhattan(GI.MP = myGI.MP, name.of.trait = sprintf("%s", trait_names[i]))
-		GAPIT.QQ(P, name.of.trait = sprintf("%s", trait_names[i]))
+	for (i in 1:length(trait.names)){
+		blr = BGLR(y = Y[,i], ETA = ETA, response_type = response, 
+				   nIter = nIter, burnIn = burnIn, thin = thin, saveAt = sprintf("BGLR_%s_%s_", project, trait.names[i])) 
 	}
 	print(warnings())
 }, error = function(e){
 	stop(e)	
 })
+
+# ETA<-list(list(K=KI,model='RKHS')) 
+# fm<-BGLR(y= Y.train, ETA=ETA,nIter=12000, burnIn=2000,saveAt='RKHS_h=0.5_', verbose = F)
+# cor(fm$yHat[sam], Y.valid)
+
+# ETA = list(list(K = KI, model = 'RKHS'), list(X=G, model='BL'))
+# fm2<-BGLR(y= Y.train, ETA=ETA,nIter=12000, burnIn=2000,saveAt='RKHS_h=0.5_', verbose = F)
+# cor(fm2$yHat[sam], Y.valid)
