@@ -32,6 +32,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -55,12 +57,21 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.border.BevelBorder;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+
+import main.ConfigFrame.analysis;
+import net.miginfocom.swing.MigLayout;
 
 public class iPat {
 	static int Wide=1200;
@@ -70,6 +81,7 @@ public class iPat {
 	static String OS_string;
 	public static OS UserOS = new OS();
 	public static iPatPanel ipat;
+	
 	public static void main(String[] args){  
 		System.out.println("Welcome to iPat!");
 		OS_string = System.getProperty("os.name");
@@ -121,7 +133,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	//  private static class ipatButton extends JButton {
 	private static final int TBMAX=40;
 	static int MOMAX=10;
-	private static final int COMAX=20;	
 	static File jar;
 	static int[] TBimageX= new int[TBMAX];
 	static int[] TBimageY= new int[TBMAX];
@@ -161,7 +172,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	
 	static Rectangle[] TBBound= new Rectangle[TBMAX];
 	static Rectangle[] MOBound= new Rectangle[MOMAX];
-	static Rectangle[] COBound= new Rectangle[COMAX];
 	
 	int MOimageX_int=430;
 	int MOimageY_int=200;
@@ -248,10 +258,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	Boolean in=false, insub=false;
 	
 	//Button
-	JButton TBButton= new JButton();
-	JButton MOButton= new JButton();
-	Image addTB, addMO;
-	Timer TBanimation, MOanimation;
 	Boolean ifopenfile=false, ifproperty=false, ifproperty_tb=false, ifproperty_mo=false;
 	int openindex=-1;
 	int createX=-1, createY=-1;
@@ -287,8 +293,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	AlphaLabel hint_trash_label = new AlphaLabel();
 	Fade_timer hint_trash_timer;
 	
-	//multi-thread
-	static BGThread[] multi_run = new BGThread[MOMAX]; 
 	//Console panel
 	static JScrollPane[] scroll_console = new JScrollPane[MOMAX];
 	static JTextArea[] text_console = new JTextArea[MOMAX];
@@ -312,11 +316,28 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	}
 	////
 	public static enum FORMAT{
-		NA, Hapmap, Numeric, VCF, PLink_ASCII, PLink_Binary, BSA
+		NA("NA"), Hapmap("Hapmap"), Numeric("Numeric"), VCF("VCF"), PLink_Binary("PLINK"), BSA("BSA");
+		String name;	
+		private FORMAT(String name){this.name = name;}
+		public String Name(){return this.name;}
 	}
 	public static FORMAT format = FORMAT.NA;
 	
 	public static boolean debug = false, first_d = false;
+
+	// Content menu
+	public JPopupMenu popup_tb, popup_mo;
+	public static JMenuItem popup_isR, popup_isC, popup_isK, popup_opentb, popup_deltb;
+	public static JMenuItem popup_gwas, popup_gs, popup_run, popup_openmo, popup_delmo;
+	public static int index_pop_tb = -1, index_pop_mo = -1;
+	
+	// Run command
+	public static String[][] command_gwas = new String[MOMAX][],
+							 command_gs = new String[MOMAX][];
+	public static boolean[][] isDeployed = new boolean[MOMAX][2];
+	static BGThread[] multi_run = new BGThread[MOMAX]; 
+	static Runtime[] runtime = new Runtime[MOMAX];
+	static Process[] process = new Process[MOMAX];
 	
 	public iPatPanel(int Wideint, int Heigthint, int pH){
 		this.Wide=Wideint;
@@ -324,55 +345,143 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		this.panelHeigth=pH;
 		delbboundx=Wide-50;
 		delbboundy=Heigth-70;
-	    	// Connect the label with a drag and drop listener
-	    	new DropTarget(this, new DropTargetListener(){
-	        		@Override
-	        		public void drop(DropTargetDropEvent event) {
-	            			// Accept copy drops
-	            			event.acceptDrop(DnDConstants.ACTION_COPY);
-	            			// Get the transfer which can provide the dropped item data
-	            			Transferable transferable = event.getTransferable();
-	            			// Get the data formats of the dropped item
-	            			DataFlavor[] flavors = transferable.getTransferDataFlavors();
-	            			// Loop through the flavors
-	            			for (DataFlavor flavor : flavors) {
-	            				try {
-	                    				// If the drop items are files
-	                    				if(flavor.equals(DataFlavor.javaFileListFlavor)){
-	                        					List<File> files = (List<File>) transferable.getTransferData(flavor);
-	                    					int count = 0;
-	                        					for (File file : files) {
-	                    						Point pointer = event.getLocation();
-	                            					int x = (int)pointer.getX();
-	                    						int y = (int)pointer.getY();
-	                    						create_TB(x+count*30, y+count*15);
-	                    						TBindex = TBcount;
-	                    						TB_assign(file);
-	                    						count++;
-	                    						// Print out the file path
-	                            					System.out.println("File path is '" + file.getPath() + "'.");
-	                            					repaint();
-	                        					}
-	                    				}
-	                			}catch (Exception e) {
-	                    				e.printStackTrace();
-	                			}
-	           		 	}
-	            			TBindex = 0;
-	            			// Inform that the drop is complete
-	            			event.dropComplete(true);     
-	        		}
+		
+		// Context menu
+		popup_tb = new JPopupMenu();
+		popup_mo = new JPopupMenu();
+		
+		ActionListener menuListener = new ActionListener() {
+	      public void actionPerformed(ActionEvent event) {
+	    	int adx = 7, ady = 9;
+	    	Object source = event.getSource();
+	    	if(source == popup_opentb){
+				TBopenfile(index_pop_tb);
+	    	}else if(source == popup_isR){
+	    		TBtype[index_pop_tb] = Findex.FILE.TB;
+				TB[index_pop_tb] = TBimage;
+				TBimageH[index_pop_tb] = TB[index_pop_tb].getHeight(null);
+				TBimageW[index_pop_tb] = TB[index_pop_tb].getWidth(null);
+				TBimageX[index_pop_tb] += adx;
+				TBimageY[index_pop_tb] += ady;
+	    	}else if(source == popup_isC){
+	    		TBtype[index_pop_tb] = Findex.FILE.C;
+				TB[index_pop_tb] = TB_C;
+				TBimageH[index_pop_tb] = TB[index_pop_tb].getHeight(null);
+				TBimageW[index_pop_tb] = TB[index_pop_tb].getWidth(null);
+				TBimageX[index_pop_tb] -= adx;
+				TBimageY[index_pop_tb] -= ady;
+	    	}else if(source == popup_isK){
+	    		TBtype[index_pop_tb] = Findex.FILE.K;
+				TB[index_pop_tb] = TB_K;
+				TBimageH[index_pop_tb] = TB[index_pop_tb].getHeight(null);
+				TBimageW[index_pop_tb] = TB[index_pop_tb].getWidth(null);
+	    	}else if(source == popup_deltb){
+	    	
+	    	}else if(source == popup_openmo){
+				MOopenfile(index_pop_mo);
+	    	}else if(source == popup_gwas){
+		   		try {open_config(ConfigFrame.analysis.GWAS);
+				} catch (IOException e) {e.printStackTrace();}   	
+	    	}else if(source == popup_gs){
+	    		try {open_config(ConfigFrame.analysis.GS);
+				} catch (IOException e) {e.printStackTrace();}
+	    	}else if(source == popup_run){
+	    		if(isDeployed[index_pop_mo][ConfigFrame.analysis.GWAS.index] &&
+	    		   isDeployed[index_pop_mo][ConfigFrame.analysis.GS.index]){
+		    		showConsole(index_pop_mo, command_gwas[index_pop_mo][2], command_gwas[index_pop_mo][3]);	            
+		    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gwas[index_pop_mo], command_gs[index_pop_mo]);
+		    		multi_run[index_pop_mo].start();
+	    		}else if(isDeployed[index_pop_mo][ConfigFrame.analysis.GWAS.index]){
+	    			showConsole(index_pop_mo, command_gwas[index_pop_mo][2], command_gwas[index_pop_mo][3]);	            
+		    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gwas[index_pop_mo], null);
+		    		multi_run[index_pop_mo].start();
+	    		}else if(isDeployed[index_pop_mo][ConfigFrame.analysis.GS.index]){
+	    			showConsole(index_pop_mo, command_gs[index_pop_mo][2], command_gs[index_pop_mo][3]);	            
+		    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gs[index_pop_mo], null);
+		    		multi_run[index_pop_mo].start();
+	    		}
+	    	}else if(source == popup_delmo){
+
+	    	}
+	    	repaint();
+	    	index_pop_tb = -1; index_pop_mo = -1;
+	      };
+		};
+	    popup_tb.add(popup_opentb = new JMenuItem("Open file"));
+	    popup_opentb.setHorizontalTextPosition(JMenuItem.RIGHT); popup_opentb.addActionListener(menuListener);
+	    popup_tb.add(popup_isR = new JMenuItem("Treated as a Basic file"));
+	    popup_isR.setHorizontalTextPosition(JMenuItem.RIGHT); popup_isR.addActionListener(menuListener);
+	    popup_tb.add(popup_isC = new JMenuItem("Treated as Covariate"));
+	    popup_isC.setHorizontalTextPosition(JMenuItem.RIGHT); popup_isC.addActionListener(menuListener);
+	    popup_tb.add(popup_isK = new JMenuItem("Treated as Kinship"));
+	    popup_isK.setHorizontalTextPosition(JMenuItem.RIGHT); popup_isK.addActionListener(menuListener);
+	    popup_tb.addSeparator();
+	    popup_tb.add(popup_deltb = new JMenuItem("Delete file"));
+	    popup_deltb.setHorizontalTextPosition(JMenuItem.RIGHT); popup_deltb.addActionListener(menuListener);
+	    popup_tb.setBorder(new BevelBorder(BevelBorder.RAISED));
+	    
+	    popup_mo.add(popup_openmo = new JMenuItem("Open WD"));
+	    popup_openmo.setHorizontalTextPosition(JMenuItem.RIGHT); popup_openmo.addActionListener(menuListener);
+	    popup_mo.add(popup_gwas = new JMenuItem("GWAS"));
+	    popup_gwas.setHorizontalTextPosition(JMenuItem.RIGHT); popup_gwas.addActionListener(menuListener);
+	    popup_mo.add(popup_gs = new JMenuItem("GS"));
+	    popup_gs.setHorizontalTextPosition(JMenuItem.RIGHT); popup_gs.addActionListener(menuListener);
+	    popup_mo.addSeparator();
+	    popup_mo.add(popup_run= new JMenuItem("Run"));
+	    popup_run.setHorizontalTextPosition(JMenuItem.RIGHT); popup_run.addActionListener(menuListener);
+	    popup_run.setEnabled(false);
+	    popup_mo.add(popup_delmo = new JMenuItem("Delete project"));
+	    popup_delmo.setHorizontalTextPosition(JMenuItem.RIGHT); popup_delmo.addActionListener(menuListener);
+	    popup_mo.setBorder(new BevelBorder(BevelBorder.RAISED));
+
+	    
+	    
+	    // DnD feature
+    	new DropTarget(this, new DropTargetListener(){
+    		@Override
+    		public void drop(DropTargetDropEvent event) {
+    			event.acceptDrop(DnDConstants.ACTION_COPY);
+    			// Get dropped items' data
+    			Transferable transferable = event.getTransferable();
+    			// Get the format
+    			DataFlavor[] flavors = transferable.getTransferDataFlavors();
+    			for (DataFlavor flavor : flavors) {
+    				try {
+            				// If multiple files
+            				if(flavor.equals(DataFlavor.javaFileListFlavor)){
+                					List<File> files = (List<File>) transferable.getTransferData(flavor);
+            					int count = 0;
+                					for (File file : files) {
+            						Point pointer = event.getLocation();
+                    					int x = (int)pointer.getX();
+            						int y = (int)pointer.getY();
+            						create_TB(x+count*30, y+count*15);
+            						TBindex = TBcount;
+            						TB_assign(file);
+            						count++;
+            						// Print out the file path
+                    					System.out.println("File path is '" + file.getPath() + "'.");
+                    					repaint();
+                					}
+            				}
+        			}catch (Exception e) {
+            				e.printStackTrace();
+        			}
+       		 	}
+        		TBindex = 0;
+        		event.dropComplete(true);     
+    		}
 			@Override
 			public void dragOver(DropTargetDragEvent event) {}
-		        @Override
-		       	public void dropActionChanged(DropTargetDragEvent event) {}
-		    	@Override
-		    	public void dragEnter(DropTargetDragEvent dtde) {}
-		    	@Override
-		    	public void dragExit(DropTargetEvent dte) {}
-	    	});
+	        @Override
+	       	public void dropActionChanged(DropTargetDragEvent event) {}
+	    	@Override
+	    	public void dragEnter(DropTargetDragEvent dtde) {}
+	    	@Override
+	    	public void dragExit(DropTargetEvent dte) {}
+    	});
 
-	        	try {
+	    try{
 			jar = new File(iPat.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
 		} catch (URISyntaxException e1) {e1.printStackTrace();}
         
@@ -465,6 +574,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			MOimageH[i]=MO[i].getHeight(null);	
 			MOimageW[i]=MO[i].getWidth(null);
 			Arrays.fill(MOco[i], -1);
+			Arrays.fill(isDeployed[i], false);
 			rotate_index[i]=0;
 		}			
 		Arrays.fill(permit, false);
@@ -550,7 +660,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		hint_model_timer.start();
 		hint_trash_timer.start();
 
-		this.addMouseListener(new MouseAdapter(){		
+		this.addMouseListener(new MouseAdapter(){	
 			@Override
 			public void mousePressed(MouseEvent ee){
 				int move_x=ee.getX();
@@ -587,63 +697,11 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
     			
     			String folder_path = null;
 				if(TBindex!=0 & SwingUtilities.isRightMouseButton(ee)){
-					int adx = 7, ady = 9;
-					switch(TBtype[TBindex]){
-						case TB:
-							TBtype[TBindex] = Findex.FILE.C;
-							TB[TBindex] = TB_C;
-							TBimageH[TBindex] = TB[TBindex].getHeight(null);
-							TBimageW[TBindex] = TB[TBindex].getWidth(null);
-							TBimageX[TBindex] -= adx;
-							TBimageY[TBindex] -= ady;
-							break;
-						case C:
-							TBtype[TBindex] = Findex.FILE.K;
-							TB[TBindex] = TB_K;
-							TBimageH[TBindex] = TB[TBindex].getHeight(null);
-							TBimageW[TBindex] = TB[TBindex].getWidth(null);
-							break;
-						case K:
-							TBtype[TBindex] = Findex.FILE.TB;
-							TB[TBindex] = TBimage;
-							TBimageH[TBindex] = TB[TBindex].getHeight(null);
-							TBimageW[TBindex] = TB[TBindex].getWidth(null);
-							TBimageX[TBindex] += adx;
-							TBimageY[TBindex] += ady;
-							break;
-					}
-					repaint();
-			   	}else if(MOindex!=0 & SwingUtilities.isRightMouseButton(ee)){ 
-			   		Configuration model_frame;
-			   		JFrame wrong_formate = null;
-			   		int[] type = new int[2]; //0: C, 1: K, record which table
-			   		Arrays.fill(type, 0);
-			   		try {
-						format = catch_files(type);
-					} catch (IOException e1) {e1.printStackTrace();}	
-					try {
-						if(format != FORMAT.NA){
-							MO[MOindex] = MOimage;
-							System.out.println("C: "+TBfile[type[0]]+"; K: "+TBfile[type[1]]);
-							model_frame = new Configuration(MOindex, format, file_index, 
-															type[0], type[1]);
-					       	GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
-							Point centerPoint = local_env.getCenterPoint();
-				       		int dx = centerPoint.x - 550 / 2;
-				        	int dy = centerPoint.y - 270 / 2;  
-					  		model_frame.setBounds(dx, dy, 550, 270);
-					   		model_frame.setResizable(false);
-					   		model_frame.setVisible(true);
-						}else{
-							JOptionPane.showMessageDialog(wrong_formate,
-								    "No match format with either Hapmap, Numeric, VCF or PLINK. Please check demo files to correct the format and the extension name.",
-								    "Incorrect format",
-								    JOptionPane.ERROR_MESSAGE);
-						}	
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-			   		
+					index_pop_tb = TBindex;
+			        popup_tb.show(iPatPanel.this, ee.getX(), ee.getY());
+			   	}else if(MOindex!=0 & SwingUtilities.isRightMouseButton(ee)){
+			   		index_pop_mo = MOindex;
+			   		popup_mo.show(iPatPanel.this, ee.getX(), ee.getY());	   		
 			   	}			
     			if(ableselect&&TBindex<=0&&MOindex<=0){
 					if(lineselected!=lineselected_temp){lineselected=lineselected_temp;}else{lineselected=-1;}	
@@ -856,9 +914,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
     				}else if(ifopenMO){
     					ifopenMO=false;
     					MOopenfile(open_MO);
-    			  /*}else if (x<(Wide/2)&&TBindex_temp==0){
-    					create_TB(x,y);
-    					repaint(); */
     				}else if(MOindex_temp==0){
     					create_MO(x,y);
     					repaint();
@@ -870,10 +925,63 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	addMouseMotionListener(this);
 	}	
 
+	public void open_config(ConfigFrame.analysis analysis) throws IOException{
+		// Catch format
+		format = catch_files();
+		if(format != FORMAT.NA){
+			// Open config window
+//			int frameW = 570, frameH = 500;
+//		 	GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+//			Point centerPoint = local_env.getCenterPoint();
+//			int dx = centerPoint.x - frameW / 2;
+//	    	int dy = centerPoint.y - frameH / 2;
+			ConfigFrame configframe;
+			configframe = new ConfigFrame(index_pop_mo, analysis, format, file_index);
+			configframe.setResizable(true);
+			//configframe.setBounds(dx, dy, frameW, frameH);
+		}else{
+			JOptionPane.showMessageDialog(new JFrame(),
+				    "No match format with either Hapmap, Numeric, VCF or PLINK. "
+				    + "Please check demo files to correct the format and the extension name.",
+				    "Incorrect format",
+				    JOptionPane.ERROR_MESSAGE);
+		}
+	}
+	
+	public void showConsole(int MOindex, String title, String MOPath){
+		MOname[MOindex].setText(title);
+		MOfile[MOindex] = MOPath;
+		text_console[MOindex] = new JTextArea();
+        text_console[MOindex].setEditable(false);
+        scroll_console[MOindex] = new JScrollPane(text_console[MOindex] ,
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        frame_console[MOindex]  = new JFrame();
+        frame_console[MOindex].setContentPane(scroll_console[MOindex]);
+        frame_console[MOindex].setTitle(title);
+        GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		Point centerPoint = local_env.getCenterPoint();
+   		int dx = centerPoint.x - 500 / 2;
+    	int dy = centerPoint.y - 350 / 2;  
+  		frame_console[MOindex].setBounds(dx-100, dy, 500, 350);
+        frame_console[MOindex].setVisible(true); 
+        frame_console[MOindex].addWindowListener(new WindowAdapter(){
+			@Override
+			public void windowClosing(WindowEvent e) {
+				if(process[MOindex].isAlive()){
+					process[MOindex].destroy();
+					MO[MOindex] = MO_fal;
+				}
+				System.out.println("Project killed");
+			}
+		});  
+	}
+	
 	@Override
 	protected void paintComponent(Graphics g) {	
 		if(hint_model_timer.isActived()){
-			hint_model_label.setBounds(new Rectangle(MOimageX[link_model]-85, MOimageY[link_model]-120, hint_model.getWidth(null), hint_model.getHeight(null)));
+			hint_model_label.setBounds(new Rectangle(MOimageX[link_model]-85, MOimageY[link_model]-120, 
+													 hint_model.getWidth(null), hint_model.getHeight(null)));
 		}
     	
 	    super.paintComponent(g);	
@@ -1453,7 +1561,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	  	MOimageW[MOcount]=MO[MOcount].getHeight(null);
 		MOname[MOcount].setLocation(MOimageX[MOcount], MOimageY[MOcount]+MOimageH[MOcount]);
 		MOname[MOcount].setSize(200,15);
-		MOname[MOcount].setText("Project "+MOcount);
+		MOname[MOcount].setText("Project_"+MOcount);
 	}
 	public static File iPatChooser(String title, boolean DirOnly){
 		File selectedfile = null;
@@ -1462,7 +1570,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			case Windows:
 				int flag;
 				JFileChooser fc = new JFileChooser();
-				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);//只能选择目录
+				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);//choose folder only
 				String path=null;
 				File f=null;
 				flag=fc.showOpenDialog(null);     
@@ -1915,7 +2023,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	    numOfDifferentVals = diffNum.size()==1 ? 0:diffNum.size();
 	    return numOfDifferentVals;
 	}
-	FORMAT catch_files(int[] type) throws IOException{
+	FORMAT catch_files() throws IOException{
 		// need extension (without extension): Binary fam
 		// type record which table is P(1), C(2) or K(3)
 		int count = 0;
@@ -1929,8 +2037,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		for (int i = 1; i <= TBcount; i++){
 			if(TBco[i][3] == MOco[MOindex][3] && TBco[i][3] != -1){ //catch file in the same group
 				switch(TBtype[i]){
-					case C: type[0] = i; break;
-					case K: type[1] = i; break;
+					case C: break;
+					case K: break;
 					default:
 						if(count < maxfile){
 							System.out.println(TBfile[i]);
@@ -1965,12 +2073,12 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				System.out.println(row_count[0]);
 				System.out.println(row_count[1]);
 				if(partial_true(VCF_con)){
-					file_index[0].file = VCF_con[0]?Findex.FILE.VCF:Findex.FILE.P;
-					file_index[1].file = VCF_con[1]?Findex.FILE.VCF:Findex.FILE.P;
+					file_index[0].file = VCF_con[0]?Findex.FILE.GD:Findex.FILE.P;
+					file_index[1].file = VCF_con[1]?Findex.FILE.GD:Findex.FILE.P;
 					format = FORMAT.VCF;
 				}else if(partial_true(HMAP_con)){
-					file_index[0].file = HMAP_con[0]?Findex.FILE.G:Findex.FILE.P;
-					file_index[1].file = HMAP_con[1]?Findex.FILE.G:Findex.FILE.P;
+					file_index[0].file = HMAP_con[0]?Findex.FILE.GD:Findex.FILE.P;
+					file_index[1].file = HMAP_con[1]?Findex.FILE.GD:Findex.FILE.P;
 					format = FORMAT.Hapmap;
 				}else if(partial_true(NUM_con)){
 					file_index[0].file = NUM_con[0]?Findex.FILE.GD:Findex.FILE.P;
@@ -1986,14 +2094,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				int P_index = -1;
 				for(int i = 0; i<3; i++){
 					int i2 = (i+1)%3, i3 = (i+2)%3;
-					if(TBfile[file_index[i].tb].toUpperCase().endsWith("MAP") && col_count[i] == 4){
-						file_index[i].file = Findex.FILE.MAP;
-						file_index[i2].file = TBfile[file_index[i2].tb].toUpperCase().endsWith("PED") ? Findex.FILE.PED :Findex.FILE.P;
-						file_index[i3].file = (TBfile[file_index[i3].tb].toUpperCase().endsWith("PED") &&  file_index[i2].file != Findex.FILE.PED) ? Findex.FILE.PED : Findex.FILE.P;
-						if(Arrays.asList(file_index[0].file, file_index[1].file, file_index[2].file).containsAll(Arrays.asList(Findex.FILE.PED, Findex.FILE.MAP, Findex.FILE.P))){
-							format = FORMAT.PLink_ASCII; break;
-						}
-					}else if(Arrays.asList(row2[i]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[i]) < 5){
+					if(Arrays.asList(row2[i]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[i]) < 5){
 						file_index[i].file = Findex.FILE.GD;
 						file_index[i2].file = (col_count[i2] == 3 && Math.abs(col_count[i] - row_count[i2]) <= 1) ? Findex.FILE.GM : Findex.FILE.P; // m or m+1 - m or m+1 = -1, 0 1
 						file_index[i3].file = (col_count[i3] == 3 && Math.abs(col_count[i] - row_count[i3]) <= 1 && file_index[i2].file != Findex.FILE.GM) ? Findex.FILE.GM : Findex.FILE.P;
@@ -2017,7 +2118,10 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				}
 				if(BED!=-1 && BIM!=-1 && FAM!=-1){
 					int P = 6 - BED - BIM - FAM;
-					if(Math.abs(row_count[FAM]-row_count[P]) < 2){file_index[P].file = Findex.FILE.P; format = FORMAT.PLink_Binary;}						
+					if(Math.abs(row_count[FAM]-row_count[P]) < 2){
+						file_index[P].file = Findex.FILE.P; 
+						format = FORMAT.PLink_Binary;
+					}						
 				}
 				break;
 		}

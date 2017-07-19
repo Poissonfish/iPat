@@ -1,4 +1,26 @@
 # Input arguments
+  args = commandArgs(trailingOnly=TRUE)
+# Common args
+  project = args[1]
+  wd = args[2]
+  lib = args[3]
+  format = args[4]
+  ms = as.numeric(args[5])
+  maf  = as.numeric(args[6])
+  Y.path = args[7]
+  Y.index = args[8]
+  GD.path = args[9]
+  GM.path  = args[10]
+  C.path = args[11]
+  C.index = args[12]
+  K.path  = args[13]
+  FAM.path  = args[14]
+  BIM.path  = args[15]
+# Method specific args
+  method.bin= args[16] #"optimum"
+  maxLoop= as.numeric(args[17])
+
+# Input arguments
 args = commandArgs(trailingOnly=TRUE)
 GM.path = args[1]
 GD.path = args[2]
@@ -13,21 +35,6 @@ wd = args[10]
 lib = args[11]
 format = args[12]
 arg_length = 12
-
-# GM.path= "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.map"
-# GD.path= "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.dat"
-# Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.txt"
-# C.path = "NULL"
-# C.inher = "NULL"%>%as.numeric
-# method.bin = "optimum"
-# maxLoop=as.numeric("10")
-# MAF.calculate = as.logical("TRUE")
-# maf.threshold=as.numeric("0.05")
-# wd="/Users/Poissonfish/Desktop/test/farm"
-# lib = "/Users/Poissonfish/git/iPat/libs/"
-# format = "Numeric"
-# args = c(1,2,3,4,5,6,7,8,9,0,1,2,1) 
-# arg_length = 12
 
 tryCatch({
   # Load libraries
@@ -52,7 +59,7 @@ tryCatch({
   source("./Function_LDRemove.R")
 
   setwd(wd)
-  # Subset Phenotype
+  # Subset Phenotype 
   Y = read.table(Y.path, head=TRUE)
   trait = c()
   if(length(args) > arg_length){

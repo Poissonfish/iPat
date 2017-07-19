@@ -1,63 +1,30 @@
 # Input arguments
 args = commandArgs(trailingOnly=TRUE)
-G.path = args[1]
-GM.path = args[2]
-GD.path = args[3]
-Y.path = args[4]
-K.path = args[5] 
-SNP.test = as.logical(args[6])
-C.path = args[7]
-PCA = as.numeric(args[8])
-C.inher = as.numeric(args[9])
-ki.c = args[10]
-ki.g = args[11]
-g.from = as.numeric(args[12])
-g.to = as.numeric(args[13])
-g.by = as.numeric(args[14])
-model.s = as.logical(args[15])
-snp.fraction = as.numeric(args[16])
-file.fragment = as.numeric(args[17])
-wd = args[18]
-lib = args[19]
-format = args[20]
-#multi = as.logical(args[21])
-arg_length = 20
-# G.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/demo_data/Hapmap/data.hmp"
-# GM.path = "NULL"
-# GD.path = "NULL"
-# Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/demo_data/Hapmap/data.txt"
-# K.path = "NULL"
-# SNP.test = TRUE
-# C.path = "NULL"
-# PCA = 3
-# C.inher = as.numeric("NULL")
-# ki.c = 'average'
-# ki.g = 'Mean'
-# g.from = 1
-# g.to = 1
-# g.by = 10
-# model.s = FALSE
-# snp.fraction = 1
-# file.fragment = 512
-# wd = "/Users/Poissonfish/Desktop/test/gapit"
-# lib = "/Users/Poissonfish/git/iPat/libs/"
-# format = "Hapmap"
-# #multi = TRUE
-# args = c(1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,1,2,3)
+# Common args
+  project = args[1]
+  wd = args[2]
+  lib = args[3]
+  format = args[4]
+  ms = as.numeric(args[5])
+  maf  = as.numeric(args[6])
+  Y.path = args[7]
+  Y.index = args[8]
+  GD.path = args[9]
+  GM.path  = args[10]
+  C.path = args[11]
+  C.index = args[12]
+  K.path  = args[13]
+  FAM.path  = args[14]
+  BIM.path  = args[15]
+# Method specific args
+  model = args[16]
+  ki.c = args[17]
+  ki.g = args[18]
+  snp.fraction = as.numeric(args[19])
+  file.fragment = as.numeric(args[20])
+  model.s = as.logical(args[21])
 
-# Rscript C:\Users\Poissonfish\git\iPat/libs/iPat_Gapit.R  NULL NULL  NULL TRUE NULL 3 NULL average Mean 1 1 10 FALSE 1 512 
-# wd = "C:\Users\Poissonfish\Desktop\test\gapit"
-# GD.path = "C:\Users\Poissonfish\Downloads\Demo_data\VCF\data.vcf"
-# lib = "C:\Users\Poissonfish\git\iPat/libs/"
-# [1] "C:\\Users\\Poissonfish\\Downloads\\Demo_data\\VCF\\data.vcf"
-print(G.path)
-print(GM.path)
-print(GD.path)
-
-print(Y.path)
-
-tryCatch({
-  # Load libraries
+# Load libraries
   setwd(lib)
   list.of.packages <- c("MASS", "data.table", "magrittr", "gplots", "compiler", "scatterplot3d", "R.utils")
   new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -78,17 +45,16 @@ tryCatch({
   source("./Function_FarmCPU.R")
   source("./Function_GAPIT.R")
 
+tryCatch({  
   setwd(wd)
   # Subset Phenotype
-  Y = read.table(Y.path, head=TRUE)
-  trait = c()
-  if(length(args) > arg_length){
-    for (i in (arg_length+1):length(args)){
-      trait = c(trait, as.numeric(args[i])) 
-    }
-    Y = Y[,c(1,trait+1)]
-  }
-  trait_names = names(Y)[-1]
+  Y.data = fread(Y.path) %>% as.data.frame
+  subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .) %>% as.numeric
+  Y = Y.data[, subset+1]
+
+  # Assign Variables
+  taxa = Y.data[,1]
+  trait.names = names(Y) 
 
   # Format free
   OS.Windows = FALSE
@@ -104,23 +70,36 @@ tryCatch({
             G = NULL
             GD = read.table(sprintf("%s.dat", vcf)) %>% t() %>% data.frame(Y[,1], .)
             GM = read.table(sprintf("%s.map", vcf), head = TRUE)},
-    PLink_ASCII = {
-
-    },
     PLink_Binary = {
 
     }, {
       # Hapmap or Numeric (Default)
-      if(G.path=="NULL"){G=NULL}else{G=read.delim(G.path, head=FALSE)}
-      if(GM.path=="NULL"){GM=NULL}else{GM=read.table(GM.path, head=TRUE)}
-      if(GD.path=="NULL"){GD=NULL}else{GD=read.table(GD.path, head=TRUE)}
+      if(G.path=="NA"){G=NULL}else{G=read.delim(G.path, head=FALSE)}
+      if(GM.path=="NA"){GM=NULL}else{GM=read.table(GM.path, head=TRUE)}
+      if(GD.path=="NA"){GD=NULL}else{GD=read.table(GD.path, head=TRUE)}
     }
   )
 
   # Covariates
-  if(C.path=="NULL"){C=NULL}else{C=read.table(C.path, head=TRUE)}
-  if(K.path=="NULL"){K=NULL}else{K=read.table(D.path, head=FALSE)}
-  if(is.na(C.inher)) C.inher = NULL else C.inher = C.inher
+  if(C.path == "NA"){C = NULL}else{C = fread(C.path) %>% as.data.frame()}
+  if(K.path == "NA"){K = NULL}else{K = fread(K.path) %>% as.data.frame()}
+  #if(is.na(C.inher)) C.inher = NULL else C.inher = C.inher
+
+  # Model
+  switch(model, 
+    GLM = {
+      g.from = 1
+      g.to = 1
+      g.by = 10},
+    MLM = {
+      g.from = 10000000
+      g.to = 10000000
+      g.by = 10},
+    CMLM = {
+      g.from = 1
+      g.to = 10000000
+      g.by = 10}
+  )
 
   # GAPIT
     for (i in 1:length(trait_names)){   
@@ -130,10 +109,9 @@ tryCatch({
           GM = GM,
           GD = GD,
           KI = K,
-          SNP.test = SNP.test,
           CV = C,
-          CV.Inheritance = C.inher,
-          PCA.total = PCA,
+          #CV.Inheritance = C.inher,
+          #PCA.total = PCA,
           kinship.cluster = ki.c,
           kinship.group = ki.g,
           group.from = g.from,
@@ -142,7 +120,7 @@ tryCatch({
           Model.selection = model.s,
           SNP.fraction = snp.fraction,
           file.fragment = file.fragment,
-          memo= trait_names[i])
+          memo= sprintf("GAPIT_%s_%s_", project, trait_names[i]))
     }
   print(warnings())
 }, error = function(e){
