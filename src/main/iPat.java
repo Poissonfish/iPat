@@ -8,6 +8,7 @@ import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FileDialog;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
@@ -46,8 +47,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -69,6 +73,8 @@ import javax.swing.Timer;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import main.ConfigFrame.analysis;
 import net.miginfocom.swing.MigLayout;
@@ -326,19 +332,56 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	public static boolean debug = false, first_d = false;
 
 	// Content menu
-	public JPopupMenu popup_tb, popup_mo;
-	public static JMenuItem popup_isR, popup_isC, popup_isK, popup_opentb, popup_deltb;
-	public static JMenuItem popup_gwas, popup_gs, popup_run, popup_openmo, popup_delmo;
-	public static int index_pop_tb = -1, index_pop_mo = -1;
-	
+		public JPopupMenu popup_tb, popup_mo;
+		public static JMenuItem popup_isR, popup_isC, popup_isK, popup_opentb, popup_deltb;
+		public static JMenuItem popup_gwas, popup_gs, popup_run, popup_openmo, popup_delmo;
+		public static int index_pop_tb = -1, index_pop_mo = -1;
 	// Run command
-	public static String[][] command_gwas = new String[MOMAX][],
-							 command_gs = new String[MOMAX][];
-	public static boolean[][] isDeployed = new boolean[MOMAX][2];
-	static BGThread[] multi_run = new BGThread[MOMAX]; 
-	static Runtime[] runtime = new Runtime[MOMAX];
-	static Process[] process = new Process[MOMAX];
-	
+		public static String[][] command_gwas = new String[MOMAX][],
+								 command_gs = new String[MOMAX][];
+		public static ConfigFrame.method[][] Deployed = new ConfigFrame.method[MOMAX][2];
+		static BGThread[] multi_run = new BGThread[MOMAX]; 
+		static Runtime[] runtime = new Runtime[MOMAX];
+		static Process[] process = new Process[MOMAX];
+	// Value default
+		// Common
+				static String  df_wd = System.getProperty("user.home"), 
+							   df_maf = "0.05", df_ms = "No threshold";
+			 // Specific
+			  // GAPIT
+				static String  df_K_algoriithm = "VanRaden", df_K_cluster = "average", df_K_group = "Mean",
+							   df_model_select = "GLM", df_snp_frac = "1", df_file_frag = "NULL";
+				static boolean df_model_selection = false;
+			  // FarmCPU
+				static String  df_method_bin = "static", df_maxloop = "10";
+			  // PLINK
+				static String  df_ci = "0.95";
+			  // rrBLUP
+				static String df_impute_method = "mean";
+				static boolean df_shrink = false;
+			  // BGLR 
+				static String df_model_b = "BRR", df_response_b = "gaussian", 
+							  df_niter_b = "1200", df_burnin_b = "200", df_thin_b = "5";
+	// Value Stored
+		// Common
+				static String[] project = new String[MOMAX];
+				static String  wd = df_wd, 
+							   maf = df_maf, ms = df_ms;
+		 // Specific
+			  // GAPIT
+				static String  K_algoriithm = df_K_algoriithm, K_cluster = df_K_cluster, K_group = df_K_group,
+							   model_select = df_model_select, snp_frac = df_snp_frac, file_frag = df_file_frag;
+				static boolean model_selection = df_model_selection;
+			  // FarmCPU
+				static String  method_bin = df_method_bin, maxloop = df_maxloop;
+			  // PLINK
+				static String  ci = df_ci;
+			  // rrBLUP
+				static String impute_method = df_impute_method;
+				static boolean shrink = df_shrink;
+			  // BGLR 
+				static String model_b = df_model_b, response_b = df_response_b, 
+							  niter_b = df_niter_b, burnin_b = df_burnin_b, thin_b = df_thin_b;	
 	public iPatPanel(int Wideint, int Heigthint, int pH){
 		this.Wide=Wideint;
 		this.Heigth=Heigthint;
@@ -376,7 +419,9 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				TBimageH[index_pop_tb] = TB[index_pop_tb].getHeight(null);
 				TBimageW[index_pop_tb] = TB[index_pop_tb].getWidth(null);
 	    	}else if(source == popup_deltb){
-	    	
+	    		TBindex = index_pop_tb;
+				break_object();
+				TBindex = 0;
 	    	}else if(source == popup_openmo){
 				MOopenfile(index_pop_mo);
 	    	}else if(source == popup_gwas){
@@ -386,22 +431,32 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	    		try {open_config(ConfigFrame.analysis.GS);
 				} catch (IOException e) {e.printStackTrace();}
 	    	}else if(source == popup_run){
-	    		if(isDeployed[index_pop_mo][ConfigFrame.analysis.GWAS.index] &&
-	    		   isDeployed[index_pop_mo][ConfigFrame.analysis.GS.index]){
-		    		showConsole(index_pop_mo, command_gwas[index_pop_mo][2], command_gwas[index_pop_mo][3]);	            
-		    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gwas[index_pop_mo], command_gs[index_pop_mo]);
+	    		boolean gwas_exist = Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index] !=  ConfigFrame.method.NA, 
+	    				gs_exist   = Deployed[index_pop_mo][ConfigFrame.analysis.GS.index]   !=  ConfigFrame.method.NA;
+	    		if(gwas_exist && gs_exist){
+		    		showConsole(index_pop_mo, command_gwas[index_pop_mo][2], command_gwas[index_pop_mo][3]);
+		    		PrintStatus(index_pop_mo,
+		    				Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index].Name(),
+		    				Deployed[index_pop_mo][ConfigFrame.analysis.GS.index].Name(), 
+		    				command_gwas[index_pop_mo], 
+		    				command_gs[index_pop_mo]);
+		    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gwas[index_pop_mo], 
+		    				ArrayUtils.addAll(command_gs[index_pop_mo], Deployed[index_pop_mo][ConfigFrame.analysis.GS.index].Name()));
 		    		multi_run[index_pop_mo].start();
-	    		}else if(isDeployed[index_pop_mo][ConfigFrame.analysis.GWAS.index]){
+		    		
+	    		}else if(gwas_exist){
 	    			showConsole(index_pop_mo, command_gwas[index_pop_mo][2], command_gwas[index_pop_mo][3]);	            
 		    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gwas[index_pop_mo], null);
 		    		multi_run[index_pop_mo].start();
-	    		}else if(isDeployed[index_pop_mo][ConfigFrame.analysis.GS.index]){
+	    		}else if(gs_exist){
 	    			showConsole(index_pop_mo, command_gs[index_pop_mo][2], command_gs[index_pop_mo][3]);	            
-		    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gs[index_pop_mo], null);
+		    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, ArrayUtils.addAll(command_gs[index_pop_mo],"NA"), null);
 		    		multi_run[index_pop_mo].start();
 	    		}
 	    	}else if(source == popup_delmo){
-
+	    		MOindex = index_pop_mo;
+				break_object();
+				MOindex =0;
 	    	}
 	    	repaint();
 	    	index_pop_tb = -1; index_pop_mo = -1;
@@ -422,9 +477,9 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	    
 	    popup_mo.add(popup_openmo = new JMenuItem("Open WD"));
 	    popup_openmo.setHorizontalTextPosition(JMenuItem.RIGHT); popup_openmo.addActionListener(menuListener);
-	    popup_mo.add(popup_gwas = new JMenuItem("GWAS"));
+	    popup_mo.add(popup_gwas = new JMenuItem("GWAS (Empty)"));
 	    popup_gwas.setHorizontalTextPosition(JMenuItem.RIGHT); popup_gwas.addActionListener(menuListener);
-	    popup_mo.add(popup_gs = new JMenuItem("GS"));
+	    popup_mo.add(popup_gs = new JMenuItem("GS (Empty)"));
 	    popup_gs.setHorizontalTextPosition(JMenuItem.RIGHT); popup_gs.addActionListener(menuListener);
 	    popup_mo.addSeparator();
 	    popup_mo.add(popup_run= new JMenuItem("Run"));
@@ -433,8 +488,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	    popup_mo.add(popup_delmo = new JMenuItem("Delete project"));
 	    popup_delmo.setHorizontalTextPosition(JMenuItem.RIGHT); popup_delmo.addActionListener(menuListener);
 	    popup_mo.setBorder(new BevelBorder(BevelBorder.RAISED));
-
-	    
 	    
 	    // DnD feature
     	new DropTarget(this, new DropTargetListener(){
@@ -557,7 +610,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		//this.add(nullPanel,"grow"); 
 		startPanel.setOpaque(false);
 				
-		for (int i=1; i<=TBMAX-1; i++){
+		for (int i = 1; i <= TBMAX - 1; i++){
 			TB[i] = TBimage;
 			TBtype[i] = Findex.FILE.TB;
 			TBfile[i]= "null";
@@ -567,15 +620,16 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			TBimageW[i]=TB[i].getWidth(null);	
 			Arrays.fill(TBco[i], -1);
 		}	
-		for (int i=1; i<=MOMAX-1; i++){
+		for (int i = 1; i <= MOMAX - 1; i++){
 			MO[i] = MOimage;
 			MOname[i]= new JLabel();		
 			startPanel.add(MOname[i]);
 			MOimageH[i]=MO[i].getHeight(null);	
 			MOimageW[i]=MO[i].getWidth(null);
 			Arrays.fill(MOco[i], -1);
-			Arrays.fill(isDeployed[i], false);
+			Arrays.fill(Deployed[i], ConfigFrame.method.NA);
 			rotate_index[i]=0;
+			project[i] = "Project_" + i; 
 		}			
 		Arrays.fill(permit, false);
 		for(int i = 0; i<maxfile; i++){
@@ -632,7 +686,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		    public void actionPerformed(ActionEvent ae) {
 					repaint();
 					if(!hint_model_timer.isActived() && 
-						!hint_drag_timer.isRunning() && MOcount>0 && check_model_linked()!=0){
+						!hint_drag_timer.isRunning() && MOcount > 0 && check_model_linked() != 0){
 						hint_model_timer.setActived(true);
 						hint_model_timer.fade_in();
 					}else if(hint_model_timer.TimeToOut()){
@@ -663,14 +717,14 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		this.addMouseListener(new MouseAdapter(){	
 			@Override
 			public void mousePressed(MouseEvent ee){
-				int move_x=ee.getX();
-    			int move_y=ee.getY();
-    			double x=ee.getX();
-    			double y=ee.getY();
-    			COindex=-1;
-    			lineindex=-1;
-    			TBindex= TBindex_temp;  // catcth the mouse_move result
-    			MOindex= MOindex_temp;
+				int move_x = ee.getX();
+    			int move_y = ee.getY();
+    			double x = ee.getX();
+    			double y = ee.getY();
+    			COindex = -1;
+    			lineindex = -1;
+    			TBindex = TBindex_temp;  // catcth the mouse_move result
+    			MOindex = MOindex_temp;
     			if(TBindex_select != TBindex_temp){
         			TBindex_select = TBindex_temp;
     			}else{
@@ -683,11 +737,11 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
     			}
 
     			//Debug section
-    			if(TBindex!=0){
-        			System.out.println("COgroup: "+TBco[TBindex][3]+" index= "+TBindex); 
+    			if(TBindex != 0){
+        			System.out.println("COgroup: " + TBco[TBindex][3] + " index= " + TBindex); 
         			System.out.println(TBfile[TBindex].matches("null"));
-    			}else if(MOindex!=0){
-    				System.out.println("COgourp: "+MOco[MOindex][3]+" index= "+MOindex);
+    			}else if(MOindex != 0){
+    				System.out.println("COgourp: " + MOco[MOindex][3] + " index= " + MOindex);
     			}
     			//  			
     			if (ableselect){
@@ -696,15 +750,31 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
     			} 
     			
     			String folder_path = null;
-				if(TBindex!=0 & SwingUtilities.isRightMouseButton(ee)){
+				if(TBindex != 0 & SwingUtilities.isRightMouseButton(ee)){
 					index_pop_tb = TBindex;
 			        popup_tb.show(iPatPanel.this, ee.getX(), ee.getY());
-			   	}else if(MOindex!=0 & SwingUtilities.isRightMouseButton(ee)){
+			   	}else if(MOindex != 0 & SwingUtilities.isRightMouseButton(ee)){
 			   		index_pop_mo = MOindex;
-			   		popup_mo.show(iPatPanel.this, ee.getX(), ee.getY());	   		
+			   		boolean gwas_exist = Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index] !=  ConfigFrame.method.NA, 
+		    				gs_exist   = Deployed[index_pop_mo][ConfigFrame.analysis.GS.index]   !=  ConfigFrame.method.NA;
+			   		if(gwas_exist){ 
+			   			popup_gwas.setText("GWAS (" + Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index].Name() + ")"); 
+			   			popup_run.setEnabled(true);
+			   		}else{
+			   			popup_gwas.setText("GWAS (Empty)"); 
+			   			popup_run.setEnabled(false);
+			   		}
+			   		if(gs_exist){
+						popup_gs.setText("GS ("+ Deployed[index_pop_mo][ConfigFrame.analysis.GS.index].Name() +")"); 
+			   			popup_run.setEnabled(true);
+			   		}else{
+						popup_gs.setText("GS (Empty)"); 
+						popup_run.setEnabled(false);
+			   		}
+					popup_mo.show(iPatPanel.this, ee.getX(), ee.getY());	   		
 			   	}			
-    			if(ableselect&&TBindex<=0&&MOindex<=0){
-					if(lineselected!=lineselected_temp){lineselected=lineselected_temp;}else{lineselected=-1;}	
+    			if(ableselect && TBindex <= 0 && MOindex <= 0){
+					if(lineselected != lineselected_temp){lineselected = lineselected_temp;}else{lineselected = -1;}	
     			}else{
     				lineselected = -1;
     			}
@@ -717,45 +787,45 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				int y=ee.getY();		
     			//To compute whether the objects should be created
 				 								 //case 1
-				if( (TBindex!=0|MOindex!=0) && 	 //ä¸”æ­£åœ¨é�¸æŸ�å€‹ç‰©ä»¶
-					 link_case == 1 && !removeornot){		//sure to link something		
+				if((TBindex != 0 || MOindex !=0 ) && 	 //ä¸”æ­£åœ¨é�¸æŸ�å€‹ç‰©ä»¶
+					link_case == 1 && !removeornot){		//sure to link something		
 					System.out.println("unlink-unlink");
 						//self sure
-						if (TBindex!=0){
+						if (TBindex != 0){
 							TBco[TBindex][2] = TBco[TBindex][0];
 							TBco[TBindex][3] = TBco[TBindex][1];
-							linkline[linklineindex][0]=1; 			//draw line from a table	
-							linkline[linklineindex][1]=TBindex;		//draw line from which table
+							linkline[linklineindex][0] = 1; 			//draw line from a table	
+							linkline[linklineindex][1] = TBindex;		//draw line from which table
 							System.out.println("TB1");
-						}else if(MOindex!=0){
+						}else if(MOindex != 0){
 							MOco[MOindex][2] = MOco[MOindex][0];
 							MOco[MOindex][3] = MOco[MOindex][1];	
 							MOco[MOindex][4] = 1;
-							linkline[linklineindex][0]=2;		  	//draw line from a model	
-							linkline[linklineindex][1]=MOindex;		//draw line from which model
+							linkline[linklineindex][0] = 2;		  	//draw line from a model	
+							linkline[linklineindex][1] = MOindex;		//draw line from which model
 							System.out.println("MO1");
 						}
 						
 						//target sure
-						for(int i=1; i<=TBcount; i++){
+						for(int i = 1; i <= TBcount; i++){
 							if(TBco[i][1] == COcount && i != TBindex){
 								TBco[i][2] = TBco[i][0];
 								TBco[i][3] = TBco[i][1];
-								if(MOindex!=0){TBco[i][4] = 1;}
-								linkline[linklineindex][2]=1;
-								linkline[linklineindex][3]=i;
+								if(MOindex != 0){TBco[i][4] = 1;}
+								linkline[linklineindex][2] = 1;
+								linkline[linklineindex][3] = i;
 								System.out.println("TB2");
 								break;
 							}
 						}
-						for(int i=1; i<=MOcount; i++){
+						for(int i = 1; i <= MOcount; i++){
 							if(MOco[i][1] == COcount && i != MOindex){
 								MOco[i][2] = MOco[i][0];
 								MOco[i][3] = MOco[i][1];
 								MOco[i][4] = 1;
-								if(TBindex!=0){TBco[TBindex][4] = 1;}
-								linkline[linklineindex][2]=2;
-								linkline[linklineindex][3]=i;
+								if(TBindex != 0){TBco[TBindex][4] = 1;}
+								linkline[linklineindex][2] = 2;
+								linkline[linklineindex][3] = i;
 								System.out.println("MO2");
 								break;
 							}
@@ -1186,7 +1256,70 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			} catch(IOException e) {
 				e.printStackTrace();
 			}
-	}	
+	}
+	
+	public void PrintStatus(int MOindex, String method_gwas, String method_gs, String[] command_gwas, String[] command_gs){
+		String format1 = "%1$27s %2$s", format2 = "%1$-30s %2$s";
+		text_console[MOindex].setFont(new Font("monospaced", Font.PLAIN, 12));
+		text_console[MOindex].append("************************** Welcome to iPat **************************\n");
+		text_console[MOindex].append("Date/Time:" + "\n");
+		text_console[MOindex].append(String.format(format1, " ", new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Calendar.getInstance().getTime())) + "\n");
+		if(method_gwas != null && method_gs != null){	
+			text_console[MOindex].append("Project Name:" + "\n");
+			text_console[MOindex].append(String.format(format1, " ", command_gwas[2]) + "\n");
+			text_console[MOindex].append("Working Directory:" + "\n");
+			text_console[MOindex].append(String.format(format1, " ", command_gwas[3]) + "\n");
+			text_console[MOindex].append("Data Format:" + "\n");
+			text_console[MOindex].append(String.format(format1, " ", command_gwas[5]) + "\n"); 
+			text_console[MOindex].append("Quality Control:" + "\n");
+			text_console[MOindex].append(String.format(format1, "Missing Values: ", "< " + command_gwas[6]) + "\n");
+			text_console[MOindex].append(String.format(format1, "MAF: ", "> " + command_gwas[7]) + "\n");
+			text_console[MOindex].append("GWAS Method: " + method_gwas + "\n");
+			switch(method_gwas){
+			case "GAPIT":
+			text_console[MOindex].append(String.format(format1, "Linear Model: ", command_gwas[17]) + "\n");
+			text_console[MOindex].append(String.format(format1, "kinship.cluster: ", command_gwas[18]) + "\n");
+			text_console[MOindex].append(String.format(format1, "kinship.group: ", command_gwas[19]) + "\n");
+			text_console[MOindex].append(String.format(format1, "SNP.fraction: ", command_gwas[20]) + "\n");
+			text_console[MOindex].append(String.format(format1, "file.fragment: ", command_gwas[21]) + "\n");
+			text_console[MOindex].append(String.format(format1, "model selection: ", command_gwas[22]) + "\n");
+			break;
+			case "FarmCPU":
+			text_console[MOindex].append(String.format(format1, "method.bin:", command_gwas[17]) + "\n");
+			text_console[MOindex].append(String.format(format1, "maxLoop:", command_gwas[18]) + "\n");
+			break;
+			case "PLINK":
+			text_console[MOindex].append(String.format(format1, "Confidence Interval:", command_gwas[17]) + "\n");
+			break;
+			}
+			text_console[MOindex].append("GS Method: " + method_gs + " (GWAS Assisted)"+ "\n");
+			switch(method_gs){
+			case "gBLUP":
+			text_console[MOindex].append(String.format(format1, "SNP.fraction:", command_gwas[20]) + "\n");
+			text_console[MOindex].append(String.format(format1, "file.fragment:", command_gwas[21]) + "\n");
+			text_console[MOindex].append(String.format(format1, "model selection:", command_gwas[22]) + "\n");
+			break;
+			case "rrBLUP":
+			text_console[MOindex].append(String.format(format1, "impute.method:", command_gs[17]) + "\n");
+			text_console[MOindex].append(String.format(format1, "shrink:", command_gs[18]) + "\n");
+			break;
+			case "BGLR":
+			text_console[MOindex].append(String.format(format1, "Model (Markers):", command_gs[17]) + "\n");
+			text_console[MOindex].append(String.format(format1, "response_type:", command_gs[18]) + "\n");
+			text_console[MOindex].append(String.format(format1, "nIter:", command_gs[19]) + "\n");
+			text_console[MOindex].append(String.format(format1, "burnIn:", command_gs[20]) + "\n");
+			text_console[MOindex].append(String.format(format1, "thin:", command_gs[21]) + "\n");
+			break;
+			}
+			text_console[MOindex].append("********************************************************************* \n");
+		}else if(method_gwas != null){
+
+		}else if(method_gs != null){
+		}
+		
+		
+	
+	}
 	
 	/*
 	public static void iconchange(int i){
@@ -1950,34 +2083,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	    for(boolean b : array) if(b) return true;
 	    return false;
 	}
-	
-	public static void read_binary(String file){
-		//Binary
-		/*File input_file = new File (file);
-		DataInputStream data_in;
-		long [] array_of_ints = new long [1000000];
-	    int index = 0;
-		try {
-			data_in = new DataInputStream(new BufferedInputStream( new FileInputStream(input_file)));
-			while(true){
-				try{
-					long a = data_in.readLong();
-					index++;
-					System.out.println(a);
-				}catch(EOFException eof) {
-					System.out.println ("End of File");
-					break;
-				}
-			}
-		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
-	}
-	
+
 	public static String[] read_lines(String filename, int bound) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         String[] lines = new String[10];
