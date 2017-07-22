@@ -152,10 +152,10 @@ class BGThread extends Thread{
       	String line = ""; Boolean Suc_or_Fal = true;	
         iPatPanel.permit[MOindex] = true;
 		iPatPanel.rotate_index[MOindex] = 1;
-		Configuration.runtime[MOindex] = Runtime.getRuntime();
+		iPatPanel.runtime[MOindex] = Runtime.getRuntime();
 		
 		// Execute the command
-		try{Configuration.process[MOindex] = Configuration.runtime[MOindex].exec(command);
+		try{iPatPanel.process[MOindex] = iPatPanel.runtime[MOindex].exec(command);
     	}catch (IOException e1) {e1.printStackTrace();}	
 		
 		if(iPatPanel.debug){
@@ -164,19 +164,19 @@ class BGThread extends Thread{
 			for (int i = 0; i<command.length; i++){iPatPanel.text_console[MOindex].append(command[i]+" ");}
 	    }
 		     	
-        iPatPanel.text_console[MOindex].append(System.getProperty("line.separator"));
+        iPatPanel.text_console[MOindex].append("\n");
         iPatPanel.text_console[MOindex].setCaretPosition(iPatPanel.text_console[MOindex].getDocument().getLength());	   	
 
         try {
         	// Print output message to the panel
         	System.out.println("begin to print, "+MOindex);
-    	    BufferedReader input_stream = new BufferedReader(new InputStreamReader(Configuration.process[MOindex].getInputStream()));
-            BufferedReader error_stream = new BufferedReader(new InputStreamReader(Configuration.process[MOindex].getErrorStream()));
+    	    BufferedReader input_stream = new BufferedReader(new InputStreamReader(iPatPanel.process[MOindex].getInputStream()));
+            BufferedReader error_stream = new BufferedReader(new InputStreamReader(iPatPanel.process[MOindex].getErrorStream()));
 	        while((line = input_stream.readLine()) != null){
 	            iPatPanel.text_console[MOindex].append(line+ System.getProperty("line.separator"));
 	            iPatPanel.text_console[MOindex].setCaretPosition(iPatPanel.text_console[MOindex].getDocument().getLength());
 	        }
-	        Configuration.process[MOindex].waitFor();        
+	        iPatPanel.process[MOindex].waitFor();        
         	
 	        // Direct error to a file
 	        PrintWriter errWriter = new PrintWriter(new BufferedWriter(new FileWriter(WD+"/"+Project+".err", true)));
@@ -209,7 +209,7 @@ class BGThread extends Thread{
 		iPatPanel.MOimageW[MOindex]=iPatPanel.MO[MOindex].getWidth(null);
 		iPatPanel.MOname[MOindex].setLocation(iPatPanel.MOimageX[MOindex], iPatPanel.MOimageY[MOindex]+ iPatPanel.MOimageH[MOindex]);
 		System.out.println("done");
-		Configuration.process[MOindex].destroy();
+		iPatPanel.process[MOindex].destroy();
 		// Run next procedure if needed
 		if(con_command!=null){
     	  	iPatPanel.multi_run[MOindex] = new BGThread(MOindex, con_command, null);
@@ -219,53 +219,52 @@ class BGThread extends Thread{
 }
 
 class ConfigPane extends JPanel{
-	JLabel msg = new JLabel("<html><center>Drag Here<br> a Method</center></html>", SwingConstants.CENTER);
+	JLabel msg = new JLabel("", SwingConstants.CENTER);
 	boolean isDeployed = false;
 	ConfigFrame.method existmethod = ConfigFrame.method.NA;
 	
 	public ConfigPane(){
 		this.setOpaque(true);
 		msg.setFont(new Font("Ariashowpril", Font.PLAIN, 30));
-		this.setBackground(Color.decode("#D0EDE8"));
 		this.setLayout(new MigLayout("", "[grow]", "[grow]"));
 		this.add(msg, "grow");	
+		HintDrag();
 	}
-	public void MethodClear(){
+	public void Clear(){
 		this.removeAll();
 		this.setLayout(new MigLayout("", "[grow]", "[grow]"));
 		this.add(msg, "grow");	
-		isDeployed = false;
 	}
-	public void MethodEnter(){
+	public void HintDrop(){
 		this.setBackground(Color.decode("#D0EDDA"));
 		msg.setText("<html><center> Drop <br> to <br> Deploy </center></html>");
 	}
-	public void MethodAbsent(){
-		existmethod = ConfigFrame.method.NA;
+	public void HintDrag(){
 		this.setBackground(Color.decode("#D0EDE8"));
-		msg.setText("<html><center>Drag Here<br> a Method</center></html>");
+		msg.setText("<html><center> Drag Here <br> a Method </center></html>");
 	}
-	public void MethodDrop(ConfigFrame.method method){
+
+	public void MethodSelected(ConfigFrame.method method){
+		isDeployed = true;
 		existmethod = method;
 		this.setBackground(Color.decode("#D0E4ED"));
 		msg.setText("<html><center>"+ method +"<br> Selected <br> (Tap for details) </center></html>");
-		isDeployed = true;
 	}
 	public String[] MethodCommand(){
 		// Get common information
 			String[] command_common = {
-					ConfigFrame.project_name.field.getText(), 
+					ConfigFrame.project_name.field.getText(), // 2
 					ConfigFrame.wd_path.field.getText(), 
-					iPatPanel.jar.getParent()+"/libs/",
-				iPatPanel.format.Name(),
-					(String)ConfigFrame.ms_qc.combo.getSelectedItem(),
-					(String)ConfigFrame.maf_qc.combo.getSelectedItem(), 
+					iPatPanel.jar.getParent()+"/libs/", 
+					iPatPanel.format.Name(), 
+					(String)ConfigFrame.ms_qc.combo.getSelectedItem(), 
+					(String)ConfigFrame.maf_qc.combo.getSelectedItem(), // 7 
 					ConfigFrame.path_P, ConfigFrame.panel_phenotype.getSelected(ConfigFrame.trait_names),
 					ConfigFrame.path_G, 
-					ConfigFrame.path_M, 
+					ConfigFrame.path_M, // 11
 					ConfigFrame.path_C, ConfigFrame.C_exist? panel_cov.getSelected():"NA",
-					ConfigFrame.path_K,
-					ConfigFrame.path_FAM, 
+					ConfigFrame.path_K, 
+					ConfigFrame.path_FAM, // 15
 					ConfigFrame.path_BIM
 			};
 		// Get specific method
@@ -277,11 +276,11 @@ class ConfigPane extends JPanel{
 							ConfigFrame.R_exe,
 							iPatPanel.jar.getParent()+"/libs/iPat_Gapit.R"};
 					command_specific = new String[]{
-							(String)model_select.combo.getSelectedItem(), 
+							(String)model_select.combo.getSelectedItem(),  // 17
 							(String)K_cluster.combo.getSelectedItem(),
 							(String)K_group.combo.getSelectedItem(),
 							(String)snp_frac.combo.getSelectedItem(),
-							(String)file_frag.combo.getSelectedItem(),
+							(String)file_frag.combo.getSelectedItem(), // 21
 							model_selection.isSelected()?"TRUE":"FALSE"};
 					break;
 				case FarmCPU:
@@ -289,7 +288,7 @@ class ConfigPane extends JPanel{
 							ConfigFrame.R_exe,
 							iPatPanel.jar.getParent()+"/libs/iPat_FarmCPU.R"};
 					command_specific = new String[]{
-							(String)method_bin.combo.getSelectedItem(),
+							(String)method_bin.combo.getSelectedItem(),  // 17
 							(String)maxloop.combo.getSelectedItem()
 							};
 					break;
@@ -298,7 +297,7 @@ class ConfigPane extends JPanel{
 							ConfigFrame.R_exe,
 							iPatPanel.jar.getParent()+"/libs/iPat_PLINK.R"};
 					command_specific = new String[]{
-							(String)ci.combo.getSelectedItem()
+							(String)ci.combo.getSelectedItem()  // 17
 							};
 					break;
 				case gBLUP:
@@ -306,7 +305,7 @@ class ConfigPane extends JPanel{
 							ConfigFrame.R_exe,
 							iPatPanel.jar.getParent()+"/libs/iPat_gBLUP.R"};
 					command_specific = new String[]{
-							(String)snp_frac.combo.getSelectedItem(),
+							(String)snp_frac.combo.getSelectedItem(),  // 17
 							(String)file_frag.combo.getSelectedItem(),
 							model_selection.isSelected()?"TRUE":"FALSE"};
 					break;
@@ -315,7 +314,7 @@ class ConfigPane extends JPanel{
 							ConfigFrame.R_exe,
 							iPatPanel.jar.getParent()+"/libs/iPat_rrBLUP.R"};
 					command_specific = new String[]{
-							(String)impute_method.combo.getSelectedItem(),
+							(String)impute_method.combo.getSelectedItem(),  // 17
 							shrink.isSelected()?"TRUE":"FALSE"};
 					break;
 				case BGLR:
@@ -323,11 +322,11 @@ class ConfigPane extends JPanel{
 							ConfigFrame.R_exe,
 							iPatPanel.jar.getParent()+"/libs/iPat_BGLR.R"};
 					command_specific = new String[]{
-							(String)model_b.combo.getSelectedItem(),
+							(String)model_b.combo.getSelectedItem(),  // 17
 							(String)response_b.combo.getSelectedItem(),
 							(String)niter_b.combo.getSelectedItem(),
 							(String)burnin_b.combo.getSelectedItem(),							
-							(String)thin_b.combo.getSelectedItem()
+							(String)thin_b.combo.getSelectedItem() // 21
 					};
 					break;
 			}
@@ -367,12 +366,12 @@ class ConfigPane extends JPanel{
 				CO_head = iPatPanel.read_lines(iPatPanel.TBfile[ConfigFrame.C_index], 1)[0];
 				CO_names = CO_head.split("\t");
 				panel_cov = new covPanel(CO_names.length, CO_names, new String[]{"Selected", "Excluded"});
-				panel_cov.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Covariates", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
-				pane.addTab("Covariates", panel_cov);
 			}else{
-				JPanel panel_unable = new JPanel();
-				pane.addTab("Covariates", panel_unable);
-				panel_unable.setEnabled(false);
+				panel_cov = new covPanel(0, new String[]{}, new String[]{"Selected", "Excluded"});
+				panel_cov.setLayout(new MigLayout("", "[grow]", "[grow]"));
+				JLabel na_co = new JLabel("<html><center> Covariates <br> Unavailable </center></html>", SwingConstants.CENTER);
+				na_co.setFont(new Font("Ariashowpril", Font.PLAIN, 20));
+				panel_cov.add(na_co, "grow");
 			}
 		// specific
 			panel_gapit = new JPanel(new MigLayout("fillx"));
@@ -388,8 +387,9 @@ class ConfigPane extends JPanel{
 			panel_advance.add(file_frag.name, "cell 0 1, align r");
 			panel_advance.add(file_frag.combo, "cell 1 1, align l");
 			panel_advance.add(model_selection, "cell 0 2 2 1, align c");
-			pane.addTab("GAPIT input", panel_gapit);
-			pane.addTab("Advance", panel_advance);
+		pane.addTab("Covariates", panel_cov);
+		pane.addTab("GAPIT input", panel_gapit);
+		pane.addTab("Advance", panel_advance);
 		this.add(pane, "grow");
 	}
 	public void config_gblup() throws IOException{
@@ -400,8 +400,12 @@ class ConfigPane extends JPanel{
 				CO_head = iPatPanel.read_lines(iPatPanel.TBfile[ConfigFrame.C_index], 1)[0];
 				CO_names = CO_head.split("\t");
 				panel_cov = new covPanel(CO_names.length, CO_names, new String[]{"Selected", "Excluded"});
-				panel_cov.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Covariates", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
-				pane.addTab("Covariates", panel_cov);
+			}else{
+				panel_cov = new covPanel(0, new String[]{}, new String[]{"Selected", "Excluded"});
+				panel_cov.setLayout(new MigLayout("", "[grow]", "[grow]"));
+				JLabel na_co = new JLabel("<html><center> Covariates <br> Unavailable </center></html>", SwingConstants.CENTER);
+				na_co.setFont(new Font("Ariashowpril", Font.PLAIN, 20));
+				panel_cov.add(na_co, "grow");
 			}
 		// specific
 			panel_advance = new JPanel(new MigLayout("fillx"));
@@ -410,7 +414,8 @@ class ConfigPane extends JPanel{
 			panel_advance.add(file_frag.name, "cell 0 1, align r");
 			panel_advance.add(file_frag.combo, "cell 1 1, align l");
 			panel_advance.add(model_selection, "cell 0 2 2 1, align c");
-			pane.addTab("Advance", panel_advance);
+		pane.addTab("Covariates", panel_cov);
+		pane.addTab("Advance", panel_advance);
 		this.add(pane, "grow");
 	}
 	
@@ -427,8 +432,12 @@ class ConfigPane extends JPanel{
 				CO_head = iPatPanel.read_lines(iPatPanel.TBfile[ConfigFrame.C_index], 1)[0];
 				CO_names = CO_head.split("\t");
 				panel_cov = new covPanel(CO_names.length, CO_names, new String[]{"Selected", "Excluded"});
-				panel_cov.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Covariates", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
-				pane.addTab("Covariates", panel_cov);
+			}else{
+				panel_cov = new covPanel(0, new String[]{}, new String[]{"Selected", "Excluded"});
+				panel_cov.setLayout(new MigLayout("", "[grow]", "[grow]"));
+				JLabel na_co = new JLabel("<html><center> Covariates <br> Unavailable </center></html>", SwingConstants.CENTER);
+				na_co.setFont(new Font("Ariashowpril", Font.PLAIN, 20));
+				panel_cov.add(na_co, "grow");
 			}
 		// specific
 			panel_farm = new JPanel(new MigLayout("fillx"));
@@ -436,14 +445,14 @@ class ConfigPane extends JPanel{
 			panel_farm.add(method_bin.combo, "cell 1 0, align l");
 			panel_farm.add(maxloop.name, "cell 0 1, align r");
 			panel_farm.add(maxloop.combo, "cell 1 1, align l");
-			panel_farm.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Input Arguments", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
-			pane.addTab("FarmCPU input",  panel_farm);
+		pane.addTab("Covariates", panel_cov);
+		pane.addTab("FarmCPU input", panel_farm);	
 		this.add(pane, "grow");
 	}
 	
 	JPanel panel_plink;
 	Group_Combo ci = new Group_Combo("C.I.",
-			new String[]{"95%", "97.5%", "99.5%"}); 
+			new String[]{"0.95", "0.975", "0.995"}); 
 	public void config_plink() throws IOException{
 		this.removeAll();
 		pane = new JTabbedPane();
@@ -452,15 +461,20 @@ class ConfigPane extends JPanel{
 				CO_head = iPatPanel.read_lines(iPatPanel.TBfile[ConfigFrame.C_index], 1)[0];
 				CO_names = CO_head.split("\t");
 				panel_cov = new covPanel(CO_names.length, CO_names, new String[]{"Selected", "Excluded"});
-				panel_cov.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Covariates", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
 				pane.addTab("Covariates", panel_cov);
+			}else{
+				panel_cov = new covPanel(0, new String[]{}, new String[]{"Selected", "Excluded"});
+				panel_cov.setLayout(new MigLayout("", "[grow]", "[grow]"));
+				JLabel na_co = new JLabel("<html><center> Covariates <br> Unavailable </center></html>", SwingConstants.CENTER);
+				na_co.setFont(new Font("Ariashowpril", Font.PLAIN, 20));
+				panel_cov.add(na_co, "grow");
 			}
 		// specific
 			panel_plink = new JPanel(new MigLayout("fillx"));
 			panel_plink.add(ci.name, "cell 0 0, align r");
 			panel_plink.add(ci.combo, "cell 1 0, align l");
-			panel_plink.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Input Arguments", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
-			pane.addTab("PLINK input", panel_plink);
+		pane.addTab("Covariates", panel_cov);
+		pane.addTab("PLINK input", panel_plink);
 		this.add(pane, "grow");
 	}
 	
@@ -476,16 +490,21 @@ class ConfigPane extends JPanel{
 				CO_head = iPatPanel.read_lines(iPatPanel.TBfile[ConfigFrame.C_index], 1)[0];
 				CO_names = CO_head.split("\t");
 				panel_cov = new covPanel(CO_names.length, CO_names, new String[]{"Selected", "Excluded"});
-				panel_cov.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Covariates", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
 				pane.addTab("Covariates", panel_cov);
+			}else{
+				panel_cov = new covPanel(0, new String[]{}, new String[]{"Selected", "Excluded"});
+				panel_cov.setLayout(new MigLayout("", "[grow]", "[grow]"));
+				JLabel na_co = new JLabel("<html><center> Covariates <br> Unavailable </center></html>", SwingConstants.CENTER);
+				na_co.setFont(new Font("Ariashowpril", Font.PLAIN, 20));
+				panel_cov.add(na_co, "grow");
 			}
 		// specific
 			panel_rrblup = new JPanel(new MigLayout("fillx"));
 			panel_rrblup.add(impute_method.name, "cell 0 0, align r");
 			panel_rrblup.add(impute_method.combo, "cell 1 0, align l");
 			panel_rrblup.add(shrink, "cell 0 1");
-			panel_rrblup.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Input Arguments", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
-			pane.addTab("rrBLUP input", panel_rrblup);
+		pane.addTab("Covariates", panel_cov);
+		pane.addTab("rrBLUP input", panel_rrblup);
 		this.add(pane, "grow");
 	}
 	
@@ -509,8 +528,13 @@ class ConfigPane extends JPanel{
 				CO_head = iPatPanel.read_lines(iPatPanel.TBfile[ConfigFrame.C_index], 1)[0];
 				CO_names = CO_head.split("\t");
 				panel_cov = new covPanel(CO_names.length, CO_names, bglr_model);
-				panel_cov.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Covariates", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
 				pane.addTab("Covariates", panel_cov);
+			}else{
+				panel_cov = new covPanel(0, new String[]{}, new String[]{"Selected", "Excluded"});
+				panel_cov.setLayout(new MigLayout("", "[grow]", "[grow]"));
+				JLabel na_co = new JLabel("<html><center> Covariates <br> Unavailable </center></html>", SwingConstants.CENTER);
+				na_co.setFont(new Font("Ariashowpril", Font.PLAIN, 20));
+				panel_cov.add(na_co, "grow");
 			}
 		// specific
 			panel_args_b = new JPanel(new MigLayout("fillx"));
@@ -524,19 +548,82 @@ class ConfigPane extends JPanel{
 			panel_args_b.add(burnin_b.combo, "cell 1 3, align l");
 			panel_args_b.add(thin_b.name, "cell 0 4, align r");
 			panel_args_b.add(thin_b.combo, "cell 1 4, align l");
-			panel_args_b.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Input Arguments", TitledBorder.LEADING, TitledBorder.TOP, null, Color.RED));	
-			pane.addTab("BGLR input", panel_args_b);
+		pane.addTab("Covariates", panel_cov);
+		pane.addTab("BGLR input", panel_args_b);
 		this.add(pane, "grow");		
 	}	
 	
 	public void save(){
-		
+		// GAPIT
+			iPatPanel.K_algoriithm = (String) K_algorithm.combo.getSelectedItem();
+			iPatPanel.K_cluster = (String) K_cluster.combo.getSelectedItem();
+			iPatPanel.K_group = (String) K_group.combo.getSelectedItem();
+			iPatPanel.model_select = (String) model_select.combo.getSelectedItem();
+			iPatPanel.snp_frac = (String) snp_frac.combo.getSelectedItem();
+			iPatPanel.file_frag = (String) file_frag.combo.getSelectedItem();
+			iPatPanel.model_selection = model_selection.isSelected();
+		// FarmCPU
+			iPatPanel.method_bin = (String) method_bin.combo.getSelectedItem();
+			iPatPanel.maxloop = (String) maxloop.combo.getSelectedItem();
+		// PLINK
+			iPatPanel.ci = (String) ci.combo.getSelectedItem();
+		// rrBLUP
+			iPatPanel.impute_method = (String) impute_method.combo.getSelectedItem();
+			iPatPanel.shrink = shrink.isSelected();
+		// BGLR
+			iPatPanel.model_b = (String) model_b.combo.getSelectedItem();
+			iPatPanel.response_b = (String) response_b.combo.getSelectedItem();
+			iPatPanel.niter_b = (String) niter_b.combo.getSelectedItem();
+			iPatPanel.burnin_b = (String) burnin_b.combo.getSelectedItem();
+			iPatPanel.thin_b = (String) thin_b.combo.getSelectedItem();
 	}
 	public void load(){
-		
+		// GAPIT
+			K_algorithm.combo.setSelectedItem(iPatPanel.K_algoriithm);
+			K_cluster.combo.setSelectedItem(iPatPanel.K_cluster);
+			K_group.combo.setSelectedItem(iPatPanel.K_group);
+			model_select.combo.setSelectedItem(iPatPanel.model_select);
+			snp_frac.combo.setSelectedItem(iPatPanel.snp_frac);
+			file_frag.combo.setSelectedItem(iPatPanel.file_frag);
+			model_selection.setSelected(iPatPanel.model_selection);
+		// FarmCPU
+			method_bin.combo.setSelectedItem(iPatPanel.method_bin);
+			maxloop.combo.setSelectedItem(iPatPanel.maxloop);
+		// PLINK
+			ci.combo.setSelectedItem(iPatPanel.ci);
+		// rrBLUP
+			impute_method.combo.setSelectedItem(iPatPanel.impute_method);
+			shrink.setSelected(iPatPanel.shrink);
+		// BGLR
+			model_b.combo.setSelectedItem(iPatPanel.model_b);
+			response_b.combo.setSelectedItem(iPatPanel.response_b);
+			niter_b.combo.setSelectedItem(iPatPanel.niter_b);
+			burnin_b.combo.setSelectedItem(iPatPanel.burnin_b);
+			thin_b.combo.setSelectedItem(iPatPanel.thin_b);
 	}
-	public void reset(){
-		
+	public void restore(){
+		// GAPIT
+			K_algorithm.combo.setSelectedItem(iPatPanel.df_K_algoriithm);
+			K_cluster.combo.setSelectedItem(iPatPanel.df_K_cluster);
+			K_group.combo.setSelectedItem(iPatPanel.df_K_group);
+			model_select.combo.setSelectedItem(iPatPanel.df_model_select);
+			snp_frac.combo.setSelectedItem(iPatPanel.df_snp_frac);
+			file_frag.combo.setSelectedItem(iPatPanel.df_file_frag);
+			model_selection.setSelected(iPatPanel.df_model_selection);
+		// FarmCPU
+			method_bin.combo.setSelectedItem(iPatPanel.df_method_bin);
+			maxloop.combo.setSelectedItem(iPatPanel.df_maxloop);
+		// PLINK
+			ci.combo.setSelectedItem(iPatPanel.df_ci);
+		// rrBLUP
+			impute_method.combo.setSelectedItem(iPatPanel.df_impute_method);
+			shrink.setSelected(iPatPanel.df_shrink);
+		// BGLR
+			model_b.combo.setSelectedItem(iPatPanel.df_model_b);
+			response_b.combo.setSelectedItem(iPatPanel.df_response_b);
+			niter_b.combo.setSelectedItem(iPatPanel.df_niter_b);
+			burnin_b.combo.setSelectedItem(iPatPanel.df_burnin_b);
+			thin_b.combo.setSelectedItem(iPatPanel.df_thin_b);
 	}
 	
 }

@@ -17,12 +17,11 @@
   FAM.path  = args[14]
   BIM.path  = args[15]
 # Method specific args
-  model = args[16]
-  ki.c = args[17]
-  ki.g = args[18]
-  snp.fraction = as.numeric(args[19])
-  file.fragment = as.numeric(args[20])
-  model.s = as.logical(args[21])
+  snp.fraction = as.numeric(args[16])
+  file.fragment = as.numeric(args[17])
+  model.s = as.logical(args[18])
+  gwas.assist = args[19]
+
 # Load libraries
   setwd(lib)
   list.of.packages <- c("MASS", "data.table", "magrittr", "gplots", "compiler", "scatterplot3d", "R.utils")
@@ -130,56 +129,3 @@ tryCatch({
 }, error = function(e){
     stop(e)
 })
-
-# if(multi){
-#   nT = ncol(Y.file) - 1
-#   # Imputation by mean
-#   for(i in 2:ncol(Y.file)){
-#     mean = mean(Y.file[,i] %>% na.omit())
-#     na_index = Y.file[,i] %>% is.na()
-#     Y.file[na_index,i] = mean 
-#   }
-#   # PCA
-#   Y.PCA = prcomp(Y.file[,-1])
-#   Y.eigvec = Y.PCA$rotation
-#   Y.eigval = (Y.PCA$sdev)^2
-#   cum.var = cumsum(Y.eigval)/sum(Y.eigval)
-#   pca.index = 1 : (which(cum.var > .9) %>% min)
-#   Y.tran = Y.PCA$x[,pca.index] %>% as.matrix
-#   Y = data.frame(Y.file[,1],Y.tran)
-#   npc = ncol(Y) - 1
-#   m = ifelse(is.null(G), ncol(GD) - 1, nrow(G) - 1)
-#   array.effect = matrix(ncol = npc, nrow = m)
-#   # GAPIT
-#   for (i in 1 : npc){
-#     x=GAPIT(
-#       Y = Y[,c(1,1+i)],
-#       G = G,
-#       GM = GM,
-#       GD = GD,
-#       KI = K,
-#       SNP.test = SNP.test,
-#       CV = C,
-#       CV.Inheritance = C.inher,
-#       PCA.total = PCA,
-#       kinship.cluster = ki.c,
-#       kinship.group = ki.g,
-#       group.from = g.from,
-#       group.to = g.to,
-#       group.by = g.by,
-#       Model.selection = model.s,
-#       SNP.fraction = snp.fraction,
-#       file.fragment = file.fragment,
-#       file.output = F
-#     )
-#     u.effect = x$effect.snp
-#     u.effect[is.na(u.effect)] = 0
-#     array.effect[,i] = u.effect
-#   }
-#   # Real effects recover
-#   real.effect = array.effect %*% t(Y.eigvec[, pca.index])
-#   for (i in 1 : nT){
-
-#   }
-# # Y.recover = (t(Y.tran %*% t(Y.eigvec)) + PCA$center) %>% t()
-# }
