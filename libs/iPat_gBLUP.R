@@ -20,7 +20,10 @@
   snp.fraction = as.numeric(args[16])
   file.fragment = as.numeric(args[17])
   model.s = as.logical(args[18])
-  gwas.assist = args[19]
+  gwas.assist = as.logical(args[19])
+  cutoff = args[20]
+  gwas.method = args[21]
+ 
 
 # Load libraries
   setwd(lib)

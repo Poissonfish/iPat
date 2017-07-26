@@ -108,7 +108,7 @@
 <a name="create_projects"></a>
 ### 2.2 *Create a project*
 * After importing the files, double clicking on anywhere in iPat to create a new project (a gear icon).
-* Build a project by dragging a files over the project icon. A dashline will be shown between the file and project, which mean this file has been already included in this project. <p align="center"><img src = "./res/linkages.png" width = 250></p>
+* Build a project by dragging a files over the project icon. A dashline will be shown between the file and project, which mean this file has been already included in this project. The below two are examples for a valid project. <p align="center"><img src = "./res/linkages.png" width = 400></p>
 * A valid project must include a certain number of required files (see the table in section 2.3), **no less, no more.** Otherwise iPat won't work and will return an error message.
 
 <a name="file_format"></a>
@@ -153,13 +153,39 @@
 
 
 <a name="input"></a>
-### 2.5 *Define input arguments** After linking every files needed in the project, right click on the project to open a configuration panel.
-* At the top of the panel, users can select a tool to perform GWAS or genomic prediction.  * A hint will pop up for each argument when the cursor hovers over the arguments’ name.
+### 2.5 *Define Your Analysis** After linking every files needed in the project, right click on the project and choose either GWAS or GS to open a configuration panel.
 
-<p align="center"><img src = "./res/config.png" width = 700></p>
+<p align="center"><img src = "./res/pop_model.png" width = 220></p>
+* The panel consist of two sections. The upper one presents a set of input arguments shared by all methods, while users can define method-specific arguments from the lower section.
+ 
+<p align="center"><img src = "./res/config.png" width = 800></p>
 
-<a name="run"></a>### 2.6 *Run an analysis*
-* After defining the analysis, user can start to run the procedure by clicking ‘GO’ at the top of the panel.* Each task will generate a console window while running the analysis. User can track the progress of the task from window messages.* iPat also capable of multitasking. Users can arrange another project even when the previous one have not done yet.<p align="center"><img src = "./res/multi.png" width = 700></p>
+* Available parameters in the upper section : 
+
+<center>
+
+|Tab|Parameters|Definition|Default|
+|:-:|:--|:--|:--|
+|Working Directory|Project name|Prefix for output files|Project_x (x is a number starts from 1)|
+|Working Directory|Output Directory|A path where output files will be generated|Home directory|
+|Phenotype|Trait names|Subsetting traits data|All traits are selected|
+|Quality Control|By missing rate|Filtering out markers where certain rate of value is missing|No threshold|
+|Quality Control|By MAF|Filtering out markers based on minor allele frequency|0.05|
+ </center>
+
+* To select a method, simply drag a "method block" to the left-side area. And tap on this area for further defining (The information of method-specific arguments can be found in the section 3) . 
+<p align="center"><img src = "./res/dragmethod.png" width = 1200></p>
+
+* After defining the analysis, user can start to run the procedure by clicking ‘Run’ at the pop-up menu of the project.
+
+<p align="center"><img src = "./res/pop_run.png" width = 220></p>
+
+ <a name="run"></a>### 2.6 *Run an analysis*
+* In iPat, users are allowed to do genomic studies such as GWAS, GS and GWAS-Assisted GS (Associated SNPs reported by GWAS will be treated as fixed effect in GS). iPat will detect the project configuration and decide which analysis should be implemented afterward.
+
+<p align="center"><img src = "./res/analysis_type.png" width = 550></p>
+
+* Each project will generate a console window while running the analysis. User can track the progress of the task from window messages.* iPat also capable of multitasking. Users can arrange another project even when the previous one have not done yet.<p align="center"><img src = "./res/multi.png" width = 700></p>
 
 <a name="check"></a>
 ### 2.7 *Check the result*
@@ -182,54 +208,47 @@
 <p align="center"><img src = "./res/delete.png" width = 500></p>
 
 <a name="gwas"></a>## 3. GWAS and GS
-Tools implemented in iPat allow users to do genome-wide associate study (GWAS) and genomic selection (GS). Curretly GWAS can be performed by GAPIT, FarmCPU and PLINK, and GS can be done by GAPIT and rrBLUP in iPat. Tables below are the input arguments available in iPat:
+Tools implemented in iPat allow users to do genome-wide associate study (GWAS) and genomic selection (GS). Curretly GWAS can be performed by GAPIT, FarmCPU and PLINK, and GS can be done by GAPIT, rrBLUP and BGLR in iPat. Tables below are the input arguments available in iPat:
 
 <a name="gapit"></a>
 ### 3.1 GAPIT
-|Category|Parameters|	Definitions| Default|
+|Tab|Parameters|	Definitions| Default|
 |:--|:---|:---|:--:|
-|Subset|Subset of traits data|Users can select all or partial of traits to be analyzed|All traits|
-|Subset|Subset of chromosomes|Users can select all or partial of chromosomes to be analyzed|All
-|Covariates|PCA.count|How many of PCs should be treated as covariates|3|Covariates|Inheritable covariate|If there’s a user-input covariates, users can specify how many columns are inheritable.|All|Quality control|By missing rate|Users can do a quality control on the marker set by missing rate.|NULL|
-|Quality control|By MAF|Users can do a quality control on the marker set by minor allele frequency (MAF).|NULL|GWAS|Model|Which linear model to use in GWAS |GLM|GWAS|kinship.cluster|Clustering algorithm to group individuals based on their kinship|average|GWAS|kinship.group|Method to derive kinship among groups|Mean|GWAS|SNP.fraction|Fraction of SNPs Sampled to Estimate Kinship and PCs|1|GWAS|File.fragment|The Fragment Size to Read Each Time within a File|512
+|Covariates|Covaraite names|Subsetting covaraites data|All covariates are selected| 
+|GAPIT input|Model|Which linear model to be used in GWAS |GLM|GAPIT input|kinship.cluster|Clustering algorithm to group individuals based on their kinship|average|GAPIT input|kinship.group|Method to derive kinship among groups|Mean|Advance|SNP.fraction|Fraction of SNPs Sampled to Estimate Kinship and PCs|1|Advance|File.fragment|The Fragment Size to Read Each Time within a File|512
+|Advance|Model selection|Conduct Bayesian information criterion (BIC)-based model selection to find the optimal number of PCs for inclusion in the GWAS models|FALSE|
 
 <a name="farm"></a>
 ### 3.2 FarmCPU
-|Category|Parameters|	Definitions| Default|
+|Category|Parameters|Definitions| Default|
 |:--|:---|:---|:--:|
-|Subset|Subset of traits data|Users can select all or partial of traits to be analyzed|All traits|
-|Subset|Subset of chromosomes|Users can select all or partial of chromosomes to be analyzed|All
-|Covariates|PCA.count|How many of PCs should be treated as covariates|3|Covariates|Inheritable covariate|If there’s a user-input covariates, users can specify how many columns are inheritable.|All|Quality control|By missing rate|Users can do a quality control on the marker set by missing rate.|NULL|
-|Quality control|By MAF|Users can do a quality control on the marker set by minor allele frequency (MAF).|NULL
-|GWAS|method.bin|It uses fixed or optimized of possible QTN window size and number of possible QTNs selected into FarmCPU model.|static||GWAS|maxLoop|Maximum number of iterations allowed |10
+|Covariates|Covaraite names|Subsetting covaraites data|All covariates are selected|
+|FarmCPU inpute|method.bin|It uses fixed or optimized of possible QTN window size and number of possible QTNs selected into FarmCPU model.|static||FarmCPU inpute|maxLoop|Maximum number of iterations allowed |10
 
 <a name="plink"></a>
 ### 3.3 PLINK
-|Category|Parameters|	Definitions| Default|
+|Category|Parameters|Definitions| Default|
 |:--|:---|:---|:--:|
-|Subset|Subset of chromosomes|Users can select all or partial of chromosomes to be analyzed|All|Quality control|By missing rate|Users can do a quality control on the marker set by missing rate.|NULL|
-|Quality control|By MAF|Users can do a quality control on the marker set by minor allele frequency (MAF).|NULL
-|GWAS|C.I.|The desired coverage for a confidence interval|0.95|
+|Covariates|Covaraite names|Subsetting covaraites data|All covariates are selected|
+|PLINK input|C.I.|The desired coverage for a confidence interval|0.95|
 
 <a name="rrblup"></a>
-### 3.4 rrBLUP|Category|Parameters|	Definitions| Default|
+### 3.4 rrBLUP|Category|Parameters|Definitions| Default|
 |:--|:---|:---|:--:|
-|Subset|Subset of traits data|Users can select all or partial of traits to be analyzed|All traits|
+|Covariates|Covaraite names|Subsetting covaraites data|All covariates are selected|
+|rrBLUP input|Shrinkage estimation|Shrinkage estimation can improve the accuracy of genome-wide marker-assisted selection, particularly at low marker density (Endelman and Jannink 2012)||
+|rrBLUP input|impute.method|Imputation algorithm for missing values in markers data|mean|
 
 <a name="bglr"></a>
 ### 3.5 BGLR
 |Category|Parameter| Definitions| Default|
 |:--|:---|:---|:--:|
 |Subset|Subset of traits data|Users can select all or partial of traits to be analyzed|All traits|
+|BGLR|Regression model for predictor (Markers) |The regression type for the markers data|BRR|
+|BGLR|response_type|Data type of the response (y) |gaussian|
 |BGLR|nIter| The number of iterations of the sampler|1200|
 |BGLR|burnIn| The number of samples discarded|200|
-
-<a name="bsa"></a>
-### 3.6 BSA
-|Category|Parameter| Definitions| Default|
-|:--|:---|:---|:--:|
-|BSA|Windows Size|A smoothing coefficient for G statistics|5KB|
-
+|BGLR|thin| The number of thinning|5|
 
 <a name="support"></a>## 4 Support
 * If there is any difficulty on iPat, please leave your question in the page of [issue report](https://github.com/Poissonfish/iPat/issues).

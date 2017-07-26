@@ -31,9 +31,8 @@ public class ConfigFrame extends JFrame implements ActionListener{
 		public static Group_Value project_name = new Group_Value("Project name");
 		public static Group_Path wd_path = new Group_Path("Output Directory");
 		public static JLabel project_format = new JLabel("");
-		// Phenotype panel
-		public static ListPanel panel_phenotype;
-		public static String[] trait_names;
+		// Phenotype
+		public static JScrollPane scroll_phenotype;
 		// QC panel
 		public static JPanel panel_qc;
 		public static Group_Combo ms_qc = new Group_Combo("By missing rate", 
@@ -109,7 +108,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 			bottom_restore.addActionListener(this);
 			//bottom_restore.setFont(new Font("Ariashowpril", Font.PLAIN, 30));
 		// Config pane
-			pane_config = new ConfigPane();
+			pane_config = new ConfigPane(MOindex);
 			pane_config.setBorder(BorderFactory.createLoweredBevelBorder());
 		// Top (Common) pane
 			pane_top = new JTabbedPane();
@@ -122,23 +121,16 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				panel_wd.add(wd_path.browse, "cell 2 1 1 1");
 				wd_path.browse.addActionListener(this);
 			// Phenotype panel initialization
-				panel_phenotype = new ListPanel("Selected", "Excluded");
-				String P_name = "";
-				for(int i = 0; i < iPatPanel.maxfile; i++){
-					if(iPatPanel.file_index[i].file == Findex.FILE.P){
-						P_name = iPatPanel.TBfile[iPatPanel.file_index[i].tb]; break;
-					}
-				}
-				String headline = iPatPanel.read_lines(P_name, 1)[0];
-				trait_names = headline.split("\t").length <= 1 ? headline.split(" ") : headline.split("\t");
-				System.out.println(trait_names);
-				System.out.println(headline);
-				switch(iPatPanel.format){
-					case PLink_Binary : 
-						for(int i = 2; i < trait_names.length ; i++){panel_phenotype.addElement(trait_names[i]);} break;
-					default : 
-						for(int i = 1; i < trait_names.length ; i++){panel_phenotype.addElement(trait_names[i]);} break;
-				}
+				String headline = iPatPanel.read_lines(path_P, 1)[0];
+				// if never initialized
+				if(iPatPanel.trait_names[MOindex].length <= 1){
+					iPatPanel.trait_names[MOindex] = headline.split("\t").length <= 1 ? headline.split(" ") : headline.split("\t");
+					iPatPanel.panel_phenotype[MOindex] = new selectablePanel(iPatPanel.trait_names[MOindex].length - 1,
+														  ArrayUtils.remove(iPatPanel.trait_names[MOindex], 0), 
+														  new String[]{"Selected", "Excluded"});}
+				scroll_phenotype = new JScrollPane(iPatPanel.panel_phenotype[MOindex],
+		                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+		                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 			// QC panel initialization
 				panel_qc = new JPanel(new MigLayout("fillx"));
 				panel_qc.add(ms_qc.name, "cell 0 0, align r");
@@ -146,7 +138,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				panel_qc.add(maf_qc.name, "cell 0 1, align r");
 				panel_qc.add(maf_qc.combo, "cell 1 1, align l"); 
 			pane_top.addTab("Working Directory", panel_wd);
-			pane_top.addTab("Phenotype", panel_phenotype);
+			pane_top.addTab("Phenotype", scroll_phenotype);
 			pane_top.addTab("Quality Control", panel_qc);
 		// Main pane
 			pane_main = new JPanel(new MigLayout("fill", "[grow][grow]", "[grow][grow][grow]"));
@@ -289,21 +281,23 @@ public class ConfigFrame extends JFrame implements ActionListener{
 		iPatPanel.wd = wd_path.field.getText();
 		iPatPanel.maf = (String) maf_qc.combo.getSelectedItem();
 		iPatPanel.ms = (String) ms_qc.combo.getSelectedItem();
-		pane_config.save();
+		pane_config.save(Analysis == analysis.GWAS);
 	}
 	public void load(){
 		project_name.field.setText(iPatPanel.project[MOindex]);
 		wd_path.field.setText(iPatPanel.wd);
 		maf_qc.combo.setSelectedItem(iPatPanel.maf);
 		ms_qc.combo.setSelectedItem(iPatPanel.ms);
-		pane_config.load();
+		pane_config.load(Analysis == analysis.GWAS);
+		if(iPatPanel.Deployed[MOindex][Analysis.index] != method.NA)
+			pane_config.MethodSelected(iPatPanel.Deployed[MOindex][Analysis.index]);
 	}
 	public void restore(){
 		project_name.field.setText("Project_" + MOindex);
 		wd_path.field.setText(iPatPanel.df_wd);
 		maf_qc.combo.setSelectedItem(iPatPanel.df_maf);
 		ms_qc.combo.setSelectedItem(iPatPanel.df_ms);
-		pane_config.restore();
+		pane_config.restore(Analysis == analysis.GWAS);
 	}
 	public class MLabel extends JLabel {
 		public MLabel(String name){

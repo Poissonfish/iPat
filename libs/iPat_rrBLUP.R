@@ -19,6 +19,14 @@
 # Method specific args
   impute = args[16]
   shrink = as.logical(args[17])
+  gwas.assist = as.logical(args[18])
+  cutoff = args[19]
+  #gwas.method = args[20] 
+
+impute = "mean"
+shrink = FALSE
+gwas.assist = TRUE
+cutoff = .05
 
 # Load libraries
   list.of.packages = c("data.table", "magrittr", "rrBLUP")
@@ -32,13 +40,17 @@ tryCatch({
   setwd(wd)
   # Subset Phenotype
   Y.data = fread(Y.path) %>% as.data.frame
-  subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .) %>% as.numeric
-  Y = Y.data[, subset+1]
-
+  subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .)
+  index.trait = which(subset == "Selected") 
+  if(length(index.trait) == 1){
+    Y = data.frame(y = Y.data[, index.trait + 1])
+    names(Y) = names(Y.data)[1 + index.trait] 
+  }else{
+    Y = Y.data[, index.trait + 1]
+  }
   # Assign Variables
   taxa = Y.data[,1]
   trait.names = names(Y) 
-
   # Format-free
   OS.Windows = FALSE
   switch(Sys.info()[['sysname']],
@@ -59,43 +71,62 @@ tryCatch({
     PLink_Binary = {
     },{
       # Numeric (Default)
-      G = fread(GD.path) %>% as.data.frame()
+      GD = fread(GD.path) %>% as.data.frame()
+      GM = fread(GM.path) %>% as.data.frame()
+      if(is.character(GD[,1])) GD = GD[,-1]
     }
   )
-
-  # Remove first column if it is taxa name
-  if(is.character(G[,1])){
-    G = G[,-1]
-  }
-
-  # rrBLUP
-  G.impute =  A.mat(G, shrink = shrink, impute.method = impute, return.imputed = TRUE, max.missing = ms)$imputed
-  if(ncol(Y) == 1){
-    ans = mixed.solve(Y, K = tcrossprod(G.impute), return.Hinv = TRUE, SE = TRUE)
-    out1 = data.frame(Stat = c("Vu", "Ve", "beta", "beta.SE", "LL"),
-                      Value = c(ans$Vu, ans$Ve, ans$beta, ans$beta.SE, ans$LL))
-    out2 = data.frame(u = ans$u, u.SE = ans$u.SE)
-    out3 = ans$Hinv
-    write.table(out1, sprintf("rrBLUP_%s_%s_stat.txt", project, trait_names),
-                row.names = F, quote = F, sep = '\t')
-    write.table(out2, sprintf("rrBLUP_%s_%s_EBV.txt", project, trait_names),
-                row.names = F, quote = F, sep = '\t')
-    write.table(out3, sprintf("rrBLUP_%s_%s_InverseH.txt", project, trait_names),
-                row.names = F, quote = F, sep = '\t')
-  }else{
-    for(i in 1:ncol(Y)){
-      ans = mixed.solve(Y[,i], K = tcrossprod(G.impute), return.Hinv = TRUE, SE = TRUE)
-      out1 = data.frame(Stat = c("Vu", "Ve", "beta", "beta.SE", "LL"),
-                        Value = c(ans$Vu, ans$Ve, ans$beta, ans$beta.SE, ans$LL))
-      out2 = data.frame(u = ans$u, u.SE = ans$u.SE)
-      out3 = ans$Hinv
-      write.table(out1, sprintf("rrBLUP_%s_%s_stat.txt", project, trait_names),
-                row.names = F, quote = F, sep = '\t')
-      write.table(out2, sprintf("rrBLUP_%s_%s_EBV.txt", project, trait_names),
-                row.names = F, quote = F, sep = '\t')
-      write.table(out3, sprintf("rrBLUP_%s_%s_InverseH.txt", project, trait_names),
-                row.names = F, quote = F, sep = '\t')
+  # Covariate
+    if(C.path != "NA"){
+      C.data = fread(C.path) %>% as.data.frame()
+      if(is.character(C.data[,1])) C.data = C.data[,-1]
+      C.model.name = C.index %>% strsplit(split = "sep") %>% do.call(c, .)
+      index.C = which(C.model.name == "Selected")
+      if(length(index.C) == 1){
+        name = names(C.data)[index.C]
+        C = data.frame(c = C.data[, index.C])
+        names(C) = name
+      }else{
+        C = C.data[, index.C]
+      }
+    }else{
+      C = NULL
     }
+  # rrBLUP
+  G.impute =  A.mat(GD, shrink = shrink, impute.method = impute, return.imputed = TRUE, max.missing = ms)$imputed
+  for(i in 1:ncol(Y)){
+    ## GWAS_assist
+    if(gwas.assist){
+      ## Read GWAS result
+      gwas = fread(sprintf("%s_%s_GWAS.txt", project, trait.names[i]))
+      ## Merge GM and p-value
+      names(GM)[1] = "SNP"
+      map_gwas = merge(GM, gwas, "SNP", all.x = TRUE)
+      map_gwas$P.value[is.na(map_gwas$P.value)] = 1
+      ## Find Sig. SNP
+      index.sig = map_gwas$P.value < (cutoff/nrow(gwas))
+      ## Generate dataframe by number of QTNs
+      if(sum(index.sig) == 0){
+        ans = mixed.solve(Y[,i], K = tcrossprod(G.impute), return.Hinv = TRUE, SE = TRUE)
+      }else if(sum(index.sig) == 1){
+        C.gwas = data.frame(m = GD[,index.sig])
+      }else{
+        C.gwas = GD[,index.sig]
+        ## LD Remove
+        LD_remain = Blink.LDRemove(C.gwas, .7, 1:sum(index.sig), orientation = "col")
+        C.gwas = C.gwas[,LD_remain]
+      }
+    }
+    write.table(data.frame(Stat = c("Vu", "Ve", "beta", "beta.SE", "LL"),
+                           Value = c(ans$Vu, ans$Ve, ans$beta, ans$beta.SE, ans$LL)),
+                sprintf("rrBLUP_%s_%s_stat.txt", project, trait_names[i]),
+                row.names = F, quote = F, sep = '\t')
+    write.table(data.frame(u = ans$u, u.SE = ans$u.SE), 
+                sprintf("rrBLUP_%s_%s_EBV.txt", project, trait_names[i]),
+                row.names = F, quote = F, sep = '\t')
+    write.table(ans$Hinv, 
+                sprintf("rrBLUP_%s_%s_InverseH.txt", project, trait_names[i]),
+                row.names = F, quote = F, sep = '\t')
   }
   print(warnings())
 }, error = function(e){
