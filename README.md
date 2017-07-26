@@ -158,7 +158,7 @@
 <p align="center"><img src = "./res/pop_model.png" width = 220></p>
 * The panel consist of two sections. The upper one presents a set of input arguments shared by all methods, while users can define method-specific arguments from the lower section.
  
-<p align="center"><img src = "./res/config.png" width = 800></p>
+<p align="center"><img src = "./res/configpane.png" width = 800></p>
 
 * Available parameters in the upper section : 
 
