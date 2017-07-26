@@ -331,6 +331,9 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	
 	public static boolean debug = false, first_d = false;
 
+	// Phenotype panel
+		public static selectablePanel[] panel_phenotype = new selectablePanel[MOMAX];
+		public static String[][] trait_names = new String[MOMAX][];
 	// Content menu
 		public JPopupMenu popup_tb, popup_mo;
 		public static JMenuItem popup_isR, popup_isC, popup_isK, popup_opentb, popup_deltb;
@@ -362,6 +365,9 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			  // BGLR 
 				static String df_model_b = "BRR", df_response_b = "gaussian", 
 							  df_niter_b = "1200", df_burnin_b = "200", df_thin_b = "5";
+			  // GWAS-Assist
+				static String df_bon = "0.05";
+				static boolean df_enable = true;
 	// Value Stored
 		// Common
 				static String[] project = new String[MOMAX];
@@ -382,6 +388,9 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			  // BGLR 
 				static String model_b = df_model_b, response_b = df_response_b, 
 							  niter_b = df_niter_b, burnin_b = df_burnin_b, thin_b = df_thin_b;	
+			  // GWAS-Assist
+				static String bon = df_bon;
+				static boolean enable = df_enable;
 	public iPatPanel(int Wideint, int Heigthint, int pH){
 		this.Wide=Wideint;
 		this.Heigth=Heigthint;
@@ -441,9 +450,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		    				command_gwas[index_pop_mo], 
 		    				command_gs[index_pop_mo]);
 		    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gwas[index_pop_mo], 
-		    				ArrayUtils.addAll(command_gs[index_pop_mo], Deployed[index_pop_mo][ConfigFrame.analysis.GS.index].Name()));
-		    		multi_run[index_pop_mo].start();
-		    		
+		    				ArrayUtils.addAll(command_gs[index_pop_mo], Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index].Name()));
+		    		multi_run[index_pop_mo].start();		
 	    		}else if(gwas_exist){
 	    			showConsole(index_pop_mo, command_gwas[index_pop_mo][2], command_gwas[index_pop_mo][3]);	            
 		    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gwas[index_pop_mo], null);
@@ -630,6 +638,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			Arrays.fill(Deployed[i], ConfigFrame.method.NA);
 			rotate_index[i]=0;
 			project[i] = "Project_" + i; 
+			trait_names[i] = new String[]{""};
 		}			
 		Arrays.fill(permit, false);
 		for(int i = 0; i<maxfile; i++){
@@ -757,20 +766,18 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			   		index_pop_mo = MOindex;
 			   		boolean gwas_exist = Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index] !=  ConfigFrame.method.NA, 
 		    				gs_exist   = Deployed[index_pop_mo][ConfigFrame.analysis.GS.index]   !=  ConfigFrame.method.NA;
-			   		if(gwas_exist){ 
+			   		if(gwas_exist)
 			   			popup_gwas.setText("GWAS (" + Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index].Name() + ")"); 
-			   			popup_run.setEnabled(true);
-			   		}else{
-			   			popup_gwas.setText("GWAS (Empty)"); 
-			   			popup_run.setEnabled(false);
-			   		}
-			   		if(gs_exist){
+			   		else
+			   			popup_gwas.setText("GWAS (Empty)"); 			  		
+			   		if(gs_exist)
 						popup_gs.setText("GS ("+ Deployed[index_pop_mo][ConfigFrame.analysis.GS.index].Name() +")"); 
-			   			popup_run.setEnabled(true);
-			   		}else{
+			   		else
 						popup_gs.setText("GS (Empty)"); 
-						popup_run.setEnabled(false);
-			   		}
+			   		if(gwas_exist||gs_exist)
+			   			popup_run.setEnabled(true);
+			   		else
+			   			popup_run.setEnabled(false);
 					popup_mo.show(iPatPanel.this, ee.getX(), ee.getY());	   		
 			   	}			
     			if(ableselect && TBindex <= 0 && MOindex <= 0){
@@ -783,8 +790,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				
 			@Override 
 			public void mouseReleased(MouseEvent ee){				
-				int x=ee.getX();
-				int y=ee.getY();		
+				int x = ee.getX();
+				int y = ee.getY();		
     			//To compute whether the objects should be created
 				 								 //case 1
 				if((TBindex != 0 || MOindex !=0 ) && 	 //ä¸”æ­£åœ¨é�¸æŸ�å€‹ç‰©ä»¶
@@ -1292,18 +1299,24 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			text_console[MOindex].append(String.format(format1, "Confidence Interval:", command_gwas[17]) + "\n");
 			break;
 			}
-			text_console[MOindex].append("GS Method: " + method_gs + " (GWAS Assisted)"+ "\n");
+			text_console[MOindex].append("GS Method: " + method_gs + "\n");
 			switch(method_gs){
 			case "gBLUP":
+			text_console[MOindex].append(String.format(format1, "GWAS-Assisted:",command_gs[20]) + "\n");
+			text_console[MOindex].append(String.format(format1, "Bonferroni cutoff:", command_gs[21]) + "\n");
 			text_console[MOindex].append(String.format(format1, "SNP.fraction:", command_gwas[20]) + "\n");
 			text_console[MOindex].append(String.format(format1, "file.fragment:", command_gwas[21]) + "\n");
 			text_console[MOindex].append(String.format(format1, "model selection:", command_gwas[22]) + "\n");
 			break;
 			case "rrBLUP":
+			text_console[MOindex].append(String.format(format1, "GWAS-Assisted:",command_gs[19]) + "\n");
+			text_console[MOindex].append(String.format(format1, "Bonferroni cutoff:", command_gs[20]) + "\n");
 			text_console[MOindex].append(String.format(format1, "impute.method:", command_gs[17]) + "\n");
 			text_console[MOindex].append(String.format(format1, "shrink:", command_gs[18]) + "\n");
 			break;
 			case "BGLR":
+			text_console[MOindex].append(String.format(format1, "GWAS-Assisted:",command_gs[22]) + "\n");
+			text_console[MOindex].append(String.format(format1, "Bonferroni cutoff:", command_gs[23]) + "\n");
 			text_console[MOindex].append(String.format(format1, "Model (Markers):", command_gs[17]) + "\n");
 			text_console[MOindex].append(String.format(format1, "response_type:", command_gs[18]) + "\n");
 			text_console[MOindex].append(String.format(format1, "nIter:", command_gs[19]) + "\n");
@@ -1317,8 +1330,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		}else if(method_gs != null){
 		}
 		
-		
-	
 	}
 	
 	/*

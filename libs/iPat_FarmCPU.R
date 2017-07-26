@@ -17,9 +17,12 @@
   FAM.path  = args[14]
   BIM.path  = args[15]
 ## Method specific args
-  method.bin= args[16] #"optimum"
-  maxLoop= as.numeric(args[17])
+  method.bin = args[16] #"optimum"
+  maxLoop = as.numeric(args[17])
+
 # Load libraries
+  cat("=== FarmCPU ===\n")
+  cat("   Loading libraries ...")
   setwd(lib)
   list.of.packages <- c("bigmemory", "biganalytics", "data.table", "magrittr", "MASS", "gplots", "compiler", "scatterplot3d", "R.utils", "ape")
   new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -39,13 +42,20 @@
   source("./Function_GAPIT.R")
   source("./Function_FarmCPU.R")
   source("./Function_LDRemove.R")
+  cat("Done\n")
 
 tryCatch({  
   setwd(wd)
-  # Subset Phenotype
+   # Subset Phenotype
     Y.data = fread(Y.path) %>% as.data.frame
-    subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .) %>% as.numeric
-    Y = Y.data[, subset+1]
+    subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .)
+    index.trait = which(subset == "Selected") 
+    if(length(index.trait) == 1){
+      Y = data.frame(y = Y.data[, index.trait + 1])
+      names(Y) = names(Y.data)[1 + index.trait] 
+    }else{
+      Y = Y.data[, index.trait + 1]
+    }
   # Assign Variables
     taxa = Y.data[,1]
     trait.names = names(Y) 
@@ -57,55 +67,67 @@ tryCatch({
       Darwin = { }) # MacOS
     switch(format, 
       Hapmap = {if(!OS.Windows){sprintf("chmod 777 %s/blink", lib) %>% system()}
-                hmp = substring(GD.path, 1, nchar(GD.path)-4)
-                sprintf("%s/blink --file %s --compress --hapmap", lib, hmp) %>% system()
-                sprintf("%s/blink --file %s --recode --out %s --numeric", lib, hmp, hmp) %>% system()
-                GD = read.table(sprintf("%s.dat", hmp)) %>% t() %>% data.frame(taxa, .)
-                GM = read.table(sprintf("%s.map", hmp), head = TRUE)}, 
+        hmp = substring(GD.path, 1, nchar(GD.path)-4)
+        sprintf("%s/blink --file %s --compress --hapmap", lib, hmp) %>% system()
+        sprintf("%s/blink --file %s --recode --out %s --numeric", lib, hmp, hmp) %>% system()
+        GD = read.table(sprintf("%s.dat", hmp)) %>% t() %>% data.frame(taxa, .)
+        GM = read.table(sprintf("%s.map", hmp), head = TRUE)}, 
       VCF = { if(!OS.Windows){sprintf("chmod 777 %s/blink", lib) %>% system()}
-              vcf = substring(GD.path, 1, nchar(GD.path)-4)
-              sprintf("%s/blink --file %s --compress --vcf", lib, vcf) %>% system()
-              sprintf("%s/blink --file %s --recode --out %s --numeric", lib, vcf, vcf) %>% system()
-              GD = read.table(sprintf("%s.dat", vcf)) %>% t() %>% data.frame(taxa, .)
-              GM = read.table(sprintf("%s.map", vcf), head = TRUE)},
-      PLink_ASCII = {
-
-      },
+        vcf = substring(GD.path, 1, nchar(GD.path)-4)
+        sprintf("%s/blink --file %s --compress --vcf", lib, vcf) %>% system()
+        sprintf("%s/blink --file %s --recode --out %s --numeric", lib, vcf, vcf) %>% system()
+        GD = read.table(sprintf("%s.dat", vcf)) %>% t() %>% data.frame(taxa, .)
+        GM = read.table(sprintf("%s.map", vcf), head = TRUE)},
       PLink_Binary = {
 
       }, {
         # Numeric (Default)
-        if(GM.path=="NULL"){GM=NULL}else{GM=read.table(GM.path, head=TRUE)}
-        if(GD.path=="NULL"){GD=NULL}else{GD=read.table(GD.path, head=TRUE)}
+        GM = fread(GM.path) %>% as.data.frame()
+        GD = fread(GD.path) %>% as.data.frame()
+        if(is.character(GD[,1])) GD = GD[,-1]
       })
   # QC
-    if(maf == "No threshold"){
-      MAF.calculate = FALSE
-    }else{
-      MAF.calculate = TRUE
+    # Missing rate
+    if(!is.na(ms)){
+      MS = is.na(GD) %>% apply(2, function(x) sum(x)/length(x))
+      GD = GD[, MS <= ms]
+      GM = GM[MS <= ms, ]
     }
+    # MAF
+    MAF.calculate = ifelse(maf == "No threshold", FALSE, TRUE)
   # Covariate
     if(C.path != "NA"){
-      C = fread(C.path) %>% as.data.frame()
+      C.data = fread(C.path) %>% as.data.frame()
+      if(is.character(C.data[,1])) C.data = C.data[,-1]
       C.model.name = C.index %>% strsplit(split = "sep") %>% do.call(c, .)
-      C = C[, C.model.name == "Selected"]
+      index.C = which(C.model.name == "Selected")
+      if(length(index.C) == 1){
+        name = names(C.data)[index.C]
+        C = data.frame(c = C.data[, index.C])
+        names(C) = name
+      }else{
+        C = C.data[, index.C]
+      }
     }else{
       C = NULL
     }
   # FarmCPU
-    for (i in 1:length(trait_names)){
-      x=FarmCPU(
-        Y = Y[,c(1,1+i)],
-        GM = GM,
-        GD = GD,
-        CV = C,
-        method.bin= method.bin,
-        bin.size= c(5e5,5e6,5e7), # Default set of bin.size 
-        bin.selection= seq(10,100,10), # Default set of bin.selection
-        maxLoop = maxLoop,
-        MAF.calculate = MAF.calculate,
-        maf.threshold = maf,
-        memo = sprintf("FarmCPU_%s_%s_", project, trait_names[i]))
+    for (i in 1:length(trait.names)){
+      x = FarmCPU(
+            Y = data.frame(taxa, Y[,i]),
+            GM = GM,
+            GD = data.frame(taxa, GD),
+            CV = C,
+            method.bin = method.bin,
+            bin.size = c(5e5, 5e6, 5e7), # Default set of bin.size 
+            bin.selection = seq(10, 100, 10), # Default set of bin.selection
+            maxLoop = maxLoop,
+            MAF.calculate = MAF.calculate,
+            maf.threshold = maf,
+            memo = sprintf("%s_%s", project, trait.names[i]))
+      write.table(x = data.frame(SNP = x$GWAS$SNP, P.value = x$GWAS$P.value),
+                  file = sprintf("%s_%s_GWAS.txt", project, trait.names[i]),
+                  quote = F, row.names = F, sep = "\t")
     }
   print(warnings())
 },error = function(e){
@@ -160,3 +182,21 @@ tryCatch({
    #    memo= trait_names[i]
    #  )
    #  
+
+# project = "Project_1" 
+# wd = "/Users/Poissonfish/Desktop/test/farm"
+# lib = "/Users/Poissonfish/git/iPat/libs/"
+# format = "Numeric" 
+# ms = as.numeric("No threshold") 
+# maf = as.numeric(0.05) 
+# Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.txt" 
+# Y.index = "SelectedsepExcludedsepSelectedsep" 
+# GD.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.dat" 
+# GM.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.map" 
+# C.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/covariates.txt"
+# C.index = "SelectedsepExcludedsepSelectedsep"
+# K.path = "NA"
+# FAM.path = "NA"
+# BIM.path = "NA"
+# method.bin = "static" 
+# maxLoop = as.numeric(10) 
