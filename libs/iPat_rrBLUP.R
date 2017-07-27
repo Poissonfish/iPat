@@ -20,8 +20,8 @@
   impute = args[16]
   shrink = as.logical(args[17])
   gwas.assist = as.logical(args[18])
-  cutoff = args[19]
-
+  cutoff = as.numeric(args[19])
+  
 # Load libraries
   cat("=== rrBLUP ===\n")
   cat("   Loading libraries ...")

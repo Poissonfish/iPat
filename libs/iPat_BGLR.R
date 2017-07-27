@@ -23,7 +23,7 @@
 	burnIn = as.numeric(args[19])
 	thin = as.numeric(args[20])
 	gwas.assist = as.logical(args[21])
-  	cutoff = args[22]
+  	cutoff = as.numeric(args[22])
   	#gwas.method = args[23] 
 
 # Load libraries
