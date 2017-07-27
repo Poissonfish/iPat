@@ -449,16 +449,27 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		    				Deployed[index_pop_mo][ConfigFrame.analysis.GS.index].Name(), 
 		    				command_gwas[index_pop_mo], 
 		    				command_gs[index_pop_mo]);
-		    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gwas[index_pop_mo], 
-		    				ArrayUtils.addAll(command_gs[index_pop_mo], Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index].Name()));
+		    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gwas[index_pop_mo], command_gs[index_pop_mo]);
 		    		multi_run[index_pop_mo].start();		
 	    		}else if(gwas_exist){
-	    			showConsole(index_pop_mo, command_gwas[index_pop_mo][2], command_gwas[index_pop_mo][3]);	            
+	    			showConsole(index_pop_mo, command_gwas[index_pop_mo][2], command_gwas[index_pop_mo][3]);
+	    			PrintStatus(index_pop_mo, 
+		    				Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index].Name(),
+		    				null, 
+		    				command_gwas[index_pop_mo], 
+		    				null
+	    					);
 		    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gwas[index_pop_mo], null);
 		    		multi_run[index_pop_mo].start();
 	    		}else if(gs_exist){
-	    			showConsole(index_pop_mo, command_gs[index_pop_mo][2], command_gs[index_pop_mo][3]);	            
-		    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, ArrayUtils.addAll(command_gs[index_pop_mo],"NA"), null);
+	    			showConsole(index_pop_mo, command_gs[index_pop_mo][2], command_gs[index_pop_mo][3]);
+	    			PrintStatus(index_pop_mo, 
+		    				null,
+		    				Deployed[index_pop_mo][ConfigFrame.analysis.GS.index].Name(),
+		    				null,
+		    				command_gs[index_pop_mo]
+	    					);
+		    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gs[index_pop_mo], null);
 		    		multi_run[index_pop_mo].start();
 	    		}
 	    	}else if(source == popup_delmo){
@@ -1324,12 +1335,71 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			text_console[MOindex].append(String.format(format1, "thin:", command_gs[21]) + "\n");
 			break;
 			}
-			text_console[MOindex].append("********************************************************************* \n");
 		}else if(method_gwas != null){
-
+			text_console[MOindex].append("Project Name:" + "\n");
+			text_console[MOindex].append(String.format(format1, " ", command_gwas[2]) + "\n");
+			text_console[MOindex].append("Working Directory:" + "\n");
+			text_console[MOindex].append(String.format(format1, " ", command_gwas[3]) + "\n");
+			text_console[MOindex].append("Data Format:" + "\n");
+			text_console[MOindex].append(String.format(format1, " ", command_gwas[5]) + "\n"); 
+			text_console[MOindex].append("Quality Control:" + "\n");
+			text_console[MOindex].append(String.format(format1, "Missing Values: ", "< " + command_gwas[6]) + "\n");
+			text_console[MOindex].append(String.format(format1, "MAF: ", "> " + command_gwas[7]) + "\n");
+			text_console[MOindex].append("GWAS Method: " + method_gwas + "\n");
+			switch(method_gwas){
+			case "GAPIT":
+			text_console[MOindex].append(String.format(format1, "Linear Model: ", command_gwas[17]) + "\n");
+			text_console[MOindex].append(String.format(format1, "kinship.cluster: ", command_gwas[18]) + "\n");
+			text_console[MOindex].append(String.format(format1, "kinship.group: ", command_gwas[19]) + "\n");
+			text_console[MOindex].append(String.format(format1, "SNP.fraction: ", command_gwas[20]) + "\n");
+			text_console[MOindex].append(String.format(format1, "file.fragment: ", command_gwas[21]) + "\n");
+			text_console[MOindex].append(String.format(format1, "model selection: ", command_gwas[22]) + "\n");
+			break;
+			case "FarmCPU":
+			text_console[MOindex].append(String.format(format1, "method.bin:", command_gwas[17]) + "\n");
+			text_console[MOindex].append(String.format(format1, "maxLoop:", command_gwas[18]) + "\n");
+			break;
+			case "PLINK":
+			text_console[MOindex].append(String.format(format1, "Confidence Interval:", command_gwas[17]) + "\n");
+			break;
+			}
 		}else if(method_gs != null){
+			text_console[MOindex].append("Project Name:" + "\n");
+			text_console[MOindex].append(String.format(format1, " ", command_gs[2]) + "\n");
+			text_console[MOindex].append("Working Directory:" + "\n");
+			text_console[MOindex].append(String.format(format1, " ", command_gs[3]) + "\n");
+			text_console[MOindex].append("Data Format:" + "\n");
+			text_console[MOindex].append(String.format(format1, " ", command_gs[5]) + "\n"); 
+			text_console[MOindex].append("Quality Control:" + "\n");
+			text_console[MOindex].append(String.format(format1, "Missing Values: ", "< " + command_gs[6]) + "\n");
+			text_console[MOindex].append(String.format(format1, "MAF: ", "> " + command_gs[7]) + "\n");
+			text_console[MOindex].append("GS Method: " + method_gs + "\n");
+			switch(method_gs){
+			case "gBLUP":
+			text_console[MOindex].append(String.format(format1, "GWAS-Assisted:",command_gs[20]) + "\n");
+			text_console[MOindex].append(String.format(format1, "Bonferroni cutoff:", command_gs[21]) + "\n");
+			text_console[MOindex].append(String.format(format1, "SNP.fraction:", command_gwas[20]) + "\n");
+			text_console[MOindex].append(String.format(format1, "file.fragment:", command_gwas[21]) + "\n");
+			text_console[MOindex].append(String.format(format1, "model selection:", command_gwas[22]) + "\n");
+			break;
+			case "rrBLUP":
+			text_console[MOindex].append(String.format(format1, "GWAS-Assisted:",command_gs[19]) + "\n");
+			text_console[MOindex].append(String.format(format1, "Bonferroni cutoff:", command_gs[20]) + "\n");
+			text_console[MOindex].append(String.format(format1, "impute.method:", command_gs[17]) + "\n");
+			text_console[MOindex].append(String.format(format1, "shrink:", command_gs[18]) + "\n");
+			break;
+			case "BGLR":
+			text_console[MOindex].append(String.format(format1, "GWAS-Assisted:",command_gs[22]) + "\n");
+			text_console[MOindex].append(String.format(format1, "Bonferroni cutoff:", command_gs[23]) + "\n");
+			text_console[MOindex].append(String.format(format1, "Model (Markers):", command_gs[17]) + "\n");
+			text_console[MOindex].append(String.format(format1, "response_type:", command_gs[18]) + "\n");
+			text_console[MOindex].append(String.format(format1, "nIter:", command_gs[19]) + "\n");
+			text_console[MOindex].append(String.format(format1, "burnIn:", command_gs[20]) + "\n");
+			text_console[MOindex].append(String.format(format1, "thin:", command_gs[21]) + "\n");
+			break;
+			}
 		}
-		
+		text_console[MOindex].append("********************************************************************* \n");
 	}
 	
 	/*
