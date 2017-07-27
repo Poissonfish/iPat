@@ -21,7 +21,7 @@
   shrink = as.logical(args[17])
   gwas.assist = as.logical(args[18])
   cutoff = as.numeric(args[19])
-  
+
 # Load libraries
   cat("=== rrBLUP ===\n")
   cat("   Loading libraries ...")
@@ -139,7 +139,7 @@ tryCatch({
       ## Generate a dataframe by number of QTNs
        ### 0 QNTs
       cat("Done\n")
-      cat(sprintf("   rrBLUP is computing for trait %s", trait.names[i]))
+      cat(sprintf("   rrBLUP is computing for trait %s ...", trait.names[i]))
       if(length(index.sig) == 0){
         ans = mixed.solve(Y[,i], X = C, K = K, return.Hinv = TRUE, SE = TRUE)
        ### 1 QTNs
@@ -160,33 +160,48 @@ tryCatch({
         }else{
           ans = mixed.solve(Y[,i], X = cbind(C, C.gwas), K = K, return.Hinv = TRUE, SE = TRUE)
         }
-      }
-      cat("Done\n")
-    }else{
+      }    }else{
       cat(sprintf("   rrBLUP is computing for trait %s ...", trait.names[i]))
       ans = mixed.solve(Y[,i], X = C, K = K, return.Hinv = TRUE, SE = TRUE)
-      cat("Done\n")
     }
-    write.table(data.frame(Stat = c("Vu", "Ve", "beta", "beta.SE", "LL"),
+    beta.name = names(ans$beta)
+    Stat = c("Vu", "Ve", paste0("beta.", beta.name), paste0("beta.SE.", beta.name), "LL")
+    write.table(data.frame(Stat,
                            Value = c(ans$Vu, ans$Ve, ans$beta, ans$beta.SE, ans$LL)),
-                sprintf("rrBLUP_%s_%s_stat.txt", project, trait_names[i]),
+                sprintf("rrBLUP_%s_%s_stat.txt", project, trait.names[i]),
                 row.names = F, quote = F, sep = '\t')
     write.table(data.frame(u = ans$u, u.SE = ans$u.SE), 
-                sprintf("rrBLUP_%s_%s_EBV.txt", project, trait_names[i]),
+                sprintf("rrBLUP_%s_%s_EBV.txt", project, trait.names[i]),
                 row.names = F, quote = F, sep = '\t')
     write.table(ans$Hinv, 
-                sprintf("rrBLUP_%s_%s_InverseH.txt", project, trait_names[i]),
+                sprintf("rrBLUP_%s_%s_InverseH.txt", project, trait.names[i]),
                 row.names = F, quote = F, sep = '\t')
+    cat("Done\n")
   }
   print(warnings())
 }, error = function(e){
   stop(e)
 })
 
-# impute = "mean"
-# shrink = FALSE
-# gwas.assist = TRUE
-# cutoff = .05
+project = "Project_1" 
+wd = "/Users/Poissonfish/Desktop/test/farm"
+lib = "/Users/Poissonfish/git/iPat/libs/"
+format = "Numeric" 
+ms = as.numeric("No threshold") 
+maf = as.numeric(0.05) 
+Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.txt" 
+Y.index = "SelectedsepSelectedsepSelectedsep" 
+GD.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.dat" 
+GM.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.map" 
+C.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/covariates.txt"
+C.index = "SelectedsepExcludedsepSelectedsep"
+K.path = "NA"
+FAM.path = "NA"
+BIM.path = "NA"
+impute = "mean"
+shrink = FALSE
+gwas.assist = TRUE
+cutoff = .05
 
 # A.mat(M,shrink=TRUE) -> for low density markers Vanraden
 # Vu = estimator for 
