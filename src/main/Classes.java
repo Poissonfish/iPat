@@ -283,7 +283,7 @@ class ConfigPane extends JPanel implements ActionListener{
 							(String)K_cluster.combo.getSelectedItem(),
 							(String)K_group.combo.getSelectedItem(),
 							(String)snp_frac.combo.getSelectedItem(),
-							(String)file_frag.combo.getSelectedItem(), // 21
+							//(String)file_frag.combo.getSelectedItem(), // 21
 							model_selection.isSelected()?"TRUE":"FALSE"};
 					break;
 				case FarmCPU:
@@ -309,7 +309,7 @@ class ConfigPane extends JPanel implements ActionListener{
 							iPatPanel.jar.getParent()+"/libs/iPat_gBLUP.R"};
 					command_specific = new String[]{
 							(String)snp_frac.combo.getSelectedItem(),  // 17
-							(String)file_frag.combo.getSelectedItem(),
+							//(String)file_frag.combo.getSelectedItem(),
 							model_selection.isSelected()?"TRUE":"FALSE",
 							enable.isSelected()?"TRUE":"FALSE",
 							(String)bonferroni.combo.getSelectedItem()}; // 21
@@ -424,9 +424,7 @@ class ConfigPane extends JPanel implements ActionListener{
 			panel_advance = new JPanel(new MigLayout("fillx"));
 			panel_advance.add(snp_frac.name, "cell 0 0, align r");
 			panel_advance.add(snp_frac.combo, "cell 1 0, align l");
-			panel_advance.add(file_frag.name, "cell 0 1, align r");
-			panel_advance.add(file_frag.combo, "cell 1 1, align l");
-			panel_advance.add(model_selection, "cell 0 2 2 1, align c");
+			panel_advance.add(model_selection, "cell 0 1 2 1, align c");
 		pane.addTab("Covariates", panel_cov);
 		pane.addTab("GAPIT input", panel_gapit);
 		pane.addTab("Advance", panel_advance);
@@ -443,9 +441,7 @@ class ConfigPane extends JPanel implements ActionListener{
 			panel_advance = new JPanel(new MigLayout("fillx"));
 			panel_advance.add(snp_frac.name, "cell 0 0, align r");
 			panel_advance.add(snp_frac.combo, "cell 1 0, align l");
-			panel_advance.add(file_frag.name, "cell 0 1, align r");
-			panel_advance.add(file_frag.combo, "cell 1 1, align l");
-			panel_advance.add(model_selection, "cell 0 2 2 1, align c");
+			panel_advance.add(model_selection, "cell 0 1 2 1, align c");
 		pane.addTab("Covariates", panel_cov);
 		pane.addTab("GWAS-Assist",  panel_gwas);
 		pane.addTab("Advance", panel_advance);
@@ -556,7 +552,7 @@ class ConfigPane extends JPanel implements ActionListener{
 				iPatPanel.K_group = (String) K_group.combo.getSelectedItem();
 				iPatPanel.model_select = (String) model_select.combo.getSelectedItem();
 				iPatPanel.snp_frac = (String) snp_frac.combo.getSelectedItem();
-				iPatPanel.file_frag = (String) file_frag.combo.getSelectedItem();
+				//iPatPanel.file_frag = (String) file_frag.combo.getSelectedItem();
 				iPatPanel.model_selection = model_selection.isSelected();
 			// FarmCPU
 				iPatPanel.method_bin = (String) method_bin.combo.getSelectedItem();
@@ -566,7 +562,7 @@ class ConfigPane extends JPanel implements ActionListener{
 		}else{
 			// gBLUP
 				iPatPanel.snp_frac = (String) snp_frac.combo.getSelectedItem();
-				iPatPanel.file_frag = (String) file_frag.combo.getSelectedItem();
+				//iPatPanel.file_frag = (String) file_frag.combo.getSelectedItem();
 				iPatPanel.model_selection = model_selection.isSelected();
 			// rrBLUP
 				iPatPanel.impute_method = (String) impute_method.combo.getSelectedItem();
@@ -590,7 +586,7 @@ class ConfigPane extends JPanel implements ActionListener{
 				K_group.combo.setSelectedItem(iPatPanel.K_group);
 				model_select.combo.setSelectedItem(iPatPanel.model_select);
 				snp_frac.combo.setSelectedItem(iPatPanel.snp_frac);
-				file_frag.combo.setSelectedItem(iPatPanel.file_frag);
+				//file_frag.combo.setSelectedItem(iPatPanel.file_frag);
 				model_selection.setSelected(iPatPanel.model_selection);
 			// FarmCPU
 				method_bin.combo.setSelectedItem(iPatPanel.method_bin);
@@ -600,7 +596,7 @@ class ConfigPane extends JPanel implements ActionListener{
 		}else{
 			// gBLUP
 				snp_frac.combo.setSelectedItem(iPatPanel.snp_frac);
-				file_frag.combo.setSelectedItem(iPatPanel.file_frag);
+				//file_frag.combo.setSelectedItem(iPatPanel.file_frag);
 				model_selection.setSelected(iPatPanel.model_selection);
 			// rrBLUP
 				impute_method.combo.setSelectedItem(iPatPanel.impute_method);
@@ -624,7 +620,7 @@ class ConfigPane extends JPanel implements ActionListener{
 				K_group.combo.setSelectedItem(iPatPanel.df_K_group);
 				model_select.combo.setSelectedItem(iPatPanel.df_model_select);
 				snp_frac.combo.setSelectedItem(iPatPanel.df_snp_frac);
-				file_frag.combo.setSelectedItem(iPatPanel.df_file_frag);
+				//file_frag.combo.setSelectedItem(iPatPanel.df_file_frag);
 				model_selection.setSelected(iPatPanel.df_model_selection);
 			// FarmCPU
 				method_bin.combo.setSelectedItem(iPatPanel.df_method_bin);
@@ -634,7 +630,7 @@ class ConfigPane extends JPanel implements ActionListener{
 		}else{
 			// gBLUP
 				snp_frac.combo.setSelectedItem(iPatPanel.df_snp_frac);
-				file_frag.combo.setSelectedItem(iPatPanel.df_file_frag);
+				//file_frag.combo.setSelectedItem(iPatPanel.df_file_frag);
 				model_selection.setSelected(iPatPanel.df_model_selection);
 			// rrBLUP
 				impute_method.combo.setSelectedItem(iPatPanel.df_impute_method);

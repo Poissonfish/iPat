@@ -41,12 +41,13 @@
   source("./Function_EMMA.R")
   source("./Function_GAPIT.R")
   source("./Function_FarmCPU.R")
-  source("./Function_LDRemove.R")
+  source("./Function_iPat.R")
   cat("Done\n")
 
 tryCatch({  
   setwd(wd)
    # Subset Phenotype
+    cat("   Loading phenotype ...")
     Y.data = fread(Y.path) %>% as.data.frame
     subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .)
     index.trait = which(subset == "Selected") 
@@ -59,6 +60,7 @@ tryCatch({
   # Assign Variables
     taxa = Y.data[,1]
     trait.names = names(Y) 
+    cat("Done\n")
   # Format-free
     OS.Windows = FALSE
     switch(Sys.info()[['sysname']],
@@ -84,9 +86,10 @@ tryCatch({
         # Numeric (Default)
         GM = fread(GM.path) %>% as.data.frame()
         GD = fread(GD.path) %>% as.data.frame()
-        if(is.character(GD[,1])) GD = GD[,-1]
       })
+      if(is.character(GD[,1])) GD = GD[,-1]
   # QC
+    cat("   Quality control ...")
     # Missing rate
     if(!is.na(ms)){
       MS = is.na(GD) %>% apply(2, function(x) sum(x)/length(x))
@@ -95,8 +98,10 @@ tryCatch({
     }
     # MAF
     MAF.calculate = ifelse(maf == "No threshold", FALSE, TRUE)
+    cat("Done\n")
   # Covariate
     if(C.path != "NA"){
+      cat("   Loading covariates ...")
       C.data = fread(C.path) %>% as.data.frame()
       if(is.character(C.data[,1])) C.data = C.data[,-1]
       C.model.name = C.index %>% strsplit(split = "sep") %>% do.call(c, .)
@@ -108,6 +113,7 @@ tryCatch({
       }else{
         C = C.data[, index.C]
       }
+    cat("Done\n")
     }else{
       C = NULL
     }
@@ -136,7 +142,6 @@ tryCatch({
 
   # C.index = "SelectedsepExcludedsepSelectedsep"
   # C.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/covariates.txt"
-
 
    # # Sorted by P-value
    #  SNP_p = data.frame(name = x$GWAS$SNP, p = x$GWAS$P.value)

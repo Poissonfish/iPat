@@ -21,9 +21,11 @@
   ki.c = args[17]
   ki.g = args[18]
   snp.fraction = as.numeric(args[19])
-  file.fragment = as.numeric(args[20])
-  model.s = as.logical(args[21])
+  model.s = as.logical(args[20])
+
 # Load libraries
+  cat("=== GAPIT ===\n")
+  cat("   Loading libraries ...")
   setwd(lib)
   list.of.packages <- c("MASS", "data.table", "magrittr", "gplots", "compiler", "scatterplot3d", "R.utils")
   new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -47,47 +49,97 @@
 tryCatch({  
   setwd(wd)
   # Subset Phenotype
+  cat("   Loading phenotype ...")
   Y.data = fread(Y.path) %>% as.data.frame
-  subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .) %>% as.numeric
-  Y = Y.data[, subset+1]
+  subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .)
+  index.trait = which(subset == "Selected") 
+  if(length(index.trait) == 1){
+    Y = data.frame(y = Y.data[, index.trait + 1])
+    names(Y) = names(Y.data)[1 + index.trait] 
+  }else{
+    Y = Y.data[, index.trait + 1]
+  }
   # Assign Variables
   taxa = Y.data[,1]
   trait.names = names(Y) 
+  cat("Done\n")
   # Format free
+  cat("   Loading genotype and do conversion if need ...")
   OS.Windows = FALSE
   switch(Sys.info()[['sysname']],
     Windows= {OS.Windows = TRUE}, # Windows
     Linux  = { }, # Linux
     Darwin = { }) # MacOS
   switch(format, 
-    VCF = { if(!OS.Windows){sprintf("chmod 777 %s/blink", lib) %>% system()}
+    Hapmap = {if(!OS.Windows){sprintf("chmod 777 %s/blink", lib) %>% system()}
+              hmp = substring(GD.path, 1, nchar(GD.path)-4)
+              sprintf("%s/blink --file %s --compress --hapmap", lib, hmp) %>% system()
+              sprintf("%s/blink --file %s --recode --out %s --numeric", lib, hmp, hmp) %>% system()
+              GD = fread(sprintf("%s.dat", hmp)) %>% t() %>% as.data.frame()
+              GM = fread(sprintf("%s.map", hmp)) %>% t() %>% as.data.frame()}, 
+    VCF = {if(!OS.Windows){sprintf("chmod 777 %s/blink", lib) %>% system()}
             vcf = substring(GD.path, 1, nchar(GD.path)-4)
             sprintf("%s/blink --file %s --compress --vcf", lib, vcf) %>% system()
             sprintf("%s/blink --file %s --recode --out %s --numeric", lib, vcf, vcf) %>% system()
-            G = NULL
-            GD = read.table(sprintf("%s.dat", vcf)) %>% t() %>% data.frame(Y[,1], .)
-            GM = read.table(sprintf("%s.map", vcf), head = TRUE)},
+            GD = fread(sprintf("%s.dat", hmp)) %>% t() %>% as.data.frame()
+            GM = fread(sprintf("%s.map", hmp)) %>% t() %>% as.data.frame()}, 
     PLink_Binary = {
 
     }, {
-      # Hapmap or Numeric (Default)
-      if(G.path=="NA"){G=NULL}else{G=read.delim(G.path, head=FALSE)}
-      if(GM.path=="NA"){GM=NULL}else{GM=read.table(GM.path, head=TRUE)}
-      if(GD.path=="NA"){GD=NULL}else{GD=read.table(GD.path, head=TRUE)}
+      # Numeric (Default)
+      GD = fread(GD.path) %>% as.data.frame()
+      GM = fread(GM.path) %>% as.data.frame()
     }
   )
-
+  if(is.character(GD[,1])) GD = GD[,-1]
+  cat("Done\n")
+  # QC
+    cat("   Quality control ...")
+    # Missing rate
+    if(!is.na(ms)){
+      MS = is.na(GD) %>% apply(2, function(x) sum(x)/length(x))
+      GD = GD[, MS <= ms]
+      GM = GM[MS <= ms, ]}
+    # MAF
+    if(!is.na(maf)){
+      MAF = apply(GD, 2, mean) %>% 
+            as.matrix() %>% 
+            apply(1, function(x) min(1 - x/2, x/2))
+      GD = GD[, MAF >= maf]
+      GM = GM[MAF >= maf, ]}
+    cat("Done\n")
   # Covariate
     if(C.path != "NA"){
-      C = fread(C.path) %>% as.data.frame()
+      cat("   Loading covariates ...")
+      C.data = fread(C.path) %>% as.data.frame()
+      if(is.character(C.data[,1])) C.data = C.data[,-1]
       C.model.name = C.index %>% strsplit(split = "sep") %>% do.call(c, .)
-      C = C[, C.model.name == "Selected"]
+      index.C = which(C.model.name == "Selected")
+      # 0 c
+      if(length(index.C) == 0){
+        C = NULL
+      # 1 c
+      }else if(length(index.C) == 1){
+        name = names(C.data)[index.C]
+        C = data.frame(c = C.data[, index.C])
+        names(C) = name
+      # More than 1 c
+      }else{
+        C = C.data[, index.C]
+      }
+      cat("Done\n")
     }else{
       C = NULL
     }
   # Kinship
-  if(K.path == "NA"){K = NULL}else{K = fread(K.path) %>% as.data.frame()}
-  #if(is.na(C.inher)) C.inher = NULL else C.inher = C.inher
+    if(K.path == "NA"){
+      K = NULL
+    }else{
+      cat("   Loading Kinship ...")
+      K = fread(K.path) %>% as.data.frame()
+      cat("Done\n")
+    }
+    #if(is.na(C.inher)) C.inher = NULL else C.inher = C.inher
 
   # Model
   switch(model, 
@@ -104,32 +156,40 @@ tryCatch({
       g.to = 10000000
       g.by = 10}
   )
-
   # GAPIT
-    for (i in 1:length(trait_names)){   
-        x=GAPIT(
-          Y = Y[,c(1,1+i)],
-          G = G,
-          GM = GM,
-          GD = GD,
-          KI = K,
-          CV = C,
-          #CV.Inheritance = C.inher,
-          #PCA.total = PCA,
-          kinship.cluster = ki.c,
-          kinship.group = ki.g,
-          group.from = g.from,
-          group.to = g.to,
-          group.by = g.by,
-          Model.selection = model.s,
-          SNP.fraction = snp.fraction,
-          file.fragment = file.fragment,
-          memo = sprintf("GAPIT_%s_%s_", project, trait_names[i]))
+    for (i in 1:length(trait.names)){   
+      x = GAPIT(
+            Y = data.frame(taxa, Y[,i]),
+            GM = GM,
+            GD = data.frame(taxa, GD),
+            KI = K,
+            CV = C,
+            #CV.Inheritance = C.inher,
+            #PCA.total = PCA,
+            kinship.cluster = ki.c,
+            kinship.group = ki.g,
+            group.from = g.from,
+            group.to = g.to,
+            group.by = g.by,
+            Model.selection = model.s,
+            SNP.fraction = snp.fraction,
+            memo = sprintf("%s_%s", project, trait.names[i]))
+      write.table(x = data.frame(SNP = x$GWAS$SNP, P.value = x$GWAS$P.value),
+                file = sprintf("%s_%s_GWAS.txt", project, trait.names[i]),
+                quote = F, row.names = F, sep = "\t")
     }
   print(warnings())
 }, error = function(e){
     stop(e)
 })
+
+# #
+# model = "GLM"
+# ki.c = "average"
+# ki.g = "Mean"
+# snp.fraction = 1
+# file.fragment = NULL
+# model.s = as.logical("FALSE") 
 
 # if(multi){
 #   nT = ncol(Y.file) - 1

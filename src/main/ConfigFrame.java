@@ -36,9 +36,9 @@ public class ConfigFrame extends JFrame implements ActionListener{
 		// QC panel
 		public static JPanel panel_qc;
 		public static Group_Combo ms_qc = new Group_Combo("By missing rate", 
-				new String[]{"No threshold", "0.2", "0.1", "0.05"});
+				new String[]{"No_threshold", "0.2", "0.1", "0.05"});
 		public static Group_Combo maf_qc = new Group_Combo("By MAF", 
-				new String[]{"No threshold", "0.05", "0.1", "0.2"});	
+				new String[]{"No_threshold", "0.05", "0.1", "0.2"});	
 	ConfigPane pane_config;
 	JButton bottom_restore = new JButton("Restore Defaults");
 		
@@ -125,9 +125,19 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				// if never initialized
 				if(iPatPanel.trait_names[MOindex].length <= 1){
 					iPatPanel.trait_names[MOindex] = headline.split("\t").length <= 1 ? headline.split(" ") : headline.split("\t");
-					iPatPanel.panel_phenotype[MOindex] = new selectablePanel(iPatPanel.trait_names[MOindex].length - 1,
-														  ArrayUtils.remove(iPatPanel.trait_names[MOindex], 0), 
-														  new String[]{"Selected", "Excluded"});}
+					switch(format){
+					case PLink_Binary:
+						iPatPanel.panel_phenotype[MOindex] = new selectablePanel(iPatPanel.trait_names[MOindex].length - 2,
+								  ArrayUtils.remove(ArrayUtils.remove(iPatPanel.trait_names[MOindex], 0), 0), 
+								  new String[]{"Selected", "Excluded"});
+					break;
+					default:
+						iPatPanel.panel_phenotype[MOindex] = new selectablePanel(iPatPanel.trait_names[MOindex].length - 1,
+								  ArrayUtils.remove(iPatPanel.trait_names[MOindex], 0), 
+								  new String[]{"Selected", "Excluded"});
+					break;
+					}
+				}	
 				scroll_phenotype = new JScrollPane(iPatPanel.panel_phenotype[MOindex],
 		                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
 		                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
