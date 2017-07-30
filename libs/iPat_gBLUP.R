@@ -41,7 +41,7 @@
   library(R.utils)
   library(data.table)
   library(magrittr)
-  source("./Function_EMMA.R")
+  source("./Function_iPat.R")
   source("./Function_FarmCPU.R")
   source("./Function_GAPIT.R")
   cat("Done\n")

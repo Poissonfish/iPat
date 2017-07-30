@@ -183,25 +183,25 @@ tryCatch({
   stop(e)
 })
 
-project = "Project_1" 
-wd = "/Users/Poissonfish/Desktop/test/farm"
-lib = "/Users/Poissonfish/git/iPat/libs/"
-format = "Numeric" 
-ms = as.numeric("No threshold") 
-maf = as.numeric(0.05) 
-Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.txt" 
-Y.index = "SelectedsepSelectedsepSelectedsep" 
-GD.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.dat" 
-GM.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.map" 
-C.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/covariates.txt"
-C.index = "SelectedsepExcludedsepSelectedsep"
-K.path = "NA"
-FAM.path = "NA"
-BIM.path = "NA"
-impute = "mean"
-shrink = FALSE
-gwas.assist = TRUE
-cutoff = .05
+# project = "Project_1" 
+# wd = "/Users/Poissonfish/Desktop/test/farm"
+# lib = "/Users/Poissonfish/git/iPat/libs/"
+# format = "Numeric" 
+# ms = as.numeric("No threshold") 
+# maf = as.numeric(0.05) 
+# Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.txt" 
+# Y.index = "SelectedsepSelectedsepSelectedsep" 
+# GD.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.dat" 
+# GM.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.map" 
+# C.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/covariates.txt"
+# C.index = "SelectedsepExcludedsepSelectedsep"
+# K.path = "NA"
+# FAM.path = "NA"
+# BIM.path = "NA"
+# impute = "mean"
+# shrink = FALSE
+# gwas.assist = TRUE
+# cutoff = .05
 
 # A.mat(M,shrink=TRUE) -> for low density markers Vanraden
 # Vu = estimator for 

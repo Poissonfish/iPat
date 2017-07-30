@@ -161,13 +161,11 @@ class BGThread extends Thread{
 		
 		if(iPatPanel.debug){
 			// Print command	
-			System.out.println("print debug command");
+			iPatPanel.text_console[MOindex].append("Command: \n");
 			for (int i = 0; i<command.length; i++){iPatPanel.text_console[MOindex].append(command[i]+" ");}
 	    }
-		     	
-        iPatPanel.text_console[MOindex].append("\n");
-        iPatPanel.text_console[MOindex].setCaretPosition(iPatPanel.text_console[MOindex].getDocument().getLength());	   	
-
+		iPatPanel.text_console[MOindex].append("\n");
+        iPatPanel.text_console[MOindex].setCaretPosition(iPatPanel.text_console[MOindex].getDocument().getLength());
         try {
         	// Print output message to the panel
         	System.out.println("begin to print, "+MOindex);
@@ -259,7 +257,7 @@ class ConfigPane extends JPanel implements ActionListener{
 					ConfigFrame.project_name.field.getText(), // 2
 					ConfigFrame.wd_path.field.getText(), 
 					iPatPanel.jar.getParent()+"/libs/", 
-					iPatPanel.format.Name(), 
+					iPatPanel.format[MOindex].Name(), 
 					(String)ConfigFrame.ms_qc.combo.getSelectedItem(), 
 					(String)ConfigFrame.maf_qc.combo.getSelectedItem(), // 7 
 					ConfigFrame.path_P, iPatPanel.panel_phenotype[MOindex].getSelected(),
@@ -300,7 +298,8 @@ class ConfigPane extends JPanel implements ActionListener{
 							ConfigFrame.R_exe,
 							iPatPanel.jar.getParent()+"/libs/iPat_PLINK.R"};
 					command_specific = new String[]{
-							(String)ci.combo.getSelectedItem()  // 17
+							(String)ci.combo.getSelectedItem(),  // 17
+							"TRUE"
 							};
 					break;
 				case gBLUP:
@@ -338,7 +337,6 @@ class ConfigPane extends JPanel implements ActionListener{
 							(String)bonferroni.combo.getSelectedItem()};
 					break;
 			}
-		
 		// combine whole command
 			String[] command =  ArrayUtils.addAll(command_exe, ArrayUtils.addAll(command_common, command_specific));
 			return command;

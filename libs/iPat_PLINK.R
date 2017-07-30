@@ -18,6 +18,7 @@
   BIM.path  = args[15]
 # Method specific args
   ci = as.numeric(args[16])
+  binary = as.logical(args[17])
 
 # Load libraries
   cat("=== PLINK ===\n")

@@ -99,6 +99,7 @@ public class iPat {
 			UserOS.type = OS.TYPE.Linux;
 		}
 		System.out.println("You're running iPat on "+ UserOS.type);// Mac OS X, Windows 10
+		
 		JFrame main = new JFrame();
 		//Set to center
 		main.setSize(Wide, Heigth);
@@ -322,12 +323,12 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	}
 	////
 	public static enum FORMAT{
-		NA("NA"), Hapmap("Hapmap"), Numeric("Numeric"), VCF("VCF"), PLink_Binary("PLINK"), BSA("BSA");
+		NA("NA"), Hapmap("Hapmap"), Numeric("Numeric"), VCF("VCF"), PLINK("PLINK"), PLink_Binary("PLINK"), BSA("BSA");
 		String name;	
 		private FORMAT(String name){this.name = name;}
 		public String Name(){return this.name;}
 	}
-	public static FORMAT format = FORMAT.NA;
+	public static FORMAT[] format = new FORMAT[MOMAX];
 	
 	public static boolean debug = false, first_d = false;
 
@@ -434,44 +435,50 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	    	}else if(source == popup_openmo){
 				MOopenfile(index_pop_mo);
 	    	}else if(source == popup_gwas){
-		   		try {open_config(ConfigFrame.analysis.GWAS);
+		   		try {open_config(ConfigFrame.analysis.GWAS, index_pop_mo);
 				} catch (IOException e) {e.printStackTrace();}   	
 	    	}else if(source == popup_gs){
-	    		try {open_config(ConfigFrame.analysis.GS);
+	    		try {open_config(ConfigFrame.analysis.GS, index_pop_mo);
 				} catch (IOException e) {e.printStackTrace();}
 	    	}else if(source == popup_run){
 	    		boolean gwas_exist = Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index] !=  ConfigFrame.method.NA, 
 	    				gs_exist   = Deployed[index_pop_mo][ConfigFrame.analysis.GS.index]   !=  ConfigFrame.method.NA;
-	    		if(gwas_exist && gs_exist){
-		    		showConsole(index_pop_mo, command_gwas[index_pop_mo][2], command_gwas[index_pop_mo][3]);
-		    		PrintStatus(index_pop_mo,
-		    				Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index].Name(),
-		    				Deployed[index_pop_mo][ConfigFrame.analysis.GS.index].Name(), 
-		    				command_gwas[index_pop_mo], 
-		    				command_gs[index_pop_mo]);
-		    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gwas[index_pop_mo], command_gs[index_pop_mo]);
-		    		multi_run[index_pop_mo].start();		
-	    		}else if(gwas_exist){
-	    			showConsole(index_pop_mo, command_gwas[index_pop_mo][2], command_gwas[index_pop_mo][3]);
-	    			PrintStatus(index_pop_mo, 
-		    				Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index].Name(),
-		    				null, 
-		    				command_gwas[index_pop_mo], 
-		    				null
-	    					);
-		    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gwas[index_pop_mo], null);
-		    		multi_run[index_pop_mo].start();
-	    		}else if(gs_exist){
-	    			showConsole(index_pop_mo, command_gs[index_pop_mo][2], command_gs[index_pop_mo][3]);
-	    			PrintStatus(index_pop_mo, 
-		    				null,
-		    				Deployed[index_pop_mo][ConfigFrame.analysis.GS.index].Name(),
-		    				null,
-		    				command_gs[index_pop_mo]
-	    					);
-		    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gs[index_pop_mo], null);
-		    		multi_run[index_pop_mo].start();
-	    		}
+	    		try {
+		    		if(gwas_exist && gs_exist){
+			    		showConsole(index_pop_mo, command_gwas[index_pop_mo][2], command_gwas[index_pop_mo][3]);
+						check_format(Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index], index_pop_mo);					
+			    		check_format(Deployed[index_pop_mo][ConfigFrame.analysis.GS.index], index_pop_mo);
+			    		PrintStatus(index_pop_mo,
+			    				Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index].Name(),
+			    				Deployed[index_pop_mo][ConfigFrame.analysis.GS.index].Name(), 
+			    				command_gwas[index_pop_mo], 
+			    				command_gs[index_pop_mo]);
+			    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gwas[index_pop_mo], command_gs[index_pop_mo]);
+			    		multi_run[index_pop_mo].start();		
+		    		}else if(gwas_exist){
+		    			showConsole(index_pop_mo, command_gwas[index_pop_mo][2], command_gwas[index_pop_mo][3]);
+		    			check_format(Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index], index_pop_mo);
+		    			PrintStatus(index_pop_mo, 
+			    				Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index].Name(),
+			    				null, 
+			    				command_gwas[index_pop_mo], 
+			    				null
+		    					);
+			    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gwas[index_pop_mo], null);
+			    		multi_run[index_pop_mo].start();
+		    		}else if(gs_exist){
+		    			showConsole(index_pop_mo, command_gs[index_pop_mo][2], command_gs[index_pop_mo][3]);
+			    		check_format(Deployed[index_pop_mo][ConfigFrame.analysis.GS.index], index_pop_mo);
+		    			PrintStatus(index_pop_mo, 
+			    				null,
+			    				Deployed[index_pop_mo][ConfigFrame.analysis.GS.index].Name(),
+			    				null,
+			    				command_gs[index_pop_mo]
+		    					);
+			    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gs[index_pop_mo], null);
+			    		multi_run[index_pop_mo].start();
+		    		}
+	    		} catch (IOException e) {e.printStackTrace();}
 	    	}else if(source == popup_delmo){
 	    		MOindex = index_pop_mo;
 				break_object();
@@ -648,6 +655,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			Arrays.fill(MOco[i], -1);
 			Arrays.fill(Deployed[i], ConfigFrame.method.NA);
 			rotate_index[i]=0;
+			format[i] = FORMAT.NA;
 			project[i] = "Project_" + i; 
 			trait_names[i] = new String[]{""};
 		}			
@@ -1013,10 +1021,10 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	addMouseMotionListener(this);
 	}	
 
-	public void open_config(ConfigFrame.analysis analysis) throws IOException{
+	public void open_config(ConfigFrame.analysis analysis, int MOindex) throws IOException{
 		// Catch format
-		format = catch_files();
-		if(format != FORMAT.NA){
+		format[MOindex] = catch_files();
+		if(format[MOindex] != FORMAT.NA){
 			// Open config window
 //			int frameW = 570, frameH = 500;
 //		 	GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -1024,7 +1032,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 //			int dx = centerPoint.x - frameW / 2;
 //	    	int dy = centerPoint.y - frameH / 2;
 			ConfigFrame configframe;
-			configframe = new ConfigFrame(index_pop_mo, analysis, format, file_index);
+			configframe = new ConfigFrame(index_pop_mo, analysis, format[MOindex], file_index);
 			configframe.setResizable(true);
 			//configframe.setBounds(dx, dy, frameW, frameH);
 		}else{
@@ -1108,7 +1116,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		int boundN=0; //205
 		int boundS=Heigth-20;
 		int boundE=Wide;
-		
 		if(TBindex!=0){
 			TBindex_select = TBindex;
 			CombinedorNot(TBindex, TBimageX, TBimageY, TBimageW, TBimageH, 1);
@@ -1127,10 +1134,10 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			repaint();
 		}
 		if((TBindex==0&&MOindex==0)&&lineindex!=-1){ //prevent from creating line when draging objects
-			line_drag_x[0]=imX-30+10;
-			line_drag_y[0]=imY-30;
-			line_drag_x[1]=imX+30+10;
-			line_drag_y[1]=imY+30;
+			line_drag_x[0] = imX - 30 + 10;
+			line_drag_y[0] = imY - 30;
+			line_drag_x[1] = imX + 30 + 10;
+			line_drag_y[1] = imY + 30;
 			repaint();
 		}
 		
@@ -2164,7 +2171,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	    for(boolean b : array) if(b) return true;
 	    return false;
 	}
-
 	public static String[] read_lines(String filename, int bound) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         String[] lines = new String[10];
@@ -2179,25 +2185,21 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
         return lines;
     }
 	public static int countLines(String filename) throws IOException {
-	    InputStream is = new BufferedInputStream(new FileInputStream(filename));
-	    try {
+	    InputStream reader = new BufferedInputStream(new FileInputStream(filename));
+	    try{
 	        byte[] c = new byte[1024];
 	        int count = 0;
 	        int readChars = 0;
 	        boolean empty = true;
-	        while ((readChars = is.read(c)) != -1) {
+	        while ((readChars = reader.read(c)) != -1) {
 	            empty = false;
 	            for (int i = 0; i < readChars; ++i) {
-	                if (c[i] == '\n') {
-	                    ++count;
-	                }
-	            }
-	        }
+	                if (c[i] == '\n') ++count;           
+	            }}
 	        return (count == 0 && !empty) ? 1 : count;
-	    } finally {
-	        is.close();
-	    }
-	}
+	    }finally{
+	    	reader.close();}
+	}	
 	public static int diffValues(String[] Array){
 	    int numOfDifferentVals = 0;
 	    ArrayList<String> diffNum = new ArrayList<>();
@@ -2210,6 +2212,91 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	    numOfDifferentVals = diffNum.size()==1 ? 0:diffNum.size();
 	    return numOfDifferentVals;
 	}
+	public void check_format(ConfigFrame.method method, int MOindex) throws IOException{
+		switch(method){
+		case GAPIT: case FarmCPU:
+			switch(format[MOindex]){
+			case Hapmap:
+				new iPat_converter("hmp", "num", command_gwas[MOindex][10], command_gwas[MOindex][11]);
+				command_gwas[MOindex][10] = command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
+				command_gwas[MOindex][11] = command_gwas[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
+				break;
+			case VCF:
+				new iPat_converter("vcf", "num", command_gwas[MOindex][10], command_gwas[MOindex][11]);
+				command_gwas[MOindex][10] = command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
+				command_gwas[MOindex][11] = command_gwas[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
+				break;
+			case PLINK:
+				new iPat_converter("plink", "num", command_gwas[MOindex][10], command_gwas[MOindex][11]);
+				command_gwas[MOindex][10] = command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
+				command_gwas[MOindex][11] = command_gwas[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
+				break;
+			case PLink_Binary:
+				Process p = null;
+				try {
+					p = Runtime.getRuntime().exec(new String[]{iPatPanel.jar.getParent()+"/libs/plink",
+							  "--bed", command_gwas[MOindex][10],
+							  "--fam", command_gwas[MOindex][15],
+							  "--bim", command_gwas[MOindex][16], 
+							  "--recode", "tab", 
+							  "--out", command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "")});
+					p.waitFor();
+				} catch (InterruptedException |IOException e2) {
+					e2.printStackTrace();} 
+				new iPat_converter("plink", "num", 	command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "") + ".ped", 
+													command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "") + ".map");
+				command_gwas[MOindex][10] = command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
+				command_gwas[MOindex][11] = command_gwas[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
+				break;
+			}
+			break;
+		case PLINK:
+			switch(format[MOindex]){
+			case Hapmap:
+				new iPat_converter("hmp", "plink", command_gwas[MOindex][10], command_gwas[MOindex][11]);
+				command_gwas[MOindex][10] = command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.ped";
+				command_gwas[MOindex][11] = command_gwas[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.map";
+				command_gwas[MOindex][18] = "FALSE";
+				break;
+			case VCF:
+				new iPat_converter("vcf", "plink", command_gwas[MOindex][10], command_gwas[MOindex][11]);
+				command_gwas[MOindex][10] = command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.ped";
+				command_gwas[MOindex][11] = command_gwas[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.map";
+				command_gwas[MOindex][18] = "FALSE";
+				break;
+			case Numeric:
+				new iPat_converter("num", "plink", command_gwas[MOindex][10], command_gwas[MOindex][11]);
+				command_gwas[MOindex][10] = command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.ped";
+				command_gwas[MOindex][11] = command_gwas[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.map";
+				command_gwas[MOindex][18] = "FALSE";
+				break;
+			case PLINK:
+				command_gwas[MOindex][18] = "FALSE";
+				break;
+			}
+			break;
+		case gBLUP: case rrBLUP: case BGLR:
+			switch(format[MOindex]){
+			case Hapmap:
+				new iPat_converter("hmp", "num", command_gs[MOindex][10], command_gs[MOindex][11]);
+				command_gs[MOindex][10] = command_gs[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
+				command_gs[MOindex][11] = command_gs[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
+				break;
+			case VCF:
+				new iPat_converter("vcf", "num", command_gs[MOindex][10], command_gs[MOindex][11]);
+				command_gs[MOindex][10] = command_gs[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
+				command_gs[MOindex][11] = command_gs[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
+				break;
+			case PLINK:
+				new iPat_converter("plink", "num", command_gs[MOindex][10], command_gs[MOindex][11]);
+				command_gs[MOindex][10] = command_gs[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
+				command_gs[MOindex][11] = command_gs[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
+				break;
+			}
+			break;
+		}
+	}	
+	
 	FORMAT catch_files() throws IOException{
 		// need extension (without extension): Binary fam
 		// type record which table is P(1), C(2) or K(3)

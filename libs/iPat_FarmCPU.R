@@ -38,10 +38,9 @@
   library(scatterplot3d)
   library(R.utils)
   library(ape)
-  source("./Function_EMMA.R")
+  source("./Function_iPat.R")
   source("./Function_GAPIT.R")
   source("./Function_FarmCPU.R")
-  source("./Function_iPat.R")
   cat("Done\n")
 
 tryCatch({  
