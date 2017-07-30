@@ -1430,16 +1430,16 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		int x = X[index] + (W[index]/2);
 		int y = Y[index] + (H[index]/2);	
 		for (int i = 1; i <= TBcount; i++){
-			if (i == TBindex) {
-	            TBdist[i] = 10000;}
+			if (i == TBindex) 
+	            TBdist[i] = 10000;
 			else{
 	        	int x2 = TBimageX[i] + (TBimageW[i]/2);
 				int y2 = TBimageY[i] + (TBimageH[i]/2);
 				int dist = (int)Distance(x, y, x2, y2);
 				TBdist[i] = dist;}}
 		for (int i = 1; i <= MOcount; i++){
-			if (i == MOindex) {
-				MOdist[i] = 10000;}
+			if (i == MOindex) 
+				MOdist[i] = 10000;
 			else{
 	        	int x2 = MOimageX[i] + (MOimageW[i]/2);
 				int y2 = MOimageY[i] + (MOimageH[i]/2);
@@ -1748,6 +1748,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		   COindex=-1;
 	}
 	
+	
+	
 	// target_specify
 	public void combine_type_determined(int[] dist, int minvalue, int case3_count,
 										int[] Xs, int[] Ys, int[] Ws, int[] Hs, int index, int TorM_s,
@@ -1762,7 +1764,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 					//self
 					if(TorM_s == 1){	
 						TBco[index][0] = 1; 	
-						TBco[index][1 ] =COcount;
+						TBco[index][1] = COcount;
 					}else if (TorM_s == 2){
 						MOco[index][0] = 1;
 						MOco[index][1] = COcount;
@@ -2269,5 +2271,28 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		System.out.println(file_index[0].file+" "+file_index[1].file+" "+file_index[2].file+" "+file_index[3].file);
 		return format;		
 	} 
+	
+}
+
+class iPatObject{
+	enum filetype{
+		NA, P, GD, GM, FAM, BIM, C, K}
+	// Object
+	int X = 0, Y = 0, H = 0, W = 0;
+	boolean delete = false;
+	Image image = null;
+	Rectangle bound = new Rectangle(-100, -100, 0, 0);
+	String path = "";
+	JLabel name = new JLabel();
+	filetype type = filetype.NA; 
+	// Group
+	boolean isTempCombined = false, isCombined = false, containMO = false;
+	int GroupTempindex = -1, Groupindex = -1;
+	public iPatObject(Image inputimage) throws IOException{
+		image = inputimage;
+		H = image.getHeight(null);
+		W = image.getWidth(null);
+	}
+	
 	
 }
