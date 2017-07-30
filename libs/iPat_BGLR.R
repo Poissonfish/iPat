@@ -46,7 +46,7 @@
 	library(compiler)
 	library(scatterplot3d)
 	library(R.utils)
-	source("./Function_EMMA.R")
+  	source("./Function_iPat.R")
 	source("./Function_GAPIT.R")
 	source("./Function_FarmCPU.R")
     cat("Done\n")

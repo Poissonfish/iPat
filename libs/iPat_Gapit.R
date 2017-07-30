@@ -42,7 +42,7 @@
   library(R.utils)
   library(data.table)
   library(magrittr)
-  source("./Function_EMMA.R")
+  source("./Function_iPat.R")
   source("./Function_FarmCPU.R")
   source("./Function_GAPIT.R")
 
@@ -70,28 +70,12 @@ tryCatch({
     Windows= {OS.Windows = TRUE}, # Windows
     Linux  = { }, # Linux
     Darwin = { }) # MacOS
-  switch(format, 
-    Hapmap = {if(!OS.Windows){sprintf("chmod 777 %s/blink", lib) %>% system()}
-              hmp = substring(GD.path, 1, nchar(GD.path)-4)
-              sprintf("%s/blink --file %s --compress --hapmap", lib, hmp) %>% system()
-              sprintf("%s/blink --file %s --recode --out %s --numeric", lib, hmp, hmp) %>% system()
-              GD = fread(sprintf("%s.dat", hmp)) %>% t() %>% as.data.frame()
-              GM = fread(sprintf("%s.map", hmp)) %>% t() %>% as.data.frame()}, 
-    VCF = {if(!OS.Windows){sprintf("chmod 777 %s/blink", lib) %>% system()}
-            vcf = substring(GD.path, 1, nchar(GD.path)-4)
-            sprintf("%s/blink --file %s --compress --vcf", lib, vcf) %>% system()
-            sprintf("%s/blink --file %s --recode --out %s --numeric", lib, vcf, vcf) %>% system()
-            GD = fread(sprintf("%s.dat", hmp)) %>% t() %>% as.data.frame()
-            GM = fread(sprintf("%s.map", hmp)) %>% t() %>% as.data.frame()}, 
-    PLink_Binary = {
-
-    }, {
-      # Numeric (Default)
-      GD = fread(GD.path) %>% as.data.frame()
-      GM = fread(GM.path) %>% as.data.frame()
-    }
-  )
+ 
+  # Numeric (Default)
+  GD = fread(GD.path) %>% as.data.frame()
+  GM = fread(GM.path) %>% as.data.frame()
   if(is.character(GD[,1])) GD = GD[,-1]
+  
   cat("Done\n")
   # QC
     cat("   Quality control ...")
