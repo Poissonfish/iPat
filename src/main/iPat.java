@@ -88,7 +88,7 @@ public class iPat {
 	public static OS UserOS = new OS();
 	public static iPatPanel ipat;
 	
-	public static void main(String[] args){  
+	public static void main(String[] args) throws IOException{  
 		System.out.println("Welcome to iPat!");
 		OS_string = System.getProperty("os.name");
 		if(OS_string.toUpperCase().contains("WINDOWS")){
@@ -138,62 +138,56 @@ public class iPat {
 
 class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{	
 	//  private static class ipatButton extends JButton {
-	private static final int TBMAX=40;
-	static int MOMAX=10;
+	private static final int TBMAX = 40;
+	private static final int MOMAX = 10;
 	static File jar;
-	static int[] TBimageX= new int[TBMAX];
-	static int[] TBimageY= new int[TBMAX];
-	static 	int[] TBimageH= new int[TBMAX];
-	static int[] TBimageW= new int[TBMAX];
+	static iPatObject[] iOB = new iPatObject[TBMAX + MOMAX];
 	
-	//1=combined or not(-1,1), 
-	//2= coindex, 
-	//3=subcombined or not (-1,1) 
-	//4= coindex, 
-	//5= if include model
-	static int[][] TBco= new int[TBMAX][5];
-	static Findex.FILE[] TBtype = new Findex.FILE[TBMAX]; 
-	static int[] TBdelete= new int[TBMAX];
-	boolean link_to_TB = false;
-	int link_to_TB_index = -1;
+	// iOB / project
+	static int iIndex = -1, 
+			   iOBcount = 0, 
+			   Groupindex = -1, Groupcount = 0, MOcount = 0;
+	// link
+	static Point lineST = new Point(0, 0),
+	        	 lineED = new Point(0, 0);
+	static int[][] iOBlink = new int[300][2];
+	static int lineindex = -1, 
+			   linkcount = 0, 
+			   linktype = 0;
+	static Point temppt = new Point(0, 0);
+	static int iIndex_target = -1;
+	static final Point nullPoint = new Point(0, 0);
+	
+	
+	// select
+	static boolean selectable = false;
+	static int  iIndex_temp = -1, iIndex_select = -1,
+				lineindex_temp = -1, lineindex_select = -1;
+	
+	// popup menu
+	JPopupMenu popup_tb, popup_mo;
+	static JMenuItem popup_isR, popup_isC, popup_isK, popup_opentb, popup_deltb;
+	static JMenuItem popup_gwas, popup_gs, popup_run, popup_openmo, popup_delmo;
+	static int iIndex_popup = -1;
+		
+	// boundary 
+	static Rectangle boundary;
+	
+	// drag
 
-	static int[] MOimageX= new int[MOMAX];
-	static int[] MOimageY= new int[MOMAX];
-	static int[] MOimageH= new int[MOMAX];
-	static int[] MOimageW= new int[MOMAX];
-	static int[][] MOco= new int[MOMAX][5];
-	static int[] MOdelete= new int[MOMAX];
-	boolean link_to_MO = false;
-	int link_to_MO_index = -1;
 	
-	Boolean link=false;
-	int link_case = -1;
-	
-	static int TBindex =0, TBindex_temp=0;
-	static int MOindex =0, MOindex_temp=0;
-	static int COindex =-1;
-	
-	static int TBcount =0;
-	static int MOcount =0;
-	static int COcount =0;
-	
-	static Rectangle[] TBBound= new Rectangle[TBMAX];
-	static Rectangle[] MOBound= new Rectangle[MOMAX];
-	
-	int MOimageX_int=430;
-	int MOimageY_int=200;
+	int MOimageX_int = 430;
+	int MOimageY_int = 200;
 	
 	int pos;
 	
-	static Image[] TB= new Image[TBMAX];
-	static Image[] MO= new Image[MOMAX];
 	Image[] Trash= new Image[10];
 	Image[] White= new Image[10];
 	static Image 	TBimage, TB_C, TB_K, TB_P,
 			MOimage, Prefbar, MO_suc, MO_fal, 
 			hint_object, hint_trash, hint_model, hint_table,
 			iconIP;
-	JLayeredPane startPanel;
+	static JLayeredPane startPanel;
 	JPanel mainPanel;	
 	JLayeredPane nullPanel;
 	JPanel buttonPanel;
@@ -202,16 +196,11 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 
 	public static FileDialog chooser;
 
-	static String[] TBfile= new String[TBMAX];
 	int[] TBvalue= new int[TBMAX];
-	static String[] MOfile= new String[MOMAX];
-
-	static JLabel[] TBname= new JLabel[TBMAX];	
-	static JLabel[] MOname= new JLabel[MOMAX];		
 
 	//animation
 	Timer 	TrashAnimation, DashLineAnimation, CombinedDeleteAnimation, 
-		Fadein1, Fadein2, Fadein3, Fadein4, Fadesave, Wipe;	  	
+			Fadein1, Fadein2, Fadein3, Fadein4, Fadesave, Wipe;	  	
 	Boolean TA;
 		
 	 //combine 
@@ -243,8 +232,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	static int linklineindex=0;
 	int lineselected=-1;
 	int lineselected_temp=-1;
-	int lineindex=-1;	
-	boolean ableselect=false, linktolink=false;
+	boolean linktolink=false;
     	Stroke dashed = new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,10}, 0);
     	Stroke solid = new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,0}, 0);
     	Stroke select = new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,10}, 0);
@@ -267,7 +255,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	//Button
 	Boolean ifopenfile=false, ifproperty=false, ifproperty_tb=false, ifproperty_mo=false;
 	int openindex=-1;
-	int createX=-1, createY=-1;
 	
 	//Gapit
 	String[] File_names;
@@ -335,11 +322,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	// Phenotype panel
 		public static selectablePanel[] panel_phenotype = new selectablePanel[MOMAX];
 		public static String[][] trait_names = new String[MOMAX][];
-	// Content menu
-		public JPopupMenu popup_tb, popup_mo;
-		public static JMenuItem popup_isR, popup_isC, popup_isK, popup_opentb, popup_deltb;
-		public static JMenuItem popup_gwas, popup_gs, popup_run, popup_openmo, popup_delmo;
-		public static int index_pop_tb = -1, index_pop_mo = -1;
 	// Run command
 		public static String[][] command_gwas = new String[MOMAX][],
 								 command_gs = new String[MOMAX][];
@@ -392,100 +374,87 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			  // GWAS-Assist
 				static String bon = df_bon;
 				static boolean enable = df_enable;
-	public iPatPanel(int Wideint, int Heigthint, int pH){
-		this.Wide=Wideint;
-		this.Heigth=Heigthint;
-		this.panelHeigth=pH;
-		delbboundx=Wide-50;
-		delbboundy=Heigth-70;
+	public iPatPanel(int Wideint, int Heigthint, int pH) throws IOException{
+		this.Wide = Wideint;
+		this.Heigth = Heigthint;
+		this.panelHeigth = pH;
+		delbboundx = Wide - 50;
+		delbboundy = Heigth - 70;
 		
 		// Context menu
 		popup_tb = new JPopupMenu();
 		popup_mo = new JPopupMenu();
-		
 		ActionListener menuListener = new ActionListener() {
 	      public void actionPerformed(ActionEvent event) {
 	    	int adx = 7, ady = 9;
 	    	Object source = event.getSource();
 	    	if(source == popup_opentb){
-				TBopenfile(index_pop_tb);
+				openfile(iOB[iIndex_popup].getPath());
 	    	}else if(source == popup_isR){
-	    		TBtype[index_pop_tb] = Findex.FILE.TB;
-				TB[index_pop_tb] = TBimage;
-				TBimageH[index_pop_tb] = TB[index_pop_tb].getHeight(null);
-				TBimageW[index_pop_tb] = TB[index_pop_tb].getWidth(null);
-				TBimageX[index_pop_tb] += adx;
-				TBimageY[index_pop_tb] += ady;
+	    		iOB[iIndex_popup].type = iPatObject.Filetype.NA;
+				iOB[iIndex_popup].updateImage(TBimage);
+				iOB[iIndex_popup].setDeltaLocation(adx, ady);
 	    	}else if(source == popup_isC){
-	    		TBtype[index_pop_tb] = Findex.FILE.C;
-				TB[index_pop_tb] = TB_C;
-				TBimageH[index_pop_tb] = TB[index_pop_tb].getHeight(null);
-				TBimageW[index_pop_tb] = TB[index_pop_tb].getWidth(null);
-				TBimageX[index_pop_tb] -= adx;
-				TBimageY[index_pop_tb] -= ady;
+	    		iOB[iIndex_popup].type = iPatObject.Filetype.C;
+				iOB[iIndex_popup].updateImage(TB_C);
+				iOB[iIndex_popup].setDeltaLocation(-adx, -ady);
 	    	}else if(source == popup_isK){
-	    		TBtype[index_pop_tb] = Findex.FILE.K;
-				TB[index_pop_tb] = TB_K;
-				TBimageH[index_pop_tb] = TB[index_pop_tb].getHeight(null);
-				TBimageW[index_pop_tb] = TB[index_pop_tb].getWidth(null);
+	    		iOB[iIndex_popup].type = iPatObject.Filetype.K;
+				iOB[iIndex_popup].updateImage(TB_K);
+				iOB[iIndex_popup].setDeltaLocation(-adx, -ady);
 	    	}else if(source == popup_deltb){
-	    		TBindex = index_pop_tb;
-				break_object();
-				TBindex = 0;
 	    	}else if(source == popup_openmo){
-				MOopenfile(index_pop_mo);
+				openfile(iOB[iIndex_popup].getPath());
 	    	}else if(source == popup_gwas){
-		   		try {open_config(ConfigFrame.analysis.GWAS, index_pop_mo);
+		   		try {
+		   			open_config(ConfigFrame.analysis.GWAS, iIndex_popup);
 				} catch (IOException e) {e.printStackTrace();}   	
 	    	}else if(source == popup_gs){
-	    		try {open_config(ConfigFrame.analysis.GS, index_pop_mo);
+	    		try {open_config(ConfigFrame.analysis.GS, iIndex_popup);
 				} catch (IOException e) {e.printStackTrace();}
 	    	}else if(source == popup_run){
-	    		boolean gwas_exist = Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index] !=  ConfigFrame.method.NA, 
-	    				gs_exist   = Deployed[index_pop_mo][ConfigFrame.analysis.GS.index]   !=  ConfigFrame.method.NA;
+	    		boolean gwas_exist = Deployed[iIndex_popup][ConfigFrame.analysis.GWAS.index] !=  ConfigFrame.method.NA, 
+	    				gs_exist   = Deployed[iIndex_popup][ConfigFrame.analysis.GS.index]   !=  ConfigFrame.method.NA;
 	    		try {
 		    		if(gwas_exist && gs_exist){
-			    		showConsole(index_pop_mo, command_gwas[index_pop_mo][2], command_gwas[index_pop_mo][3]);
-			    		format_conversion(Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index], index_pop_mo);					
-			    		format_conversion(Deployed[index_pop_mo][ConfigFrame.analysis.GS.index], index_pop_mo);
-			    		PrintStatus(index_pop_mo,
-			    				Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index].Name(),
-			    				Deployed[index_pop_mo][ConfigFrame.analysis.GS.index].Name(), 
-			    				command_gwas[index_pop_mo], 
-			    				command_gs[index_pop_mo]);
-			    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gwas[index_pop_mo], command_gs[index_pop_mo]);
-			    		multi_run[index_pop_mo].start();		
+			    		showConsole(iIndex_popup, command_gwas[iIndex_popup][2], command_gwas[iIndex_popup][3]);
+			    		format_conversion(Deployed[iIndex_popup][ConfigFrame.analysis.GWAS.index], iIndex_popup);					
+			    		format_conversion(Deployed[iIndex_popup][ConfigFrame.analysis.GS.index], iIndex_popup);
+			    		PrintStatus(iIndex_popup,
+			    				Deployed[iIndex_popup][ConfigFrame.analysis.GWAS.index].Name(),
+			    				Deployed[iIndex_popup][ConfigFrame.analysis.GS.index].Name(), 
+			    				command_gwas[iIndex_popup], 
+			    				command_gs[iIndex_popup]);
+			    		multi_run[iIndex_popup] = new BGThread(iIndex_popup, command_gwas[iIndex_popup], command_gs[iIndex_popup]);
+			    		multi_run[iIndex_popup].start();		
 		    		}else if(gwas_exist){
-		    			showConsole(index_pop_mo, command_gwas[index_pop_mo][2], command_gwas[index_pop_mo][3]);
-		    			format_conversion(Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index], index_pop_mo);
-		    			PrintStatus(index_pop_mo, 
-			    				Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index].Name(),
+		    			showConsole(iIndex_popup, command_gwas[iIndex_popup][2], command_gwas[iIndex_popup][3]);
+		    			format_conversion(Deployed[iIndex_popup][ConfigFrame.analysis.GWAS.index], iIndex_popup);
+		    			PrintStatus(iIndex_popup, 
+			    				Deployed[iIndex_popup][ConfigFrame.analysis.GWAS.index].Name(),
 			    				null, 
-			    				command_gwas[index_pop_mo], 
+			    				command_gwas[iIndex_popup], 
 			    				null
 		    					);
-			    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gwas[index_pop_mo], null);
-			    		multi_run[index_pop_mo].start();
+			    		multi_run[iIndex_popup] = new BGThread(iIndex_popup, command_gwas[iIndex_popup], null);
+			    		multi_run[iIndex_popup].start();
 		    		}else if(gs_exist){
-		    			showConsole(index_pop_mo, command_gs[index_pop_mo][2], command_gs[index_pop_mo][3]);
-		    			format_conversion(Deployed[index_pop_mo][ConfigFrame.analysis.GS.index], index_pop_mo);
-		    			PrintStatus(index_pop_mo, 
+		    			showConsole(iIndex_popup, command_gs[iIndex_popup][2], command_gs[iIndex_popup][3]);
+		    			format_conversion(Deployed[iIndex_popup][ConfigFrame.analysis.GS.index], iIndex_popup);
+		    			PrintStatus(iIndex_popup, 
 			    				null,
-			    				Deployed[index_pop_mo][ConfigFrame.analysis.GS.index].Name(),
+			    				Deployed[iIndex_popup][ConfigFrame.analysis.GS.index].Name(),
 			    				null,
-			    				command_gs[index_pop_mo]
+			    				command_gs[iIndex_popup]
 		    					);
-			    		multi_run[index_pop_mo] = new BGThread(index_pop_mo, command_gs[index_pop_mo], null);
-			    		multi_run[index_pop_mo].start();
+			    		multi_run[iIndex_popup] = new BGThread(iIndex_popup, command_gs[iIndex_popup], null);
+			    		multi_run[iIndex_popup].start();
 		    		}
 	    		} catch (IOException e) {e.printStackTrace();}
 	    	}else if(source == popup_delmo){
-	    		MOindex = index_pop_mo;
-				break_object();
-				MOindex =0;
 	    	}
-	    	repaint();
-	    	index_pop_tb = -1; index_pop_mo = -1;
+	    	iIndex_popup = -1;
+	    	repaint(); 
 	      };
 		};
 	    popup_tb.add(popup_opentb = new JMenuItem("Open file"));
@@ -526,28 +495,20 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
     			DataFlavor[] flavors = transferable.getTransferDataFlavors();
     			for (DataFlavor flavor : flavors) {
     				try {
-            				// If multiple files
-            				if(flavor.equals(DataFlavor.javaFileListFlavor)){
-                					List<File> files = (List<File>) transferable.getTransferData(flavor);
-            					int count = 0;
-                					for (File file : files) {
-            						Point pointer = event.getLocation();
-                    					int x = (int)pointer.getX();
-            						int y = (int)pointer.getY();
-            						create_TB(x+count*30, y+count*15);
-            						TBindex = TBcount;
-            						TB_assign(file);
-            						count++;
-            						// Print out the file path
-                    					System.out.println("File path is '" + file.getPath() + "'.");
-                    					repaint();
-                					}
-            				}
-        			}catch (Exception e) {
-            				e.printStackTrace();
-        			}
-       		 	}
-        		TBindex = 0;
+	    				// If multiple files
+	    				if(flavor.equals(DataFlavor.javaFileListFlavor)){
+	        				List<File> files = (List<File>) transferable.getTransferData(flavor);
+	    					int count = 0;
+	        				for (File file : files){
+	    						Point pointer = event.getLocation();
+	            					int x = (int)pointer.getX();
+	    						int y = (int)pointer.getY();
+	    						create_TB(x + count*30, y + count*15, file);
+	    						count++;
+	    						// Print out the file path
+	            				System.out.println("File path is '" + file.getPath() + "'.");
+	            				repaint();}}
+        			}catch (Exception e) {e.printStackTrace();}}
         		event.dropComplete(true);     
     		}
 			@Override
@@ -570,7 +531,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			iPat_title.setAlpha((float)0.5);
 		} catch (IOException ex){}
 		try{
-			for(int i=0; i<10; i++){
+			for (int i=0; i<10; i++){
 				Trash[i] = ImageIO.read(getClass().getResource("resources/trash"+i+".png"));
 				White[i] = ImageIO.read(getClass().getResource("resources/white"+i+".png"));
 			}
@@ -637,30 +598,18 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		startPanel.setOpaque(false);
 			
 		// Initial value
-		Arrays.fill(TB, TBimage);
-		Arrays.fill(TBtype, Findex.FILE.TB);
-		Arrays.fill(TBfile, "null");
-		Arrays.fill(TBname, new JLabel());
-		Arrays.fill(TBimageH, TB[1].getHeight(null));
-		Arrays.fill(TBimageW, TB[1].getWidth(null));
-		for (int i = 1; i <= TBMAX - 1; i++){
-			startPanel.add(TBname[i]);
-			Arrays.fill(TBco[i], -1);}	
-		Arrays.fill(MO, MOimage);
-		Arrays.fill(MOname, new JLabel());
-		Arrays.fill(MOimageH, MO[1].getHeight(null));
-		Arrays.fill(MOimageW, MO[1].getWidth(null));
-		Arrays.fill(MOco, -1);
-		Arrays.fill(Deployed, ConfigFrame.method.NA);
 		Arrays.fill(rotate_index, 0);
 		Arrays.fill(format, FORMAT.NA);
 		Arrays.fill(trait_names, new String[]{""});
-		for (int i = 1; i <= MOMAX - 1; i++){	
-			startPanel.add(MOname[i]);
-			project[i] = "Project_" + i;}	
+		for (int i = 0; i < MOMAX; i++){	
+			project[i] = "Project_" + i;
+			Arrays.fill(Deployed[i], ConfigFrame.method.NA);
+		}	
 		Arrays.fill(permit, false);
-		for(int i = 0; i < maxfile; i++){
+		for (int i = 0; i < maxfile; i++){
 			file_index[i] = new Findex();}
+		
+		boundary = startPanel.bounds();
 		
 		////////////
 		////////////
@@ -695,777 +644,645 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		hint_drag_timer = new Fade_timer(7000, hint_drag_label, new ActionListener() {
 			@Override
 		    public void actionPerformed(ActionEvent ae) {
-					repaint();
-					if(!hint_drag_timer.isActived() && TBcount < 2 && MOcount <1){
-						hint_drag_timer.setActived(true);
-						hint_drag_timer.fade_in();
-					}else if(hint_drag_timer.TimeToOut()){
-						System.out.println("out");
-						hint_drag_timer.fade_out();
-						hint_drag_timer.stop();
-					}				
+				repaint();
+				if(!hint_drag_timer.isActived() && getTBindex().length < 2 && getMOindex().length < 1){
+					hint_drag_timer.setActived(true);
+					hint_drag_timer.fade_in();
+				}else if(hint_drag_timer.TimeToOut()){
+					System.out.println("out");
+					hint_drag_timer.fade_out();
+					hint_drag_timer.stop();
+				}				
 		    }
 		});
 		hint_model_timer= new Fade_timer(7002, hint_model_label, new ActionListener() {
 			@Override
 		    public void actionPerformed(ActionEvent ae) {
-					repaint();
-					if(!hint_model_timer.isActived() && 
-						!hint_drag_timer.isRunning() && MOcount > 0 && check_model_linked() != 0){
-						hint_model_timer.setActived(true);
-						hint_model_timer.fade_in();
-					}else if(hint_model_timer.TimeToOut()){
-						hint_model_timer.fade_out();
-						hint_model_timer.stop();
-					}				
+				repaint();
+				if(!hint_model_timer.isActived() && 
+					!hint_drag_timer.isRunning() && getMOindex().length > 0 && check_model_linked() != 0){
+					hint_model_timer.setActived(true);
+					hint_model_timer.fade_in();
+				}else if(hint_model_timer.TimeToOut()){
+					hint_model_timer.fade_out();
+					hint_model_timer.stop();
+				}				
 		    }
 		});
 		hint_trash_timer = new Fade_timer(7003, hint_trash_label, new ActionListener() {
 			@Override
 		    public void actionPerformed(ActionEvent ae) {
-					repaint();
-					if(!hint_trash_timer.isActived() && hint_drag_timer.isActived()  && hint_model_timer.isActived() &&
-						!hint_model_timer.isRunning() && (TBcount + MOcount > 4)){
-						hint_trash_timer.setActived(true);
-						hint_trash_timer.fade_in();
-					}else if(hint_trash_timer.TimeToOut()){
-						hint_trash_timer.fade_out();
-						hint_trash_timer.stop();
-					}				
+				repaint();
+				if(!hint_trash_timer.isActived() && hint_drag_timer.isActived()  && hint_model_timer.isActived() &&
+					!hint_model_timer.isRunning() && (getTBindex().length + getMOindex().length > 4)){
+					hint_trash_timer.setActived(true);
+					hint_trash_timer.fade_in();
+				}else if(hint_trash_timer.TimeToOut()){
+					hint_trash_timer.fade_out();
+					hint_trash_timer.stop();
+				}				
 		    }
 		});
 		periodically_repaint.start();
 		hint_drag_timer.start();
 		hint_model_timer.start();
 		hint_trash_timer.start();
-
 		this.addMouseListener(new MouseAdapter(){	
 			@Override
-			public void mousePressed(MouseEvent ee){
-				int move_x = ee.getX();
-    			int move_y = ee.getY();
-    			double x = ee.getX();
-    			double y = ee.getY();
-    			COindex = -1;
-    			lineindex = -1;
-    			TBindex = TBindex_temp;  // catcth the mouse_move result
-    			MOindex = MOindex_temp;
-    			if(TBindex_select != TBindex_temp)
-        			TBindex_select = TBindex_temp;
-    			else
-    				TBindex_select = -1; 			
-    			if(MOindex_select != MOindex_temp)
-        			MOindex_select = MOindex_temp;
-    			else
-    				MOindex_select = -1;
-    			
-    			//Debug section
-    			if(TBindex != 0){
-        			System.out.println("COgroup: " + TBco[TBindex][3] + " index= " + TBindex); 
-        			System.out.println(TBfile[TBindex].matches("null"));
-    			}else if(MOindex != 0){
-    				System.out.println("COgourp: " + MOco[MOindex][3] + " index= " + MOindex);
-    			}
-    			//  			
-    			if (ableselect){
-        			lineindex= lineselected_temp;
-        			System.out.println("lineindex:"+lineindex);	
-    			}    			
-    			String folder_path = null;
-				if(TBindex != 0 & SwingUtilities.isRightMouseButton(ee)){
-					index_pop_tb = TBindex;
-			        popup_tb.show(iPatPanel.this, ee.getX(), ee.getY());
-			   	}else if(MOindex != 0 & SwingUtilities.isRightMouseButton(ee)){
-			   		index_pop_mo = MOindex;
-			   		boolean gwas_exist = Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index] !=  ConfigFrame.method.NA, 
-		    				gs_exist   = Deployed[index_pop_mo][ConfigFrame.analysis.GS.index]   !=  ConfigFrame.method.NA;
-			   		if(gwas_exist)
-			   			popup_gwas.setText("GWAS (" + Deployed[index_pop_mo][ConfigFrame.analysis.GWAS.index].Name() + ")"); 
-			   		else
-			   			popup_gwas.setText("GWAS (Empty)"); 			  		
-			   		if(gs_exist)
-						popup_gs.setText("GS ("+ Deployed[index_pop_mo][ConfigFrame.analysis.GS.index].Name() +")"); 
-			   		else
-						popup_gs.setText("GS (Empty)"); 
-			   		if(gwas_exist||gs_exist)
-			   			popup_run.setEnabled(true);
-			   		else
-			   			popup_run.setEnabled(false);
-					popup_mo.show(iPatPanel.this, ee.getX(), ee.getY());	   		
-			   	}			
-    			if(ableselect && TBindex <= 0 && MOindex <= 0)
-					if(lineselected != lineselected_temp) lineselected = lineselected_temp; else lineselected = -1;
-    			else
-    				lineselected = -1;
+			public void mousePressed(MouseEvent ev){
+				// unselect object and line
+				iIndex_select = -1;
+				lineindex_select = -1;
+				// make temp(hover) to real 
+				temppt = ev.getPoint();
+				if(selectable){
+					iIndex = iIndex_temp;    			System.out.println("groupindex: " + iOB[iIndex].getGroupindex() + " containMO: " + iOB[iIndex].containMO + " isCombined: "+iOB[iIndex].isCombined);
+					lineindex = lineindex_temp;
+					iIndex_select = iIndex_select != iIndex_temp ? iIndex_temp : -1;
+					lineindex_select = lineindex_select != lineindex_temp ? lineindex_temp : -1;
+					if(SwingUtilities.isRightMouseButton(ev)){
+						iIndex_popup = iIndex;
+						switch(iOB[iIndex].object){
+						case TB:
+							popup_tb.show(iPatPanel.this, ev.getX(), ev.getY());
+							break;
+						case MO:
+					   		boolean gwas_exist = Deployed[iIndex_popup][ConfigFrame.analysis.GWAS.index] !=  ConfigFrame.method.NA, 
+					   				gs_exist   = Deployed[iIndex_popup][ConfigFrame.analysis.GS.index]   !=  ConfigFrame.method.NA;
+					   		if(gwas_exist)
+					   			popup_gwas.setText("GWAS (" + Deployed[iIndex_popup][ConfigFrame.analysis.GWAS.index].Name() + ")"); 
+					   		else
+					   			popup_gwas.setText("GWAS (Empty)"); 			  		
+					   		if(gs_exist)
+								popup_gs.setText("GS ("+ Deployed[iIndex_popup][ConfigFrame.analysis.GS.index].Name() +")"); 
+					   		else
+								popup_gs.setText("GS (Empty)"); 
+					   		if(gwas_exist || gs_exist)
+					   			popup_run.setEnabled(true);
+					   		else
+					   			popup_run.setEnabled(false);
+							popup_mo.show(iPatPanel.this, ev.getX(), ev.getY());   		
+							break;}}}	
     			repaint();
 			}				
 			@Override 
-			public void mouseReleased(MouseEvent ee){				
-				int x = ee.getX();
-				int y = ee.getY();		
-    			//To compute whether the objects should be created
-				 								 //case 1
-				if((TBindex != 0 || MOindex !=0 ) && 	 //ä¸”æ­£åœ¨é�¸æŸ�å€‹ç‰©ä»¶
-					link_case == 1 && !removeornot){		//sure to link something		
-					System.out.println("unlink-unlink");
-						//self sure
-						if (TBindex != 0){
-							TBco[TBindex][2] = TBco[TBindex][0];
-							TBco[TBindex][3] = TBco[TBindex][1];
-							linkline[linklineindex][0] = 1; 			//draw line from a table	
-							linkline[linklineindex][1] = TBindex;		//draw line from which table
-							System.out.println("TB1");
-						}else if(MOindex != 0){
-							MOco[MOindex][2] = MOco[MOindex][0];
-							MOco[MOindex][3] = MOco[MOindex][1];	
-							MOco[MOindex][4] = 1;
-							linkline[linklineindex][0] = 2;		  	//draw line from a model	
-							linkline[linklineindex][1] = MOindex;		//draw line from which model
-							System.out.println("MO1");
-						}
-						
-						//target sure
-						for(int i = 1; i <= TBcount; i++){
-							if(TBco[i][1] == COcount && i != TBindex){
-								TBco[i][2] = TBco[i][0];
-								TBco[i][3] = TBco[i][1];
-								if(MOindex != 0){TBco[i][4] = 1;}
-								linkline[linklineindex][2] = 1;
-								linkline[linklineindex][3] = i;
-								System.out.println("TB2");
-								break;
-							}
-						}
-						for(int i = 1; i <= MOcount; i++){
-							if(MOco[i][1] == COcount && i != MOindex){
-								MOco[i][2] = MOco[i][0];
-								MOco[i][3] = MOco[i][1];
-								MOco[i][4] = 1;
-								if(TBindex != 0){TBco[TBindex][4] = 1;}
-								linkline[linklineindex][2] = 2;
-								linkline[linklineindex][3] = i;
-								System.out.println("MO2");
-								break;
-							}
-						}
-						linklineindex++;
-						COcount++;
-						link_case = -1;						
-														 //case 2
-				}else if((TBindex!=0|MOindex!=0) && 	 //ä¸”æ­£åœ¨é�¸æŸ�å€‹ç‰©ä»¶
-						  link_case == 2 && !removeornot){			
-					System.out.println("unlink-link");
-					//self sure
-					if (TBindex!=0){
-						TBco[TBindex][2] = TBco[TBindex][0];
-						TBco[TBindex][3] = TBco[TBindex][1];
-						linkline[linklineindex][0]=1; 			//draw line from a table	
-						linkline[linklineindex][1]=TBindex;		//draw line from which table
-						System.out.println("TB1");
-					}else if(MOindex!=0){
-						MOco[MOindex][2] = MOco[MOindex][0];
-						MOco[MOindex][3] = MOco[MOindex][1];	
-						MOco[MOindex][4] = 1;
-						linkline[linklineindex][0]=2;		  	//draw line from a model
-						linkline[linklineindex][1]=MOindex;		//draw line from which model
-						System.out.println("MO1");
-					}				
-					//target sure
-					if(link_to_TB_index != -1){
-						linkline[linklineindex][2]=1;
-						linkline[linklineindex][3]=link_to_TB_index;
-						if(MOindex!=0){
-							for(int i=1; i<=TBcount; i++){
-								if(TBco[i][3] == MOco[MOindex][3]){
-									TBco[i][4] = 1;
-								}
-							}
-						}else if(TBindex!=0 && TBco[link_to_TB_index][4]==1){
-							TBco[TBindex][4] =1;
-						}
-						link_to_TB_index = -1;
-						System.out.println("TB2");
-					}else if(link_to_MO_index != -1){
-						linkline[linklineindex][2]=2;
-						linkline[linklineindex][3]=link_to_MO_index;
-						if(TBindex!=0){TBco[TBindex][4] = 1;}
-						link_to_MO_index = -1;
-						System.out.println("MO2");
-					}				
-					linklineindex++;
-					link_case = -1;				
-														 //case 3
-				}else if((TBindex!=0|MOindex!=0) && 	 //ä¸”æ­£åœ¨é�¸æŸ�å€‹ç‰©ä»¶
-						  link_case == 3 && !removeornot){			
-					System.out.println("link-link");
-					link_case = -1;
-														 //case 4		
-				}else if((TBindex!=0|MOindex!=0) && 	 //ä¸”æ­£åœ¨é�¸æŸ�å€‹ç‰©ä»¶
-						  link_case == 4 && !removeornot){			
-					System.out.println("link-unlink");
-					//self sure
-					if (TBindex!=0){
-						linkline[linklineindex][0]=1; 			//draw line from a table	
-						linkline[linklineindex][1]=TBindex;		//draw line from which table
-						System.out.println("TB1");
-					}else if(MOindex!=0){
-						linkline[linklineindex][0]=2;		  	//draw line from a model
-						linkline[linklineindex][1]=MOindex;		//draw line from which model
-						System.out.println("MO1");
-					}	
-					//target sure
-					if(link_to_TB_index != -1){
-						TBco[link_to_TB_index][2] = 1;
-						TBco[link_to_TB_index][3] = TBco[link_to_TB_index][1];
-						if((TBindex != 0 && TBco[TBindex][4] == 1)||	//TBLinkgroup - TB
-						   (MOindex != 0)){								//MOgroup - TB
-							TBco[link_to_TB_index][4] = 1;
-						}
-						linkline[linklineindex][2] = 1;
-						linkline[linklineindex][3] = link_to_TB_index;
-						link_to_TB_index = -1;
-						System.out.println("TB2");
-					}else if(link_to_MO_index != -1){
-						MOco[link_to_MO_index][2] = 1;
-						MOco[link_to_MO_index][3] = MOco[link_to_MO_index][1];
-						MOco[link_to_MO_index][4] = 1;
-						if(TBindex!=1){
-							for(int i=1; i<=TBcount; i++){
-								if(TBco[i][3] == MOco[link_to_MO_index][3]){
-									TBco[i][4] = 1;
-								}
-							}
-						}
-						linkline[linklineindex][2] = 2;
-						linkline[linklineindex][3] = link_to_MO_index;
-						link_to_MO_index = -1;
-						System.out.println("MO2");
-					}						
-					linklineindex++;
-					link_case = -1;
-				}				
-				
-				if (removeornot){
-					if ((TBindex!=0||MOindex!=0) && y>=delbboundy && x>=delbboundx){
-						break_object();
-					}else if(lineindex!=-1&&(y>=(delbboundy)&&x>=(delbboundx))){
-						break_linkage();
-					}
-    				trashl.setBounds(new Rectangle(-1000, -50, Wide, 300));  				
-					trashl.setVisible(true);
-					removeornot=false;
-	    		}
-				line_drag_x[0]=0;
-				line_drag_y[0]=0;
-				line_drag_x[1]=0;
-				line_drag_y[1]=0;
-				
-				linex[0]=0;
-				linex[1]=0;
-				liney[0]=0;
-				liney[1]=0;	
-				
+			public void mouseReleased(MouseEvent ev){			
+				if(iIndex_target != -1) BuildLinkage();
+				iIndex = -1;
+				iIndex_target = -1;
+				Groupindex = -1;
 				repaint();
-				TBindex=0;
-				MOindex=0;	
-				COindex=-1;
-				link=false;
-				linktolink=false;
-			}
-		
+//				if (removeornot){
+//					if ((TBindex!=0||MOindex!=0) && y>=delbboundy && x>=delbboundx){
+//						break_object();
+//					}else if(lineindex!=-1&&(y>=(delbboundy)&&x>=(delbboundx))){
+//						break_linkage();
+//					}
+//    				trashl.setBounds(new Rectangle(-1000, -50, Wide, 300));  				
+//					trashl.setVisible(true);
+//					removeornot=false;
+//	    		}
+//				line_drag_x[0]=0;
+//				line_drag_y[0]=0;
+//				line_drag_x[1]=0;
+//				line_drag_y[1]=0;
+				// default value			
+			}	
 			@Override
-    		public void mouseClicked(MouseEvent evt) {
-    			int x = evt.getX();
-    			int y = evt.getY();
-    			createX=x;
-    			createY=y;
-    			if (evt.getClickCount() == 2 & SwingUtilities.isLeftMouseButton(evt)) {
-    				int open_MO = 0;
-    				boolean ifopenMO = false;
-    				for (int i=1; i<=TBcount; i++){
-    					if (TBBound[i].contains(x,y)){
-    						openindex=i;
-    						ifopenfile=true;
-        					break;
-    					}
-    				}
-    				for (int i=1; i<=MOcount; i++){
-    					if (MOBound[i].contains(x,y)){
-    						open_MO=i;
-    						ifopenMO=true;
-        					break;
-    					}
-    				}
-    				if(ifopenfile){
-    					ifopenfile=false;
-    					TBopenfile(openindex);
-    				}else if(ifopenMO){
-    					ifopenMO=false;
-    					MOopenfile(open_MO);
-    				}else if(MOindex_temp==0){
-    					create_MO(x,y);
-    					repaint();
-    				}
-    			}
+    		public void mouseClicked(MouseEvent ev) {
+    			if (SwingUtilities.isLeftMouseButton(ev) && ev.getClickCount() == 2) {
+    				if(iIndex_temp != -1) 
+    					openfile(iOB[iIndex_temp].getPath());
+					else{
+						try {
+							create_MO(ev.getX(), ev.getY());
+						} catch (IOException e) {e.printStackTrace();}}
+    				repaint();}
     		}
 		});	
 	addKeyListener(this);
 	addMouseMotionListener(this);
 	}	
 	@Override
-	 public void mouseDragged(MouseEvent e) {
-		int imX = e.getX();
-		int imY = e.getY();
-		int boundN = 0; //205
-		int boundS = Heigth - 20;
-		int boundE = Wide;
-		if(TBindex != 0){
-			TBindex_select = TBindex;
-			CombinedorNot(TBindex, TBimageX, TBimageY, TBimageW, TBimageH, 1);
-			KeepInPanel (imX, imY, TBindex, TBimageW, TBimageH, TBimageX, TBimageY,
-						 boundN,  boundS,  boundE, TBBound);
-		 	TBname[TBindex].setLocation(TBimageX[TBindex],TBimageY[TBindex]+TBimageH[TBindex]);
-			TBBound[TBindex] = new Rectangle(TBimageX[TBindex], TBimageY[TBindex], TB[TBindex].getWidth(null), TB[TBindex].getHeight(null));
-			repaint();}
-		else if(MOindex != 0){
-			MOindex_select = MOindex;
-			CombinedorNot(MOindex, MOimageX, MOimageY, MOimageW, MOimageH, 2);
-			KeepInPanel (imX, imY, MOindex, MOimageW, MOimageH, MOimageX, MOimageY,
-						 boundN,  boundS,  boundE, MOBound);
-			MOname[MOindex].setLocation(MOimageX[MOindex],MOimageY[MOindex]+MOimageH[MOindex]);
-			MOBound[MOindex]=new Rectangle(MOimageX[MOindex], MOimageY[MOindex], MO[MOindex].getWidth(null), MO[MOindex].getHeight(null));
-			repaint();}
-		// Prevent from creating line when draging objects
-		if(TBindex == 0 && MOindex == 0 && lineindex != -1){ 
-			line_drag_x[0] = imX - 30 + 10;
-			line_drag_y[0] = imY - 30;
-			line_drag_x[1] = imX + 30 + 10;
-			line_drag_y[1] = imY + 30;
-			repaint();}
-		if ((TBindex != 0 || MOindex != 0 || lineindex != -1 || COindex != -1) && 
-		   imY >= (delbboundy) && imX >= (delbboundx) && !removeornot){
-			TrashAnimation = new Timer(15, new ActionListener() {
-				int i = 0;
-			    @Override
-			    public void actionPerformed(ActionEvent ae) {
-			    	if(i < 10 & TA){
-			    		trashl.setBounds(new Rectangle(Wide - trashW, Heigth - trashH - 10, trashW, trashH));
-			    		//trashl.setBounds(new Rectangle(200,200,100,100));
-			    		trashl.setIcon(new ImageIcon(Trash[i]));
-						startPanel.setLayer(trashl, new Integer(200));
-						trashl.setVisible(true);
-						startPanel.revalidate();  
-				        i++;}
-				    else{
-			    		TrashAnimation.stop();
-			    		i=0;
-			    		TA=false;}
-			    }
-			});	
-			TA=true;
-			TrashAnimation.start();
-			removeornot=true;}
-		else if(imY < delbboundy || imX < delbboundx){
-			trashl.setBounds(new Rectangle(Wide, -50, Wide, 300));
-			startPanel.setLayer(trashl, new Integer(1));
-			trashl.setVisible(true);
-			removeornot=false;}		
+	public void mouseMoved(MouseEvent ev) {
+//		int x = ev.getX();
+//		int y = ev.getY();
+//		if(y < (delbboundy) || x < (delbboundx)){
+//			trashl.setBounds(new Rectangle(Wide, -50, Wide, 300));
+//			startPanel.setLayer(trashl, new Integer(1));
+//			trashl.setVisible(true);
+//			removeornot=false;}	
+		selectable = false;
+		lineindex_temp = -1;
+		for (int i = 0; i < linkcount; i++){
+			if(isOnLine(iOB[iOBlink[i][0]].getLocation(), iOB[iOBlink[i][1]].getLocation(), ev.getPoint())){
+				selectable = true;
+				lineindex_temp = i; 
+				break;}}
+		iIndex_temp = -1;
+		for (int i = 0; i < iOBcount; i++){
+			if(iOB[i].getBound().contains(ev.getPoint())){
+				selectable = true;
+				iIndex_temp = i;
+				break;}}
+		this.setCursor(Cursor.getPredefinedCursor(selectable ? Cursor.HAND_CURSOR : Cursor.DEFAULT_CURSOR));	
 	}
 	@Override
-	public void mouseMoved(MouseEvent ev) {
-		int y= ev.getY();
-		int x= ev.getX();
-		if(y<(delbboundy)||x<(delbboundx)){
-			trashl.setBounds(new Rectangle(Wide, -50, Wide, 300));
-			startPanel.setLayer(trashl, new Integer(1));
-			trashl.setVisible(true);
-			removeornot=false;}
-		lineindex=-1;
-		lineselected_temp=-1;
-		ableselect=false;
-		if (TBindex<=0&MOindex<=0){
-			for (int i=0; i<linklineindex; i++){ // if(distance(A, C) + distance(B, C) == distance(A, B)) , to determine if pointer is on the line.
-				if(linedelete[i]==-1) continue;
-				TBindex_temp=0;
-				MOindex_temp=0;				
-				if(linkline[i][0]==1){
-					if(linkline[i][2]==1){	
-						if(Whether_On_Line(	TBimageX[linkline[i][1]]+(TBimageW[linkline[i][1]]/2), TBimageY[linkline[i][1]]+(TBimageH[linkline[i][1]]/2),
-											TBimageX[linkline[i][3]]+(TBimageW[linkline[i][3]]/2), TBimageY[linkline[i][3]]+(TBimageH[linkline[i][3]]/2),
-											x,y)){
-							lineselected_temp=i;
-							ableselect=true;
-							break;
-						}
-					}else if(linkline[i][2]==2){
-						if(Whether_On_Line(	TBimageX[linkline[i][1]]+(TBimageW[linkline[i][1]]/2), TBimageY[linkline[i][1]]+(TBimageH[linkline[i][1]]/2),
-											MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
-											x,y)){
-							lineselected_temp=i;
-							ableselect=true;
-							break;
-						}
-					}
-				}else if(linkline[i][0]==2){
-					if(linkline[i][2]==1){
-						if(Whether_On_Line(	MOimageX[linkline[i][1]]+(MOimageW[linkline[i][1]]/2), MOimageY[linkline[i][1]]+(MOimageH[linkline[i][1]]/2),
-											TBimageX[linkline[i][3]]+(TBimageW[linkline[i][3]]/2), TBimageY[linkline[i][3]]+(TBimageH[linkline[i][3]]/2),
-											x,y)){
-							lineselected_temp=i;
-							ableselect=true;
-							break;
-						}
-					}else if(linkline[i][2]==2){
-						if(Whether_On_Line(	MOimageX[linkline[i][1]]+(MOimageW[linkline[i][1]]/2), MOimageY[linkline[i][1]]+(MOimageH[linkline[i][1]]/2),
-											MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
-											x,y)){
-							lineselected_temp=i;
-							ableselect=true;		   
-							break;				
-						}
-					}
-				}
-			}			
-		}
+	 public void mouseDragged(MouseEvent ev) {
+		Point point_drag = ev.getPoint();
+		if(iIndex != -1) {
+			LinkToObject();
+			if(isInBoundary() ||
+			  (isEscapeToLeft()  && isMoveToRight(point_drag))    || (isEscapeToRight() && isMoveToLeft(point_drag)) ||
+			  (isEscapeToAbove() && isMoveToDownward(point_drag)) || (isEscapeToBelow() && isMoveToUpward(point_drag))){
+				iOB[iIndex].setDeltaLocation(point_drag.getX() - temppt.getX(), point_drag.getY() - temppt.getY());
+				iOB[iIndex].updateLabel();
+				temppt = point_drag;}}
+		repaint();
 		
-		if(ableselect)
-			this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		else
-			this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-		if(TBcount>0){
-			for (int i=1; i<=TBcount; i++){
-				if (TBBound[i].contains(x, y)){
-					this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-					TBindex_temp=i;
-					break;
-				}else if(!ableselect){	//not select on object and not select a line
-					this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-					TBindex_temp=0;
-				}
-			}
-		}
-		if(MOcount>0&&TBindex_temp==0){
-			for (int i=1; i<=MOcount; i++){
-				if(MOBound[i].contains(x,y)){
-					this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-					MOindex_temp=i;
-					break;
-				}else if(!ableselect){
-					this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-					MOindex_temp=0;
-				}
-			}
+//		 	TBname[TBindex].setLocation(TBimageX[TBindex],TBimageY[TBindex]+TBimageH[TBindex]);
+//			TBBound[TBindex] = new Rectangle(TBimageX[TBindex], TBimageY[TBindex], TB[TBindex].getWidth(null), TB[TBindex].getHeight(null));
+		// Prevent from creating line when draging objects
+
+		// removal part
+//		if(TBindex == -1 && MOindex == -1 && lineindex != -1){ 
+//			line_drag_x[0] = imX - 30 + 10;
+//			line_drag_y[0] = imY - 30;
+//			line_drag_x[1] = imX + 30 + 10;
+//			line_drag_y[1] = imY + 30;
+//			repaint();}
+//		if ((TBindex != -1 || MOindex != -1 || lineindex != -1 || COindex != -1) && 
+//		   imY >= (delbboundy) && imX >= (delbboundx) && !removeornot){
+//			TrashAnimation = new Timer(15, new ActionListener() {
+//				int i = 0;
+//			    @Override
+//			    public void actionPerformed(ActionEvent ae) {
+//			    	if(i < 10 & TA){
+//			    		trashl.setBounds(new Rectangle(Wide - trashW, Heigth - trashH - 10, trashW, trashH));
+//			    		//trashl.setBounds(new Rectangle(200,200,100,100));
+//			    		trashl.setIcon(new ImageIcon(Trash[i]));
+//						startPanel.setLayer(trashl, new Integer(200));
+//						trashl.setVisible(true);
+//						startPanel.revalidate();  
+//				        i++;}
+//				    else{
+//			    		TrashAnimation.stop();
+//			    		i=0;
+//			    		TA=false;}
+//			    }
+//			});	
+//			TA=true;
+//			TrashAnimation.start();
+//			removeornot=true;}
+//		else if(imY < delbboundy || imX < delbboundx){
+//			trashl.setBounds(new Rectangle(Wide, -50, Wide, 300));
+//			startPanel.setLayer(trashl, new Integer(1));
+//			trashl.setVisible(true);
+//			removeornot=false;}		
+	}
+	
+	// iPat Object methods /////////////////////////
+	int[] getTBindex(){
+		int[] TBindex = {};
+		for (int i = 0; i < iOBcount; i++)
+			if(iOB[i].object == iPatObject.Object.TB) TBindex = ArrayUtils.addAll(TBindex, i);
+		return TBindex;
+	}
+	int[] getMOindex(){
+		int[] MOindex = {};
+		for (int i = 0; i < iOBcount; i++)
+			if(iOB[i].object == iPatObject.Object.MO) MOindex = ArrayUtils.addAll(MOindex, i);
+		return MOindex;
+	}
+	int[] getOBinGroup(int group){
+		int[] OBindex = {};
+		for(int i = 0; i < iOBcount; i++)
+			if(iOB[i].getGroupindex() == group) OBindex = ArrayUtils.addAll(OBindex, i);
+		return OBindex;
+	}
+	boolean isInBoundary(){
+		return boundary.intersection(iOB[iIndex].getBound()).equals(iOB[iIndex].getBound()); 
+	}
+	boolean isEscapeToLeft(){
+		return boundary.getMinX() > iOB[iIndex].getBound().getMinX();
+	}
+	boolean isEscapeToRight(){
+		return boundary.getMaxX() < iOB[iIndex].getBound().getMaxX();
+	}
+	boolean isEscapeToAbove(){
+		return boundary.getMinY() > iOB[iIndex].getBound().getMinY();
+	}
+	boolean isEscapeToBelow(){
+		return boundary.getMaxY() < iOB[iIndex].getBound().getMaxY();
+	}
+	boolean isMoveToRight(Point point_drag){
+		return point_drag.getX() - temppt.getX() > 0;
+	}
+	boolean isMoveToLeft(Point point_drag){
+		return point_drag.getX() - temppt.getX() < 0;
+	}
+	boolean isMoveToDownward(Point point_drag){
+		return point_drag.getY() - temppt.getY() > 0;
+	}
+	boolean isMoveToUpward(Point point_drag){
+		return point_drag.getY() - temppt.getY() < 0;
+	}
+	////////////////////////////////////////////////
+	void LinkToObject(){
+		iIndex_target = getTargetIndex();
+		linktype = getLinkType(iIndex_target); 
+		switch (linktype){
+		// 1. w/o MO - w/o MO
+		case 1: 
+			lineST = iOB[iIndex].pt;
+			lineED = iOB[iIndex_target].pt;
+			System.out.println("case 1");
+			break;
+		// 2. w/ MO - w/o MO
+		case 2: 
+			lineST = iOB[iIndex].pt;
+			lineED = iOB[iIndex_target].pt;
+			System.out.println("case 2");
+			break;			
+		// 3. w/o MO - w/ MO
+		case 3:
+			lineST = iOB[iIndex].pt;
+			lineED = iOB[iIndex_target].pt;
+			System.out.println("case 3");
+			break;
+		// 4. w/ MO - w/ MO
+		case 4:
+			lineST = nullPoint;
+			lineED = nullPoint;
+			iIndex_target = -1;
+			System.out.println("case 4");
+			break;
+		default: 
+			lineST = nullPoint;
+			lineED = nullPoint;
+			iIndex_target = -1;
+			System.out.println("case 0");
+			break;
 		}
 	}
-	void break_linkage(){
-		int[][] traceback = new int[linklineindex][3]; //class, class_index, which link
-		int[][] traceback_temp = new int[linklineindex][3]; //class, class_index, which link
-		int trace_index = 0;
-		// linkline[][2]   class, class index 
-		// traceback[][3]  class, class index, which link  				
-		for (int i=0; i<linklineindex; i++){
-			traceback[i][0] = -1;
-			traceback[i][1] = -1;
-			traceback[i][2] = -1;
-			traceback_temp[i][0] = -1;
-			traceback_temp[i][1] = -1;
-			traceback_temp[i][2] = -1;
-		}
-		traceback[0][0] = linkline[lineindex][2];
-		traceback[0][1] = linkline[lineindex][3];
-		traceback[0][2] = lineindex;
-		//modified the first one
-		if(linkline[lineindex][2] == 1){
-			TBco[linkline[lineindex][3]][1] = COcount;
-			TBco[linkline[lineindex][3]][3] = COcount;
-		}else if(linkline[lineindex][2] == 2){
-			MOco[linkline[lineindex][3]][1] = COcount;
-			MOco[linkline[lineindex][3]][3] = COcount;							
-		}	
-		for(int i=0; i<linklineindex; i++){
-			System.out.println(linkline[i][0]+" "+linkline[i][1]+")--("+linkline[i][2]+" "+linkline[i][3]);
-		}
-		// should be able to do recursive function
-		for (int ex=0; ex<10; ex++){
-			trace_index = 0;
-			for (int t=0; t<linklineindex; t++){  //search index
-				if(traceback[t][0] == -1){break;} //no more layer need to be searched
-				for (int i=0; i<linklineindex; i++){
-					if(i == traceback[t][2]){continue;} //skip the last round pair
-					if(linkline[i][0] == traceback[t][0] && linkline[i][1] == traceback[t][1]){
-						if(linkline[i][2]==1){ //table
-							TBco[linkline[i][3]][1] = COcount;
-							TBco[linkline[i][3]][3] = COcount;
-							traceback_temp[trace_index][0] = linkline[i][2];
-							traceback_temp[trace_index][1] = linkline[i][3];
-							traceback_temp[trace_index][2] = i;
-							trace_index++;
-						}else if(linkline[i][2]==2){  //model
-							MOco[linkline[i][3]][1] = COcount;
-							MOco[linkline[i][3]][3] = COcount;
-							traceback_temp[trace_index][0] = linkline[i][2];
-							traceback_temp[trace_index][1] = linkline[i][3];
-							traceback_temp[trace_index][2] = i;
-							trace_index++;
-						}
-					}else if(linkline[i][2] == traceback[t][0] && linkline[i][3] == traceback[t][1]){
-						if(linkline[i][0]==1){ //table
-							TBco[linkline[i][1]][1] = COcount;
-							TBco[linkline[i][1]][3] = COcount;
-							traceback_temp[trace_index][0] = linkline[i][0];
-							traceback_temp[trace_index][1] = linkline[i][1];
-							traceback_temp[trace_index][2] = i;
-							trace_index++;
-						}else if(linkline[i][0]==2){  //model
-							MOco[linkline[i][1]][1] = COcount;
-							MOco[linkline[i][1]][3] = COcount;
-							traceback_temp[trace_index][0] = linkline[i][0];
-							traceback_temp[trace_index][1] = linkline[i][1];
-							traceback_temp[trace_index][2] = i;
-							trace_index++;
-						}
-					}
-				}
-			}
-			for (int repo = 0; repo<linklineindex; repo++){
-				traceback[repo][0] = traceback_temp[repo][0];
-				traceback[repo][1] = traceback_temp[repo][1];
-				traceback[repo][2] = traceback_temp[repo][2];
-			}
-			traceback[trace_index][0] =-1;
-		}
-		//////
-		check_alone_and_model();
-		COcount ++;
-		linedelete[lineindex]=-1;
-		linkline[lineindex][0] = -1;
-		linkline[lineindex][1] = -1;
-		linkline[lineindex][2] = -1;
-		linkline[lineindex][3] = -1;
-		repaint();
+	int getTargetIndex(){
+		int target = -1;
+		double minValue = 99999;
+		for (int i = 0; i < iOBcount; i++){
+			double dist = getDistance(iOB[iIndex].pt, iOB[i].pt);
+			System.out.println("index " + i + " = " + dist);
+			if(i == iIndex) 
+				continue;
+			else if(dist < minValue && dist < 100 ){
+					// if two objects are not in the same group or both of them belong to group 0
+				//	((iOB[iIndex].Groupindex == -1 && iOB[i].Groupindex == -1) || iOB[iIndex].Groupindex != iOB[i].Groupindex)){
+				System.out.println("selected i = " + i);
+				minValue = dist;
+				target = i;}}
+		return target;
 	}
-	void mark_break_iteration(int[]traceback, int brench){
-		int[] traceback_temp = new int[3];
-		traceback_temp[0] = -1;
-		traceback_temp[1] = -1;
-		traceback_temp[2] = -1;		
-		for (int i = 0; i<linklineindex; i++){
-			if(i == traceback[2]){continue;} //skip the last round pair
-			if(linkline[i][0] == traceback[0] && linkline[i][1] == traceback[1]){
-				if(linkline[i][2]==1){ //table
-					TBco[linkline[i][3]][1] = COcount+brench;
-					TBco[linkline[i][3]][3] = COcount+brench;
-					traceback_temp[0] = linkline[i][2];
-					traceback_temp[1] = linkline[i][3];
-					traceback_temp[2] = i;
-					mark_break_iteration(traceback_temp, brench);
-				}else if(linkline[i][2]==2){  //model
-					MOco[linkline[i][3]][1] = COcount+brench;
-					MOco[linkline[i][3]][3] = COcount+brench;
-					traceback_temp[0] = linkline[i][2];
-					traceback_temp[1] = linkline[i][3];
-					traceback_temp[2] = i;
-					mark_break_iteration(traceback_temp, brench);
-				}
-			}else if(linkline[i][2] == traceback[0] && linkline[i][3] == traceback[1]){
-				if(linkline[i][0]==1){ //table
-					TBco[linkline[i][1]][1] = COcount+brench;
-					TBco[linkline[i][1]][3] = COcount+brench;
-					traceback_temp[0] = linkline[i][0];
-					traceback_temp[1] = linkline[i][1];
-					traceback_temp[2] = i;
-					mark_break_iteration(traceback_temp, brench);
-				}else if(linkline[i][0]==2){  //model
-					MOco[linkline[i][1]][1] = COcount+brench;
-					MOco[linkline[i][1]][3] = COcount+brench;
-					traceback_temp[0] = linkline[i][0];
-					traceback_temp[1] = linkline[i][1];
-					traceback_temp[2] = i;
-					mark_break_iteration(traceback_temp, brench);
-				}
-			}	
-		}
+	int getLinkType(int nearindex){
+		if	   (nearindex == -1)										return 0;
+		else if(!iOB[iIndex].containMO && !iOB[nearindex].containMO)	return 1;
+		else if( iOB[iIndex].containMO && !iOB[nearindex].containMO) 	return 2;		
+		else if(!iOB[iIndex].containMO &&  iOB[nearindex].containMO) 	return 3;
+		else if( iOB[iIndex].containMO &&  iOB[nearindex].containMO) 	return 4;
+		return 0;
 	}
-	void check_alone_and_model(){
-		int catch_t, catch_m, count;
-		System.out.println("cocount="+COcount);
-		for (int i = 0; i<= COcount; i++){
-			catch_t = 0; catch_m = 0; count = 0;
-			for (int t = 1; t<TBMAX; t++){
-				if(TBco[t][3] == i){
-					count ++;
-					catch_t = t;
-				}
-			}
-			for (int m = 1; m<MOMAX; m++){
-				if(MOco[m][3] == i){
-					count ++;
-					catch_m = m;
-				}
-			}
-			System.out.println("count: "+count+" catch_t= "+catch_t+" catch_m= "+catch_m+" group= "+ i);
-			if(count == 1){
-				if(catch_t != 0){
-					TBco[catch_t][2] = -1;
-					TBco[catch_t][3] = -1;
-					TBco[catch_t][4] = -1;
-				}else if(catch_m != 0){
-					MOco[catch_m][2] = -1;
-					MOco[catch_m][3] = -1;
-					MOco[catch_m][4] = -1;
-				}
-			}
-			if(catch_m == 0){ // indecate "group_ori" doesn't have model
-				for(int e = 1; e<TBMAX; e++){
-					if(TBco[e][3]== i){TBco[e][4] = -1;}
-				}
-			}
-		}
-	}
-	void break_object(){
-		int[] traceback = new int[3];
-		int trace_index = 0, trace_max = 1, group_ori= 0;
-		// linkline[][2]   class, class index 
-		// traceback[][3]  class, class index, which link  				
-		traceback[0] = -1;
-		traceback[1] = -1;
-		traceback[2] = -1;	
-		int brench = 0;
-		for (int i=0; i<linklineindex; i++){
-			if(TBindex!= 0){
-				if(linkline[i][0]==1 && linkline[i][1]==TBindex){
-					traceback[0] = linkline[i][2];
-					traceback[1] = linkline[i][3];
-					traceback[2] = i;
-					if(linkline[i][2]==1){
-						TBco[linkline[i][3]][1] = COcount+brench;
-						TBco[linkline[i][3]][3] = COcount+brench;
-					}else if(linkline[i][2]==2){
-						MOco[linkline[i][3]][1] = COcount+brench;
-						MOco[linkline[i][3]][3] = COcount+brench;
-					}		
-					mark_break_iteration(traceback, brench);
-					brench++;
-					System.out.println(traceback[0]+"-"+traceback[1]+";"+ COcount+brench+", case1");
-				}else if(linkline[i][2]==1 && linkline[i][3]==TBindex){
-					traceback[0] = linkline[i][0];
-					traceback[1] = linkline[i][1];
-					traceback[2] = i;
-					if(linkline[i][0]==1){
-						TBco[linkline[i][1]][1] = COcount+brench;
-						TBco[linkline[i][1]][3] = COcount+brench;
-					}else if(linkline[i][0]==2){
-						MOco[linkline[i][1]][1] = COcount+brench;
-						MOco[linkline[i][1]][3] = COcount+brench;
-					}
-					mark_break_iteration(traceback, brench);
-					brench++;
-					System.out.println(traceback[0]+"-"+traceback[1]+";"+ COcount+brench+", case2");
-				}
-			}else if(MOindex!= 0){
-				if(linkline[i][0]==2 && linkline[i][1]==MOindex){
-					traceback[0] = linkline[i][2];
-					traceback[1] = linkline[i][3];
-					traceback[2] = i;
-					if(linkline[i][2]==1){
-						TBco[linkline[i][3]][1] = COcount+brench;
-						TBco[linkline[i][3]][3] = COcount+brench;
-					}else if(linkline[i][2]==2){
-						MOco[linkline[i][3]][1] = COcount+brench;
-						MOco[linkline[i][3]][3] = COcount+brench;
-					}
-					mark_break_iteration(traceback, brench);
-					brench++;
-					System.out.println(traceback[0]+"-"+traceback[1]+";"+ COcount+brench+", case3");
-				}else if(linkline[i][2]==2 && linkline[i][3]==MOindex){
-					traceback[0] = linkline[i][0];
-					traceback[1] = linkline[i][1];
-					traceback[2] = i;
-					if(linkline[i][0]==1){
-						TBco[linkline[i][1]][1] = COcount+brench;
-						TBco[linkline[i][1]][3] = COcount+brench;
-					}else if(linkline[i][0]==2){
-						MOco[linkline[i][1]][1] = COcount+brench;
-						MOco[linkline[i][1]][3] = COcount+brench;
-					}
-					mark_break_iteration(traceback, brench);
-					brench++;
-					System.out.println(traceback[0]+"-"+traceback[1]+";"+ COcount+brench+", case4");
-				}		
-			}
-		}
-		COcount += brench+1;
-		check_alone_and_model();
-		if(TBindex!=0){
-			TBimageX[TBindex]=-1000;
-			TBimageY[TBindex]=-1000;
-			TBBound[TBindex]=new Rectangle(-100,-100,0,0);
-			TBname[TBindex].setLocation(-100,-100);
-			TBdelete[TBindex]=-1;
-		}else if(MOindex!=0){
-			MOimageX[MOindex]=-1000;
-			MOimageY[MOindex]=-1000;
-			MOBound[MOindex]=new Rectangle(-100,-100,0,0);
-			MOname[MOindex].setLocation(-100,-100);
-			MOdelete[MOindex]=-1;
-		}
-		repaint();
-	}		
-	public void CombinedorNot(int index, int[] Xs, int[] Ys, int[] Ws, int[] Hs, int TorM_s){
-		int[] TBdist = new int[TBcount + 1];
-		int[] MOdist = new int[MOcount + 1];
-		int minvalue = min_dist(index, Xs, Ys, Ws, Hs, TBdist, MOdist);
-		//System.out.println("----------log start-------------");
-		//System.out.println("minvalue="+minvalue);
-		int case3_count = 0;
-		if(TBindex!=0) combine_type_determined(MOdist, minvalue, case3_count,
-												Xs, Ys, Ws, Hs, index, TorM_s, 
-												MOimageX, MOimageY, MOimageW, MOimageH, MOcount, MOco, 2);		
-		combine_type_determined(TBdist, minvalue, case3_count,
-								Xs, Ys, Ws, Hs, index, TorM_s, 
-								TBimageX, TBimageY, TBimageW, TBimageH, TBcount, TBco, 1);						
-		//System.out.println("----------log end-------------");
-	}			
-	public int min_dist(int index, int[] X, int[] Y, int[] W, int[] H, int[] TBdist, int[] MOdist){
-		int x = X[index] + (W[index]/2);
-		int y = Y[index] + (H[index]/2);	
-		for (int i = 1; i <= TBcount; i++){
-			if (i == TBindex) 
-	            TBdist[i] = 10000;
+	void BuildLinkage(){
+		switch(linktype){
+		// 1. w/o MO - w/o MO
+		case 1: 
+			if(!iOB[iIndex].isCombined){
+				iOB[iIndex].isCombined = true;
+				iOB[iIndex].Groupindex = Groupcount;}
 			else{
-	        	int x2 = TBimageX[i] + (TBimageW[i]/2);
-				int y2 = TBimageY[i] + (TBimageH[i]/2);
-				int dist = (int)Distance(x, y, x2, y2);
-				TBdist[i] = dist;}}
-		for (int i = 1; i <= MOcount; i++){
-			if (i == MOindex) 
-				MOdist[i] = 10000;
+				for(int target : getOBinGroup(iOB[iIndex].getGroupindex()))
+					iOB[target].Groupindex = Groupcount;}
+			if(!iOB[iIndex_target].isCombined){
+				iOB[iIndex_target].isCombined = true;
+				iOB[iIndex_target].Groupindex = Groupcount;}
 			else{
-	        	int x2 = MOimageX[i] + (MOimageW[i]/2);
-				int y2 = MOimageY[i] + (MOimageH[i]/2);
-				int dist = (int)Distance(x, y, x2, y2);
-				MOdist[i] = dist;}}
-		int[] newdist = new int[TBdist.length + MOdist.length - 2];
-		System.arraycopy(TBdist, 1, newdist, 0 		   		, TBdist.length - 1);
-		System.arraycopy(MOdist, 1, newdist, TBdist.length-1, MOdist.length - 1);
-		return MinValue(newdist);
-	}	
+				for(int target : getOBinGroup(iOB[iIndex_target].getGroupindex()))
+					iOB[target].Groupindex = Groupcount;}
+			iOBlink[linkcount][0] = iIndex;
+			iOBlink[linkcount][1] = iIndex_target;
+			linkcount ++;
+			Groupcount ++;
+			System.out.println("build case 1");
+			break;
+		// 2. w/ MO - w/o MO
+		case 2: 
+			if(!iOB[iIndex_target].isCombined){
+				iOB[iIndex_target].isCombined = true;
+				iOB[iIndex_target].containMO = true;
+				iOB[iIndex_target].Groupindex = iOB[iIndex].getGroupindex();}
+			else{
+				for(int target : getOBinGroup(iOB[iIndex_target].getGroupindex())){
+					iOB[target].containMO = true;
+					iOB[target].Groupindex = iOB[iIndex].getGroupindex();}}
+			iOB[iIndex].isCombined = true;
+			iOBlink[linkcount][0] = iIndex;
+			iOBlink[linkcount][1] = iIndex_target;
+			linkcount ++;
+			System.out.println("build case 2");
+			break;			
+		// 3. w/o MO - w/ MO
+		case 3:
+			if(!iOB[iIndex].isCombined){
+				iOB[iIndex].isCombined = true;
+				iOB[iIndex].containMO = true;
+				iOB[iIndex].Groupindex = iOB[iIndex_target].getGroupindex();}
+			else{
+				for(int target : getOBinGroup(iOB[iIndex].getGroupindex())){
+					iOB[target].containMO = true;
+					iOB[target].Groupindex = iOB[iIndex_target].getGroupindex();}}
+			iOB[iIndex_target].isCombined = true;
+			iOBlink[linkcount][0] = iIndex;
+			iOBlink[linkcount][1] = iIndex_target;
+			linkcount ++;
+			System.out.println("build case 3");
+			break;
+		// 4. w/ MO - w/ MO
+		case 4: break;
+		}
+		lineST = nullPoint;
+		lineED = nullPoint;
+		linktype = 0;
+	}
+	
+	
+	
+//	void break_linkage(){
+//		int[][] traceback = new int[linklineindex][3]; //class, class_index, which link
+//		int[][] traceback_temp = new int[linklineindex][3]; //class, class_index, which link
+//		int trace_index = 0;
+//		// linkline[][2]   class, class index 
+//		// traceback[][3]  class, class index, which link  				
+//		for (int i=0; i<linklineindex; i++){
+//			traceback[i][0] = -1;
+//			traceback[i][1] = -1;
+//			traceback[i][2] = -1;
+//			traceback_temp[i][0] = -1;
+//			traceback_temp[i][1] = -1;
+//			traceback_temp[i][2] = -1;
+//		}
+//		traceback[0][0] = linkline[lineindex][2];
+//		traceback[0][1] = linkline[lineindex][3];
+//		traceback[0][2] = lineindex;
+//		//modified the first one
+//		if(linkline[lineindex][2] == 1){
+//			TBco[linkline[lineindex][3]][1] = COcount;
+//			TBco[linkline[lineindex][3]][3] = COcount;
+//		}else if(linkline[lineindex][2] == 2){
+//			MOco[linkline[lineindex][3]][1] = COcount;
+//			MOco[linkline[lineindex][3]][3] = COcount;							
+//		}	
+//		for (int i=0; i<linklineindex; i++){
+//			System.out.println(linkline[i][0]+" "+linkline[i][1]+")--("+linkline[i][2]+" "+linkline[i][3]);
+//		}
+//		// should be able to do recursive function
+//		for (int ex=0; ex<10; ex++){
+//			trace_index = 0;
+//			for (int t=0; t<linklineindex; t++){  //search index
+//				if(traceback[t][0] == -1){break;} //no more layer need to be searched
+//				for (int i=0; i<linklineindex; i++){
+//					if(i == traceback[t][2]){continue;} //skip the last round pair
+//					if(linkline[i][0] == traceback[t][0] && linkline[i][1] == traceback[t][1]){
+//						if(linkline[i][2]==1){ //table
+//							TBco[linkline[i][3]][1] = COcount;
+//							TBco[linkline[i][3]][3] = COcount;
+//							traceback_temp[trace_index][0] = linkline[i][2];
+//							traceback_temp[trace_index][1] = linkline[i][3];
+//							traceback_temp[trace_index][2] = i;
+//							trace_index++;
+//						}else if(linkline[i][2]==2){  //model
+//							MOco[linkline[i][3]][1] = COcount;
+//							MOco[linkline[i][3]][3] = COcount;
+//							traceback_temp[trace_index][0] = linkline[i][2];
+//							traceback_temp[trace_index][1] = linkline[i][3];
+//							traceback_temp[trace_index][2] = i;
+//							trace_index++;
+//						}
+//					}else if(linkline[i][2] == traceback[t][0] && linkline[i][3] == traceback[t][1]){
+//						if(linkline[i][0]==1){ //table
+//							TBco[linkline[i][1]][1] = COcount;
+//							TBco[linkline[i][1]][3] = COcount;
+//							traceback_temp[trace_index][0] = linkline[i][0];
+//							traceback_temp[trace_index][1] = linkline[i][1];
+//							traceback_temp[trace_index][2] = i;
+//							trace_index++;
+//						}else if(linkline[i][0]==2){  //model
+//							MOco[linkline[i][1]][1] = COcount;
+//							MOco[linkline[i][1]][3] = COcount;
+//							traceback_temp[trace_index][0] = linkline[i][0];
+//							traceback_temp[trace_index][1] = linkline[i][1];
+//							traceback_temp[trace_index][2] = i;
+//							trace_index++;
+//						}
+//					}
+//				}
+//			}
+//			for (int repo = 0; repo<linklineindex; repo++){
+//				traceback[repo][0] = traceback_temp[repo][0];
+//				traceback[repo][1] = traceback_temp[repo][1];
+//				traceback[repo][2] = traceback_temp[repo][2];
+//			}
+//			traceback[trace_index][0] =-1;
+//		}
+//		//////
+//		check_alone_and_model();
+//		COcount ++;
+//		linedelete[lineindex]=-1;
+//		linkline[lineindex][0] = -1;
+//		linkline[lineindex][1] = -1;
+//		linkline[lineindex][2] = -1;
+//		linkline[lineindex][3] = -1;
+//		repaint();
+//	}
+//	void mark_break_iteration(int[]traceback, int brench){
+//		int[] traceback_temp = new int[3];
+//		traceback_temp[0] = -1;
+//		traceback_temp[1] = -1;
+//		traceback_temp[2] = -1;		
+//		for (int i = 0; i<linklineindex; i++){
+//			if(i == traceback[2]){continue;} //skip the last round pair
+//			if(linkline[i][0] == traceback[0] && linkline[i][1] == traceback[1]){
+//				if(linkline[i][2]==1){ //table
+//					TBco[linkline[i][3]][1] = COcount+brench;
+//					TBco[linkline[i][3]][3] = COcount+brench;
+//					traceback_temp[0] = linkline[i][2];
+//					traceback_temp[1] = linkline[i][3];
+//					traceback_temp[2] = i;
+//					mark_break_iteration(traceback_temp, brench);
+//				}else if(linkline[i][2]==2){  //model
+//					MOco[linkline[i][3]][1] = COcount+brench;
+//					MOco[linkline[i][3]][3] = COcount+brench;
+//					traceback_temp[0] = linkline[i][2];
+//					traceback_temp[1] = linkline[i][3];
+//					traceback_temp[2] = i;
+//					mark_break_iteration(traceback_temp, brench);
+//				}
+//			}else if(linkline[i][2] == traceback[0] && linkline[i][3] == traceback[1]){
+//				if(linkline[i][0]==1){ //table
+//					TBco[linkline[i][1]][1] = COcount+brench;
+//					TBco[linkline[i][1]][3] = COcount+brench;
+//					traceback_temp[0] = linkline[i][0];
+//					traceback_temp[1] = linkline[i][1];
+//					traceback_temp[2] = i;
+//					mark_break_iteration(traceback_temp, brench);
+//				}else if(linkline[i][0]==2){  //model
+//					MOco[linkline[i][1]][1] = COcount+brench;
+//					MOco[linkline[i][1]][3] = COcount+brench;
+//					traceback_temp[0] = linkline[i][0];
+//					traceback_temp[1] = linkline[i][1];
+//					traceback_temp[2] = i;
+//					mark_break_iteration(traceback_temp, brench);
+//				}
+//			}	
+//		}
+//	}
+//	void check_alone_and_model(){
+//		int catch_t, catch_m, count;
+//		System.out.println("cocount="+COcount);
+//		for (int i = 0; i<= COcount; i++){
+//			catch_t = 0; catch_m = 0; count = 0;
+//			for (int t = 1; t<TBMAX; t++){
+//				if(TBco[t][3] == i){
+//					count ++;
+//					catch_t = t;
+//				}
+//			}
+//			for (int m = 1; m<MOMAX; m++){
+//				if(MOco[m][3] == i){
+//					count ++;
+//					catch_m = m;
+//				}
+//			}
+//			System.out.println("count: "+count+" catch_t= "+catch_t+" catch_m= "+catch_m+" group= "+ i);
+//			if(count == 1){
+//				if(catch_t != 0){
+//					TBco[catch_t][2] = -1;
+//					TBco[catch_t][3] = -1;
+//					TBco[catch_t][4] = -1;
+//				}else if(catch_m != 0){
+//					MOco[catch_m][2] = -1;
+//					MOco[catch_m][3] = -1;
+//					MOco[catch_m][4] = -1;
+//				}
+//			}
+//			if(catch_m == 0){ // indecate "group_ori" doesn't have model
+//				for (int e = 1; e<TBMAX; e++){
+//					if(TBco[e][3]== i){TBco[e][4] = -1;}
+//				}
+//			}
+//		}
+//	}
+//	void break_object(){
+//		int[] traceback = new int[3];
+//		int trace_index = 0, trace_max = 1, group_ori= 0;
+//		// linkline[][2]   class, class index 
+//		// traceback[][3]  class, class index, which link  				
+//		traceback[0] = -1;
+//		traceback[1] = -1;
+//		traceback[2] = -1;	
+//		int brench = 0;
+//		for (int i=0; i<linklineindex; i++){
+//			if(TBindex!= 0){
+//				if(linkline[i][0]==1 && linkline[i][1]==TBindex){
+//					traceback[0] = linkline[i][2];
+//					traceback[1] = linkline[i][3];
+//					traceback[2] = i;
+//					if(linkline[i][2]==1){
+//						TB[linkline[i][3]].GroupTempindex = COcount + brench;
+//						TB[linkline[i][3]].Groupindex = COcount + brench;
+//					}else if(linkline[i][2]==2){
+//						MO[linkline[i][3]].GroupTempindex = COcount + brench;
+//						MO[linkline[i][3]].Groupindex = COcount + brench;
+//					}		
+//					mark_break_iteration(traceback, brench);
+//					brench++;
+//					System.out.println(traceback[0]+"-"+traceback[1]+";"+ COcount+brench+", case1");
+//				}else if(linkline[i][2]==1 && linkline[i][3]==TBindex){
+//					traceback[0] = linkline[i][0];
+//					traceback[1] = linkline[i][1];
+//					traceback[2] = i;
+//					if(linkline[i][0]==1){
+//						TBco[linkline[i][1]][1] = COcount+brench;
+//						TBco[linkline[i][1]][3] = COcount+brench;
+//					}else if(linkline[i][0]==2){
+//						MOco[linkline[i][1]][1] = COcount+brench;
+//						MOco[linkline[i][1]][3] = COcount+brench;
+//					}
+//					mark_break_iteration(traceback, brench);
+//					brench++;
+//					System.out.println(traceback[0]+"-"+traceback[1]+";"+ COcount+brench+", case2");
+//				}
+//			}else if(MOindex!= 0){
+//				if(linkline[i][0]==2 && linkline[i][1]==MOindex){
+//					traceback[0] = linkline[i][2];
+//					traceback[1] = linkline[i][3];
+//					traceback[2] = i;
+//					if(linkline[i][2]==1){
+//						TBco[linkline[i][3]][1] = COcount+brench;
+//						TBco[linkline[i][3]][3] = COcount+brench;
+//					}else if(linkline[i][2]==2){
+//						MOco[linkline[i][3]][1] = COcount+brench;
+//						MOco[linkline[i][3]][3] = COcount+brench;
+//					}
+//					mark_break_iteration(traceback, brench);
+//					brench++;
+//					System.out.println(traceback[0]+"-"+traceback[1]+";"+ COcount+brench+", case3");
+//				}else if(linkline[i][2]==2 && linkline[i][3]==MOindex){
+//					traceback[0] = linkline[i][0];
+//					traceback[1] = linkline[i][1];
+//					traceback[2] = i;
+//					if(linkline[i][0]==1){
+//						TBco[linkline[i][1]][1] = COcount+brench;
+//						TBco[linkline[i][1]][3] = COcount+brench;
+//					}else if(linkline[i][0]==2){
+//						MOco[linkline[i][1]][1] = COcount+brench;
+//						MOco[linkline[i][1]][3] = COcount+brench;
+//					}
+//					mark_break_iteration(traceback, brench);
+//					brench++;
+//					System.out.println(traceback[0]+"-"+traceback[1]+";"+ COcount+brench+", case4");
+//				}		
+//			}
+//		}
+//		COcount += brench+1;
+//		check_alone_and_model();
+//		if(TBindex != -1){
+//			TB[TBindex].setLocation(-1000, -1000);
+//			TB[TBindex].bound = new Rectangle(-100, -100, 0, 0);
+//			TB[TBindex].name.setLocation(-100,-100);
+//			TBdelete[TBindex]=-1;
+//		}else if(MOindex!=0){
+//			MOimageX[MOindex]=-1000;
+//			MOimageY[MOindex]=-1000;
+//			MOBound[MOindex]=new Rectangle(-100,-100,0,0);
+//			MOname[MOindex].setLocation(-100,-100);
+//			MOdelete[MOindex]=-1;
+//		}
+//		repaint();
+//	}		
+//		
 	public int check_model_linked(){
-		int catch_TB = 0, catch_MO = 0;
-		for (int i=1; i<=TBcount; i++){
-			if(!TBfile[i].matches("null") && TBco[i][4] == 1){
-				catch_TB = i; break;
-			}
-		}
-		if(catch_TB!=0){
-			for (int i=1; i<=MOcount; i++){
-				if(MOco[i][3] == TBco[catch_TB][3]){
-					catch_MO = i; break;
-				}
-			}
-			iPatPanel.link_model = catch_MO;
-			return catch_MO;
-		}
+//		int catch_TB = 0, catch_MO = 0;
+//		for (int i=1; i<=TBcount; i++){
+//			if(!TBfile[i].matches("null") && TBco[i][4] == 1){
+//				catch_TB = i; break;
+//			}
+//		}
+//		if(catch_TB!=0){
+//			for (int i=1; i<=MOcount; i++){
+//				if(MOco[i][3] == TBco[catch_TB][3]){
+//					catch_MO = i; break;
+//				}
+//			}
+//			iPatPanel.link_model = catch_MO;
+//			return catch_MO;
+//		}
 		return 0;
 	}
 	public void open_config(ConfigFrame.analysis analysis, int MOindex) throws IOException{
@@ -1479,7 +1296,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 //			int dx = centerPoint.x - frameW / 2;
 //	    	int dy = centerPoint.y - frameH / 2;
 			ConfigFrame configframe;
-			configframe = new ConfigFrame(index_pop_mo, analysis, format[MOindex], file_index);
+			configframe = new ConfigFrame(iIndex_popup, analysis, format[MOindex], file_index);
 			configframe.setResizable(true);
 			//configframe.setBounds(dx, dy, frameW, frameH);
 		}else{
@@ -1492,8 +1309,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	}
 	
 	public void showConsole(int MOindex, String title, String MOPath){
-		MOname[MOindex].setText(title);
-		MOfile[MOindex] = MOPath;
+		iOB[MOindex].setLabel(title);
+		iOB[MOindex].setPath(MOPath);
 		text_console[MOindex] = new JTextArea();
         text_console[MOindex].setEditable(false);
         scroll_console[MOindex] = new JScrollPane(text_console[MOindex] ,
@@ -1513,7 +1330,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			public void windowClosing(WindowEvent e) {
 				if(process[MOindex].isAlive()){
 					process[MOindex].destroy();
-					MO[MOindex] = MO_fal;
+					iOB[MOindex].updateImage(MO_fal);
 				}
 				System.out.println("Project killed");
 			}
@@ -1521,42 +1338,31 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	}
 	@Override
 	protected void paintComponent(Graphics g) {	
-		if(hint_model_timer.isActived()){
-			hint_model_label.setBounds(new Rectangle(MOimageX[link_model]-85, MOimageY[link_model]-120, 
-													 hint_model.getWidth(null), hint_model.getHeight(null)));}    	
+//		if(hint_model_timer.isActived()){
+//			hint_model_label.setBounds(new Rectangle(MOimageX[link_model]-85, MOimageY[link_model]-120, 
+//													 hint_model.getWidth(null), hint_model.getHeight(null)));}    	
 	    super.paintComponent(g);	
 	    g.setColor(ovalcolor);
-	    if(lineindex!=-1) Draw_Lines(g, line_drag_x[0], line_drag_y[0], line_drag_x[1], line_drag_y[1], dashed);	     
-		Draw_Lines(g, linex[0], liney[0], linex[1], liney[1], dashed); //temp_link 
+//	    if(lineindex!=-1) Draw_Lines(g, line_drag_x[0], line_drag_y[0], line_drag_x[1], line_drag_y[1], dashed);	     
+		Draw_Lines(g, lineST, lineED, dashed); //temp_link 
 		DrawLinkedLine(g); //object_link
-    	for (int i=1; i<=TBcount; i++){
-		     g.drawImage(TB[i],TBimageX[i],TBimageY[i], this); 
-		     if(TBindex_select == i) Draw_Rects(g, TBimageX[i] - 5, TBimageY[i] - 3, TBimageW[i] + 10, TBimageH[i] + 6, select); //temp_link 
-    	}
-    	for (int i=1; i<=MOcount; i++){
-    		 if(rotate_index[i] == 1){
-    			 AffineTransform tx = AffineTransform.getRotateInstance(rotate, MO[i].getWidth(null)/2,MO[i].getHeight(null)/2);
-        		 AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
-       		  	 g.drawImage(op.filter((BufferedImage) MO[i], null),MOimageX[i],MOimageY[i], this);}
-    		 else{
-    		     g.drawImage(MO[i],MOimageX[i],MOimageY[i], this);}
-		     if(MOindex_select == i) Draw_Rects(g, MOimageX[i] - 5, MOimageY[i] - 3, MOimageW[i] + 10, MOimageH[i] + 6, select); //temp_link 
-    	}  	
+		for (int i = 0; i < iOBcount; i++){
+			if(rotate_index[i] == 1){
+				AffineTransform tx = AffineTransform.getRotateInstance(rotate, iOB[i].W/2, iOB[i].H/2);
+        		AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+       		  	g.drawImage(op.filter((BufferedImage) iOB[i].image, null), iOB[i].X, iOB[i].Y, this);}
+			else
+				g.drawImage(iOB[i].image, iOB[i].X, iOB[i].Y, this);
+			if(iIndex_select == i) Draw_Rects(g, iOB[i].X - 5, iOB[i].Y - 3, iOB[i].W + 10, iOB[i].H + 6, select);}
     }
 	
-	
-	public void TBopenfile(int i){
-		File openfile= new File(TBfile[i]);
-			try{
-				Desktop.getDesktop().open(openfile);
-			} catch(IOException e) {e.printStackTrace();}
+	public void openfile(String path){
+		File openfile= new File(path);
+		try{
+			Desktop.getDesktop().open(openfile);
+		} catch(IOException e) {e.printStackTrace();}
 	}
-	public void MOopenfile(int i){
-		File openfile= new File(MOfile[i]);
-			try{
-				Desktop.getDesktop().open(openfile);
-			} catch(IOException e) {e.printStackTrace();}
-	}	
+	
 	public void PrintStatus(int MOindex, String method_gwas, String method_gs, String[] command_gwas, String[] command_gs){
 		String format1 = "%1$27s %2$s", format2 = "%1$-30s %2$s";
 		text_console[MOindex].setFont(new Font("monospaced", Font.PLAIN, 12));
@@ -1683,23 +1489,29 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		text_console[MOindex].append("********************************************************************* \n");
 	}
 	
-	
-	public static void create_TB(int x, int y){
-		TBcount++;
-		TBimageX[TBcount] = x - TBimageW[TBcount]/2;
-		TBimageY[TBcount] = y - TBimageH[TBcount] - 5;
-		TBBound[TBcount]= new Rectangle(TBimageX[TBcount], TBimageY[TBcount], TBimage.getWidth(null), TBimage.getHeight(null));
+	public static void create_TB(int x, int y, File file) throws IOException{
+		iOB[iOBcount] = new iPatObject();
+		startPanel.add(iOB[iOBcount].name);
+		iOB[iOBcount].setPath(file.getAbsolutePath());
+		iOB[iOBcount].setLabel(file.getName());
+		iOB[iOBcount].updateImage(TBimage);
+		iOB[iOBcount].setAsTB();
+		iOB[iOBcount].setLocation(new Point(x - (iOB[iOBcount].W/2), y - iOB[iOBcount].H - 5));
+		iOB[iOBcount].updateLabel();
+		iOBcount++;
 	}
-	public static void create_MO(int x, int y){
-		MOcount++;
-		MOimageX[MOcount] = x - MOimageW[MOcount]/2;
-		MOimageY[MOcount] = y - MOimageH[MOcount] - 5;
-		MOBound[MOcount] = new Rectangle(MOimageX[MOcount], MOimageY[MOcount], MOimage.getWidth(null), MOimage.getHeight(null));
-		MOimageH[MOcount] = MO[MOcount].getHeight(null);
-	  	MOimageW[MOcount] = MO[MOcount].getHeight(null);
-		MOname[MOcount].setLocation(MOimageX[MOcount], MOimageY[MOcount]+MOimageH[MOcount]);
-		MOname[MOcount].setSize(200,15);
-		MOname[MOcount].setText("Project_"+MOcount);
+	public static void create_MO(int x, int y) throws IOException{
+		iOB[iOBcount] = new iPatObject();
+		startPanel.add(iOB[iOBcount].name);
+		iOB[iOBcount].setPath(df_wd);
+		iOB[iOBcount].setLabel("Project_" + ((MOcount++) + 1));
+		iOB[iOBcount].updateImage(MOimage);
+		iOB[iOBcount].setAsMO();
+		iOB[iOBcount].setLocation(new Point(x - (iOB[iOBcount].W/2), y - iOB[iOBcount].H - 5));
+		iOB[iOBcount].updateLabel();
+		iOB[iOBcount].containMO = true;
+		iOB[iOBcount].Groupindex = Groupcount ++;
+		iOBcount++;
 	}
 	public static File iPatChooser(String title, boolean DirOnly){
 		File selectedfile = null;
@@ -1736,215 +1548,32 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		}	
 		return selectedfile;
 	}
-	
-	public static void TB_assign(File selectedfile){
-		   TBfile[TBindex]= selectedfile.getAbsolutePath();
-		   TBimageH[TBindex]=TB[TBindex].getHeight(null);
-		   TBimageW[TBindex]=TB[TBindex].getWidth(null);
-		   TBname[TBindex].setLocation(TBimageX[TBindex], TBimageY[TBindex]+TBimageH[TBindex]);
-		   TBname[TBindex].setSize(200,15);
-		   TBname[TBindex].setText(selectedfile.getName());
-		   TBindex=0;
-		   COindex=-1;
-	}
-	
-	
-	
-	// target_specify
-	public void combine_type_determined(int[] dist, int minvalue, int case3_count,
-										int[] Xs, int[] Ys, int[] Ws, int[] Hs, int index, int TorM_s,
-										int[] Xt, int[] Yt, int[] Wt, int[] Ht, int count_t, int[][] co_t, int TorM_t){
-		for (int i = 1; i <= count_t; i++){
-			//System.out.println(" i="+i+" count= "+count_t);
-			if(TorM_s == TorM_t && index == i) continue; //skip target to itself and model-link object
-			//1. target object, <100
-			if(dist[i] == minvalue && minvalue < 100){		
-				if(((TorM_s == 1 && TBco[index][2] == -1) || (TorM_s == 2 && MOco[index][2] == -1)) &&  //1-1. unlink-unlink
-				   (co_t[i][2] == -1)){
-					//self
-					if(TorM_s == 1){	
-						TBco[index][0] = 1; 	
-						TBco[index][1] = COcount;
-					}else if (TorM_s == 2){
-						MOco[index][0] = 1;
-						MOco[index][1] = COcount;
-					}	
-				  	//target
-					co_t[i][0] = 1;
-					co_t[i][1] = COcount;				
-					
-					//link 
-					linex[0]= Xs[index]+(Ws[index]/2);
-					liney[0]= Ys[index]+(Hs[index]/2);
-					linex[1]= Xt[i]+(Wt[i]/2);
-					liney[1]= Yt[i]+(Ht[i]/2);
-					link_case = 1;
-					//System.out.println("  case 1-1");
-				}else if(((TorM_s==1 && TBco[index][2]==-1) || (TorM_s==2 && MOco[index][2]==-1)) &&  //1-2. unlink-link
-				   (co_t[i][2]!=-1)){
-					if(co_t[i][4]==1 && TorM_s==2){continue;} //skip model-link group
-					//self 
-					if(TorM_s==1){	
-						TBco[index][0]=1; 	
-						TBco[index][1]=co_t[i][3]; // self group still need to be change, not only the link
-					}else if (TorM_s==2){
-						MOco[index][0]=1;
-						MOco[index][1]=co_t[i][3];
-					}	
-					//target
-					if(TorM_t==1){
-						link_to_TB_index = i;
-					}else if (TorM_t==2){
-						link_to_MO_index = i;
-					}
-					//link
-					linex[0]= Xs[index]+(Ws[index]/2);
-					liney[0]= Ys[index]+(Hs[index]/2);
-					linex[1]= Xt[i]+(Wt[i]/2);
-					liney[1]= Yt[i]+(Ht[i]/2);
-					link_case = 2;
-					//System.out.println("  case 1-2");
-				}else if(((TorM_s==1 && TBco[index][2]!=-1) || (TorM_s==2 && MOco[index][2]!=-1)) &&  //1-3. link-link
-				   (co_t[i][2]!=-1)){
-					linex[0]=0;
-					linex[1]=0;
-					liney[0]=0;
-					liney[1]=0;
-					link_case = 3;
-					//System.out.println("  case 1-3");
-				}else if(((TorM_s==1 && TBco[index][2]!=-1) || (TorM_s==2 && MOco[index][2]!=-1)) &&  //1-4. link-unlink
-				   (co_t[i][2]==-1)){				
-					if((TorM_s==1 && TBco[index][4] == 1 && TorM_t == 2) ||  //skip TBgroup - model
-					   (TorM_s==2 && TorM_t == 2)){  	//skip MOgroup - model
-						continue;
-					}
-					//target 
-					if(TorM_t==1){
-						link_to_TB_index = i;
-					}else if (TorM_t==2){
-						link_to_MO_index = i;
-					}
-					co_t[i][0]=1;
-					if(TorM_s==1){
-						co_t[i][1]=TBco[index][3];
-					}else if(TorM_s==2){
-						co_t[i][1]=MOco[index][3];
-					}
-					//link
-					linex[0]= Xs[index]+(Ws[index]/2);
-					liney[0]= Ys[index]+(Hs[index]/2);
-					linex[1]= Xt[i]+(Wt[i]/2);
-					liney[1]= Yt[i]+(Ht[i]/2);
-					link_case = 4;
-					//System.out.println("  case 1-4");
-				}
-			}else if(dist[i]==minvalue && minvalue >= 100){ //2. target object, >=100
-				linex[0]=0;
-				linex[1]=0;
-				liney[0]=0;
-				liney[1]=0;
-				link_case = -1;
-				//System.out.println("  case 2");
-			}else{ 											//3. other remain (not closest)
-				if(TorM_t==1 && link_to_TB_index == i){
-					link_to_TB_index = -1;
-				}else if (TorM_t==2 && link_to_MO_index == i){
-					link_to_MO_index = -1;
-				}
-				co_t[i][0]=-1;
-				co_t[i][1]=-1;
-				//System.out.println("  case 3");
-				++case3_count;
-				if(TBindex!=0 && case3_count == MOcount + TBcount -1){  // to catch all case 3, make line disappear
-					linex[0]=0;
-					linex[1]=0;
-					liney[0]=0;
-					liney[1]=0;
-					link_case = -1;
-					//System.out.println("*** ALL case 3 ***");
-				}else if (MOindex!=0 && case3_count == TBcount){
-					linex[0]=0;
-					linex[1]=0;
-					liney[0]=0;
-					liney[1]=0;
-					link_case = -1;
-					//System.out.println("*** ALL case 3 ***");
-				}
-			}
-		}
-	}			
-	public void KeepInPanel (int x, int y, int index, int[] imageW, int[] imageH, int[] imageX, int[] imageY,
-							 int boundN, int boundS, int boundE, Rectangle[] Bound){			
-		if(x<(0+(imageW[index]/2))){
-			imageX[index]=0;
-			if(y<(boundN+(imageH[index]/2))){
-			 	imageY[index]=boundN;
-			}else if(y>(boundS-(imageH[index]/2))){
-				imageY[index]=boundS-imageH[index];
-			}else{
-				imageY[index]=y-(imageH[index]/2);
-			}
 			
-		}else if(y<(boundN+(imageH[index]/2))){
-		 	imageY[index]=boundN;
-		 	if(x<(0+imageW[index]/2)){
-				imageX[index]=0;
-		 	}else if(x>(boundE-imageW[index]/2)){
-		 		imageX[index]=boundE-imageW[index];
-		 	}else{
-		 		imageX[index]=x-(imageW[index]/2);
-		 	}
-		 	
-		}else if(x>(boundE-(imageW[index]/2))){
-		 	imageX[index]=boundE-imageW[index];
-		 	if(y<(boundN+(imageH[index]/2))){
-			 	imageY[index]=boundN;
-			}else if(y>(boundS-(imageH[index]/2))){
-				imageY[index]=boundS-imageH[index];
-			}else{
-				imageY[index]=y-(imageH[index]/2);
-			}
-		 	
-		}else if(y>(boundS-(imageH[index]/2))){
-		 	imageY[index]=boundS-imageH[index];
-		 	if(x<(0+imageW[index]/2)){
-				imageX[index]=0;
-		 	}else if(x>(boundE-imageW[index]/2)){
-		 		imageX[index]=boundE-imageW[index];
-		 	}else{
-		 		imageX[index]=x-(imageW[index]/2);
-		 	}	
-		 	
-		 }else{
-			imageX[index]=x-(imageW[index]/2);
-		 	imageY[index]=y-(imageH[index]/2);
-		}
-	}
-	public static int MinValue(int[] array){  
+	int MinValue(int[] array){  
 	     int minValue = array[0];  
-	     for(int i = 1; i < array.length; i++)  
+	     for (int i = 1; i < array.length; i++)  
 	    	 if(array[i] < minValue) minValue = array[i]; 
 	     return minValue;  
 	} 
-	public static double Distance(double x1, double y1, double x2, double y2){
+	double getDistance(Point pt1, Point pt2){
 		double dist = 0;
-		dist = Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2));
+		dist = Math.sqrt(Math.pow((pt1.getX() - pt2.getX()), 2) + Math.pow((pt1.getY() - pt2.getY()), 2));
 		dist = Math.round((dist * 100.0)/100.0);
 		return dist;
 	}
-	public static boolean Whether_On_Line(double x1, double y1, double x2, double y2, double x, double y){
-		return (Distance(x1, y1, x, y) + Distance(x2, y2, x, y) < Distance(x1, y1, x2, y2) + 2);
+	boolean isOnLine(Point pt1, Point pt2, Point pointer){
+		return getDistance(pt1, pointer) + getDistance(pt2, pointer) < getDistance(pt1, pt2) + 2;
 	}
-	public void Draw_Lines(Graphics g, int x1, int y1, int x2, int y2, Stroke s){	
+	void Draw_Lines(Graphics g, Point pt1, Point pt2, Stroke s){	
         //creates a copy of the Graphics instance
         Graphics2D g2d = (Graphics2D) g.create();
         //set the stroke of the copy, not the original 
         g2d.setStroke(s);
-        g2d.drawLine(x1, y1, x2, y2);
+        g2d.drawLine((int)pt1.getX(), (int)pt1.getY(), (int)pt2.getX(), (int)pt2.getY());
         //gets rid of the copy
         g2d.dispose();        
 	}
-	public void Draw_Rects(Graphics g, int x1, int y1, int x2, int y2, Stroke s){	
+	void Draw_Rects(Graphics g, int x1, int y1, int x2, int y2, Stroke s){	
         //creates a copy of the Graphics instance
         Graphics2D g2d = (Graphics2D) g.create();
         //set the stroke of the copy, not the original 
@@ -1955,42 +1584,10 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	}
 	public void DrawLinkedLine(Graphics g){
 		Stroke temp_stroke;
-		for (int i=0; i<linklineindex; i++){
-			if(linedelete[i]==-1) continue;
-			if(i==lineselected)
-				temp_stroke=solid;
-			else
-				temp_stroke=dashed;
-			if(linkline[i][0]==1){
-				if(linkline[i][2]==1){
-					if(TBdelete[linkline[i][1]]!=-1 & TBdelete[linkline[i][3]]!=-1 ){		//not drawing deleted objects
-						Draw_Lines(g, TBimageX[linkline[i][1]]+(TBimageW[linkline[i][1]]/2), TBimageY[linkline[i][1]]+(TBimageH[linkline[i][1]]/2),
-								  TBimageX[linkline[i][3]]+(TBimageW[linkline[i][3]]/2), TBimageY[linkline[i][3]]+(TBimageH[linkline[i][3]]/2),
-								  temp_stroke);
-					}		
-				}else if(linkline[i][2]==2){
-					if(TBdelete[linkline[i][1]]!=-1 & MOdelete[linkline[i][3]]!=-1 ){	
-						Draw_Lines(g, TBimageX[linkline[i][1]]+(TBimageW[linkline[i][1]]/2), TBimageY[linkline[i][1]]+(TBimageH[linkline[i][1]]/2),
-								  	  MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
-								  	  temp_stroke);
-					}
-				}
-			}else if(linkline[i][0]==2){
-				if(linkline[i][2]==1){
-					if(MOdelete[linkline[i][1]]!=-1 & TBdelete[linkline[i][3]]!=-1 ){
-						Draw_Lines(g, MOimageX[linkline[i][1]]+(MOimageW[linkline[i][1]]/2), MOimageY[linkline[i][1]]+(MOimageH[linkline[i][1]]/2),
-								  	  TBimageX[linkline[i][3]]+(TBimageW[linkline[i][3]]/2), TBimageY[linkline[i][3]]+(TBimageH[linkline[i][3]]/2),
-								  	  temp_stroke);
-					}			
-				}else if(linkline[i][2]==2){
-					if(MOdelete[linkline[i][1]]!=-1 & MOdelete[linkline[i][3]]!=-1 ){
-						Draw_Lines(g, MOimageX[linkline[i][1]]+(MOimageW[linkline[i][1]]/2), MOimageY[linkline[i][1]]+(MOimageH[linkline[i][1]]/2),
-									  MOimageX[linkline[i][3]]+(MOimageW[linkline[i][3]]/2), MOimageY[linkline[i][3]]+(MOimageH[linkline[i][3]]/2),
-									  temp_stroke);
-					}	
-				}
-			}
-		}
+		for (int i = 0; i < linkcount; i++){
+			Draw_Lines(g, iOB[iOBlink[i][0]].getLocation(), 
+						  iOB[iOBlink[i][1]].getLocation(), 
+						  i == lineindex_select ? solid : dashed);}
 	}
 	@Override
 	public void keyTyped(KeyEvent e) {}
@@ -2001,19 +1598,19 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		System.out.println("key input: "+key);
 		if(key==8){
 			System.out.println("lineselect= "+lineselected);
-			if(lineselected!=-1){
-				break_linkage();
-			}else if(TBindex_select != 0){
-				TBindex = TBindex_select;
-				break_object();
-				TBindex = 0;	
-			}else if(MOindex_select != 0){
-				MOindex = MOindex_select;
-				break_object();
-				MOindex =0;
-			}else{
-				gear_rotate.start();
-			}
+//			if(lineselected!=-1){
+//				//break_linkage();
+//			}else if(TBindex_select != 0){
+//				TBindex = TBindex_select;
+//				break_object();
+//				TBindex = 0;	
+//			}else if(MOindex_select != 0){
+//				MOindex = MOindex_select;
+//				break_object();
+//				MOindex =0;
+//			}else{
+//				gear_rotate.start();
+//			}
 		}
 		// Debug: press "d", then "b" to activate
 		if(first_d && key == 66){
@@ -2030,15 +1627,15 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	@Override
 	public void keyReleased(KeyEvent e) {}	
 	public static boolean all_true(boolean[] array){
-	    for(boolean b : array) if(!b) return false;
+	    for (boolean b : array) if(!b) return false;
 	    return true;
 	}
 	public static boolean all_false(boolean[] array){
-	    for(boolean b : array) if(b) return false;
+	    for (boolean b : array) if(b) return false;
 	    return true;
 	}
 	public static boolean partial_true(boolean[] array){
-	    for(boolean b : array) if(b) return true;
+	    for (boolean b : array) if(b) return true;
 	    return false;
 	}
 	public static String[] read_lines(String filename, int bound) throws IOException {
@@ -2073,7 +1670,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	public static int diffValues(String[] Array){
 	    int numOfDifferentVals = 0;
 	    ArrayList<String> diffNum = new ArrayList<>();
-	    for(int i = 0; i < Array.length; i++){
+	    for (int i = 0; i < Array.length; i++){
 	        if(!diffNum.contains(Array[i]))
 	            diffNum.add(Array[i]);
 	    }
@@ -2176,123 +1773,194 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		int[] col_count = new int[maxfile];
 		FORMAT format = FORMAT.NA;
 		//Get file path from table
-		for (int i = 1; i <= TBcount; i++){
-			if(TBco[i][3] == MOco[MOindex][3] && TBco[i][3] != -1){ //catch file in the same group
-				switch(TBtype[i]){
-					case C: break;
-					case K: break;
-					default:
-						if(count < maxfile){
-							System.out.println(TBfile[i]);
-							file_index[count].tb = i;
-							lines[count] = read_lines(TBfile[i], 3); 
-							System.out.println(lines[count][0]);
-							System.out.println(lines[count][1]);
-							if(lines[count][0]!=null && lines[count][1]!=null){
-								row1[count] = lines[count][0].split("\t");
-								if(row1[count].length<=1){row1[count] = lines[count][0].split(" ");}
-								row2[count] = lines[count][1].split("\t");	
-								if(row2[count].length<=1){row2[count] = lines[count][0].split(" ");}
-								row_count[count] = countLines(TBfile[i]);
-								col_count[count] = row2[count].length;
-							}	
-							count++;	
-						}
-						break;
-		}}}				
-		switch (count){
-			case 2:	
-				boolean[] VCF_con = {col_count[0] - lines[0][1].split("/").length == 8 && lines[0][1].split("/").length > 1, 
-									 col_count[1] - lines[1][1].split("/").length == 8 && lines[1][1].split("/").length > 1};
-				boolean[] HMAP_con = {col_count[0] - row_count[1] == 11 || col_count[0] - row_count[1] == 10,
-									  col_count[1] - row_count[0] == 11 || col_count[1] - row_count[0] == 10};
-				boolean[] NUM_con = {Arrays.asList(row2[0]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[0]) < 5,
-									 Arrays.asList(row2[1]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[1]) < 5};
-				boolean[] BSA_con = {TBfile[file_index[0].tb].toUpperCase().endsWith("BSA") && TBfile[file_index[1].tb].toUpperCase().endsWith("MAP"),  
-									 TBfile[file_index[1].tb].toUpperCase().endsWith("BSA") && TBfile[file_index[0].tb].toUpperCase().endsWith("MAP")};
-				System.out.println(col_count[0]);
-				System.out.println(col_count[1]);
-				System.out.println(row_count[0]);
-				System.out.println(row_count[1]);
-				if(partial_true(VCF_con)){
-					file_index[0].file = VCF_con[0]?Findex.FILE.GD:Findex.FILE.P;
-					file_index[1].file = VCF_con[1]?Findex.FILE.GD:Findex.FILE.P;
-					format = FORMAT.VCF;
-				}else if(partial_true(HMAP_con)){
-					file_index[0].file = HMAP_con[0]?Findex.FILE.GD:Findex.FILE.P;
-					file_index[1].file = HMAP_con[1]?Findex.FILE.GD:Findex.FILE.P;
-					format = FORMAT.Hapmap;
-				}else if(partial_true(NUM_con)){
-					file_index[0].file = NUM_con[0]?Findex.FILE.GD:Findex.FILE.P;
-					file_index[1].file = NUM_con[1]?Findex.FILE.GD:Findex.FILE.P;
-					format = FORMAT.Numeric;	
-				}else if(partial_true(BSA_con)){
-					file_index[0].file = BSA_con[0]?Findex.FILE.GD:Findex.FILE.GM;
-					file_index[1].file = BSA_con[1]?Findex.FILE.GD:Findex.FILE.GM;
-					format = FORMAT.BSA;	
-				}
-				break;
-			case 3:	
-				int P_index = -1;
-				for(int i = 0; i<3; i++){
-					int i2 = (i+1)%3, i3 = (i+2)%3;
-					if(Arrays.asList(row2[i]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[i]) < 5){
-						file_index[i].file = Findex.FILE.GD;
-						file_index[i2].file = (col_count[i2] == 3 && Math.abs(col_count[i] - row_count[i2]) <= 1) ? Findex.FILE.GM : Findex.FILE.P; // m or m+1 - m or m+1 = -1, 0 1
-						file_index[i3].file = (col_count[i3] == 3 && Math.abs(col_count[i] - row_count[i3]) <= 1 && file_index[i2].file != Findex.FILE.GM) ? Findex.FILE.GM : Findex.FILE.P;
-						if(Arrays.asList(file_index[0].file, file_index[1].file, file_index[2].file).containsAll(Arrays.asList(Findex.FILE.GD, Findex.FILE.GM, Findex.FILE.P))){
-							format = FORMAT.Numeric; break;
-						}
-					}
-				}
-				break;
-			case 4:
-				//Binary
-				int BED = -1, BIM = -1, FAM = -1;
-				for (int i = 0; i<4; i++){
-					if(TBfile[file_index[i].tb].toUpperCase().endsWith("BED")){
-						file_index[i].file = Findex.FILE.BED; BED = i;
-					}else if(TBfile[file_index[i].tb].toUpperCase().endsWith("BIM") && col_count[i] == 6){
-						file_index[i].file = Findex.FILE.BIM; BIM = i; 
-					}else if(TBfile[file_index[i].tb].toUpperCase().endsWith("FAM") && col_count[i] == 6){
-						file_index[i].file = Findex.FILE.FAM; FAM = i;
-					}
-				}
-				if(BED!=-1 && BIM!=-1 && FAM!=-1){
-					int P = 6 - BED - BIM - FAM;
-					if(Math.abs(row_count[FAM]-row_count[P]) < 2){
-						file_index[P].file = Findex.FILE.P; 
-						format = FORMAT.PLink_Binary;
-					}						
-				}
-				break;
-		}
-		System.out.println("It's format "+format);
-		System.out.println(file_index[0].file+" "+file_index[1].file+" "+file_index[2].file+" "+file_index[3].file);
+//		for (int i = 1; i <= TBcount; i++){
+//			if(TB[i].Groupindex == MO[MOindex].Groupindex && TB[i].Groupindex != -1){ //catch file in the same group
+//				switch(TB[i].type){
+//					case C: break;
+//					case K: break;
+//					default:
+//						if(count < maxfile){
+//							System.out.println(TB[i].path);
+//							file_index[count].tb = i;
+//							lines[count] = read_lines(TB[i].path, 3); 
+//							System.out.println(lines[count][0]);
+//							System.out.println(lines[count][1]);
+//							if(lines[count][0]!=null && lines[count][1]!=null){
+//								row1[count] = lines[count][0].split("\t");
+//								if(row1[count].length<=1){row1[count] = lines[count][0].split(" ");}
+//								row2[count] = lines[count][1].split("\t");	
+//								if(row2[count].length<=1){row2[count] = lines[count][0].split(" ");}
+//								row_count[count] = countLines(TB[i].path);
+//								col_count[count] = row2[count].length;
+//							}	
+//							count++;	
+//						}
+//						break;
+//		}}}				
+//		switch (count){
+//			case 2:	
+//				boolean[] VCF_con = {col_count[0] - lines[0][1].split("/").length == 8 && lines[0][1].split("/").length > 1, 
+//									 col_count[1] - lines[1][1].split("/").length == 8 && lines[1][1].split("/").length > 1};
+//				boolean[] HMAP_con = {col_count[0] - row_count[1] == 11 || col_count[0] - row_count[1] == 10,
+//									  col_count[1] - row_count[0] == 11 || col_count[1] - row_count[0] == 10};
+//				boolean[] NUM_con = {Arrays.asList(row2[0]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[0]) < 5,
+//									 Arrays.asList(row2[1]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[1]) < 5};
+//				boolean[] BSA_con = {TB[file_index[0].tb].path.toUpperCase().endsWith("BSA") && TB[file_index[1].tb].path.toUpperCase().endsWith("MAP"),  
+//									 TB[file_index[1].tb].path.toUpperCase().endsWith("BSA") && TB[file_index[0].tb].path.toUpperCase().endsWith("MAP")};
+//				System.out.println(col_count[0]);
+//				System.out.println(col_count[1]);
+//				System.out.println(row_count[0]);
+//				System.out.println(row_count[1]);
+//				if(partial_true(VCF_con)){
+//					file_index[0].file = VCF_con[0]?Findex.FILE.GD:Findex.FILE.P;
+//					file_index[1].file = VCF_con[1]?Findex.FILE.GD:Findex.FILE.P;
+//					format = FORMAT.VCF;
+//				}else if(partial_true(HMAP_con)){
+//					file_index[0].file = HMAP_con[0]?Findex.FILE.GD:Findex.FILE.P;
+//					file_index[1].file = HMAP_con[1]?Findex.FILE.GD:Findex.FILE.P;
+//					format = FORMAT.Hapmap;
+//				}else if(partial_true(NUM_con)){
+//					file_index[0].file = NUM_con[0]?Findex.FILE.GD:Findex.FILE.P;
+//					file_index[1].file = NUM_con[1]?Findex.FILE.GD:Findex.FILE.P;
+//					format = FORMAT.Numeric;	
+//				}else if(partial_true(BSA_con)){
+//					file_index[0].file = BSA_con[0]?Findex.FILE.GD:Findex.FILE.GM;
+//					file_index[1].file = BSA_con[1]?Findex.FILE.GD:Findex.FILE.GM;
+//					format = FORMAT.BSA;	
+//				}
+//				break;
+//			case 3:	
+//				int P_index = -1;
+//				for (int i = 0; i<3; i++){
+//					int i2 = (i+1)%3, i3 = (i+2)%3;
+//					if(Arrays.asList(row2[i]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[i]) < 5){
+//						file_index[i].file = Findex.FILE.GD;
+//						file_index[i2].file = (col_count[i2] == 3 && Math.abs(col_count[i] - row_count[i2]) <= 1) ? Findex.FILE.GM : Findex.FILE.P; // m or m+1 - m or m+1 = -1, 0 1
+//						file_index[i3].file = (col_count[i3] == 3 && Math.abs(col_count[i] - row_count[i3]) <= 1 && file_index[i2].file != Findex.FILE.GM) ? Findex.FILE.GM : Findex.FILE.P;
+//						if(Arrays.asList(file_index[0].file, file_index[1].file, file_index[2].file).containsAll(Arrays.asList(Findex.FILE.GD, Findex.FILE.GM, Findex.FILE.P))){
+//							format = FORMAT.Numeric; break;
+//						}
+//					}
+//				}
+//				break;
+//			case 4:
+//				//Binary
+//				int BED = -1, BIM = -1, FAM = -1;
+//				for (int i = 0; i<4; i++){
+//					if(TB[file_index[i].tb].path.toUpperCase().endsWith("BED")){
+//						file_index[i].file = Findex.FILE.BED; BED = i;
+//					}else if(TB[file_index[i].tb].path.toUpperCase().endsWith("BIM") && col_count[i] == 6){
+//						file_index[i].file = Findex.FILE.BIM; BIM = i; 
+//					}else if(TB[file_index[i].tb].path.toUpperCase().endsWith("FAM") && col_count[i] == 6){
+//						file_index[i].file = Findex.FILE.FAM; FAM = i;
+//					}
+//				}
+//				if(BED!=-1 && BIM!=-1 && FAM!=-1){
+//					int P = 6 - BED - BIM - FAM;
+//					if(Math.abs(row_count[FAM]-row_count[P]) < 2){
+//						file_index[P].file = Findex.FILE.P; 
+//						format = FORMAT.PLink_Binary;
+//					}						
+//				}
+//				break;
+//		}
+//		System.out.println("It's format "+format);
+//		System.out.println(file_index[0].file+" "+file_index[1].file+" "+file_index[2].file+" "+file_index[3].file);
 		return format;		
 	} 
 	
 }
-
+//0=combined or not(-1,1), 		0: isTempCombined
+//1= coindex, 					1: GroupTempindex
+//2=subcombined or not (-1,1) 	2: isCombined
+//3= coindex, 					3: Groupindex
+//4= if include model			4: containMO
 class iPatObject{
-	enum filetype{
+	enum Filetype{
 		NA, P, GD, GM, FAM, BIM, C, K}
+	enum Object{
+		NA, TB, MO;}
 	// Object
 	int X = 0, Y = 0, H = 0, W = 0;
-	boolean delete = false;
+	Point pt = new Point(0, 0);
+	int delete = 9;
 	Image image = null;
 	Rectangle bound = new Rectangle(-100, -100, 0, 0);
 	String path = "";
 	JLabel name = new JLabel();
-	filetype type = filetype.NA; 
+	Filetype type = Filetype.NA; 
+	Object object = Object.NA;
 	// Group
 	boolean isTempCombined = false, isCombined = false, containMO = false;
 	int GroupTempindex = -1, Groupindex = -1;
-	public iPatObject(Image inputimage) throws IOException{
+	public iPatObject() throws IOException{
+	}
+	// set
+	void setLocation(Point point){
+		X = point.x;
+		Y = point.y;
+		pt.setLocation(X + W/2, Y + H/2);
+		updateBound();
+	}
+	void setDeltaLocation(double dx, double dy){
+		X += dx;
+		Y += dy;
+		pt.setLocation(X + W/2, Y + H/2);
+		updateBound();
+	}
+	void setLabel(String text){
+		name.setText(text);		
+	}
+	void setPath(String text){
+		path = text;
+	}
+	void setAsTB(){
+		object = Object.TB;
+	}
+	void setAsMO(){
+		object = Object.MO;
+	}
+	// get
+	String getPath(){
+		return path; 
+	}
+	Point getLocation(){
+		return pt;
+	}
+	Rectangle getBound(){
+		return bound;
+	}
+	int getGroupindex(){
+		return Groupindex;
+	}
+	// update
+	void updateBound(){
+		bound = new Rectangle(X, Y, W, H);
+	}
+	void updateLabel(){
+		name.setLocation(X, Y + H);
+		name.setSize(200, 15);	
+	}
+	void updateImage(Image inputimage){
 		image = inputimage;
 		H = image.getHeight(null);
 		W = image.getWidth(null);
 	}
 	
-	
+}
+
+
+class iPatProject{
+	public iPatProject(){
+		
+	}
+}
+
+class iPatIndex{
+	enum Object{
+		NA, TB, MO;}
+	int index = -1;
+	Object object = Object.NA;
+	public iPatIndex(){
+	}
 }

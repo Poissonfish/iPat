@@ -200,13 +200,11 @@ class BGThread extends Thread{
         	Suc_or_Fal = false;
 		}	       
         // Indicator
-	    if(Suc_or_Fal) iPatPanel.MO[MOindex] = iPatPanel.MO_suc; else iPatPanel.MO[MOindex] = iPatPanel.MO_fal;     
+	    if(Suc_or_Fal) iPatPanel.MO[MOindex].updateImage(iPatPanel.MO_suc); else iPatPanel.MO[MOindex].updateImage(iPatPanel.MO_fal);  
 	    // Stop rotating
 	    iPatPanel.permit[MOindex] = false;
 		iPatPanel.rotate_index[MOindex] = 0;
-		iPatPanel.MOimageH[MOindex]=iPatPanel.MO[MOindex].getHeight(null);
-		iPatPanel.MOimageW[MOindex]=iPatPanel.MO[MOindex].getWidth(null);
-		iPatPanel.MOname[MOindex].setLocation(iPatPanel.MOimageX[MOindex], iPatPanel.MOimageY[MOindex]+ iPatPanel.MOimageH[MOindex]);
+		iPatPanel.MO[MOindex].updateLabel(iPatPanel.MO[MOindex].name.getText());
 		System.out.println("done");
 		iPatPanel.process[MOindex].destroy();
 		// Run next procedure if needed
@@ -354,7 +352,7 @@ class ConfigPane extends JPanel implements ActionListener{
 	// COV pane
 	public void CovPane(boolean C_exist, String[] model_names) throws IOException{
 		if(C_exist){
-			CO_head = iPatPanel.read_lines(iPatPanel.TBfile[ConfigFrame.C_index], 1)[0];
+			CO_head = iPatPanel.read_lines(iPatPanel.TB[ConfigFrame.C_index].path, 1)[0];
 			CO_names = CO_head.split("\t");
 			panel_cov = new selectablePanel(CO_names.length, CO_names, model_names);
 		}else{
