@@ -40,12 +40,16 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -77,6 +81,7 @@ import javax.swing.event.PopupMenuListener;
 import org.apache.commons.lang3.ArrayUtils;
 
 import main.ConfigFrame.analysis;
+import main.iPatProject.BGThread;
 import net.miginfocom.swing.MigLayout;
 
 public class iPat {
@@ -140,9 +145,10 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	//  private static class ipatButton extends JButton {
 	private static final int TBMAX = 40;
 	private static final int MOMAX = 10;
+	private static final int LINEMAX = 300;
 	static File jar;
 	static iPatObject[] iOB = new iPatObject[TBMAX + MOMAX];
-	
+	static iPatProject[] iPro = new iPatProject[MOMAX];
 	// iOB / project
 	static int iIndex = -1, 
 			   iOBcount = 0, 
@@ -150,32 +156,27 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	// link
 	static Point lineST = new Point(0, 0),
 	        	 lineED = new Point(0, 0);
-	static int[][] iOBlink = new int[300][2];
+	static int[][] iOBlink = new int[LINEMAX][2];
+	static boolean[] iOBlink_delete = new boolean[LINEMAX];
 	static int lineindex = -1, 
 			   linkcount = 0, 
 			   linktype = 0;
 	static Point temppt = new Point(0, 0);
 	static int iIndex_target = -1;
 	static final Point nullPoint = new Point(0, 0);
-	
-	
 	// select
 	static boolean selectable = false;
 	static int  iIndex_temp = -1, iIndex_select = -1,
 				lineindex_temp = -1, lineindex_select = -1;
-	
 	// popup menu
 	JPopupMenu popup_tb, popup_mo;
 	static JMenuItem popup_isR, popup_isC, popup_isK, popup_opentb, popup_deltb;
 	static JMenuItem popup_gwas, popup_gs, popup_run, popup_openmo, popup_delmo;
 	static int iIndex_popup = -1;
-		
 	// boundary 
 	static Rectangle boundary;
 	
 	// drag
-
-	
 	int MOimageX_int = 430;
 	int MOimageY_int = 200;
 	
@@ -195,9 +196,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	AlphaLabel iPat_title = new AlphaLabel();
 
 	public static FileDialog chooser;
-
-	int[] TBvalue= new int[TBMAX];
-
 	//animation
 	Timer 	TrashAnimation, DashLineAnimation, CombinedDeleteAnimation, 
 			Fadein1, Fadein2, Fadein3, Fadein4, Fadesave, Wipe;	  	
@@ -227,11 +225,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		  line_drag_x=new int[2],
 		  line_drag_y=new int[2];
 	
-	static int[][] linkline= new int[500][4];
-	int[] linedelete= new int[500];
-	static int linklineindex=0;
-	int lineselected=-1;
-	int lineselected_temp=-1;
 	boolean linktolink=false;
     	Stroke dashed = new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,10}, 0);
     	Stroke solid = new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[]{10,0}, 0);
@@ -266,14 +259,10 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	int MOindex_select = 0;
     	int object_selected = -1;   //1 table, 2 model
 	int select_intex= -1;
-	
 	//Gear rotate
 	static double rotate = Math.toRadians(0);
-	static int[] rotate_index = new int[MOMAX];
-	static boolean[] permit = new boolean[MOMAX];
 	static boolean running = false;	
-	Timer gear_rotate;
-	
+	Timer gear_rotate;	
 	//periodically repaint (delcare after fill value in permit)
 	Timer periodically_repaint;
 	//hint_object
@@ -286,14 +275,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	//hint_trash
 	AlphaLabel hint_trash_label = new AlphaLabel();
 	Fade_timer hint_trash_timer;
-	
-	//Console panel
-	static JScrollPane[] scroll_console = new JScrollPane[MOMAX];
-	static JTextArea[] text_console = new JTextArea[MOMAX];
-	static JFrame[] frame_console = new JFrame[MOMAX];
 	// file format catch
 	static int maxfile = 4;
-	static Findex[] file_index = new Findex[maxfile];
 	////
 	public static class CustomOutputStream extends OutputStream {
 	    private JTextArea textArea;	     
@@ -308,27 +291,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	        textArea.setCaretPosition(textArea.getDocument().getLength());
 	    }
 	}
-	////
-	public static enum FORMAT{
-		NA("NA"), Hapmap("Hapmap"), Numeric("Numeric"), VCF("VCF"), PLINK("PLINK"), PLink_Binary("PLINK"), BSA("BSA");
-		String name;	
-		private FORMAT(String name){this.name = name;}
-		public String Name(){return this.name;}
-	}
-	public static FORMAT[] format = new FORMAT[MOMAX];
-	
 	public static boolean debug = false, first_d = false;
-
-	// Phenotype panel
-		public static selectablePanel[] panel_phenotype = new selectablePanel[MOMAX];
-		public static String[][] trait_names = new String[MOMAX][];
-	// Run command
-		public static String[][] command_gwas = new String[MOMAX][],
-								 command_gs = new String[MOMAX][];
-		public static ConfigFrame.method[][] Deployed = new ConfigFrame.method[MOMAX][2];
-		static BGThread[] multi_run = new BGThread[MOMAX]; 
-		static Runtime[] runtime = new Runtime[MOMAX];
-		static Process[] process = new Process[MOMAX];
 	// Value default
 		// Common
 				static String  df_wd = System.getProperty("user.home"), 
@@ -410,46 +373,43 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		   			open_config(ConfigFrame.analysis.GWAS, iIndex_popup);
 				} catch (IOException e) {e.printStackTrace();}   	
 	    	}else if(source == popup_gs){
-	    		try {open_config(ConfigFrame.analysis.GS, iIndex_popup);
+	    		try {
+	    			open_config(ConfigFrame.analysis.GS, iIndex_popup);
 				} catch (IOException e) {e.printStackTrace();}
 	    	}else if(source == popup_run){
-	    		boolean gwas_exist = Deployed[iIndex_popup][ConfigFrame.analysis.GWAS.index] !=  ConfigFrame.method.NA, 
-	    				gs_exist   = Deployed[iIndex_popup][ConfigFrame.analysis.GS.index]   !=  ConfigFrame.method.NA;
+	    		boolean gwas_exist = iPro[iIndex_popup].isGWASDeployed(), 
+	    				gs_exist   = iPro[iIndex_popup].isGSDeployed();
 	    		try {
 		    		if(gwas_exist && gs_exist){
-			    		showConsole(iIndex_popup, command_gwas[iIndex_popup][2], command_gwas[iIndex_popup][3]);
-			    		format_conversion(Deployed[iIndex_popup][ConfigFrame.analysis.GWAS.index], iIndex_popup);					
-			    		format_conversion(Deployed[iIndex_popup][ConfigFrame.analysis.GS.index], iIndex_popup);
+			    		showConsole(iIndex_popup, iPro[iIndex_popup].command_gwas[2], iPro[iIndex_popup].command_gwas[3]);
+			    		format_conversion(iIndex_popup, iPro[iIndex_popup].command_gwas, iPro[iIndex_popup].method_gwas, iPro[iIndex_popup].format);					
+			    		format_conversion(iIndex_popup, iPro[iIndex_popup].command_gs, iPro[iIndex_popup].method_gs, iPro[iIndex_popup].format);
 			    		PrintStatus(iIndex_popup,
-			    				Deployed[iIndex_popup][ConfigFrame.analysis.GWAS.index].Name(),
-			    				Deployed[iIndex_popup][ConfigFrame.analysis.GS.index].Name(), 
-			    				command_gwas[iIndex_popup], 
-			    				command_gs[iIndex_popup]);
-			    		multi_run[iIndex_popup] = new BGThread(iIndex_popup, command_gwas[iIndex_popup], command_gs[iIndex_popup]);
-			    		multi_run[iIndex_popup].start();		
-		    		}else if(gwas_exist){
-		    			showConsole(iIndex_popup, command_gwas[iIndex_popup][2], command_gwas[iIndex_popup][3]);
-		    			format_conversion(Deployed[iIndex_popup][ConfigFrame.analysis.GWAS.index], iIndex_popup);
-		    			PrintStatus(iIndex_popup, 
-			    				Deployed[iIndex_popup][ConfigFrame.analysis.GWAS.index].Name(),
-			    				null, 
-			    				command_gwas[iIndex_popup], 
-			    				null
-		    					);
-			    		multi_run[iIndex_popup] = new BGThread(iIndex_popup, command_gwas[iIndex_popup], null);
-			    		multi_run[iIndex_popup].start();
-		    		}else if(gs_exist){
-		    			showConsole(iIndex_popup, command_gs[iIndex_popup][2], command_gs[iIndex_popup][3]);
-		    			format_conversion(Deployed[iIndex_popup][ConfigFrame.analysis.GS.index], iIndex_popup);
-		    			PrintStatus(iIndex_popup, 
+			    				iPro[iIndex_popup].method_gwas.getName(),
+			    				iPro[iIndex_popup].method_gs.getName(),
+			    				iPro[iIndex_popup].command_gwas,
+			    				iPro[iIndex_popup].command_gs);
+			    		iPro[iIndex_popup].runCommand(iIndex_popup, 
+			    				iPro[iIndex_popup].command_gwas,
+			    				iPro[iIndex_popup].command_gs);}
+		    		else if(gwas_exist){
+		    			showConsole(iIndex_popup, iPro[iIndex_popup].command_gwas[2], iPro[iIndex_popup].command_gwas[3]);
+			    		format_conversion(iIndex_popup, iPro[iIndex_popup].command_gwas, iPro[iIndex_popup].method_gwas, iPro[iIndex_popup].format);					
+			    		PrintStatus(iIndex_popup,
+			    				iPro[iIndex_popup].method_gwas.getName(), null,
+			    				iPro[iIndex_popup].command_gwas, null);
+			    		iPro[iIndex_popup].runCommand(iIndex_popup, 
+			    				iPro[iIndex_popup].command_gwas,
+			    				null);}
+		    		else if(gs_exist){
+		    			showConsole(iIndex_popup, iPro[iIndex_popup].command_gs[2], iPro[iIndex_popup].command_gs[3]);
+			    		format_conversion(iIndex_popup, iPro[iIndex_popup].command_gs, iPro[iIndex_popup].method_gs, iPro[iIndex_popup].format);
+			    		PrintStatus(iIndex_popup,
+			    				null, iPro[iIndex_popup].method_gs.getName(),
+			    				null, iPro[iIndex_popup].command_gs);
+			    		iPro[iIndex_popup].runCommand(iIndex_popup, 
 			    				null,
-			    				Deployed[iIndex_popup][ConfigFrame.analysis.GS.index].Name(),
-			    				null,
-			    				command_gs[iIndex_popup]
-		    					);
-			    		multi_run[iIndex_popup] = new BGThread(iIndex_popup, command_gs[iIndex_popup], null);
-			    		multi_run[iIndex_popup].start();
-		    		}
+			    				iPro[iIndex_popup].command_gs);}
 	    		} catch (IOException e) {e.printStackTrace();}
 	    	}else if(source == popup_delmo){
 	    	}
@@ -598,19 +558,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		startPanel.setOpaque(false);
 			
 		// Initial value
-		Arrays.fill(rotate_index, 0);
-		Arrays.fill(format, FORMAT.NA);
-		Arrays.fill(trait_names, new String[]{""});
-		for (int i = 0; i < MOMAX; i++){	
-			project[i] = "Project_" + i;
-			Arrays.fill(Deployed[i], ConfigFrame.method.NA);
-		}	
-		Arrays.fill(permit, false);
-		for (int i = 0; i < maxfile; i++){
-			file_index[i] = new Findex();}
-		
+		Arrays.fill(iOBlink_delete, false);	
 		boundary = startPanel.bounds();
-		
 		////////////
 		////////////
 		//LAYOUT.END
@@ -620,7 +569,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			int i=0;
 		    @Override
 		    public void actionPerformed(ActionEvent ae) {
-		    	if(all_false(permit)){
+		    	if(all_false_permit()){
 		    		running = false;
 			    	rotate = Math.toRadians(0);
 		    		gear_rotate.stop();
@@ -635,7 +584,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		    @Override
 		    public void actionPerformed(ActionEvent ae) {
 		    	repaint(); 
-		    	if(partial_true(permit) && !running){ // avoid running it again over again
+		    	if(partial_true_permit() && !running){ // avoid running it again over again
 		    		running = true;
 		    		gear_rotate.start();
 		    	}
@@ -660,7 +609,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		    public void actionPerformed(ActionEvent ae) {
 				repaint();
 				if(!hint_model_timer.isActived() && 
-					!hint_drag_timer.isRunning() && getMOindex().length > 0 && check_model_linked() != 0){
+					!hint_drag_timer.isRunning() && getMOindex().length > 0 && isContainMOgroup()){
 					hint_model_timer.setActived(true);
 					hint_model_timer.fade_in();
 				}else if(hint_model_timer.TimeToOut()){
@@ -696,10 +645,11 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				// make temp(hover) to real 
 				temppt = ev.getPoint();
 				if(selectable){
-					iIndex = iIndex_temp;    			System.out.println("groupindex: " + iOB[iIndex].getGroupindex() + " containMO: " + iOB[iIndex].containMO + " isCombined: "+iOB[iIndex].isCombined);
+					iIndex = iIndex_temp;    			
+					if(iIndex != -1) System.out.println("OBindex = " + iIndex + " groupindex: " + iOB[iIndex].getGroupindex() + " containMO: " + iOB[iIndex].containMO + " isGroup: "+iOB[iIndex].isGroup);
 					lineindex = lineindex_temp;
-					iIndex_select = iIndex_select != iIndex_temp ? iIndex_temp : -1;
-					lineindex_select = lineindex_select != lineindex_temp ? lineindex_temp : -1;
+					iIndex_select = iIndex_temp;
+					lineindex_select = lineindex_temp;
 					if(SwingUtilities.isRightMouseButton(ev)){
 						iIndex_popup = iIndex;
 						switch(iOB[iIndex].object){
@@ -707,14 +657,14 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 							popup_tb.show(iPatPanel.this, ev.getX(), ev.getY());
 							break;
 						case MO:
-					   		boolean gwas_exist = Deployed[iIndex_popup][ConfigFrame.analysis.GWAS.index] !=  ConfigFrame.method.NA, 
-					   				gs_exist   = Deployed[iIndex_popup][ConfigFrame.analysis.GS.index]   !=  ConfigFrame.method.NA;
+							boolean gwas_exist = iPro[iIndex_popup].isGWASDeployed(), 
+		    						gs_exist   = iPro[iIndex_popup].isGSDeployed();
 					   		if(gwas_exist)
-					   			popup_gwas.setText("GWAS (" + Deployed[iIndex_popup][ConfigFrame.analysis.GWAS.index].Name() + ")"); 
+					   			popup_gwas.setText("GWAS (" + iPro[iIndex_popup].method_gwas.getName() + ")"); 
 					   		else
 					   			popup_gwas.setText("GWAS (Empty)"); 			  		
 					   		if(gs_exist)
-								popup_gs.setText("GS ("+ Deployed[iIndex_popup][ConfigFrame.analysis.GS.index].Name() +")"); 
+								popup_gs.setText("GS ("+ iPro[iIndex_popup].method_gs.getName() + ")"); 
 					   		else
 								popup_gs.setText("GS (Empty)"); 
 					   		if(gwas_exist || gs_exist)
@@ -741,12 +691,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 //    				trashl.setBounds(new Rectangle(-1000, -50, Wide, 300));  				
 //					trashl.setVisible(true);
 //					removeornot=false;
-//	    		}
-//				line_drag_x[0]=0;
-//				line_drag_y[0]=0;
-//				line_drag_x[1]=0;
-//				line_drag_y[1]=0;
-				// default value			
+//	    		}		
 			}	
 			@Override
     		public void mouseClicked(MouseEvent ev) {
@@ -765,13 +710,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	}	
 	@Override
 	public void mouseMoved(MouseEvent ev) {
-//		int x = ev.getX();
-//		int y = ev.getY();
-//		if(y < (delbboundy) || x < (delbboundx)){
-//			trashl.setBounds(new Rectangle(Wide, -50, Wide, 300));
-//			startPanel.setLayer(trashl, new Integer(1));
-//			trashl.setVisible(true);
-//			removeornot=false;}	
 		selectable = false;
 		lineindex_temp = -1;
 		for (int i = 0; i < linkcount; i++){
@@ -860,6 +798,60 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			if(iOB[i].getGroupindex() == group) OBindex = ArrayUtils.addAll(OBindex, i);
 		return OBindex;
 	}
+	int getIndexofType(int group, iPatObject.Filetype type){
+		for(int i : getOBinGroup(group))
+			if(iOB[i].type == type) return i;
+		return -1;	
+	}
+	iPatObject.Filetype[] getTypeinGroup(int group){
+		iPatObject.Filetype[] type = null;
+		for(int i : getOBinGroup(group))
+			type = ArrayUtils.addAll(type, iOB[i].type);
+		return type;
+	}
+	int[] getOBPair(int index){
+		int[] pair = {};
+		for(int i = 0; i < linkcount; i++){
+			System.out.println(iOBlink[i][0] + " - " + iOBlink[i][1]);
+			if(iOBlink[i][0] == index)
+				pair = ArrayUtils.addAll(pair, iOBlink[i][1]);
+			else if(iOBlink[i][1] == index)
+				pair = ArrayUtils.addAll(pair, iOBlink[i][0]);}
+		return pair;
+	}
+	int[] getLinePair(int index){
+		return new int[]{iOBlink[index][0], iOBlink[index][1]};
+	}
+	void setContainMO(int group, boolean containMO){
+		for (int i : getOBinGroup(group))
+			iOB[i].containMO = containMO;
+	}	
+	boolean isContainMO(int group){
+		for (int iIndex_group : getOBinGroup(group)){
+			if(iOB[iIndex_group].isMO()) return true;}
+		return false;
+	}
+	boolean isContainMOgroup(){
+		for (int i : getMOindex())
+			if(iOB[i].isGroup) return true;
+		return false;
+	}
+	void removeiOB(){
+		iOB[iIndex_select].remove();
+		int[] pair = getOBPair(iIndex_select);
+		if(pair.length == 2) 
+			BreakLinkage(pair[0], pair[1]);
+		else
+			BreakLinkage(pair[0], pair[0]);
+		iIndex_select = -1;
+		repaint();
+	}
+	void removeiLine(){
+		iOBlink_delete[lineindex_select] = true;
+		BreakLinkage(iOBlink[lineindex_select][0], iOBlink[lineindex_select][1]);
+		lineindex_select = -1;
+		repaint();
+	}
 	boolean isInBoundary(){
 		return boundary.intersection(iOB[iIndex].getBound()).equals(iOB[iIndex].getBound()); 
 	}
@@ -890,7 +882,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	////////////////////////////////////////////////
 	void LinkToObject(){
 		iIndex_target = getTargetIndex();
-		linktype = getLinkType(iIndex_target); 
+		linktype = getLinkType(iIndex, iIndex_target); 
 		switch (linktype){
 		// 1. w/o MO - w/o MO
 		case 1: 
@@ -941,26 +933,28 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				target = i;}}
 		return target;
 	}
-	int getLinkType(int nearindex){
-		if	   (nearindex == -1)										return 0;
-		else if(!iOB[iIndex].containMO && !iOB[nearindex].containMO)	return 1;
-		else if( iOB[iIndex].containMO && !iOB[nearindex].containMO) 	return 2;		
-		else if(!iOB[iIndex].containMO &&  iOB[nearindex].containMO) 	return 3;
-		else if( iOB[iIndex].containMO &&  iOB[nearindex].containMO) 	return 4;
+	int getLinkType(int ob1, int ob2){
+		// prevent no target
+		if(ob2 == -1 ||
+		  (iOB[ob1].getGroupindex() != -1 && iOB[ob1].getGroupindex() == iOB[ob2].getGroupindex()))	return 0;
+		else if(!iOB[ob1].containMO && !iOB[ob2].containMO)		return 1;
+		else if( iOB[ob1].containMO && !iOB[ob2].containMO) 	return 2;		
+		else if(!iOB[ob1].containMO &&  iOB[ob2].containMO) 	return 3;
+		else if( iOB[ob1].containMO &&  iOB[ob2].containMO) 	return 4;
 		return 0;
 	}
 	void BuildLinkage(){
 		switch(linktype){
 		// 1. w/o MO - w/o MO
 		case 1: 
-			if(!iOB[iIndex].isCombined){
-				iOB[iIndex].isCombined = true;
+			if(!iOB[iIndex].isGroup){
+				iOB[iIndex].isGroup = true;
 				iOB[iIndex].Groupindex = Groupcount;}
 			else{
 				for(int target : getOBinGroup(iOB[iIndex].getGroupindex()))
 					iOB[target].Groupindex = Groupcount;}
-			if(!iOB[iIndex_target].isCombined){
-				iOB[iIndex_target].isCombined = true;
+			if(!iOB[iIndex_target].isGroup){
+				iOB[iIndex_target].isGroup = true;
 				iOB[iIndex_target].Groupindex = Groupcount;}
 			else{
 				for(int target : getOBinGroup(iOB[iIndex_target].getGroupindex()))
@@ -973,15 +967,15 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			break;
 		// 2. w/ MO - w/o MO
 		case 2: 
-			if(!iOB[iIndex_target].isCombined){
-				iOB[iIndex_target].isCombined = true;
+			if(!iOB[iIndex_target].isGroup){
+				iOB[iIndex_target].isGroup = true;
 				iOB[iIndex_target].containMO = true;
 				iOB[iIndex_target].Groupindex = iOB[iIndex].getGroupindex();}
 			else{
 				for(int target : getOBinGroup(iOB[iIndex_target].getGroupindex())){
 					iOB[target].containMO = true;
 					iOB[target].Groupindex = iOB[iIndex].getGroupindex();}}
-			iOB[iIndex].isCombined = true;
+			iOB[iIndex].isGroup = true;
 			iOBlink[linkcount][0] = iIndex;
 			iOBlink[linkcount][1] = iIndex_target;
 			linkcount ++;
@@ -989,15 +983,15 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			break;			
 		// 3. w/o MO - w/ MO
 		case 3:
-			if(!iOB[iIndex].isCombined){
-				iOB[iIndex].isCombined = true;
+			if(!iOB[iIndex].isGroup){
+				iOB[iIndex].isGroup = true;
 				iOB[iIndex].containMO = true;
 				iOB[iIndex].Groupindex = iOB[iIndex_target].getGroupindex();}
 			else{
 				for(int target : getOBinGroup(iOB[iIndex].getGroupindex())){
 					iOB[target].containMO = true;
 					iOB[target].Groupindex = iOB[iIndex_target].getGroupindex();}}
-			iOB[iIndex_target].isCombined = true;
+			iOB[iIndex_target].isGroup = true;
 			iOBlink[linkcount][0] = iIndex;
 			iOBlink[linkcount][1] = iIndex_target;
 			linkcount ++;
@@ -1010,285 +1004,41 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		lineED = nullPoint;
 		linktype = 0;
 	}
-	
-	
-	
-//	void break_linkage(){
-//		int[][] traceback = new int[linklineindex][3]; //class, class_index, which link
-//		int[][] traceback_temp = new int[linklineindex][3]; //class, class_index, which link
-//		int trace_index = 0;
-//		// linkline[][2]   class, class index 
-//		// traceback[][3]  class, class index, which link  				
-//		for (int i=0; i<linklineindex; i++){
-//			traceback[i][0] = -1;
-//			traceback[i][1] = -1;
-//			traceback[i][2] = -1;
-//			traceback_temp[i][0] = -1;
-//			traceback_temp[i][1] = -1;
-//			traceback_temp[i][2] = -1;
-//		}
-//		traceback[0][0] = linkline[lineindex][2];
-//		traceback[0][1] = linkline[lineindex][3];
-//		traceback[0][2] = lineindex;
-//		//modified the first one
-//		if(linkline[lineindex][2] == 1){
-//			TBco[linkline[lineindex][3]][1] = COcount;
-//			TBco[linkline[lineindex][3]][3] = COcount;
-//		}else if(linkline[lineindex][2] == 2){
-//			MOco[linkline[lineindex][3]][1] = COcount;
-//			MOco[linkline[lineindex][3]][3] = COcount;							
-//		}	
-//		for (int i=0; i<linklineindex; i++){
-//			System.out.println(linkline[i][0]+" "+linkline[i][1]+")--("+linkline[i][2]+" "+linkline[i][3]);
-//		}
-//		// should be able to do recursive function
-//		for (int ex=0; ex<10; ex++){
-//			trace_index = 0;
-//			for (int t=0; t<linklineindex; t++){  //search index
-//				if(traceback[t][0] == -1){break;} //no more layer need to be searched
-//				for (int i=0; i<linklineindex; i++){
-//					if(i == traceback[t][2]){continue;} //skip the last round pair
-//					if(linkline[i][0] == traceback[t][0] && linkline[i][1] == traceback[t][1]){
-//						if(linkline[i][2]==1){ //table
-//							TBco[linkline[i][3]][1] = COcount;
-//							TBco[linkline[i][3]][3] = COcount;
-//							traceback_temp[trace_index][0] = linkline[i][2];
-//							traceback_temp[trace_index][1] = linkline[i][3];
-//							traceback_temp[trace_index][2] = i;
-//							trace_index++;
-//						}else if(linkline[i][2]==2){  //model
-//							MOco[linkline[i][3]][1] = COcount;
-//							MOco[linkline[i][3]][3] = COcount;
-//							traceback_temp[trace_index][0] = linkline[i][2];
-//							traceback_temp[trace_index][1] = linkline[i][3];
-//							traceback_temp[trace_index][2] = i;
-//							trace_index++;
-//						}
-//					}else if(linkline[i][2] == traceback[t][0] && linkline[i][3] == traceback[t][1]){
-//						if(linkline[i][0]==1){ //table
-//							TBco[linkline[i][1]][1] = COcount;
-//							TBco[linkline[i][1]][3] = COcount;
-//							traceback_temp[trace_index][0] = linkline[i][0];
-//							traceback_temp[trace_index][1] = linkline[i][1];
-//							traceback_temp[trace_index][2] = i;
-//							trace_index++;
-//						}else if(linkline[i][0]==2){  //model
-//							MOco[linkline[i][1]][1] = COcount;
-//							MOco[linkline[i][1]][3] = COcount;
-//							traceback_temp[trace_index][0] = linkline[i][0];
-//							traceback_temp[trace_index][1] = linkline[i][1];
-//							traceback_temp[trace_index][2] = i;
-//							trace_index++;
-//						}
-//					}
-//				}
-//			}
-//			for (int repo = 0; repo<linklineindex; repo++){
-//				traceback[repo][0] = traceback_temp[repo][0];
-//				traceback[repo][1] = traceback_temp[repo][1];
-//				traceback[repo][2] = traceback_temp[repo][2];
-//			}
-//			traceback[trace_index][0] =-1;
-//		}
-//		//////
-//		check_alone_and_model();
-//		COcount ++;
-//		linedelete[lineindex]=-1;
-//		linkline[lineindex][0] = -1;
-//		linkline[lineindex][1] = -1;
-//		linkline[lineindex][2] = -1;
-//		linkline[lineindex][3] = -1;
-//		repaint();
-//	}
-//	void mark_break_iteration(int[]traceback, int brench){
-//		int[] traceback_temp = new int[3];
-//		traceback_temp[0] = -1;
-//		traceback_temp[1] = -1;
-//		traceback_temp[2] = -1;		
-//		for (int i = 0; i<linklineindex; i++){
-//			if(i == traceback[2]){continue;} //skip the last round pair
-//			if(linkline[i][0] == traceback[0] && linkline[i][1] == traceback[1]){
-//				if(linkline[i][2]==1){ //table
-//					TBco[linkline[i][3]][1] = COcount+brench;
-//					TBco[linkline[i][3]][3] = COcount+brench;
-//					traceback_temp[0] = linkline[i][2];
-//					traceback_temp[1] = linkline[i][3];
-//					traceback_temp[2] = i;
-//					mark_break_iteration(traceback_temp, brench);
-//				}else if(linkline[i][2]==2){  //model
-//					MOco[linkline[i][3]][1] = COcount+brench;
-//					MOco[linkline[i][3]][3] = COcount+brench;
-//					traceback_temp[0] = linkline[i][2];
-//					traceback_temp[1] = linkline[i][3];
-//					traceback_temp[2] = i;
-//					mark_break_iteration(traceback_temp, brench);
-//				}
-//			}else if(linkline[i][2] == traceback[0] && linkline[i][3] == traceback[1]){
-//				if(linkline[i][0]==1){ //table
-//					TBco[linkline[i][1]][1] = COcount+brench;
-//					TBco[linkline[i][1]][3] = COcount+brench;
-//					traceback_temp[0] = linkline[i][0];
-//					traceback_temp[1] = linkline[i][1];
-//					traceback_temp[2] = i;
-//					mark_break_iteration(traceback_temp, brench);
-//				}else if(linkline[i][0]==2){  //model
-//					MOco[linkline[i][1]][1] = COcount+brench;
-//					MOco[linkline[i][1]][3] = COcount+brench;
-//					traceback_temp[0] = linkline[i][0];
-//					traceback_temp[1] = linkline[i][1];
-//					traceback_temp[2] = i;
-//					mark_break_iteration(traceback_temp, brench);
-//				}
-//			}	
-//		}
-//	}
-//	void check_alone_and_model(){
-//		int catch_t, catch_m, count;
-//		System.out.println("cocount="+COcount);
-//		for (int i = 0; i<= COcount; i++){
-//			catch_t = 0; catch_m = 0; count = 0;
-//			for (int t = 1; t<TBMAX; t++){
-//				if(TBco[t][3] == i){
-//					count ++;
-//					catch_t = t;
-//				}
-//			}
-//			for (int m = 1; m<MOMAX; m++){
-//				if(MOco[m][3] == i){
-//					count ++;
-//					catch_m = m;
-//				}
-//			}
-//			System.out.println("count: "+count+" catch_t= "+catch_t+" catch_m= "+catch_m+" group= "+ i);
-//			if(count == 1){
-//				if(catch_t != 0){
-//					TBco[catch_t][2] = -1;
-//					TBco[catch_t][3] = -1;
-//					TBco[catch_t][4] = -1;
-//				}else if(catch_m != 0){
-//					MOco[catch_m][2] = -1;
-//					MOco[catch_m][3] = -1;
-//					MOco[catch_m][4] = -1;
-//				}
-//			}
-//			if(catch_m == 0){ // indecate "group_ori" doesn't have model
-//				for (int e = 1; e<TBMAX; e++){
-//					if(TBco[e][3]== i){TBco[e][4] = -1;}
-//				}
-//			}
-//		}
-//	}
-//	void break_object(){
-//		int[] traceback = new int[3];
-//		int trace_index = 0, trace_max = 1, group_ori= 0;
-//		// linkline[][2]   class, class index 
-//		// traceback[][3]  class, class index, which link  				
-//		traceback[0] = -1;
-//		traceback[1] = -1;
-//		traceback[2] = -1;	
-//		int brench = 0;
-//		for (int i=0; i<linklineindex; i++){
-//			if(TBindex!= 0){
-//				if(linkline[i][0]==1 && linkline[i][1]==TBindex){
-//					traceback[0] = linkline[i][2];
-//					traceback[1] = linkline[i][3];
-//					traceback[2] = i;
-//					if(linkline[i][2]==1){
-//						TB[linkline[i][3]].GroupTempindex = COcount + brench;
-//						TB[linkline[i][3]].Groupindex = COcount + brench;
-//					}else if(linkline[i][2]==2){
-//						MO[linkline[i][3]].GroupTempindex = COcount + brench;
-//						MO[linkline[i][3]].Groupindex = COcount + brench;
-//					}		
-//					mark_break_iteration(traceback, brench);
-//					brench++;
-//					System.out.println(traceback[0]+"-"+traceback[1]+";"+ COcount+brench+", case1");
-//				}else if(linkline[i][2]==1 && linkline[i][3]==TBindex){
-//					traceback[0] = linkline[i][0];
-//					traceback[1] = linkline[i][1];
-//					traceback[2] = i;
-//					if(linkline[i][0]==1){
-//						TBco[linkline[i][1]][1] = COcount+brench;
-//						TBco[linkline[i][1]][3] = COcount+brench;
-//					}else if(linkline[i][0]==2){
-//						MOco[linkline[i][1]][1] = COcount+brench;
-//						MOco[linkline[i][1]][3] = COcount+brench;
-//					}
-//					mark_break_iteration(traceback, brench);
-//					brench++;
-//					System.out.println(traceback[0]+"-"+traceback[1]+";"+ COcount+brench+", case2");
-//				}
-//			}else if(MOindex!= 0){
-//				if(linkline[i][0]==2 && linkline[i][1]==MOindex){
-//					traceback[0] = linkline[i][2];
-//					traceback[1] = linkline[i][3];
-//					traceback[2] = i;
-//					if(linkline[i][2]==1){
-//						TBco[linkline[i][3]][1] = COcount+brench;
-//						TBco[linkline[i][3]][3] = COcount+brench;
-//					}else if(linkline[i][2]==2){
-//						MOco[linkline[i][3]][1] = COcount+brench;
-//						MOco[linkline[i][3]][3] = COcount+brench;
-//					}
-//					mark_break_iteration(traceback, brench);
-//					brench++;
-//					System.out.println(traceback[0]+"-"+traceback[1]+";"+ COcount+brench+", case3");
-//				}else if(linkline[i][2]==2 && linkline[i][3]==MOindex){
-//					traceback[0] = linkline[i][0];
-//					traceback[1] = linkline[i][1];
-//					traceback[2] = i;
-//					if(linkline[i][0]==1){
-//						TBco[linkline[i][1]][1] = COcount+brench;
-//						TBco[linkline[i][1]][3] = COcount+brench;
-//					}else if(linkline[i][0]==2){
-//						MOco[linkline[i][1]][1] = COcount+brench;
-//						MOco[linkline[i][1]][3] = COcount+brench;
-//					}
-//					mark_break_iteration(traceback, brench);
-//					brench++;
-//					System.out.println(traceback[0]+"-"+traceback[1]+";"+ COcount+brench+", case4");
-//				}		
-//			}
-//		}
-//		COcount += brench+1;
-//		check_alone_and_model();
-//		if(TBindex != -1){
-//			TB[TBindex].setLocation(-1000, -1000);
-//			TB[TBindex].bound = new Rectangle(-100, -100, 0, 0);
-//			TB[TBindex].name.setLocation(-100,-100);
-//			TBdelete[TBindex]=-1;
-//		}else if(MOindex!=0){
-//			MOimageX[MOindex]=-1000;
-//			MOimageY[MOindex]=-1000;
-//			MOBound[MOindex]=new Rectangle(-100,-100,0,0);
-//			MOname[MOindex].setLocation(-100,-100);
-//			MOdelete[MOindex]=-1;
-//		}
-//		repaint();
-//	}		
-//		
-	public int check_model_linked(){
-//		int catch_TB = 0, catch_MO = 0;
-//		for (int i=1; i<=TBcount; i++){
-//			if(!TBfile[i].matches("null") && TBco[i][4] == 1){
-//				catch_TB = i; break;
-//			}
-//		}
-//		if(catch_TB!=0){
-//			for (int i=1; i<=MOcount; i++){
-//				if(MOco[i][3] == TBco[catch_TB][3]){
-//					catch_MO = i; break;
-//				}
-//			}
-//			iPatPanel.link_model = catch_MO;
-//			return catch_MO;
-//		}
-		return 0;
+	void BreakLinkage(int ob1, int ob2){
+		// set a new group index, trace toward ob2 direction
+		traceLinkage(ob1, ob2);
+		int gr1 = iOB[ob1].getGroupindex(), 
+			gr2 = iOB[ob2].getGroupindex();
+		Groupcount ++;
+		// see if contain MO
+		if(isContainMO(gr1)) setContainMO(gr1, true);
+		else setContainMO(gr1, false);
+		if(isContainMO(gr2)) setContainMO(gr2, true);
+		else setContainMO(gr2, false);
+		// see if still a group
+		System.out.println("gr1: "+gr1 + " length " +getOBinGroup(gr1).length);
+		System.out.println("gr2: "+gr2 + " length " +getOBinGroup(gr2).length);
+		if(getOBinGroup(gr1).length == 1){
+			iOB[ob1].isGroup = false;
+			iOB[ob1].Groupindex = -1;}
+		if(getOBinGroup(gr2).length == 1){
+			iOB[ob2].isGroup = false;
+			iOB[ob2].Groupindex = -1;}
 	}
+	void traceLinkage(int ori, int traceindex){
+		iOB[traceindex].Groupindex = Groupcount;
+		for (int i = 0; i < linkcount; i++){
+			if(iOBlink[linkcount][0] == traceindex && iOBlink[linkcount][1] != ori){
+				traceLinkage(traceindex, iOBlink[linkcount][1]); break;}
+			else if(iOBlink[linkcount][1] == traceindex && iOBlink[linkcount][0] != ori){
+				traceLinkage(traceindex, iOBlink[linkcount][0]); break;}}
+	}
+	
+
 	public void open_config(ConfigFrame.analysis analysis, int MOindex) throws IOException{
 		// Catch format
-		format[MOindex] = catch_files();
-		if(format[MOindex] != FORMAT.NA){
+		iPro[MOindex].format = catch_files();
+		if(!iPro[MOindex].isNAformat()){
 			// Open config window
 //			int frameW = 570, frameH = 500;
 //		 	GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -1296,7 +1046,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 //			int dx = centerPoint.x - frameW / 2;
 //	    	int dy = centerPoint.y - frameH / 2;
 			ConfigFrame configframe;
-			configframe = new ConfigFrame(iIndex_popup, analysis, format[MOindex], file_index);
+			configframe = new ConfigFrame(iIndex_popup, analysis, iPro[MOindex].format);
 			configframe.setResizable(true);
 			//configframe.setBounds(dx, dy, frameW, frameH);
 		}else{
@@ -1307,34 +1057,22 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				    JOptionPane.ERROR_MESSAGE);
 		}
 	}
-	
 	public void showConsole(int MOindex, String title, String MOPath){
 		iOB[MOindex].setLabel(title);
 		iOB[MOindex].setPath(MOPath);
-		text_console[MOindex] = new JTextArea();
-        text_console[MOindex].setEditable(false);
-        scroll_console[MOindex] = new JScrollPane(text_console[MOindex] ,
-                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        frame_console[MOindex]  = new JFrame();
-        frame_console[MOindex].setContentPane(scroll_console[MOindex]);
-        frame_console[MOindex].setTitle(title);
         GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		Point centerPoint = local_env.getCenterPoint();
    		int dx = centerPoint.x - 500 / 2;
     	int dy = centerPoint.y - 350 / 2;  
-  		frame_console[MOindex].setBounds(dx-100, dy, 500, 350);
-        frame_console[MOindex].setVisible(true); 
-        frame_console[MOindex].addWindowListener(new WindowAdapter(){
+  		iPro[MOindex].frame.setBounds(dx - 100, dy, 500, 350);
+  		iPro[MOindex].frame.setVisible(true); 
+  		iPro[MOindex].frame.addWindowListener(new WindowAdapter(){
 			@Override
 			public void windowClosing(WindowEvent e) {
-				if(process[MOindex].isAlive()){
-					process[MOindex].destroy();
-					iOB[MOindex].updateImage(MO_fal);
-				}
-				System.out.println("Project killed");
-			}
-		});  
+				if(iPro[MOindex].process.isAlive()){
+					iPro[MOindex].process.destroy();
+					iOB[MOindex].updateImage(MO_fal);}
+				System.out.println("Project killed");}});  
 	}
 	@Override
 	protected void paintComponent(Graphics g) {	
@@ -1343,11 +1081,11 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 //													 hint_model.getWidth(null), hint_model.getHeight(null)));}    	
 	    super.paintComponent(g);	
 	    g.setColor(ovalcolor);
-//	    if(lineindex!=-1) Draw_Lines(g, line_drag_x[0], line_drag_y[0], line_drag_x[1], line_drag_y[1], dashed);	     
 		Draw_Lines(g, lineST, lineED, dashed); //temp_link 
 		DrawLinkedLine(g); //object_link
 		for (int i = 0; i < iOBcount; i++){
-			if(rotate_index[i] == 1){
+			if(iOB[i].isDeleted) continue;
+			if(iPro[i].rotate_switch){
 				AffineTransform tx = AffineTransform.getRotateInstance(rotate, iOB[i].W/2, iOB[i].H/2);
         		AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
        		  	g.drawImage(op.filter((BufferedImage) iOB[i].image, null), iOB[i].X, iOB[i].Y, this);}
@@ -1355,140 +1093,132 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				g.drawImage(iOB[i].image, iOB[i].X, iOB[i].Y, this);
 			if(iIndex_select == i) Draw_Rects(g, iOB[i].X - 5, iOB[i].Y - 3, iOB[i].W + 10, iOB[i].H + 6, select);}
     }
-	
 	public void openfile(String path){
 		File openfile= new File(path);
 		try{
 			Desktop.getDesktop().open(openfile);
 		} catch(IOException e) {e.printStackTrace();}
 	}
-	
 	public void PrintStatus(int MOindex, String method_gwas, String method_gs, String[] command_gwas, String[] command_gs){
 		String format1 = "%1$27s %2$s", format2 = "%1$-30s %2$s";
-		text_console[MOindex].setFont(new Font("monospaced", Font.PLAIN, 12));
-		text_console[MOindex].append("************************** Welcome to iPat **************************\n");
-		text_console[MOindex].append("Date/Time:" + "\n");
-		text_console[MOindex].append(String.format(format1, " ", new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Calendar.getInstance().getTime())) + "\n");
+		iPro[MOindex].textarea.setFont(new Font("monospaced", Font.PLAIN, 12));
+		iPro[MOindex].textarea.append("************************** Welcome to iPat **************************\n");
+		iPro[MOindex].textarea.append("Date/Time:" + "\n");
+		iPro[MOindex].textarea.append(String.format(format1, " ", new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Calendar.getInstance().getTime())) + "\n");
 		if(method_gwas != null && method_gs != null){	
-			text_console[MOindex].append("Project Name:" + "\n");
-			text_console[MOindex].append(String.format(format1, " ", command_gwas[2]) + "\n");
-			text_console[MOindex].append("Working Directory:" + "\n");
-			text_console[MOindex].append(String.format(format1, " ", command_gwas[3]) + "\n");
-			text_console[MOindex].append("Data Format:" + "\n");
-			text_console[MOindex].append(String.format(format1, " ", command_gwas[5]) + "\n"); 
-			text_console[MOindex].append("Quality Control:" + "\n");
-			text_console[MOindex].append(String.format(format1, "Missing Values: ", "< " + command_gwas[6]) + "\n");
-			text_console[MOindex].append(String.format(format1, "MAF: ", "> " + command_gwas[7]) + "\n");
-			text_console[MOindex].append("GWAS Method: " + method_gwas + "\n");
+			iPro[MOindex].textarea.append("Project Name:" + "\n");
+			iPro[MOindex].textarea.append(String.format(format1, " ", command_gwas[2]) + "\n");
+			iPro[MOindex].textarea.append("Working Directory:" + "\n");
+			iPro[MOindex].textarea.append(String.format(format1, " ", command_gwas[3]) + "\n");
+			iPro[MOindex].textarea.append("Data Format:" + "\n");
+			iPro[MOindex].textarea.append(String.format(format1, " ", command_gwas[5]) + "\n"); 
+			iPro[MOindex].textarea.append("Quality Control:" + "\n");
+			iPro[MOindex].textarea.append(String.format(format1, "Missing Values: ", "< " + command_gwas[6]) + "\n");
+			iPro[MOindex].textarea.append(String.format(format1, "MAF: ", "> " + command_gwas[7]) + "\n");
+			iPro[MOindex].textarea.append("GWAS Method: " + method_gwas + "\n");
 			switch(method_gwas){
 			case "GAPIT":
-			text_console[MOindex].append(String.format(format1, "Linear Model: ", command_gwas[17]) + "\n");
-			text_console[MOindex].append(String.format(format1, "kinship.cluster: ", command_gwas[18]) + "\n");
-			text_console[MOindex].append(String.format(format1, "kinship.group: ", command_gwas[19]) + "\n");
-			text_console[MOindex].append(String.format(format1, "SNP.fraction: ", command_gwas[20]) + "\n");
-			text_console[MOindex].append(String.format(format1, "file.fragment: ", command_gwas[21]) + "\n");
-			text_console[MOindex].append(String.format(format1, "model selection: ", command_gwas[22]) + "\n");
-			break;
+				iPro[MOindex].textarea.append(String.format(format1, "Linear Model: ", command_gwas[17]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "kinship.cluster: ", command_gwas[18]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "kinship.group: ", command_gwas[19]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "SNP.fraction: ", command_gwas[20]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "file.fragment: ", command_gwas[21]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "model selection: ", command_gwas[22]) + "\n");
+				break;
 			case "FarmCPU":
-			text_console[MOindex].append(String.format(format1, "method.bin:", command_gwas[17]) + "\n");
-			text_console[MOindex].append(String.format(format1, "maxLoop:", command_gwas[18]) + "\n");
-			break;
+				iPro[MOindex].textarea.append(String.format(format1, "method.bin:", command_gwas[17]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "maxLoop:", command_gwas[18]) + "\n");
+				break;
 			case "PLINK":
-			text_console[MOindex].append(String.format(format1, "Confidence Interval:", command_gwas[17]) + "\n");
-			break;
-			}
-			text_console[MOindex].append("GS Method: " + method_gs + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "Confidence Interval:", command_gwas[17]) + "\n");
+				break;}
+			iPro[MOindex].textarea.append("GS Method: " + method_gs + "\n");
 			switch(method_gs){
 			case "gBLUP":
-			text_console[MOindex].append(String.format(format1, "GWAS-Assisted:",command_gs[20]) + "\n");
-			text_console[MOindex].append(String.format(format1, "Bonferroni cutoff:", command_gs[21]) + "\n");
-			text_console[MOindex].append(String.format(format1, "SNP.fraction:", command_gwas[20]) + "\n");
-			text_console[MOindex].append(String.format(format1, "file.fragment:", command_gwas[21]) + "\n");
-			text_console[MOindex].append(String.format(format1, "model selection:", command_gwas[22]) + "\n");
-			break;
+				iPro[MOindex].textarea.append(String.format(format1, "GWAS-Assisted:",command_gs[20]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "Bonferroni cutoff:", command_gs[21]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "SNP.fraction:", command_gwas[20]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "file.fragment:", command_gwas[21]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "model selection:", command_gwas[22]) + "\n");
+				break;
 			case "rrBLUP":
-			text_console[MOindex].append(String.format(format1, "GWAS-Assisted:",command_gs[19]) + "\n");
-			text_console[MOindex].append(String.format(format1, "Bonferroni cutoff:", command_gs[20]) + "\n");
-			text_console[MOindex].append(String.format(format1, "impute.method:", command_gs[17]) + "\n");
-			text_console[MOindex].append(String.format(format1, "shrink:", command_gs[18]) + "\n");
-			break;
+				iPro[MOindex].textarea.append(String.format(format1, "GWAS-Assisted:",command_gs[19]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "Bonferroni cutoff:", command_gs[20]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "impute.method:", command_gs[17]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "shrink:", command_gs[18]) + "\n");
+				break;
 			case "BGLR":
-			text_console[MOindex].append(String.format(format1, "GWAS-Assisted:",command_gs[22]) + "\n");
-			text_console[MOindex].append(String.format(format1, "Bonferroni cutoff:", command_gs[23]) + "\n");
-			text_console[MOindex].append(String.format(format1, "Model (Markers):", command_gs[17]) + "\n");
-			text_console[MOindex].append(String.format(format1, "response_type:", command_gs[18]) + "\n");
-			text_console[MOindex].append(String.format(format1, "nIter:", command_gs[19]) + "\n");
-			text_console[MOindex].append(String.format(format1, "burnIn:", command_gs[20]) + "\n");
-			text_console[MOindex].append(String.format(format1, "thin:", command_gs[21]) + "\n");
-			break;
-			}
-		}else if(method_gwas != null){
-			text_console[MOindex].append("Project Name:" + "\n");
-			text_console[MOindex].append(String.format(format1, " ", command_gwas[2]) + "\n");
-			text_console[MOindex].append("Working Directory:" + "\n");
-			text_console[MOindex].append(String.format(format1, " ", command_gwas[3]) + "\n");
-			text_console[MOindex].append("Data Format:" + "\n");
-			text_console[MOindex].append(String.format(format1, " ", command_gwas[5]) + "\n"); 
-			text_console[MOindex].append("Quality Control:" + "\n");
-			text_console[MOindex].append(String.format(format1, "Missing Values: ", "< " + command_gwas[6]) + "\n");
-			text_console[MOindex].append(String.format(format1, "MAF: ", "> " + command_gwas[7]) + "\n");
-			text_console[MOindex].append("GWAS Method: " + method_gwas + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "GWAS-Assisted:",command_gs[22]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "Bonferroni cutoff:", command_gs[23]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "Model (Markers):", command_gs[17]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "response_type:", command_gs[18]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "nIter:", command_gs[19]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "burnIn:", command_gs[20]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "thin:", command_gs[21]) + "\n");
+				break;}}
+		else if(method_gwas != null){
+			iPro[MOindex].textarea.append("Project Name:" + "\n");
+			iPro[MOindex].textarea.append(String.format(format1, " ", command_gwas[2]) + "\n");
+			iPro[MOindex].textarea.append("Working Directory:" + "\n");
+			iPro[MOindex].textarea.append(String.format(format1, " ", command_gwas[3]) + "\n");
+			iPro[MOindex].textarea.append("Data Format:" + "\n");
+			iPro[MOindex].textarea.append(String.format(format1, " ", command_gwas[5]) + "\n"); 
+			iPro[MOindex].textarea.append("Quality Control:" + "\n");
+			iPro[MOindex].textarea.append(String.format(format1, "Missing Values: ", "< " + command_gwas[6]) + "\n");
+			iPro[MOindex].textarea.append(String.format(format1, "MAF: ", "> " + command_gwas[7]) + "\n");
+			iPro[MOindex].textarea.append("GWAS Method: " + method_gwas + "\n");
 			switch(method_gwas){
 			case "GAPIT":
-			text_console[MOindex].append(String.format(format1, "Linear Model: ", command_gwas[17]) + "\n");
-			text_console[MOindex].append(String.format(format1, "kinship.cluster: ", command_gwas[18]) + "\n");
-			text_console[MOindex].append(String.format(format1, "kinship.group: ", command_gwas[19]) + "\n");
-			text_console[MOindex].append(String.format(format1, "SNP.fraction: ", command_gwas[20]) + "\n");
-			text_console[MOindex].append(String.format(format1, "file.fragment: ", command_gwas[21]) + "\n");
-			text_console[MOindex].append(String.format(format1, "model selection: ", command_gwas[22]) + "\n");
-			break;
+				iPro[MOindex].textarea.append(String.format(format1, "Linear Model: ", command_gwas[17]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "kinship.cluster: ", command_gwas[18]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "kinship.group: ", command_gwas[19]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "SNP.fraction: ", command_gwas[20]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "file.fragment: ", command_gwas[21]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "model selection: ", command_gwas[22]) + "\n");
+				break;
 			case "FarmCPU":
-			text_console[MOindex].append(String.format(format1, "method.bin:", command_gwas[17]) + "\n");
-			text_console[MOindex].append(String.format(format1, "maxLoop:", command_gwas[18]) + "\n");
-			break;
+				iPro[MOindex].textarea.append(String.format(format1, "method.bin:", command_gwas[17]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "maxLoop:", command_gwas[18]) + "\n");
+				break;
 			case "PLINK":
-			text_console[MOindex].append(String.format(format1, "Confidence Interval:", command_gwas[17]) + "\n");
-			break;
-			}
-		}else if(method_gs != null){
-			text_console[MOindex].append("Project Name:" + "\n");
-			text_console[MOindex].append(String.format(format1, " ", command_gs[2]) + "\n");
-			text_console[MOindex].append("Working Directory:" + "\n");
-			text_console[MOindex].append(String.format(format1, " ", command_gs[3]) + "\n");
-			text_console[MOindex].append("Data Format:" + "\n");
-			text_console[MOindex].append(String.format(format1, " ", command_gs[5]) + "\n"); 
-			text_console[MOindex].append("Quality Control:" + "\n");
-			text_console[MOindex].append(String.format(format1, "Missing Values: ", "< " + command_gs[6]) + "\n");
-			text_console[MOindex].append(String.format(format1, "MAF: ", "> " + command_gs[7]) + "\n");
-			text_console[MOindex].append("GS Method: " + method_gs + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "Confidence Interval:", command_gwas[17]) + "\n");
+				break;}}
+		else if(method_gs != null){
+			iPro[MOindex].textarea.append("Project Name:" + "\n");
+			iPro[MOindex].textarea.append(String.format(format1, " ", command_gs[2]) + "\n");
+			iPro[MOindex].textarea.append("Working Directory:" + "\n");
+			iPro[MOindex].textarea.append(String.format(format1, " ", command_gs[3]) + "\n");
+			iPro[MOindex].textarea.append("Data Format:" + "\n");
+			iPro[MOindex].textarea.append(String.format(format1, " ", command_gs[5]) + "\n"); 
+			iPro[MOindex].textarea.append("Quality Control:" + "\n");
+			iPro[MOindex].textarea.append(String.format(format1, "Missing Values: ", "< " + command_gs[6]) + "\n");
+			iPro[MOindex].textarea.append(String.format(format1, "MAF: ", "> " + command_gs[7]) + "\n");
+			iPro[MOindex].textarea.append("GS Method: " + method_gs + "\n");
 			switch(method_gs){
 			case "gBLUP":
-			text_console[MOindex].append(String.format(format1, "GWAS-Assisted:",command_gs[20]) + "\n");
-			text_console[MOindex].append(String.format(format1, "Bonferroni cutoff:", command_gs[21]) + "\n");
-			text_console[MOindex].append(String.format(format1, "SNP.fraction:", command_gwas[20]) + "\n");
-			text_console[MOindex].append(String.format(format1, "file.fragment:", command_gwas[21]) + "\n");
-			text_console[MOindex].append(String.format(format1, "model selection:", command_gwas[22]) + "\n");
-			break;
+				iPro[MOindex].textarea.append(String.format(format1, "GWAS-Assisted:",command_gs[20]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "Bonferroni cutoff:", command_gs[21]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "SNP.fraction:", command_gwas[20]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "file.fragment:", command_gwas[21]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "model selection:", command_gwas[22]) + "\n");
+				break;
 			case "rrBLUP":
-			text_console[MOindex].append(String.format(format1, "GWAS-Assisted:",command_gs[19]) + "\n");
-			text_console[MOindex].append(String.format(format1, "Bonferroni cutoff:", command_gs[20]) + "\n");
-			text_console[MOindex].append(String.format(format1, "impute.method:", command_gs[17]) + "\n");
-			text_console[MOindex].append(String.format(format1, "shrink:", command_gs[18]) + "\n");
-			break;
+				iPro[MOindex].textarea.append(String.format(format1, "GWAS-Assisted:",command_gs[19]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "Bonferroni cutoff:", command_gs[20]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "impute.method:", command_gs[17]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "shrink:", command_gs[18]) + "\n");
+				break;
 			case "BGLR":
-			text_console[MOindex].append(String.format(format1, "GWAS-Assisted:",command_gs[22]) + "\n");
-			text_console[MOindex].append(String.format(format1, "Bonferroni cutoff:", command_gs[23]) + "\n");
-			text_console[MOindex].append(String.format(format1, "Model (Markers):", command_gs[17]) + "\n");
-			text_console[MOindex].append(String.format(format1, "response_type:", command_gs[18]) + "\n");
-			text_console[MOindex].append(String.format(format1, "nIter:", command_gs[19]) + "\n");
-			text_console[MOindex].append(String.format(format1, "burnIn:", command_gs[20]) + "\n");
-			text_console[MOindex].append(String.format(format1, "thin:", command_gs[21]) + "\n");
-			break;
-			}
-		}
-		text_console[MOindex].append("********************************************************************* \n");
+				iPro[MOindex].textarea.append(String.format(format1, "GWAS-Assisted:",command_gs[22]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "Bonferroni cutoff:", command_gs[23]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "Model (Markers):", command_gs[17]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "response_type:", command_gs[18]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "nIter:", command_gs[19]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "burnIn:", command_gs[20]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "thin:", command_gs[21]) + "\n");
+				break;}}
+		iPro[MOindex].textarea.append("********************************************************************* \n");
 	}
-	
 	public static void create_TB(int x, int y, File file) throws IOException{
 		iOB[iOBcount] = new iPatObject();
 		startPanel.add(iOB[iOBcount].name);
@@ -1504,13 +1234,15 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		iOB[iOBcount] = new iPatObject();
 		startPanel.add(iOB[iOBcount].name);
 		iOB[iOBcount].setPath(df_wd);
-		iOB[iOBcount].setLabel("Project_" + ((MOcount++) + 1));
+		iOB[iOBcount].setLabel("Project_" + (MOcount + 1));
 		iOB[iOBcount].updateImage(MOimage);
 		iOB[iOBcount].setAsMO();
 		iOB[iOBcount].setLocation(new Point(x - (iOB[iOBcount].W/2), y - iOB[iOBcount].H - 5));
 		iOB[iOBcount].updateLabel();
 		iOB[iOBcount].containMO = true;
 		iOB[iOBcount].Groupindex = Groupcount ++;
+		iPro[MOcount] = new iPatProject();
+		MOcount ++;
 		iOBcount++;
 	}
 	public static File iPatChooser(String title, boolean DirOnly){
@@ -1583,8 +1315,9 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
         g2d.dispose();        
 	}
 	public void DrawLinkedLine(Graphics g){
-		Stroke temp_stroke;
 		for (int i = 0; i < linkcount; i++){
+			int[] pair = getLinePair(i);
+			if(iOBlink_delete[i] || iOB[pair[0]].isDeleted || iOB[pair[1]].isDeleted) continue;
 			Draw_Lines(g, iOB[iOBlink[i][0]].getLocation(), 
 						  iOB[iOBlink[i][1]].getLocation(), 
 						  i == lineindex_select ? solid : dashed);}
@@ -1596,34 +1329,23 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	public void keyPressed(KeyEvent e) {
 		int key = e.getKeyCode(); 
 		System.out.println("key input: "+key);
-		if(key==8){
-			System.out.println("lineselect= "+lineselected);
-//			if(lineselected!=-1){
-//				//break_linkage();
-//			}else if(TBindex_select != 0){
-//				TBindex = TBindex_select;
-//				break_object();
-//				TBindex = 0;	
-//			}else if(MOindex_select != 0){
-//				MOindex = MOindex_select;
-//				break_object();
-//				MOindex =0;
-//			}else{
-//				gear_rotate.start();
-//			}
-		}
+		// press "del"
+		if(key == 8){
+			System.out.println("delete");
+			if(iIndex_select != -1)
+				removeiOB();
+			else if(lineindex_select != -1)
+				removeiLine();}
 		// Debug: press "d", then "b" to activate
 		if(first_d && key == 66){
 			debug = !debug; 
 			first_d = false;
-			System.out.println("debug: "+debug);
-		}else if(key == 68){
+			System.out.println("debug: "+debug);}
+		else if(key == 68)
 			first_d = true; 
-		}else{
+		else
 			first_d = false;
-		}
 	}
-
 	@Override
 	public void keyReleased(KeyEvent e) {}	
 	public static boolean all_true(boolean[] array){
@@ -1638,6 +1360,16 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	    for (boolean b : array) if(b) return true;
 	    return false;
 	}
+	
+	boolean all_false_permit(){
+		for(int i = 0; i < MOcount; i++) if(iPro[i].rotate_permit) return false;
+		return true;
+	}
+	boolean partial_true_permit(){
+		for(int i = 0; i < MOcount; i++) if(iPro[i].rotate_permit) return true;
+		return false;
+	}
+	
 	public static String[] read_lines(String filename, int bound) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         String[] lines = new String[10];
@@ -1677,202 +1409,201 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	    numOfDifferentVals = diffNum.size() == 1 ? 0 : diffNum.size();
 	    return numOfDifferentVals;
 	}
-	public void format_conversion(ConfigFrame.method method, int MOindex) throws IOException{
+	public void format_conversion(int MOindex, String[] command, iPatProject.Method method, iPatProject.Format format) throws IOException{
 		switch(method){
 		case GAPIT: case FarmCPU:
-			switch(format[MOindex]){
+			switch(format){
 			case Hapmap:
-				new iPat_converter("hmp", "num", command_gwas[MOindex][10], command_gwas[MOindex][11]);
-				command_gwas[MOindex][10] = command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
-				command_gwas[MOindex][11] = command_gwas[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
+				new iPat_converter("hmp", "num", command[10], command[11]);
+				command[10] = command[10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
+				command[11] = command[11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
 				break;
 			case VCF:
-				new iPat_converter("vcf", "num", command_gwas[MOindex][10], command_gwas[MOindex][11]);
-				command_gwas[MOindex][10] = command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
-				command_gwas[MOindex][11] = command_gwas[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
+				new iPat_converter("vcf", "num", command[10], command[11]);
+				command[10] = command[10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
+				command[11] = command[11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
 				break;
 			case PLINK:
-				new iPat_converter("plink", "num", command_gwas[MOindex][10], command_gwas[MOindex][11]);
-				command_gwas[MOindex][10] = command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
-				command_gwas[MOindex][11] = command_gwas[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
+				new iPat_converter("plink", "num", command[10], command[11]);
+				command[10] = command[10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
+				command[11] = command[11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
 				break;
-			case PLink_Binary:
+			case PLINK_bin:
 				Process p = null;
 				try {
 					p = Runtime.getRuntime().exec(new String[]{iPatPanel.jar.getParent()+"/libs/plink",
-							  "--bed", command_gwas[MOindex][10],
-							  "--fam", command_gwas[MOindex][15],
-							  "--bim", command_gwas[MOindex][16], 
+							  "--bed", command[10],
+							  "--fam", command[15],
+							  "--bim", command[16], 
 							  "--recode", "tab", 
-							  "--out", command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "")});
+							  "--out", command[10].replaceFirst("[.][^.]+$", "")});
 					p.waitFor();
 				} catch (InterruptedException |IOException e2) {
 					e2.printStackTrace();} 
-				new iPat_converter("plink", "num", 	command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "") + ".ped", 
-													command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "") + ".map");
-				command_gwas[MOindex][10] = command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
-				command_gwas[MOindex][11] = command_gwas[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
-				break;
-			}
+				new iPat_converter("plink", "num", 	command[10].replaceFirst("[.][^.]+$", "") + ".ped", 
+													command[10].replaceFirst("[.][^.]+$", "") + ".map");
+				command[10] = command[10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
+				command[11] = command[11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
+				break;}
 			break;
 		case PLINK:
-			switch(format[MOindex]){
+			switch(format){
 			case Hapmap:
-				new iPat_converter("hmp", "plink", command_gwas[MOindex][10], command_gwas[MOindex][11]);
-				command_gwas[MOindex][10] = command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.ped";
-				command_gwas[MOindex][11] = command_gwas[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.map";
-				command_gwas[MOindex][18] = "FALSE";
+				new iPat_converter("hmp", "plink", command[10], command[11]);
+				command[10] = command[10].replaceFirst("[.][^.]+$", "") + "_recode.ped";
+				command[11] = command[11].replaceFirst("[.][^.]+$", "") + "_recode.map";
+				command[18] = "FALSE";
 				break;
 			case VCF:
-				new iPat_converter("vcf", "plink", command_gwas[MOindex][10], command_gwas[MOindex][11]);
-				command_gwas[MOindex][10] = command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.ped";
-				command_gwas[MOindex][11] = command_gwas[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.map";
-				command_gwas[MOindex][18] = "FALSE";
+				new iPat_converter("vcf", "plink", command[10], command[11]);
+				command[10] = command[10].replaceFirst("[.][^.]+$", "") + "_recode.ped";
+				command[11] = command[11].replaceFirst("[.][^.]+$", "") + "_recode.map";
+				command[18] = "FALSE";
 				break;
-			case Numeric:
-				new iPat_converter("num", "plink", command_gwas[MOindex][10], command_gwas[MOindex][11]);
-				command_gwas[MOindex][10] = command_gwas[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.ped";
-				command_gwas[MOindex][11] = command_gwas[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.map";
-				command_gwas[MOindex][18] = "FALSE";
+			case Numerical:
+				new iPat_converter("num", "plink", command[10], command[11]);
+				command[10] = command[10].replaceFirst("[.][^.]+$", "") + "_recode.ped";
+				command[11] = command[11].replaceFirst("[.][^.]+$", "") + "_recode.map";
+				command[18] = "FALSE";
 				break;
 			case PLINK:
-				command_gwas[MOindex][18] = "FALSE";
-				break;
-			}
+				command[18] = "FALSE";
+				break;}
 			break;
 		case gBLUP: case rrBLUP: case BGLR:
-			switch(format[MOindex]){
+			switch(format){
 			case Hapmap:
-				new iPat_converter("hmp", "num", command_gs[MOindex][10], command_gs[MOindex][11]);
-				command_gs[MOindex][10] = command_gs[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
-				command_gs[MOindex][11] = command_gs[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
+				new iPat_converter("hmp", "num", command[10], command[11]);
+				command[10] = command[10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
+				command[11] = command[11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
 				break;
 			case VCF:
-				new iPat_converter("vcf", "num", command_gs[MOindex][10], command_gs[MOindex][11]);
-				command_gs[MOindex][10] = command_gs[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
-				command_gs[MOindex][11] = command_gs[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
+				new iPat_converter("vcf", "num", command[10], command[11]);
+				command[10] = command[10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
+				command[11] = command[11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
 				break;
 			case PLINK:
-				new iPat_converter("plink", "num", command_gs[MOindex][10], command_gs[MOindex][11]);
-				command_gs[MOindex][10] = command_gs[MOindex][10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
-				command_gs[MOindex][11] = command_gs[MOindex][11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
-				break;
-			}
+				new iPat_converter("plink", "num", command[10], command[11]);
+				command[10] = command[10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
+				command[11] = command[11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
+				break;}
 			break;
 		}
 	}	
 	
-	FORMAT catch_files() throws IOException{
+	iPatProject.Format catch_files() throws IOException{
 		// need extension (without extension): Binary fam
 		// type record which table is P(1), C(2) or K(3)
 		int count = 0;
-		String[][] lines = new String[maxfile][], 
+		int[] fIndex = new int[maxfile];
+		String[][] lines = new String[maxfile][2], 
 				   row1 = new String[maxfile][], 
 				   row2 = new String[maxfile][];
 		int[] row_count = new int[maxfile];
 		int[] col_count = new int[maxfile];
-		FORMAT format = FORMAT.NA;
-		//Get file path from table
-//		for (int i = 1; i <= TBcount; i++){
-//			if(TB[i].Groupindex == MO[MOindex].Groupindex && TB[i].Groupindex != -1){ //catch file in the same group
-//				switch(TB[i].type){
-//					case C: break;
-//					case K: break;
-//					default:
-//						if(count < maxfile){
-//							System.out.println(TB[i].path);
-//							file_index[count].tb = i;
-//							lines[count] = read_lines(TB[i].path, 3); 
-//							System.out.println(lines[count][0]);
-//							System.out.println(lines[count][1]);
-//							if(lines[count][0]!=null && lines[count][1]!=null){
-//								row1[count] = lines[count][0].split("\t");
-//								if(row1[count].length<=1){row1[count] = lines[count][0].split(" ");}
-//								row2[count] = lines[count][1].split("\t");	
-//								if(row2[count].length<=1){row2[count] = lines[count][0].split(" ");}
-//								row_count[count] = countLines(TB[i].path);
-//								col_count[count] = row2[count].length;
-//							}	
-//							count++;	
-//						}
-//						break;
-//		}}}				
-//		switch (count){
-//			case 2:	
-//				boolean[] VCF_con = {col_count[0] - lines[0][1].split("/").length == 8 && lines[0][1].split("/").length > 1, 
-//									 col_count[1] - lines[1][1].split("/").length == 8 && lines[1][1].split("/").length > 1};
-//				boolean[] HMAP_con = {col_count[0] - row_count[1] == 11 || col_count[0] - row_count[1] == 10,
-//									  col_count[1] - row_count[0] == 11 || col_count[1] - row_count[0] == 10};
-//				boolean[] NUM_con = {Arrays.asList(row2[0]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[0]) < 5,
-//									 Arrays.asList(row2[1]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[1]) < 5};
+		iPatProject.Format format = iPatProject.Format.NA;
+		// get file path from table
+		for (int i : getOBinGroup(iOB[iIndex].getGroupindex())){
+			if(iOB[i].type == iPatObject.Filetype.NA && iOB[i].object == iPatObject.Object.TB && count < maxfile){
+				System.out.println(iOB[i].getPath());
+				lines[count] = read_lines(iOB[i].getPath(), 2);
+				fIndex[count] = i;
+				// Print first two lines
+				System.out.println(lines[count][0]);
+				System.out.println(lines[count][1]);
+				// Get first two lines information if not null
+				if(lines[count][0] != null && lines[count][1] != null){
+					row1[count] = lines[count][0].split("\t");
+					if(row1[count].length <= 1) row1[count] = lines[count][0].split(" ");
+					row2[count] = lines[count][1].split("\t");	
+					if(row2[count].length <= 1) row2[count] = lines[count][0].split(" ");
+					row_count[count] = countLines(iOB[i].getPath());
+					col_count[count] = row2[count].length;}
+				count++;}}
+		// determine which format
+		switch (count){
+			case 2:	
+				boolean[] VCF_con = {col_count[0] - lines[0][1].split("/").length == 8 && lines[0][1].split("/").length > 1, 
+									 col_count[1] - lines[1][1].split("/").length == 8 && lines[1][1].split("/").length > 1};
+				boolean[] HMP_con = {col_count[0] - row_count[1] == 11 || col_count[0] - row_count[1] == 10,
+									  col_count[1] - row_count[0] == 11 || col_count[1] - row_count[0] == 10};
+				boolean[] NUM_con = {Arrays.asList(row2[0]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[0]) < 5,
+									 Arrays.asList(row2[1]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[1]) < 5};
 //				boolean[] BSA_con = {TB[file_index[0].tb].path.toUpperCase().endsWith("BSA") && TB[file_index[1].tb].path.toUpperCase().endsWith("MAP"),  
 //									 TB[file_index[1].tb].path.toUpperCase().endsWith("BSA") && TB[file_index[0].tb].path.toUpperCase().endsWith("MAP")};
-//				System.out.println(col_count[0]);
-//				System.out.println(col_count[1]);
-//				System.out.println(row_count[0]);
-//				System.out.println(row_count[1]);
-//				if(partial_true(VCF_con)){
-//					file_index[0].file = VCF_con[0]?Findex.FILE.GD:Findex.FILE.P;
-//					file_index[1].file = VCF_con[1]?Findex.FILE.GD:Findex.FILE.P;
-//					format = FORMAT.VCF;
-//				}else if(partial_true(HMAP_con)){
-//					file_index[0].file = HMAP_con[0]?Findex.FILE.GD:Findex.FILE.P;
-//					file_index[1].file = HMAP_con[1]?Findex.FILE.GD:Findex.FILE.P;
-//					format = FORMAT.Hapmap;
-//				}else if(partial_true(NUM_con)){
-//					file_index[0].file = NUM_con[0]?Findex.FILE.GD:Findex.FILE.P;
-//					file_index[1].file = NUM_con[1]?Findex.FILE.GD:Findex.FILE.P;
-//					format = FORMAT.Numeric;	
+				System.out.println(col_count[0]);
+				System.out.println(col_count[1]);
+				System.out.println(row_count[0]);
+				System.out.println(row_count[1]);
+				if(partial_true(VCF_con)){
+					iOB[fIndex[0]].type = VCF_con[0] ? iPatObject.Filetype.GD : iPatObject.Filetype.P;
+					iOB[fIndex[1]].type = VCF_con[1] ? iPatObject.Filetype.GD : iPatObject.Filetype.P;
+					format = iPatProject.Format.VCF;
+				}else if(partial_true(HMP_con)){
+					iOB[fIndex[0]].type = HMP_con[0] ? iPatObject.Filetype.GD : iPatObject.Filetype.P;
+					iOB[fIndex[1]].type = HMP_con[1] ? iPatObject.Filetype.GD : iPatObject.Filetype.P;
+					format = iPatProject.Format.Hapmap;
+				}else if(partial_true(NUM_con)){
+					iOB[fIndex[0]].type = NUM_con[0] ? iPatObject.Filetype.GD : iPatObject.Filetype.P;
+					iOB[fIndex[1]].type = NUM_con[1] ? iPatObject.Filetype.GD : iPatObject.Filetype.P;
+					format = iPatProject.Format.Numerical;	
 //				}else if(partial_true(BSA_con)){
 //					file_index[0].file = BSA_con[0]?Findex.FILE.GD:Findex.FILE.GM;
 //					file_index[1].file = BSA_con[1]?Findex.FILE.GD:Findex.FILE.GM;
 //					format = FORMAT.BSA;	
-//				}
-//				break;
-//			case 3:	
-//				int P_index = -1;
-//				for (int i = 0; i<3; i++){
-//					int i2 = (i+1)%3, i3 = (i+2)%3;
-//					if(Arrays.asList(row2[i]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[i]) < 5){
-//						file_index[i].file = Findex.FILE.GD;
-//						file_index[i2].file = (col_count[i2] == 3 && Math.abs(col_count[i] - row_count[i2]) <= 1) ? Findex.FILE.GM : Findex.FILE.P; // m or m+1 - m or m+1 = -1, 0 1
-//						file_index[i3].file = (col_count[i3] == 3 && Math.abs(col_count[i] - row_count[i3]) <= 1 && file_index[i2].file != Findex.FILE.GM) ? Findex.FILE.GM : Findex.FILE.P;
-//						if(Arrays.asList(file_index[0].file, file_index[1].file, file_index[2].file).containsAll(Arrays.asList(Findex.FILE.GD, Findex.FILE.GM, Findex.FILE.P))){
-//							format = FORMAT.Numeric; break;
-//						}
-//					}
-//				}
-//				break;
-//			case 4:
-//				//Binary
-//				int BED = -1, BIM = -1, FAM = -1;
-//				for (int i = 0; i<4; i++){
-//					if(TB[file_index[i].tb].path.toUpperCase().endsWith("BED")){
-//						file_index[i].file = Findex.FILE.BED; BED = i;
-//					}else if(TB[file_index[i].tb].path.toUpperCase().endsWith("BIM") && col_count[i] == 6){
-//						file_index[i].file = Findex.FILE.BIM; BIM = i; 
-//					}else if(TB[file_index[i].tb].path.toUpperCase().endsWith("FAM") && col_count[i] == 6){
-//						file_index[i].file = Findex.FILE.FAM; FAM = i;
-//					}
-//				}
-//				if(BED!=-1 && BIM!=-1 && FAM!=-1){
-//					int P = 6 - BED - BIM - FAM;
-//					if(Math.abs(row_count[FAM]-row_count[P]) < 2){
-//						file_index[P].file = Findex.FILE.P; 
-//						format = FORMAT.PLink_Binary;
-//					}						
-//				}
-//				break;
-//		}
-//		System.out.println("It's format "+format);
-//		System.out.println(file_index[0].file+" "+file_index[1].file+" "+file_index[2].file+" "+file_index[3].file);
+				}
+				break;
+			case 3:	
+				int P_index = -1;
+				// Numerical
+				for (int i = 0; i < 3; i++){
+					int i2 = (i + 1)%3, i3 = (i + 2)%3;
+					if(Arrays.asList(row2[i]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[i]) < 5){
+						iOB[fIndex[i]].type = iPatObject.Filetype.GD;
+						iOB[fIndex[i2]].type = (col_count[i2] == 3 && Math.abs(col_count[i] - row_count[i2]) <= 1) ? iPatObject.Filetype.GM : iPatObject.Filetype.P; // m or m+1 - m or m+1 = -1, 0 1
+						iOB[fIndex[i3]].type = (col_count[i3] == 3 && Math.abs(col_count[i] - row_count[i3]) <= 1 && iOB[fIndex[i2]].type != iPatObject.Filetype.GM) ? iPatObject.Filetype.GM : iPatObject.Filetype.P; 
+						if(Arrays.asList(getTypeinGroup(iOB[iIndex].getGroupindex())).containsAll(Arrays.asList(iPatObject.Filetype.GD, iPatObject.Filetype.GM, iPatObject.Filetype.P))){
+							format = iPatProject.Format.Numerical; 
+							break;}}}
+				// PLINK
+				if(format != iPatProject.Format.Numerical){
+					int PED = -1, MAP = -1;
+					for (int i = 0; i < 3; i++){
+						if(iOB[fIndex[i]].getPath().toUpperCase().endsWith("PED")){
+							iOB[fIndex[i]].type = iPatObject.Filetype.GD; PED = i;}
+						else if(iOB[fIndex[i]].getPath().toUpperCase().endsWith("MAP") && col_count[i] == 4){
+							iOB[fIndex[i]].type = iPatObject.Filetype.GM; MAP = i;}}
+					if(PED != -1 && MAP != -1){
+						int P = 3 - PED - MAP;
+						iOB[fIndex[P]].type = iPatObject.Filetype.P;
+						format = iPatProject.Format.PLINK;}}
+				break;
+			case 4:
+				//Binary
+				int BED = -1, BIM = -1, FAM = -1;
+				for (int i = 0; i < 4; i++){
+					if(iOB[fIndex[i]].getPath().toUpperCase().endsWith("BED")){
+						iOB[fIndex[i]].type = iPatObject.Filetype.GD; BED = i;}
+					else if(iOB[fIndex[i]].getPath().toUpperCase().endsWith("BIM") && col_count[i] == 6){
+						iOB[fIndex[i]].type = iPatObject.Filetype.BIM; BIM = i;}
+					else if(iOB[fIndex[i]].getPath().toUpperCase().endsWith("FAM") && col_count[i] == 6){
+						iOB[fIndex[i]].type = iPatObject.Filetype.FAM; FAM = i;}}
+				if(BED!=-1 && BIM!=-1 && FAM!=-1){
+					int P = 6 - BED - BIM - FAM;
+					if(Math.abs(row_count[FAM]-row_count[P]) < 2){
+						iOB[fIndex[P]].type = iPatObject.Filetype.P; 
+						format = iPatProject.Format.PLINK_bin;}}
+				break;
+		}
+		System.out.println("It's format "+format);
+		System.out.println( iOB[fIndex[0]].type + " " + iOB[fIndex[1]].type + " " + 
+							iOB[fIndex[2]].type + " " + iOB[fIndex[3]].type);
 		return format;		
 	} 
-	
 }
 //0=combined or not(-1,1), 		0: isTempCombined
 //1= coindex, 					1: GroupTempindex
-//2=subcombined or not (-1,1) 	2: isCombined
+//2=subcombined or not (-1,1) 	2: isGroup
 //3= coindex, 					3: Groupindex
 //4= if include model			4: containMO
 class iPatObject{
@@ -1883,7 +1614,7 @@ class iPatObject{
 	// Object
 	int X = 0, Y = 0, H = 0, W = 0;
 	Point pt = new Point(0, 0);
-	int delete = 9;
+	boolean isDeleted = false;
 	Image image = null;
 	Rectangle bound = new Rectangle(-100, -100, 0, 0);
 	String path = "";
@@ -1891,9 +1622,19 @@ class iPatObject{
 	Filetype type = Filetype.NA; 
 	Object object = Object.NA;
 	// Group
-	boolean isTempCombined = false, isCombined = false, containMO = false;
-	int GroupTempindex = -1, Groupindex = -1;
+	boolean isGroup = false, containMO = false;
+	int Groupindex = -1;
 	public iPatObject() throws IOException{
+	}
+	
+	void remove(){
+		isDeleted = true;
+		isGroup = false;
+		containMO = false;
+		object = Object.NA;
+		Groupindex = -1;
+		setLocation(new Point(-10000, -10000));
+		updateLabel();
 	}
 	// set
 	void setLocation(Point point){
@@ -1933,6 +1674,15 @@ class iPatObject{
 	int getGroupindex(){
 		return Groupindex;
 	}
+	// is
+	boolean isTB(){
+		if(object == Object.TB) return true;
+		else return false;
+	}
+	boolean isMO(){
+		if(object == Object.MO) return true;
+		else return false;
+	}
 	// update
 	void updateBound(){
 		bound = new Rectangle(X, Y, W, H);
@@ -1946,21 +1696,127 @@ class iPatObject{
 		H = image.getHeight(null);
 		W = image.getWidth(null);
 	}
-	
 }
-
-
 class iPatProject{
+	enum Format{
+		NA("NA"), Hapmap("Hapmap"), Numerical("Numerical"), VCF("VCF"), PLINK("PLINK"), PLINK_bin("PLINK(Binary)");
+		String name;
+		private Format(String name){this.name = name;}
+		String getName(){return this.name;}}
+	enum Method{
+		NA("NA"), GAPIT("GAPIT"), FarmCPU("FarmCPU"), PLINK("PLINK"), gBLUP("gBLUP"), rrBLUP("rrBLUP"), BGLR("BGLR");
+		String name;
+		private Method(String name){this.name = name;}
+		String getName(){return this.name;}}
+	// project config
+	Format format = Format.NA;
+	 // phenotype
+		selectablePanel panel_phenotype;
+		String[] trait_names = new String[]{""};
+	 // command
+		String[] command_gwas,
+				 command_gs;
+		Method method_gwas = Method.NA,
+			   method_gs = Method.NA;
+	// running project
+	boolean rotate_switch = false;
+	boolean rotate_permit = false;
+	JTextArea textarea = new JTextArea();
+	JScrollPane scroll = new JScrollPane(textarea,
+            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+	JFrame frame = new JFrame();
+	BGThread multi_run;
+	Runtime runtime;
+	Process process;
 	public iPatProject(){
-		
+		textarea.setEditable(false);
+		frame.setContentPane(scroll);
 	}
-}
-
-class iPatIndex{
-	enum Object{
-		NA, TB, MO;}
-	int index = -1;
-	Object object = Object.NA;
-	public iPatIndex(){
+	// is
+	boolean isGWASDeployed(){
+		return method_gwas != Method.NA ? true : false;
+	}
+	boolean isGSDeployed(){
+		return method_gs != Method.NA ? true : false;
+	}
+	boolean isNAformat(){
+		return format == Format.NA ? true : false;
+	}
+	// runcommand
+	void runCommand(int index, String[] command, String[] con_command){
+		multi_run = new BGThread(index, command, con_command);
+		multi_run.start();
+	}
+	private class BGThread extends Thread{
+		int MOindex;
+		String WD, Project;
+		String[] command, con_command;
+		public BGThread(int MOindex, String[] command, String[] con_command){
+			this.MOindex = MOindex;
+			this.command = command;
+			this.Project = command[2];
+			this.WD = command[3];
+			this.con_command = con_command;}
+		@Override
+		public void run(){
+	      	String line = ""; Boolean Suc_or_Fal = true;	
+	        rotate_permit = true;
+			rotate_switch = true;
+			runtime = Runtime.getRuntime();
+			// Execute the command
+			try{
+				process = runtime.exec(command);
+	    	}catch (IOException e1) {e1.printStackTrace();}	
+			if(iPatPanel.debug){
+				// Print command	
+				textarea.append("Command: \n");
+				for (int i = 0; i < command.length; i++) textarea.append(command[i] + " ");}
+			textarea.append("\n");
+			textarea.setCaretPosition(textarea.getDocument().getLength());
+	        try {
+	        	// Print output message to the panel
+	        	System.out.println("begin to print, "+MOindex);
+	    	    BufferedReader input_stream = new BufferedReader(new InputStreamReader(process.getInputStream()));
+	            BufferedReader error_stream = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+		        while((line = input_stream.readLine()) != null){
+		        	textarea.append(line+ System.getProperty("line.separator"));
+		        	textarea.setCaretPosition(textarea.getDocument().getLength());}
+		        process.waitFor();          	
+		        // Direct error to a file
+		        PrintWriter errWriter = new PrintWriter(new BufferedWriter(new FileWriter(WD + "/" + Project + ".err", true)));
+	        	boolean err_close = false;
+		        try{
+	        		// Print error if there is any error message
+	    	        while((line = error_stream.readLine()) != null){
+	    	        	err_close = true;
+	    	        	errWriter.println(line);
+	    	        	if(line.toUpperCase().indexOf("ERROR") >= 0) Suc_or_Fal = false;
+	    	        	System.out.println("failed");}	
+	        	} catch(IOException e){}
+	        	if(err_close) errWriter.close();
+	        	// Direct output to a file from panel
+		        File outfile = new File(WD + "/" + Project + ".log");
+	            FileWriter outWriter = new FileWriter(outfile.getAbsoluteFile(), false);
+	            textarea.write(outWriter);
+	        } catch (IOException | InterruptedException e1) {	
+				e1.printStackTrace();
+	        	Suc_or_Fal = false;}	       
+	        // Indicator
+		    if(Suc_or_Fal) 
+		    	iPatPanel.iOB[MOindex].updateImage(iPatPanel.MO_suc); 
+		    else 
+		    	iPatPanel.iOB[MOindex].updateImage(iPatPanel.MO_fal);  
+		    // Stop rotating
+		    rotate_permit = false;
+			rotate_switch = false;
+			iPatPanel.iOB[MOindex].updateLabel();
+			System.out.println("done");
+			process.destroy();
+			// Run next procedure if needed
+			if(con_command!=null){
+	    	  	multi_run = new BGThread(MOindex, con_command, null);
+	    	  	multi_run.start();}
+		}
 	}
 }
