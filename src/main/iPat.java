@@ -79,9 +79,6 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
 import org.apache.commons.lang3.ArrayUtils;
-
-import main.ConfigFrame.analysis;
-import main.iPatProject.BGThread;
 import net.miginfocom.swing.MigLayout;
 
 public class iPat {
@@ -370,11 +367,11 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				openfile(iOB[iIndex_popup].getPath());
 	    	}else if(source == popup_gwas){
 		   		try {
-		   			open_config(ConfigFrame.analysis.GWAS, iIndex_popup);
+		   			open_config(iIndex_popup, true);
 				} catch (IOException e) {e.printStackTrace();}   	
 	    	}else if(source == popup_gs){
 	    		try {
-	    			open_config(ConfigFrame.analysis.GS, iIndex_popup);
+	    			open_config(iIndex_popup, false);
 				} catch (IOException e) {e.printStackTrace();}
 	    	}else if(source == popup_run){
 	    		boolean gwas_exist = iPro[iIndex_popup].isGWASDeployed(), 
@@ -736,80 +733,49 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				iOB[iIndex].setDeltaLocation(point_drag.getX() - temppt.getX(), point_drag.getY() - temppt.getY());
 				iOB[iIndex].updateLabel();
 				temppt = point_drag;}}
-		repaint();
-		
-//		 	TBname[TBindex].setLocation(TBimageX[TBindex],TBimageY[TBindex]+TBimageH[TBindex]);
-//			TBBound[TBindex] = new Rectangle(TBimageX[TBindex], TBimageY[TBindex], TB[TBindex].getWidth(null), TB[TBindex].getHeight(null));
-		// Prevent from creating line when draging objects
-
-		// removal part
-//		if(TBindex == -1 && MOindex == -1 && lineindex != -1){ 
-//			line_drag_x[0] = imX - 30 + 10;
-//			line_drag_y[0] = imY - 30;
-//			line_drag_x[1] = imX + 30 + 10;
-//			line_drag_y[1] = imY + 30;
-//			repaint();}
-//		if ((TBindex != -1 || MOindex != -1 || lineindex != -1 || COindex != -1) && 
-//		   imY >= (delbboundy) && imX >= (delbboundx) && !removeornot){
-//			TrashAnimation = new Timer(15, new ActionListener() {
-//				int i = 0;
-//			    @Override
-//			    public void actionPerformed(ActionEvent ae) {
-//			    	if(i < 10 & TA){
-//			    		trashl.setBounds(new Rectangle(Wide - trashW, Heigth - trashH - 10, trashW, trashH));
-//			    		//trashl.setBounds(new Rectangle(200,200,100,100));
-//			    		trashl.setIcon(new ImageIcon(Trash[i]));
-//						startPanel.setLayer(trashl, new Integer(200));
-//						trashl.setVisible(true);
-//						startPanel.revalidate();  
-//				        i++;}
-//				    else{
-//			    		TrashAnimation.stop();
-//			    		i=0;
-//			    		TA=false;}
-//			    }
-//			});	
-//			TA=true;
-//			TrashAnimation.start();
-//			removeornot=true;}
-//		else if(imY < delbboundy || imX < delbboundx){
-//			trashl.setBounds(new Rectangle(Wide, -50, Wide, 300));
-//			startPanel.setLayer(trashl, new Integer(1));
-//			trashl.setVisible(true);
-//			removeornot=false;}		
+		repaint();	
 	}
 	
 	// iPat Object methods /////////////////////////
-	int[] getTBindex(){
+	static int getProIndex(int index){
+		// 0 1 2 3 4 5 6 7
+		// + - - - + - - +
+		// 0 ----- 1 --- 2
+		int index_pro = 0;
+		for (int i = 0; i < index; i++)
+			if(iOB[i].isMO()) index_pro++;
+		return index_pro;
+	}
+	static int[] getTBindex(){
 		int[] TBindex = {};
 		for (int i = 0; i < iOBcount; i++)
 			if(iOB[i].object == iPatObject.Object.TB) TBindex = ArrayUtils.addAll(TBindex, i);
 		return TBindex;
 	}
-	int[] getMOindex(){
+	static int[] getMOindex(){
 		int[] MOindex = {};
 		for (int i = 0; i < iOBcount; i++)
 			if(iOB[i].object == iPatObject.Object.MO) MOindex = ArrayUtils.addAll(MOindex, i);
 		return MOindex;
 	}
-	int[] getOBinGroup(int group){
+	static int[] getOBinGroup(int group){
 		int[] OBindex = {};
 		for(int i = 0; i < iOBcount; i++)
 			if(iOB[i].getGroupindex() == group) OBindex = ArrayUtils.addAll(OBindex, i);
 		return OBindex;
 	}
-	int getIndexofType(int group, iPatObject.Filetype type){
+	static int getIndexofType(int group, iPatObject.Filetype type){
 		for(int i : getOBinGroup(group))
 			if(iOB[i].type == type) return i;
 		return -1;	
 	}
-	iPatObject.Filetype[] getTypeinGroup(int group){
+	static iPatObject.Filetype[] getTypeinGroup(int group){
 		iPatObject.Filetype[] type = null;
 		for(int i : getOBinGroup(group))
 			type = ArrayUtils.addAll(type, iOB[i].type);
 		return type;
 	}
-	int[] getOBPair(int index){
+	static int[] getOBPair(int index){
 		int[] pair = {};
 		for(int i = 0; i < linkcount; i++){
 			System.out.println(iOBlink[i][0] + " - " + iOBlink[i][1]);
@@ -819,19 +785,19 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				pair = ArrayUtils.addAll(pair, iOBlink[i][0]);}
 		return pair;
 	}
-	int[] getLinePair(int index){
+	static int[] getLinePair(int index){
 		return new int[]{iOBlink[index][0], iOBlink[index][1]};
 	}
-	void setContainMO(int group, boolean containMO){
+	static void setContainMO(int group, boolean containMO){
 		for (int i : getOBinGroup(group))
 			iOB[i].containMO = containMO;
 	}	
-	boolean isContainMO(int group){
+	static boolean isContainMO(int group){
 		for (int iIndex_group : getOBinGroup(group)){
 			if(iOB[iIndex_group].isMO()) return true;}
 		return false;
 	}
-	boolean isContainMOgroup(){
+	static boolean isContainMOgroup(){
 		for (int i : getMOindex())
 			if(iOB[i].isGroup) return true;
 		return false;
@@ -1035,7 +1001,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	}
 	
 
-	public void open_config(ConfigFrame.analysis analysis, int MOindex) throws IOException{
+	public void open_config(int iIndex, boolean isGWAS) throws IOException{
+		int MOindex = getProIndex(iIndex);
 		// Catch format
 		iPro[MOindex].format = catch_files();
 		if(!iPro[MOindex].isNAformat()){
@@ -1046,16 +1013,15 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 //			int dx = centerPoint.x - frameW / 2;
 //	    	int dy = centerPoint.y - frameH / 2;
 			ConfigFrame configframe;
-			configframe = new ConfigFrame(iIndex_popup, analysis, iPro[MOindex].format);
-			configframe.setResizable(true);
+			configframe = new ConfigFrame(iIndex, iOB, MOindex, iPro, isGWAS);
+			configframe.setResizable(true);}
 			//configframe.setBounds(dx, dy, frameW, frameH);
-		}else{
+		else{
 			JOptionPane.showMessageDialog(new JFrame(),
 				    "No match format with either Hapmap, Numeric, VCF or PLINK. "
 				    + "Please check demo files to correct the format and the extension name.",
 				    "Incorrect format",
-				    JOptionPane.ERROR_MESSAGE);
-		}
+				    JOptionPane.ERROR_MESSAGE);}
 	}
 	public void showConsole(int MOindex, String title, String MOPath){
 		iOB[MOindex].setLabel(title);
@@ -1642,12 +1608,14 @@ class iPatObject{
 		Y = point.y;
 		pt.setLocation(X + W/2, Y + H/2);
 		updateBound();
+		updateLabel();
 	}
 	void setDeltaLocation(double dx, double dy){
 		X += dx;
 		Y += dy;
 		pt.setLocation(X + W/2, Y + H/2);
 		updateBound();
+		updateLabel();
 	}
 	void setLabel(String text){
 		name.setText(text);		
@@ -1695,6 +1663,8 @@ class iPatObject{
 		image = inputimage;
 		H = image.getHeight(null);
 		W = image.getWidth(null);
+		updateBound();
+		updateLabel();
 	}
 }
 class iPatProject{
@@ -1704,14 +1674,16 @@ class iPatProject{
 		private Format(String name){this.name = name;}
 		String getName(){return this.name;}}
 	enum Method{
-		NA("NA"), GAPIT("GAPIT"), FarmCPU("FarmCPU"), PLINK("PLINK"), gBLUP("gBLUP"), rrBLUP("rrBLUP"), BGLR("BGLR");
+		NA("NA", -1), GAPIT("GAPIT", 0), FarmCPU("FarmCPU", 1), PLINK("PLINK", 2), gBLUP("gBLUP", 3), rrBLUP("rrBLUP", 4), BGLR("BGLR", 5);
 		String name;
-		private Method(String name){this.name = name;}
-		String getName(){return this.name;}}
+		int index;
+		private Method(String name, int index){this.name = name; this.index = index;}
+		String getName(){return this.name;}
+		int getIndex(){return this.index;}}
 	// project config
 	Format format = Format.NA;
 	 // phenotype
-		selectablePanel panel_phenotype;
+		selectablePanel panel_phenotype, panel_cov;
 		String[] trait_names = new String[]{""};
 	 // command
 		String[] command_gwas,
@@ -1733,6 +1705,13 @@ class iPatProject{
 		textarea.setEditable(false);
 		frame.setContentPane(scroll);
 	}
+	// set
+	void setGWASmethod(Method method){
+		method_gwas = method;
+	}
+	void setGSmethod(Method method){
+		method_gs = method;
+	}
 	// is
 	boolean isGWASDeployed(){
 		return method_gwas != Method.NA ? true : false;
@@ -1748,7 +1727,36 @@ class iPatProject{
 		multi_run = new BGThread(index, command, con_command);
 		multi_run.start();
 	}
-	private class BGThread extends Thread{
+	void initial_phenotype(boolean isPLINK){
+		if(isPLINK)
+			panel_phenotype = new selectablePanel(trait_names.length - 2, ArrayUtils.remove(ArrayUtils.remove(trait_names, 0), 0), new String[]{"Selected", "Excluded"});
+		else
+			panel_phenotype = new selectablePanel(trait_names.length - 1, ArrayUtils.remove(trait_names, 0), new String[]{"Selected", "Excluded"});	
+	}
+	void initial_cov(int cov_length, String[] cov_name, String[] model, MigLayout layout){
+		panel_cov = new selectablePanel(cov_length, cov_name, model);
+		panel_cov.setLayout(layout);
+	}
+	class selectablePanel extends JPanel{
+		public Group_Combo[] CO;
+		public int size;
+		public selectablePanel(int size, String[] co_names, String[] methods){
+			this.size = size;
+			this.setLayout(new MigLayout("fillx"));
+			CO = new Group_Combo[size];
+			for(int i = 0; i < size; i++){
+				CO[i] = new Group_Combo(co_names[i], methods);
+				this.add(CO[i].name);
+				this.add(CO[i].combo, "wrap");
+			}
+		}
+		public String getSelected(){
+			String index_cov = "";
+			for(int i = 0; i < size; i++){index_cov = index_cov + (String)CO[i].combo.getSelectedItem() + "sep";}
+			return index_cov;
+		}
+	}
+	class BGThread extends Thread{
 		int MOindex;
 		String WD, Project;
 		String[] command, con_command;
