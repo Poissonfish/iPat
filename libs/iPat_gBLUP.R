@@ -4,7 +4,7 @@
   project = args[1]
   wd = args[2]
   lib = args[3]
-  format = args[4]
+  #format = args[4]
   ms = as.numeric(args[5])
   maf  = as.numeric(args[6])
   Y.path = args[7]
@@ -18,9 +18,10 @@
   BIM.path  = args[15]
 # Method specific args
   snp.fraction = as.numeric(args[16])
-  model.s = as.logical(args[17])
-  gwas.assist = as.logical(args[18])
-  cutoff = as.numeric(args[19])
+  file.fragment = as.numeric(args[17])
+  model.s = as.logical(args[18])
+  gwas.assist = as.logical(args[19])
+  cutoff = as.numeric(args[20])
 
 # Load libraries
   cat("=== GAPIT ===\n")
@@ -51,6 +52,7 @@ tryCatch({
   # Subset Phenotype
   cat("   Loading phenotype ...")
   Y.data = fread(Y.path) %>% as.data.frame
+  if(toupper(names(Y.data)[1]) == "FID") {Y.data = Y.data[,-1]}
   subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .)
   index.trait = which(subset == "Selected") 
   if(length(index.trait) == 1){
@@ -63,37 +65,13 @@ tryCatch({
   taxa = Y.data[,1]
   trait.names = names(Y) 
   cat("Done\n")
-  # Format free
-  cat("   Loading genotype and do conversion if need ...")
-  OS.Windows = FALSE
-  switch(Sys.info()[['sysname']],
-    Windows= {OS.Windows = TRUE}, # Windows
-    Linux  = { }, # Linux
-    Darwin = { }) # MacOS
-  switch(format, 
-    Hapmap = {if(!OS.Windows){sprintf("chmod 777 %s/blink", lib) %>% system()}
-              hmp = substring(GD.path, 1, nchar(GD.path)-4)
-              sprintf("%s/blink --file %s --compress --hapmap", lib, hmp) %>% system()
-              sprintf("%s/blink --file %s --recode --out %s --numeric", lib, hmp, hmp) %>% system()
-              GD = fread(sprintf("%s.dat", hmp)) %>% t() %>% as.data.frame()
-              GM = fread(sprintf("%s.map", hmp)) %>% t() %>% as.data.frame()}, 
-    VCF = { if(!OS.Windows){sprintf("chmod 777 %s/blink", lib) %>% system()}
-            vcf = substring(GD.path, 1, nchar(GD.path)-4)
-            sprintf("%s/blink --file %s --compress --vcf", lib, vcf) %>% system()
-            sprintf("%s/blink --file %s --recode --out %s --numeric", lib, vcf, vcf) %>% system()
-            GD = read.table(sprintf("%s.dat", vcf)) %>% t() %>% data.frame(Y[,1], .)
-            GM = read.table(sprintf("%s.map", vcf), head = TRUE)},
-    PLink_Binary = {
-
-    }, {
-      # Numeric (Default)
-      GD = fread(GD.path) %>% as.data.frame()
-      GM = fread(GM.path) %>% as.data.frame()
-    }
-  )
-  if(is.character(GD[,1])) GD = GD[,-1]
-  cat("Done\n")
-   # QC
+  # Genptype
+    cat("   Loading genotype ...")
+    GD = fread(GD.path) %>% as.data.frame()
+    GM = fread(GM.path) %>% as.data.frame()
+    if(is.character(GD[,1])) GD = GD[,-1]
+    cat("Done\n")
+  # QC
     cat("   Quality control ...")
     # Missing rate
     if(!is.na(ms)){
@@ -102,11 +80,15 @@ tryCatch({
       GM = GM[MS <= ms, ]}
     # MAF
     if(!is.na(maf)){
-      MAF = apply(GD, 2, mean) %>% 
+      GD_temp = GD
+      GD_temp[is.na(GD)] = 1
+      MAF = apply(GD_temp, 2, mean) %>% 
             as.matrix() %>% 
             apply(1, function(x) min(1 - x/2, x/2))
       GD = GD[, MAF >= maf]
       GM = GM[MAF >= maf, ]}
+    # No NA allowed in GAPIT
+      GD[is.na(GD)] = 1
     cat("Done\n")
   # Covariate
     if(C.path != "NA"){
@@ -131,6 +113,16 @@ tryCatch({
     }else{
       C = NULL
     }
+  # Kinship
+  if(K.path == "NA"){
+    K = NULL
+  }else{
+    cat("   Loading Kinship ...")
+    K = fread(K.path) %>% as.data.frame()
+    cat("Done\n")
+  }
+
+  for (i in 1:length(trait.names)){   
   # GWAS-assist
     if(gwas.assist){
       cat("   Loading QTNs information ...")
@@ -159,6 +151,7 @@ tryCatch({
       }
       cat("Done\n")}
   ## Prevent c > n
+    if(is.null(C)) index.C = NULL
     if(length(Y[ ,i]) < length(index.C) + ncol(C.gwas)){
       diff = length(index.C) + ncol(C.gwas) - length(Y[,i])
       if(is.null(C))
@@ -170,11 +163,9 @@ tryCatch({
         C = data.frame(C.gwas)
       else
         C = data.frame(C, C.gwas)
-    }
-  
+    } 
   #if(is.na(C.inher)) C.inher = NULL else C.inher = C.inher
   # GAPIT
-    for (i in 1:length(trait.names)){   
       x = GAPIT(
         Y = data.frame(taxa, Y[,i]),
         GM = GM,
@@ -195,3 +186,7 @@ tryCatch({
 }, error = function(e){
     stop(e)
 })
+
+
+
+

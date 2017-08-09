@@ -60,33 +60,12 @@ tryCatch({
     taxa = Y.data[,1]
     trait.names = names(Y) 
     cat("Done\n")
-  # Format-free
-    OS.Windows = FALSE
-    switch(Sys.info()[['sysname']],
-      Windows= {OS.Windows = TRUE}, # Windows
-      Linux  = { }, # Linux
-      Darwin = { }) # MacOS
-    switch(format, 
-      Hapmap = {if(!OS.Windows){sprintf("chmod 777 %s/blink", lib) %>% system()}
-        hmp = substring(GD.path, 1, nchar(GD.path)-4)
-        sprintf("%s/blink --file %s --compress --hapmap", lib, hmp) %>% system()
-        sprintf("%s/blink --file %s --recode --out %s --numeric", lib, hmp, hmp) %>% system()
-        GD = read.table(sprintf("%s.dat", hmp)) %>% t() %>% data.frame(taxa, .)
-        GM = read.table(sprintf("%s.map", hmp), head = TRUE)}, 
-      VCF = { if(!OS.Windows){sprintf("chmod 777 %s/blink", lib) %>% system()}
-        vcf = substring(GD.path, 1, nchar(GD.path)-4)
-        sprintf("%s/blink --file %s --compress --vcf", lib, vcf) %>% system()
-        sprintf("%s/blink --file %s --recode --out %s --numeric", lib, vcf, vcf) %>% system()
-        GD = read.table(sprintf("%s.dat", vcf)) %>% t() %>% data.frame(taxa, .)
-        GM = read.table(sprintf("%s.map", vcf), head = TRUE)},
-      PLink_Binary = {
-
-      }, {
-        # Numeric (Default)
-        GM = fread(GM.path) %>% as.data.frame()
-        GD = fread(GD.path) %>% as.data.frame()
-      })
-      if(is.character(GD[,1])) GD = GD[,-1]
+    # Genptype
+    cat("   Loading genotype ...")
+    GD = fread(GD.path) %>% as.data.frame()
+    GM = fread(GM.path) %>% as.data.frame()
+    if(is.character(GD[,1])) GD = GD[,-1]
+    cat("Done\n")
   # QC
     cat("   Quality control ...")
     # Missing rate

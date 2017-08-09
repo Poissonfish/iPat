@@ -21,7 +21,8 @@
   ki.c = args[17]
   ki.g = args[18]
   snp.fraction = as.numeric(args[19])
-  model.s = as.logical(args[20])
+  file.fragment = as.numeric(args[20])
+  model.s = as.logical(args[21])
 
 # Load libraries
   cat("=== GAPIT ===\n")
@@ -44,7 +45,8 @@
   library(magrittr)
   source("./Function_iPat.R")
   source("./Function_FarmCPU.R")
-  source("./Function_GAPIT.R")
+  source("./Function_GAPIT.R") 
+  cat("Done\n")
 
 tryCatch({  
   setwd(wd)
@@ -56,27 +58,18 @@ tryCatch({
   if(length(index.trait) == 1){
     Y = data.frame(y = Y.data[, index.trait + 1])
     names(Y) = names(Y.data)[1 + index.trait] 
-  }else{
+  }else
     Y = Y.data[, index.trait + 1]
-  }
   # Assign Variables
   taxa = Y.data[,1]
   trait.names = names(Y) 
   cat("Done\n")
-  # Format free
-  cat("   Loading genotype and do conversion if need ...")
-  OS.Windows = FALSE
-  switch(Sys.info()[['sysname']],
-    Windows= {OS.Windows = TRUE}, # Windows
-    Linux  = { }, # Linux
-    Darwin = { }) # MacOS
- 
-  # Numeric (Default)
-  GD = fread(GD.path) %>% as.data.frame()
-  GM = fread(GM.path) %>% as.data.frame()
-  if(is.character(GD[,1])) GD = GD[,-1]
-  
-  cat("Done\n")
+  # Genptype
+    cat("   Loading genotype ...")
+    GD = fread(GD.path) %>% as.data.frame()
+    GM = fread(GM.path) %>% as.data.frame()
+    if(is.character(GD[,1])) GD = GD[,-1]
+    cat("Done\n")
   # QC
     cat("   Quality control ...")
     # Missing rate
@@ -86,11 +79,15 @@ tryCatch({
       GM = GM[MS <= ms, ]}
     # MAF
     if(!is.na(maf)){
-      MAF = apply(GD, 2, mean) %>% 
+      GD_temp = GD
+      GD_temp[is.na(GD)] = 1
+      MAF = apply(GD_temp, 2, mean) %>% 
             as.matrix() %>% 
             apply(1, function(x) min(1 - x/2, x/2))
       GD = GD[, MAF >= maf]
       GM = GM[MAF >= maf, ]}
+    # No NA allowed in GAPIT
+      GD[is.na(GD)] = 1
     cat("Done\n")
   # Covariate
     if(C.path != "NA"){
@@ -147,9 +144,9 @@ tryCatch({
             GM = GM,
             GD = data.frame(taxa, GD),
             KI = K,
-            CV = C,
+            CV = data.frame(taxa, C),
             #CV.Inheritance = C.inher,
-            #PCA.total = PCA,
+            #PCA.total = 3,
             kinship.cluster = ki.c,
             kinship.group = ki.g,
             group.from = g.from,
@@ -168,12 +165,30 @@ tryCatch({
 })
 
 # #
-# model = "GLM"
-# ki.c = "average"
-# ki.g = "Mean"
-# snp.fraction = 1
-# file.fragment = NULL
-# model.s = as.logical("FALSE") 
+
+
+project="Project"
+wd="/Users/Poissonfish/Desktop/test/bglr"
+lib="/Users/Poissonfish/git/iPat/libs/"
+format="Numerical"
+ms=as.numeric("0.2")
+maf=as.numeric("0.05")
+Y.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Hapmap/data.txt"
+Y.index="SelectedsepExcludedsepExcludedsep"
+GD.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Hapmap/data_recode.dat"
+GM.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Hapmap/data_recode.nmap"
+C.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/covariates.txt"
+C.index="ExcludedsepExcludedsepSelectedsep"
+K.path="NA"
+FAM.path="NA"
+BIM.path="NA"
+model = "GLM"
+ki.c = "average"
+ki.g = "Mean"
+snp.fraction = 1
+file.fragment = NULL
+model.s = as.logical("FALSE") 
+
 
 # if(multi){
 #   nT = ncol(Y.file) - 1
