@@ -4,7 +4,7 @@
   project = args[1]
   wd = args[2]
   lib = args[3]
-  format = args[4]
+  #format = args[4]
   ms = as.numeric(args[5])
   maf  = as.numeric(args[6])
   Y.path = args[7]
@@ -21,16 +21,17 @@
   shrink = as.logical(args[17])
   gwas.assist = as.logical(args[18])
   cutoff = as.numeric(args[19])
-
 # Load libraries
   cat("=== rrBLUP ===\n")
   cat("   Loading libraries ...")
+  setwd(lib)
   list.of.packages = c("data.table", "magrittr", "rrBLUP")
   new.packages <- list.of.packages[!(list.of.packages%in% installed.packages()[,"Package"])]
   if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
   library(rrBLUP)
   library(data.table)
   library(magrittr)
+  source("./Function_iPat.R")
   cat("Done\n")
 
 tryCatch({
@@ -38,6 +39,7 @@ tryCatch({
   # Subset Phenotype
   cat("   Loading phenotype ...")
   Y.data = fread(Y.path) %>% as.data.frame
+  if(toupper(names(Y.data)[1]) == "FID") {Y.data = Y.data[,-1]}
   subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .)
   index.trait = which(subset == "Selected") 
   if(length(index.trait) == 1){
@@ -50,33 +52,12 @@ tryCatch({
   # Assign Variables
   taxa = Y.data[,1]
   trait.names = names(Y) 
-  # Format-free
-  cat("   Loading genotype and do conversion if need ...")
-  OS.Windows = FALSE
-  switch(Sys.info()[['sysname']],
-    Windows= {OS.Windows = TRUE}, # Windows
-    Linux  = { }, # Linux
-    Darwin = { }) # MacOS
-  switch(format, 
-    Hapmap = {if(!OS.Windows){sprintf("chmod 777 %s/blink", lib) %>% system()}
-              hmp = substring(GD.path, 1, nchar(GD.path)-4)
-              sprintf("%s/blink --file %s --compress --hapmap", lib, hmp) %>% system()
-              sprintf("%s/blink --file %s --recode --out %s --numeric", lib, hmp, hmp) %>% system()
-              GD = fread(sprintf("%s.dat", hmp)) %>% t() %>% as.data.frame()}, 
-    VCF = { if(!OS.Windows){sprintf("chmod 777 %s/blink", lib) %>% system()}
-            vcf = substring(GD.path, 1, nchar(GD.path)-4)
-            sprintf("%s/blink --file %s --compress --vcf", lib, vcf) %>% system()
-            sprintf("%s/blink --file %s --recode --out %s --numeric", lib, vcf, vcf) %>% system()
-            GD = fread(sprintf("%s.dat", vcf)) %>% t() %>% as.data.frame()},
-    PLink_Binary = {
-    },{
-      # Numeric (Default)
-      GD = fread(GD.path) %>% as.data.frame()
-      GM = fread(GM.path) %>% as.data.frame()
-    }
-  )
-  if(is.character(GD[,1])) GD = GD[,-1]
-  cat("Done\n")
+  # Genotype
+    cat("   Loading genotype ...")
+    GD = fread(GD.path) %>% as.data.frame()
+    GM = fread(GM.path) %>% as.data.frame()
+    if(is.character(GD[,1])) GD = GD[,-1]
+    cat("Done\n")
   # QC
     cat("   Quality control ...")
     # Missing rate
@@ -86,12 +67,14 @@ tryCatch({
       GM = GM[MS <= ms, ]}
     # MAF
     if(!is.na(maf)){
-      MAF = apply(GD, 2, mean) %>% 
+      GD_temp = GD
+      GD_temp[is.na(GD)] = 1
+      MAF = apply(GD_temp, 2, mean) %>% 
             as.matrix() %>% 
             apply(1, function(x) min(1 - x/2, x/2))
       GD = GD[, MAF >= maf]
       GM = GM[MAF >= maf, ]}
-  cat("Done\n")
+    cat("Done\n")
   # Covariate
     if(C.path != "NA"){
       cat("   Loading covariates ...")
@@ -115,7 +98,7 @@ tryCatch({
   # rrBLUP
   ## Generate kjinship
   if(K.path == "NA"){
-    G.impute =  A.mat(GD, shrink = shrink, impute.method = impute, return.imputed = TRUE, max.missing = ms)$imputed
+    G.impute = A.mat(GD, shrink = shrink, impute.method = impute, return.imputed = TRUE)$imputed 
     K = tcrossprod(G.impute)
   }else{
     K = fread(K.path) %>% as.data.frame()
@@ -137,15 +120,23 @@ tryCatch({
       ## Find QTNs
       index.sig = which(map_gwas$P.value < (cutoff/nrow(gwas)))
       ## Generate a dataframe by number of QTNs
-       ### 0 QNTs
       cat("Done\n")
       cat(sprintf("   rrBLUP is computing for trait %s ...", trait.names[i]))
+       ### 0 QNTs
       if(length(index.sig) == 0){
-        ans = mixed.solve(Y[,i], X = C, K = K, return.Hinv = TRUE, SE = TRUE)
+        if(is.null(C)){
+          ans = mixed.solve(Y[,i], K = K, return.Hinv = TRUE, SE = TRUE)
+        }else{ 
+          ans = mixed.solve(Y[,i], X = C, K = K, return.Hinv = TRUE, SE = TRUE)  
+        }
        ### 1 QTNs
       }else if(length(index.sig) == 1){
         C.gwas = data.frame(m = GD[,index.sig])
-        ans = mixed.solve(Y[,i], X = cbind(C, C.gwas), K = K, return.Hinv = TRUE, SE = TRUE)
+        if(is.null(C)){
+          ans = mixed.solve(Y[,i], X = C.gwas, K = K, return.Hinv = TRUE, SE = TRUE)
+        }else{ 
+          ans = mixed.solve(Y[,i], X = cbind(C, C.gwas), K = K, return.Hinv = TRUE, SE = TRUE)
+        }
        ### 1+ QTNs
       }else{
         C.gwas = GD[,index.sig]
@@ -153,16 +144,24 @@ tryCatch({
         LD_remain = Blink.LDRemove(C.gwas, .7, index.sig, orientation = "col")
         C.gwas = C.gwas[,LD_remain]
         ## Prevent c > n
+        if(is.null(C)) index.C = NULL
         if(length(Y[,i]) < length(index.C) + ncol(C.gwas)){
           diff = length(index.C) + ncol(C.gwas) - length(Y[,i])
           C.gwas = C.gwas[ ,1 : (ncol(C.gwas) - diff)]
-          ans = mixed.solve(Y[,i], X = cbind(C, C.gwas), K = K, return.Hinv = TRUE, SE = TRUE)
-        }else{
+        }
+        if(is.null(C)){
+          ans = mixed.solve(Y[,i], X = C.gwas, K = K, return.Hinv = TRUE, SE = TRUE)
+        }else{ 
           ans = mixed.solve(Y[,i], X = cbind(C, C.gwas), K = K, return.Hinv = TRUE, SE = TRUE)
         }
-      }    }else{
+      }   
+    }else{
       cat(sprintf("   rrBLUP is computing for trait %s ...", trait.names[i]))
-      ans = mixed.solve(Y[,i], X = C, K = K, return.Hinv = TRUE, SE = TRUE)
+      if(is.null(C)){
+        ans = mixed.solve(Y[,i], K = K, return.Hinv = TRUE, SE = TRUE)
+      }else{
+        ans = mixed.solve(Y[,i], X = C, K = K, return.Hinv = TRUE, SE = TRUE)
+      }
     }
     beta.name = names(ans$beta)
     Stat = c("Vu", "Ve", paste0("beta.", beta.name), paste0("beta.SE.", beta.name), "LL")
@@ -183,21 +182,21 @@ tryCatch({
   stop(e)
 })
 
-# project = "Project_1" 
-# wd = "/Users/Poissonfish/Desktop/test/farm"
-# lib = "/Users/Poissonfish/git/iPat/libs/"
-# format = "Numeric" 
-# ms = as.numeric("No threshold") 
-# maf = as.numeric(0.05) 
-# Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.txt" 
-# Y.index = "SelectedsepSelectedsepSelectedsep" 
-# GD.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.dat" 
-# GM.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.map" 
-# C.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/covariates.txt"
-# C.index = "SelectedsepExcludedsepSelectedsep"
-# K.path = "NA"
-# FAM.path = "NA"
-# BIM.path = "NA"
+# project="Project_1"
+# wd="/Users/Poissonfish/Desktop/test/rr"
+# lib="/Users/Poissonfish/git/iPat/libs/"
+# format="Hapmap"
+# ms=as.numeric("No_threshold")
+# maf=as.numeric("0.05")
+# Y.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Hapmap/data.txt"
+# Y.index="SelectedsepExcludedsepExcludedsep"
+# GD.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Hapmap/data_recode.dat"
+# GM.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Hapmap/data_recode.nmap"
+# C.path="NA"
+# C.index="NA"
+# K.path="NA"
+# FAM.path="NA"
+# BIM.path="NA"
 # impute = "mean"
 # shrink = FALSE
 # gwas.assist = TRUE

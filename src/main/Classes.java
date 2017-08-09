@@ -65,8 +65,7 @@ class Group_RadioButton{
 		button = new JRadioButton[size];
 		for(int i = 0; i<size; i++){
 			button[i] = new JRadioButton("");
-			group.add(button[i]);
-		}
+			group.add(button[i]);}
 	}
 	public void setName(int num, String text){
 		button[num].setText(text);
@@ -89,8 +88,7 @@ class Group_CheckBox implements ActionListener{
 	      //GAPIT
 	      if (source == check){
 	    	 longfield.setEnabled(!longfield.isEnabled());
-	    	 field.setEnabled(!field.isEnabled());
-	      }
+	    	 field.setEnabled(!field.isEnabled());}
 	}
 }
 class Group_Combo{
@@ -111,22 +109,19 @@ class Group_Path{
 	public void setPath(boolean folder){
 		JFileChooser chooser;
 		File selectedfile;
-		if(folder){
+		if(folder)
 			selectedfile = iPatPanel.iPatChooser("Choose a output directory", true);
-		}else{
+		else
 			selectedfile = iPatPanel.iPatChooser("Choose a file", false);
-		}
 		field.setText(selectedfile.getAbsolutePath());
 	}
 }
 
 class OS{
 	public static enum TYPE{
-		Mac, Windows, Linux, Unknown
-	}
+		Mac, Windows, Linux, Unknown}
 	public TYPE type = TYPE.Unknown;
-	public OS(){
-	}
+	public OS(){}
 }
 class Fade_timer extends Timer{
 	boolean actived = false, out = false;
@@ -137,28 +132,24 @@ class Fade_timer extends Timer{
 			float alpha = 0;
 			@Override
 		    public void actionPerformed(ActionEvent ae) {
-		    		if(label.getAlpha() <.9f){
-		    			alpha += .1f;
-		    			label.setAlpha(alpha);
-		    		}else{
-		    			timer_in.stop();
-		    			out = true;
-		    		}					
-		    }
-		});
+	    		if(label.getAlpha() <.9f){
+	    			alpha += .1f;
+	    			label.setAlpha(alpha);}
+	    		else{
+	    			timer_in.stop();
+	    			out = true;}					
+		    }});
 		timer_out = new Timer(30, new ActionListener() {
 			float alpha = 1.0f;
 			@Override
 		    public void actionPerformed(ActionEvent ae) {
-		    		if(label.getAlpha() >.1f){
-		    			alpha -= .1f;
-		    			label.setAlpha(alpha);
-		    		}else{
-		    			label.setAlpha(0f);
-		    			timer_out.stop();
-		    		}				
-		    }
-		});
+	    		if(label.getAlpha() >.1f){
+	    			alpha -= .1f;
+	    			label.setAlpha(alpha);}
+	    		else{
+	    			label.setAlpha(0f);
+	    			timer_out.stop();}				
+		    }});
 	}
 	public void fade_in(){
 		timer_in.start();

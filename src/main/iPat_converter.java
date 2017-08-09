@@ -62,9 +62,8 @@ class iPat_converter{
         String[][] lines = new String[size][];
         int index = 0;
         String readline = null;
-        while((readline = reader.readLine()) != null){
+        while((readline = reader.readLine()) != null)
         	lines[index++] = readline.split("\t");	
-        }
         return lines;
     }
 	public static int getCountofLines(String filename) throws IOException {
@@ -76,9 +75,8 @@ class iPat_converter{
 	        boolean empty = true;
 	        while ((readChars = reader.read(c)) != -1) {
 	            empty = false;
-	            for (int i = 0; i < readChars; ++i) {
-	                if (c[i] == '\n') ++count;           
-	            }}
+	            for (int i = 0; i < readChars; ++i) 
+	                if (c[i] == '\n') ++count;}
 	        return (count == 0 && !empty) ? 1 : count;
 	    }finally{
 	    	reader.close();}
@@ -103,29 +101,22 @@ class iPat_converter{
 		    			switch(table_GD[row][col]){
 		    			case "0": out.write("A A"); break;
 		    			case "1": out.write("A T"); break;
-		    			case "2": out.write("T T"); break;
-		    			}
+		    			case "2": out.write("T T"); break;}
 		    			if(col != table_GD[row].length - 1)
-		    				out.write("\t");
-		    		}
-		    		out.write("\n");
-			    }	
-		    }else{
+		    				out.write("\t");}
+		    		out.write("\n");}}
+		    else{
 		    	int sample_num = 0;
 		    	for(int row = header_GD ? 1 : 0; row < size_GD; row++){
 		    		out.write("Family_" + sample_num + "\t" + "Sample_" + sample_num + "\t0\t0\t0\t0\t");
 		    		for(int col = 1; col < table_GD[row].length; col++){
 		    			switch(table_GD[row][col]){
-		    			case "0": out.write("A A\t"); break;
-		    			case "1": out.write("A T\t"); break;
-		    			case "2": out.write("T T\t"); break;
-		    			}
+		    			case "0": out.write("A A"); break;
+		    			case "1": out.write("A T"); break;
+		    			case "2": out.write("T T"); break;}
 		    			if(col != table_GD[row].length - 1)
-		    				out.write("\t");
-		    		}
-		    		out.write("\n");
-			    }	
-		    }
+		    				out.write("\t");}
+		    		out.write("\n");}}
 		    out.close();
 		}catch(IOException e){System.out.println(e);}
 		// map
@@ -157,21 +148,16 @@ class iPat_converter{
 		    				out.write("0 0");
 		    			else
 		    				out.write(table_GD[row][col].charAt(0) + " " + table_GD[row][col].charAt(1));
-		    			if(row != size_GD - 1) out.write("\t");
-		    		}
-		    		out.write("\n");
-			    }	
-		    }else{
+		    			if(row != size_GD - 1) out.write("\t");}
+		    		out.write("\n");}}
+		    else{
 		    	for(int col = 11; col < table_GD[0].length; col++){
 		    		out.write("Family_" + (col - 10) + "\t" + "Sample_" + (col - 10) + "\t0\t0\t0\t-9\t");
 		    		for(int row = 1; row < size_GD; row++){
 		    			out.write(table_GD[row][col].charAt(0) + " " + table_GD[row][col].charAt(1));
 		    			if(row != size_GD - 1)
-		    				out.write("\t");
-		    		}
-		    		out.write("\n");
-			    }	
-		    }
+		    				out.write("\t");}
+		    		out.write("\n");}}
 		    out.close();
 		}catch(IOException e){System.out.println(e);}
 		// map
@@ -204,16 +190,14 @@ class iPat_converter{
 	    			switch(m1){
 	    			case "0": out.write(A + " "); break;
 	    			case "1": out.write(B + " "); break;
-	    			default : out.write("N "); break;
-	    			}
+	    			// imputed as 0
+	    			default : out.write("0 "); break;}
 	    			switch(m2){
 	    			case "0": out.write(A); break;
 	    			case "1": out.write(B); break;
-	    			default : out.write("N"); break;
-	    			}
-	    			if(row != size_GD - 1) out.write("\t"); else out.write("\n");
-	    		}
-	    	}
+	    			// imputed as 0
+	    			default : out.write("0"); break;}
+	    			if(row != size_GD - 1) out.write("\t"); else out.write("\n");}}
 		    out.close();
 		}catch(IOException e){System.out.println(e);}
 		// map
@@ -245,26 +229,22 @@ class iPat_converter{
 	    		for(int col = 6; col < table_GD[row].length; col++){
 	    			if(A[col-6] == null){
 		    			A[col - 6] = table_GD[row][col].split(" ")[0];
-		    			if(A[col - 6].equals("0")) A[col-6] = null;
-	    			}
+		    			if(A[col - 6].equals("0")) A[col-6] = null;}
 	    			String m1 = table_GD[row][col].split(" ")[0];
 	    			String m2 = table_GD[row][col].split(" ")[1];
 	    			if(m1.equals(m2) && m1.equals(A[col - 6])){
 	    				// 2 alleles are the same, and equal to the first allele
-	    				out.write("0");
-	    			}else if(m1.equals(m2) && !m1.equals(A[col - 6]) && !m1.equals("0")){
+	    				out.write("0");}
+	    			else if(m1.equals(m2) && !m1.equals(A[col - 6]) && !m1.equals("0")){
 	    				// 2 alleles are the same, but not equal to the first allele and are not a missing value
-	    				out.write("2");
-	    			}else if(m1.equals("0") || m2.equals("0")){
+	    				out.write("2");}
+	    			else if(m1.equals("0") || m2.equals("0")){
 	    				// missing data, imputed as 1
-	    				out.write("1");
-	    			}else if(!m1.equals(m2)){
+	    				out.write("1");}
+	    			else if(!m1.equals(m2)){
 	    				// 2 alleles are not the same
-	    				out.write("1");
-	    			}
-	    			if(col != table_GD[row].length - 1) out.write("\t"); else out.write("\n");     			
-		    	}
-	    	}
+	    				out.write("1");}
+	    			if(col != table_GD[row].length - 1) out.write("\t"); else out.write("\n");}}
 		    out.close();
 		}catch(IOException e){System.out.println(e);}	
 		// GM
@@ -297,20 +277,17 @@ class iPat_converter{
 	    				 m2 = table_GD[row][col].charAt(1);
 	    			if(m1 == m2 && m1 == A){
 	    				// 2 alleles are the same, and equal to the first allele
-	    				out.write("0");
-	    			}else if(m1 == m2 && m1 == B){
+	    				out.write("0");}
+	    			else if(m1 == m2 && m1 == B){
 	    				// 2 alleles are the same, and equal to the second allele
-	    				out.write("2");
-	    			}else if(m1 == 'N' || m2 == 'N' || m1 == 'n' || m2 == 'n'){
+	    				out.write("2");}
+	    			else if(m1 == 'N' || m2 == 'N' || m1 == 'n' || m2 == 'n'){
 	    				// missing data, imputed as 1
-	    				out.write("1");
-	    			}else if(m1 != m2){
+	    				out.write("1");}
+	    			else if(m1 != m2){
 	    				// 2 alleles are not the same
-	    				out.write("1");
-	    			}
-	    			if(row != size_GD - 1) out.write("\t"); else out.write("\n");
-	    		}
-		    }
+	    				out.write("1");}
+	    			if(row != size_GD - 1) out.write("\t"); else out.write("\n");}}
 		    out.close();
 		}catch(IOException e){System.out.println(e);}
 		// gm
@@ -341,20 +318,17 @@ class iPat_converter{
 	    				 m2 = table_GD[row][col].split("/")[1].charAt(0);
 	    			if(m1 == m2 && m1 == '0'){
 	    				// 2 alleles are the same, and equal to the first allele
-	    				out.write("0");
-	    			}else if(m1 == m2 && m1 == '1'){
+	    				out.write("0");}
+	    			else if(m1 == m2 && m1 == '1'){
 	    				// 2 alleles are the same, and equal to the second allele
-	    				out.write("2");
-	    			}else if(m1 == '.' || m2 == '.'){
+	    				out.write("2");}
+	    			else if(m1 == '.' || m2 == '.'){
 	    				// missing data, imputed as 1
-	    				out.write("1");
-	    			}else if(m1 != m2){
+	    				out.write("1");}
+	    			else if(m1 != m2){
 	    				// 2 alleles are not the same
-	    				out.write("1");
-	    			}
-	    			if(row != size_GD - 1) out.write("\t"); else out.write("\n");
-		    	}
-		    }
+	    				out.write("1");}
+	    			if(row != size_GD - 1) out.write("\t"); else out.write("\n");}}
 		    out.close();
 		}catch(IOException e){System.out.println(e);}
 		// gm

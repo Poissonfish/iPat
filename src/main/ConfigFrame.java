@@ -36,6 +36,8 @@ public class ConfigFrame extends JFrame implements ActionListener{
 		public static JLabel project_format = new JLabel("");
 		// Phenotype
 		public static JScrollPane scroll_phenotype;
+		// COV panel
+		public static JScrollPane scroll_cov;
 		// QC panel
 		public static JPanel panel_qc;
 		public static Group_Combo ms_qc = new Group_Combo("By missing rate", 
@@ -50,6 +52,9 @@ public class ConfigFrame extends JFrame implements ActionListener{
 	Point tempLabel = new Point(-1, -1);
 	Point pt;
 	
+	// COV pane
+				String CO_head;
+				String[] CO_names;
 	// For Command used
 	public static String 	path_P = "NA", path_G = "NA", path_M = "NA", 
 							path_C = "NA", path_K = "NA",
@@ -65,11 +70,12 @@ public class ConfigFrame extends JFrame implements ActionListener{
 	public ConfigFrame(int iIndex,  iPatObject[] ob, int MOindex, iPatProject[] pro, boolean isGWAS) throws IOException{
 		this.iIndex = iIndex;
 		this.ob = ob;
-		gr_index = ob[iIndex].getGroupindex();
+		gr_index = ob[iIndex].getGroupIndex();
 		this.MOindex = MOindex;
 		this.pro = pro;
 		this.format = pro[MOindex].format;
 		this.isGWAS = isGWAS;
+		initialize();
 		// Catch primary files
 			int index_p = iPatPanel.getIndexofType(gr_index, iPatObject.Filetype.P), 
 				index_gd = iPatPanel.getIndexofType(gr_index, iPatObject.Filetype.GD),
@@ -83,8 +89,10 @@ public class ConfigFrame extends JFrame implements ActionListener{
 			path_BIM = index_bim != -1 ? ob[index_bim].getPath() : "NA";
 		// Catch C and K
 			for (int i : iPatPanel.getOBinGroup(gr_index)){
+				System.out.println("Checking : " + i);
 				switch(ob[i].type){
-				case C: C_exist = true; C_index = i; path_C = ob[i].getPath(); break;
+				case C: 
+					C_exist = true; C_index = i; path_C = ob[i].getPath(); break;
 				case K: K_exist = true; K_index = i; path_K = ob[i].getPath(); break;}}
 		// Catch R exe path
 			switch(iPat.UserOS.type){
@@ -114,11 +122,15 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				// if never initialized
 				if(pro[MOindex].trait_names.length <= 1){
 					pro[MOindex].trait_names = headline.split("\t").length <= 1 ? headline.split(" ") : headline.split("\t");
-					switch(format){
-					case PLINK: case PLINK_bin:
-						pro[MOindex].initial_phenotype(true); break;
-					default:
-						pro[MOindex].initial_phenotype(false); break;}}	
+					if(pro[MOindex].trait_names[0].toUpperCase().equals("FID"))
+						pro[MOindex].initial_phenotype(true);						
+					else{
+						switch(format){
+						case PLINK: case PLINK_bin:
+							pro[MOindex].initial_phenotype(true); break;
+						default:
+							pro[MOindex].initial_phenotype(false); break;}}							
+					}
 				scroll_phenotype = new JScrollPane(pro[MOindex].panel_phenotype,
 		                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
 		                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -148,7 +160,8 @@ public class ConfigFrame extends JFrame implements ActionListener{
 			pane_main.add(pane_config, "cell 0 0 1 3, grow, w 470:470:, h 270:270:");
 			pane_main.add(pane_top, "dock north, h 200:200:");
 			pane_main.add(bottom_restore, "cell 0 3 2 1, align l");
-		load(pro);
+		
+		load();
 		this.setLocation(600, 500);
 		this.setContentPane(pane_main);
 		this.setVisible(true);
@@ -179,17 +192,53 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				// Dragging a method
 				if(indexDrag != iPatProject.Method.NA){
 					// Drop in the panel
-					if(pane_config.getBounds().contains(e.getPoint()))
+					if(pane_config.getBounds().contains(e.getPoint())){
 						pane_config.MethodSelected(indexDrag);
+						try {
+						switch(indexDrag){
+						case GAPIT: preCovPane(C_exist, new String[]{"Selected", "Excluded"}); break;
+						case FarmCPU: preCovPane(C_exist, new String[]{"Selected", "Excluded"}); break;
+						case PLINK: preCovPane(C_exist, new String[]{"Selected", "Excluded"}); break;
+						case gBLUP: preCovPane(C_exist, new String[]{"Selected", "Excluded"}); break;
+						case rrBLUP: preCovPane(C_exist, new String[]{"Selected", "Excluded"}); break;
+						case BGLR: preCovPane(C_exist, new String[]{"FIXED", "BRR", "BayesA", "BL", "BayesB", "BayesC", "OMIT IT"}); break;
+						}} catch (IOException e1) {e1.printStackTrace();}
 					// Drop outside of the panel
-					else if(pane_config.isDeployed)
+					}else if(pane_config.isDeployed){
 						pane_config.MethodSelected(pane_config.existmethod);
-					
+						try {
+							switch(pane_config.existmethod){
+							case GAPIT: preCovPane(C_exist, new String[]{"Selected", "Excluded"}); break;
+							case FarmCPU: preCovPane(C_exist, new String[]{"Selected", "Excluded"}); break;
+							case PLINK: preCovPane(C_exist, new String[]{"Selected", "Excluded"}); break;
+							case gBLUP: preCovPane(C_exist, new String[]{"Selected", "Excluded"}); break;
+							case rrBLUP: preCovPane(C_exist, new String[]{"Selected", "Excluded"}); break;
+							case BGLR: preCovPane(C_exist, new String[]{"FIXED", "BRR", "BayesA", "BL", "BayesB", "BayesC", "OMIT IT"}); break;
+							}} catch (IOException e1) {e1.printStackTrace();}
+					}
 					label_method[indexDrag.index].setLocation(tempLabel);
 					indexDrag = iPatProject.Method.NA;
 					tempLabel = new Point(-1, -1);}
 			}
-		});	
+			
+			public void preCovPane(boolean C_exist, String[] model_names) throws IOException{
+				if(C_exist){
+					System.out.println("CO from object " + iIndex);
+					CO_head = iPatPanel.read_lines(ob[C_index].getPath(), 1)[0];
+					CO_names = CO_head.split("\t");
+					pro[MOindex].initial_cov(CO_names.length, CO_names, model_names);
+					scroll_cov = new JScrollPane(pro[MOindex].panel_cov,
+			                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+			                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);}
+				else{
+					System.out.println("NO CO found");
+					pro[MOindex].initial_cov(0, new String[]{}, new String[]{"Selected", "Excluded"});
+					pro[MOindex].panel_cov.setLayout(new MigLayout("", "[grow]", "[grow]"));
+					JLabel na_co = new JLabel("<html><center> Covariates <br> Unavailable </center></html>", SwingConstants.CENTER);
+					na_co.setFont(new Font("Ariashowpril", Font.PLAIN, 20));
+					pro[MOindex].panel_cov.add(na_co, "grow");}	
+			}
+		});
 		this.addMouseMotionListener(new MouseMotionAdapter(){
 			@Override
 			public void mouseDragged(MouseEvent e){
@@ -229,24 +278,36 @@ public class ConfigFrame extends JFrame implements ActionListener{
 	@Override
 	public void actionPerformed(ActionEvent event){
 		Object source = event.getSource();
-		if(source == bottom_restore){
+		if(source == bottom_restore)
 			restore();
-		}else if(source == wd_path.browse){
+		else if(source == wd_path.browse)
 			wd_path.setPath(true);
-		}
 	}
+	void initialize(){
+		C_exist = false;
+		K_exist = false;
+		C_index = 0;
+		K_index = 0;
+		C_provided = 0;
+		K_provided = 0;
+		CO_head = " ";
+		CO_names = null;
+		path_C = "NA";
+		path_K = "NA";
+	}
+	
 	public void refresh(){
 		this.setVisible(true);
 	}
 	public void save(){
-		iPatPanel.project[MOindex] = project_name.field.getText();
+		ob[iIndex].name.setText(project_name.field.getText());
 		iPatPanel.wd = wd_path.field.getText();
 		iPatPanel.maf = (String) maf_qc.combo.getSelectedItem();
 		iPatPanel.ms = (String) ms_qc.combo.getSelectedItem();
 		pane_config.save(isGWAS);
 	}
-	public void load(iPatProject[] pro){
-		project_name.field.setText(iPatPanel.project[MOindex]);
+	public void load(){
+		project_name.field.setText(ob[iIndex].name.getText());
 		wd_path.field.setText(iPatPanel.wd);
 		maf_qc.combo.setSelectedItem(iPatPanel.maf);
 		ms_qc.combo.setSelectedItem(iPatPanel.ms);
@@ -293,9 +354,8 @@ public class ConfigFrame extends JFrame implements ActionListener{
 		}
 		public void HintDrag(){
 			this.setBackground(Color.decode("#D0EDE8"));
-			msg.setText("<html><center> Drag Here <br> a Method </center></html>");
+			msg.setText("<html><center> Drag a Method <br> Here  </center></html>");
 		}
-
 		public void MethodSelected(iPatProject.Method method){
 			isDeployed = true;
 			existmethod = method;
@@ -323,71 +383,62 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				String[] command_exe = null;
 				String[] command_specific = null;
 				switch(existmethod){
-					case GAPIT:
-						command_exe = new String[]{
-								R_exe,
-								iPatPanel.jar.getParent()+"/libs/iPat_Gapit.R"};
-						command_specific = new String[]{
-								(String)model_select.combo.getSelectedItem(),  // 17
-								(String)K_cluster.combo.getSelectedItem(),
-								(String)K_group.combo.getSelectedItem(),
-								(String)snp_frac.combo.getSelectedItem(),
-								//(String)file_frag.combo.getSelectedItem(), // 21
-								model_selection.isSelected()?"TRUE":"FALSE"};
-						break;
-					case FarmCPU:
-						command_exe = new String[]{
-								R_exe,
-								iPatPanel.jar.getParent()+"/libs/iPat_FarmCPU.R"};
-						command_specific = new String[]{
-								(String)method_bin.combo.getSelectedItem(),  // 17
-								(String)maxloop.combo.getSelectedItem()
-								};
-						break;
-					case PLINK:
-						command_exe = new String[]{
-								R_exe,
-								iPatPanel.jar.getParent()+"/libs/iPat_PLINK.R"};
-						command_specific = new String[]{
-								(String)ci.combo.getSelectedItem(),  // 17
-								"TRUE"
-								};
-						break;
-					case gBLUP:
-						command_exe = new String[]{
-								R_exe,
-								iPatPanel.jar.getParent()+"/libs/iPat_gBLUP.R"};
-						command_specific = new String[]{
-								(String)snp_frac.combo.getSelectedItem(),  // 17
-								//(String)file_frag.combo.getSelectedItem(),
-								model_selection.isSelected()?"TRUE":"FALSE",
-								enable.isSelected()?"TRUE":"FALSE",
-								(String)bonferroni.combo.getSelectedItem()}; // 21
-						break;
-					case rrBLUP:
-						command_exe = new String[]{
-								R_exe,
-								iPatPanel.jar.getParent()+"/libs/iPat_rrBLUP.R"};
-						command_specific = new String[]{
-								(String)impute_method.combo.getSelectedItem(),  // 17
-								shrink.isSelected()?"TRUE":"FALSE",
-								enable.isSelected()?"TRUE":"FALSE",
-								(String)bonferroni.combo.getSelectedItem()};
-						break;
-					case BGLR:
-						command_exe = new String[]{
-								R_exe,
-								iPatPanel.jar.getParent()+"/libs/iPat_BGLR.R"};
-						command_specific = new String[]{
-								(String)model_b.combo.getSelectedItem(),  // 17
-								(String)response_b.combo.getSelectedItem(),
-								(String)niter_b.combo.getSelectedItem(),
-								(String)burnin_b.combo.getSelectedItem(),							
-								(String)thin_b.combo.getSelectedItem(),  // 21
-								enable.isSelected()?"TRUE":"FALSE",
-								(String)bonferroni.combo.getSelectedItem()};
-						break;
-				}
+				case GAPIT:
+					command_exe = new String[]{
+							R_exe,
+							iPatPanel.jar.getParent()+"/libs/iPat_Gapit.R"};
+					command_specific = new String[]{
+							(String)model_select.combo.getSelectedItem(),  // 17
+							(String)K_cluster.combo.getSelectedItem(),
+							(String)K_group.combo.getSelectedItem(),
+							(String)snp_frac.combo.getSelectedItem(),
+							(String)file_frag.combo.getSelectedItem(), // 21
+							model_selection.isSelected()?"TRUE":"FALSE"}; break;
+				case FarmCPU:
+					command_exe = new String[]{
+							R_exe,
+							iPatPanel.jar.getParent()+"/libs/iPat_FarmCPU.R"};
+					command_specific = new String[]{
+							(String)method_bin.combo.getSelectedItem(),  // 17
+							(String)maxloop.combo.getSelectedItem()}; break;
+				case PLINK:
+					command_exe = new String[]{
+							R_exe,
+							iPatPanel.jar.getParent()+"/libs/iPat_PLINK.R"};
+					command_specific = new String[]{
+							(String)ci.combo.getSelectedItem(),  // 17
+							"TRUE"}; break;
+				case gBLUP:
+					command_exe = new String[]{
+							R_exe,
+							iPatPanel.jar.getParent()+"/libs/iPat_gBLUP.R"};
+					command_specific = new String[]{
+							(String)snp_frac.combo.getSelectedItem(),  // 17
+							(String)file_frag.combo.getSelectedItem(),
+							model_selection.isSelected()?"TRUE":"FALSE",
+							enable.isSelected()?"TRUE":"FALSE",
+							(String)bonferroni.combo.getSelectedItem()}; break; // 21
+				case rrBLUP:
+					command_exe = new String[]{
+							R_exe,
+							iPatPanel.jar.getParent()+"/libs/iPat_rrBLUP.R"};
+					command_specific = new String[]{
+							(String)impute_method.combo.getSelectedItem(),  // 17
+							shrink.isSelected()?"TRUE":"FALSE",
+							enable.isSelected()?"TRUE":"FALSE",
+							(String)bonferroni.combo.getSelectedItem()}; break;
+				case BGLR:
+					command_exe = new String[]{
+							R_exe,
+							iPatPanel.jar.getParent()+"/libs/iPat_BGLR.R"};	
+					command_specific = new String[]{
+							(String)model_b.combo.getSelectedItem(),  // 17
+							(String)response_b.combo.getSelectedItem(),
+							(String)niter_b.combo.getSelectedItem(),
+							(String)burnin_b.combo.getSelectedItem(),							
+							(String)thin_b.combo.getSelectedItem(),  // 21
+							enable.isSelected()?"TRUE":"FALSE",
+							(String)bonferroni.combo.getSelectedItem()}; break;}
 			// combine whole command
 				String[] command =  ArrayUtils.addAll(command_exe, ArrayUtils.addAll(command_common, command_specific));
 				return command;
@@ -395,26 +446,11 @@ public class ConfigFrame extends JFrame implements ActionListener{
 		
 		// Common used
 		JTabbedPane pane = new JTabbedPane();
-		String CO_head;
-		String[] CO_names;
 		JPanel panel_gwas = new JPanel();
 		JCheckBox enable = new JCheckBox("");
 		Group_Combo bonferroni = new Group_Combo("Bonferroni cut-off",  
 				new String[]{"0.05", "0.01", "0.005", "0.001", "0.0001"});
-		// COV pane
-		public void CovPane(boolean C_exist, String[] model_names) throws IOException{
-			if(C_exist){
-				CO_head = iPatPanel.read_lines(ob[C_index].getPath(), 1)[0];
-				CO_names = CO_head.split("\t");
-				pro[MOindex].initial_cov(CO_names.length, CO_names, model_names, 
-						new MigLayout("fillx"));}
-			else{
-				pro[MOindex].initial_cov(0, new String[]{}, new String[]{"Selected", "Excluded"}, 
-						new MigLayout("", "[grow]", "[grow]"));
-				JLabel na_co = new JLabel("<html><center> Covariates <br> Unavailable </center></html>", SwingConstants.CENTER);
-				na_co.setFont(new Font("Ariashowpril", Font.PLAIN, 20));
-				pro[MOindex].panel_cov.add(na_co, "grow");}	
-		}
+		
 		// GWAS pane
 		public void GWASPane(){
 			if(pro[MOindex].isGSDeployed()){
@@ -435,9 +471,8 @@ public class ConfigFrame extends JFrame implements ActionListener{
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			Object src = e.getSource();
-			if(src == enable){
+			if(src == enable)
 				bonferroni.combo.setEnabled(!bonferroni.combo.isEnabled());
-			}
 		}
 		// Method specific
 		JPanel panel_gapit;
@@ -458,8 +493,6 @@ public class ConfigFrame extends JFrame implements ActionListener{
 		public void config_gapit() throws IOException{
 			this.removeAll();
 			pane = new JTabbedPane();
-			// cov
-				CovPane(C_exist, new String[]{"Selected", "Excluded"});
 			// specific
 				panel_gapit = new JPanel(new MigLayout("fillx"));
 				panel_gapit.add(model_select.name, "cell 0 0, align r");
@@ -472,7 +505,8 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				panel_advance.add(snp_frac.name, "cell 0 0, align r");
 				panel_advance.add(snp_frac.combo, "cell 1 0, align l");
 				panel_advance.add(model_selection, "cell 0 1 2 1, align c");
-			pane.addTab("Covariates", pro[MOindex].panel_cov);
+			if(C_exist) pane.addTab("Covariates", scroll_cov);
+			else pane.addTab("Covariates", pro[MOindex].panel_cov);
 			pane.addTab("GAPIT input", panel_gapit);
 			pane.addTab("Advance", panel_advance);
 			this.add(pane, "grow");
@@ -480,8 +514,6 @@ public class ConfigFrame extends JFrame implements ActionListener{
 		public void config_gblup() throws IOException{
 			this.removeAll();
 			pane = new JTabbedPane();
-			// cov
-				CovPane(C_exist, new String[]{"Selected", "Excluded"});
 			// gwas
 				GWASPane();
 			// specific
@@ -489,7 +521,8 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				panel_advance.add(snp_frac.name, "cell 0 0, align r");
 				panel_advance.add(snp_frac.combo, "cell 1 0, align l");
 				panel_advance.add(model_selection, "cell 0 1 2 1, align c");
-			pane.addTab("Covariates", pro[MOindex].panel_cov);
+			if(C_exist) pane.addTab("Covariates", scroll_cov);
+			else pane.addTab("Covariates", pro[MOindex].panel_cov);
 			pane.addTab("GWAS-Assist",  panel_gwas);
 			pane.addTab("Advance", panel_advance);
 			this.add(pane, "grow");
@@ -503,32 +536,29 @@ public class ConfigFrame extends JFrame implements ActionListener{
 		void config_farm() throws IOException{
 			this.removeAll();
 			pane = new JTabbedPane();
-			// cov
-				CovPane(C_exist, new String[]{"Selected", "Excluded"});
 			// specific
 				panel_farm = new JPanel(new MigLayout("fillx"));
 				panel_farm.add(method_bin.name, "cell 0 0, align r");
 				panel_farm.add(method_bin.combo, "cell 1 0, align l");
 				panel_farm.add(maxloop.name, "cell 0 1, align r");
 				panel_farm.add(maxloop.combo, "cell 1 1, align l");
-			pane.addTab("Covariates", pro[MOindex].panel_cov);
+			if(C_exist) pane.addTab("Covariates", scroll_cov);
+			else pane.addTab("Covariates", pro[MOindex].panel_cov);
 			pane.addTab("FarmCPU input", panel_farm);	
 			this.add(pane, "grow");
-		}
-		
+		}		
 		JPanel panel_plink;
 		Group_Combo ci = new Group_Combo("C.I.",
 				new String[]{"0.95", "0.975", "0.995"}); 
 		void config_plink() throws IOException{
 			this.removeAll();
 			pane = new JTabbedPane();
-			// cov
-				CovPane(C_exist, new String[]{"Selected", "Excluded"});
 			// specific
 				panel_plink = new JPanel(new MigLayout("fillx"));
 				panel_plink.add(ci.name, "cell 0 0, align r");
 				panel_plink.add(ci.combo, "cell 1 0, align l");
-			pane.addTab("Covariates", pro[MOindex].panel_cov);
+			if(C_exist) pane.addTab("Covariates", scroll_cov);
+			else pane.addTab("Covariates", pro[MOindex].panel_cov);
 			pane.addTab("PLINK input", panel_plink);
 			this.add(pane, "grow");
 		}
@@ -540,8 +570,6 @@ public class ConfigFrame extends JFrame implements ActionListener{
 		void config_rrblup() throws IOException{
 			this.removeAll();
 			pane = new JTabbedPane();
-			// cov
-				CovPane(C_exist, new String[]{"Selected", "Excluded"});
 			// gwas
 				GWASPane();
 			// specific
@@ -549,7 +577,8 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				panel_rrblup.add(impute_method.name, "cell 0 0, align r");
 				panel_rrblup.add(impute_method.combo, "cell 1 0, align l");
 				panel_rrblup.add(shrink, "cell 0 1, align c");
-			pane.addTab("Covariates", pro[MOindex].panel_cov);
+			if(C_exist) pane.addTab("Covariates", scroll_cov);
+			else pane.addTab("Covariates", pro[MOindex].panel_cov);
 			pane.addTab("GWAS-Assist",  panel_gwas);
 			pane.addTab("rrBLUP input", panel_rrblup);
 			this.add(pane, "grow");
@@ -569,8 +598,6 @@ public class ConfigFrame extends JFrame implements ActionListener{
 		void config_bglr() throws IOException{
 			this.removeAll();
 			pane = new JTabbedPane();
-			// cov
-				CovPane(C_exist, new String[]{"FIXED", "BRR", "BayesA", "BL", "BayesB", "BayesC", "OMIT IT"});
 			// gwas
 				GWASPane();
 			// specific
@@ -585,7 +612,8 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				panel_args_b.add(burnin_b.combo, "cell 1 3, align l");
 				panel_args_b.add(thin_b.name, "cell 0 4, align r");
 				panel_args_b.add(thin_b.combo, "cell 1 4, align l");
-			pane.addTab("Covariates", pro[MOindex].panel_cov);
+			if(C_exist) pane.addTab("Covariates", scroll_cov);
+			else pane.addTab("Covariates", pro[MOindex].panel_cov);
 			pane.addTab("GWAS-Assist",  panel_gwas);
 			pane.addTab("BGLR input", panel_args_b);
 			this.add(pane, "grow");		
@@ -597,7 +625,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 					iPatPanel.K_cluster = (String) K_cluster.combo.getSelectedItem();
 					iPatPanel.K_group = (String) K_group.combo.getSelectedItem();
 					iPatPanel.model_select = (String) model_select.combo.getSelectedItem();
-					iPatPanel.snp_frac = (String) snp_frac.combo.getSelectedItem();
+					iPatPanel.snp_frac = (String) snp_frac.combo.getSelectedItem(); 
 					//iPatPanel.file_frag = (String) file_frag.combo.getSelectedItem();
 					iPatPanel.model_selection = model_selection.isSelected();
 				// FarmCPU

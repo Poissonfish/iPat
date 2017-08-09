@@ -4,7 +4,7 @@
 	project = args[1]
 	wd = args[2]
 	lib = args[3]
-	format = args[4]
+	#format = args[4]
 	ms = as.numeric(args[5])
 	maf  = as.numeric(args[6])
 	Y.path = args[7]
@@ -56,6 +56,7 @@ tryCatch({
 	# Subset Phenotype
   	cat("   Loading phenotype ...")
 	  Y.data = fread(Y.path) %>% as.data.frame
+	  if(toupper(names(Y.data)[1]) == "FID") {Y.data = Y.data[,-1]}
 	  subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .)
 	  index.trait = which(subset == "Selected") 
 	  if(length(index.trait) == 1){
@@ -68,32 +69,11 @@ tryCatch({
 	taxa = Y.data[,1]
 	trait.names = names(Y)
     cat("Done\n")
-	# Format-free
-  	cat("   Loading genotype and do conversion if need ...")
-	OS.Windows = FALSE
-  	switch(Sys.info()[['sysname']],
-      Windows= {OS.Windows = TRUE}, # Windows
-      Linux  = { }, # Linux
-      Darwin = { }) # MacOS
-	switch(format, 
-	  Hapmap = {if(!OS.Windows){sprintf("chmod 777 %s/blink", lib) %>% system()}
-        hmp = substring(GD.path, 1, nchar(GD.path)-4)
-        sprintf("%s/blink --file %s --compress --hapmap", lib, hmp) %>% system()
-        sprintf("%s/blink --file %s --recode --out %s --numeric", lib, hmp, hmp) %>% system()
-        GD = fread(sprintf("%s.dat", hmp)) %>% t() %>% data.frame(Y[,1], .)},
-	  VCF = { if(!OS.Windows){sprintf("chmod 777 %s/blink", lib) %>% system()}
-	    vcf = substring(GD.path, 1, nchar(GD.path)-4)
-	    sprintf("%s/blink --file %s --compress --vcf", lib, vcf) %>% system()
-	    sprintf("%s/blink --file %s --recode --out %s --numeric", lib, vcf, vcf) %>% system()
-	    GD = fread(sprintf("%s.dat", vcf)) %>% t() %>% data.frame(Y[,1], .)},
-	  PLink_Binary = {
-	  }, {
-	  	# Numeric (Default)
-		GD = fread(GD.path) %>% as.data.frame()
-		GM = fread(GM.path) %>% as.data.frame()
-	  	if(is.character(GD[,1])) GD = GD[,-1]
-	  }
-	)
+    # Genotype
+    cat("   Loading genotype ...")
+    GD = fread(GD.path) %>% as.data.frame()
+    GM = fread(GM.path) %>% as.data.frame()
+    if(is.character(GD[,1])) GD = GD[,-1]
     cat("Done\n")
 	# QC
     cat("   Quality control ...")
@@ -105,12 +85,16 @@ tryCatch({
 	    }
       # MAF
 	    if(!is.na(maf)){
-	    	MAF = apply(GD, 2, mean) %>% 
-      			as.matrix() %>% 
-      			apply(1, function(x) min(1 - x/2, x/2))
+	    	GD_temp = GD
+      		GD_temp[is.na(GD)] = 1
+      		MAF = apply(GD_temp, 2, mean) %>% 
+            	  as.matrix() %>% 
+            	  apply(1, function(x) min(1 - x/2, x/2))
       		GD = GD[, MAF >= maf]
       		GM = GM[MAF >= maf, ]
 	    }
+	  # No NA allowed in BGLR
+      	GD[is.na(GD)] = 1
     cat("Done\n")
 	# BGLR
 	for (i in 1:length(trait.names)){
@@ -160,6 +144,7 @@ tryCatch({
 			    ### 1+ QTNs
 			    }else if(length(index.sig) > 1){
 			    	## LD Remove
+			    	C.gwas = data.frame(GD[,index.sig])
        				LD_remain = Blink.LDRemove(C.gwas, .7, index.sig, orientation = "col")
         			C.gwas = C.gwas[,LD_remain]
         			length(ETA) = length(ETA) + 1
@@ -179,18 +164,33 @@ tryCatch({
 	stop(e)	
 })
 
+project="Project_1"
+wd="/Users/Poissonfish/Desktop/test/farm"
+lib="/Users/Poissonfish/git/iPat/libs/"
+format="PLINK"
+ms=as.numeric("No_threshold")
+maf=as.numeric("0.05")
+Y.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/PLINK/simb.txt"
+Y.index="ExcludedsepExcludedsepSelectedsep"
+GD.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/PLINK/sim_recode.dat"
+GM.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/PLINK/sim_recode.nmap"
+C.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/covariates.txt"
+C.index="NA"
+K.path="NA"
+FAM.path="NA"
+BIM.path="NA"
+model = "BRR"
+response = "gaussian"
+nIter = 1200 
+burnIn = 200
+thin = 5
+gwas.assist = as.logical("TRUE") 
+cutoff = .05 
+
+
 # ETA<-list(list(K=KI,model='RKHS')) 
 # fm<-BGLR(y= Y.train, ETA=ETA,nIter=12000, burnIn=2000,saveAt='RKHS_h=0.5_', verbose = F)
 # cor(fm$yHat[sam], Y.valid)
 # ETA = list(list(K = KI, model = 'RKHS'), list(X=G, model='BL'))
 # fm2<-BGLR(y= Y.train, ETA=ETA,nIter=12000, burnIn=2000,saveAt='RKHS_h=0.5_', verbose = F)
 # cor(fm2$yHat[sam], Y.valid)
-
-# C.index = "BayesAsepFIXEDsepFIXEDsep"
-# model = "BRR"
-# response = "gaussian"
-# nIter = 1200 
-# burnIn = 200
-# thin = 5
-# gwas.assist = as.logical("TRUE") 
-# cutoff = .05 
