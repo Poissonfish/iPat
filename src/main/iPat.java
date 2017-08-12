@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -149,6 +150,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	private static final int MOMAX = 10;
 	private static final int LINEMAX = 300;
 	static File jar;
+	static String res;
 	static iPatObject[] iOB = new iPatObject[TBMAX + MOMAX];
 	static iPatProject[] iPro = new iPatProject[MOMAX];
 	// iOB / project
