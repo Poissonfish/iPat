@@ -1,0 +1,9 @@
+{
+  "title": "iPat_Installer",
+  "background": "iPatBG.png",
+  "icon-size": 80,
+  "contents": [
+    { "x": 150, "y": 230, "type": "file", "path": "iPat.app" },
+    { "x": 440, "y": 225, "type": "link", "path": "/Applications" }
+  ]
+}

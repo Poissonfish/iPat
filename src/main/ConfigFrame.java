@@ -367,7 +367,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				String[] command_common = {
 						project_name.field.getText(), // 2
 						wd_path.field.getText(), 
-						iPatPanel.jar.getParent()+"/libs/", 
+						iPatPanel.jar.getParent()+"/libs/",
 						pro[MOindex].format.getName(), 
 						(String)ms_qc.combo.getSelectedItem(), 
 						(String)maf_qc.combo.getSelectedItem(), // 7 
