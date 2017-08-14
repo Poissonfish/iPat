@@ -222,7 +222,7 @@
 * Map information (.map):
 
 |Chromosome|Marker ID|Genetic distance|Physical Position|
-|:-:|:-:|:-:|:-:|:-:|
+|:-:|:-:|:-:|:-:|
 |1|marker 1|0|157104|
 |1|marker 2|0|1947984|
 |1|marker 3|0|2914066|
