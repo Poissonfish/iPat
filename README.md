@@ -195,7 +195,7 @@
 * Map information, the header is requried to be provided:
 
 |SNP|Chromosome| Position|
-|:-:|:-:|:-:|:-:|
+|:-:|:-:|:-:|
 |marker 1|1|157104|
 |marker 2|1|1947984|
 |marker 3|1|2914066|
@@ -273,7 +273,7 @@
 * Demo format for a kinship file. Taxa name is required while the header can be omitted:
 
 |taxa|sample 1|sample 2|sample 3|
-|:-:|:-:|:-:|:-:|:-:|
+|:-:|:-:|:-:|:-:|
 |sample 1|2.00000000| 0.22883683| 0.22932180|0.26884221|
 |sample 2| 0.22883683|2.00000000|0.24496455|0.29370841|
 |sample 3|0.22932180 | 0.24496455 | 2.00000000 | 0.21485867 |
