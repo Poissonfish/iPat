@@ -17,8 +17,6 @@
 
 > 1-3 [Mac OS users](#mac)
 
-> 1-4 [Launch iPat](#launch)
-
 #### 2. [Interface](#interface)
 > 2-1 [Import files](#import_files)
 
@@ -67,7 +65,6 @@
 
 #### 4. [Support](#support)
 #### 5. [Citation](#cite)
-
 
 <br><br><br>
 
