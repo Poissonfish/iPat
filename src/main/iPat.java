@@ -99,15 +99,13 @@ public class iPat {
 	public static void main(String[] args) throws IOException{  
 		System.out.println("Welcome to iPat!");
 		OS_string = System.getProperty("os.name");
-		if(OS_string.toUpperCase().contains("WINDOWS")){
+		if(OS_string.toUpperCase().contains("WINDOWS"))
 			UserOS.type = OS.TYPE.Windows;
-		}else if(OS_string.toUpperCase().contains("MAC")){
+		else if(OS_string.toUpperCase().contains("MAC"))
 			UserOS.type = OS.TYPE.Mac;
-		}else{
-			UserOS.type = OS.TYPE.Linux;
-		}
+		else
+			UserOS.type = OS.TYPE.Linux;		
 		System.out.println("You're running iPat on "+ UserOS.type);// Mac OS X, Windows 10
-		
 		JFrame main = new JFrame();
 		//Set to center
 		main.setSize(Wide, Heigth);
@@ -1129,21 +1127,24 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				traceLinkage(traceindex, iOBlink[i][0]);}}
 	}
 	public void open_config(int iIndex, boolean isGWAS) throws IOException{
-		int MOindex = getProIndex(iIndex);
-		String msg = "No match format found. \nPlease check demo files to correct the format: \n";
-		for(int i : getOBinGroup(iOB[iIndex].getGroupIndex())){
-			if(iOB[i].isMO()) continue;
-			msg = msg + "   " + iOB[i].name.getText() + ":\t" + iOB[i].type.getName() + "\n";}
+		int MOindex = getProIndex(iIndex);		
 		// Catch format
 		iPro[MOindex].format = catch_files(iIndex);
 		if(iPro[MOindex].isNAformat()){	
-			JOptionPane.showMessageDialog(new JFrame(),
-					msg,
-				    "Incorrect format",
-				    JOptionPane.ERROR_MESSAGE);}
+			String msg = "No match format found. \nPlease check demo files to correct the format: \n";
+			for(int i : getOBinGroup(iOB[iIndex].getGroupIndex())){
+				if(iOB[i].isMO()) continue;
+				msg = msg + "   " + iOB[i].name.getText() + ":\t" + iOB[i].type.getName() + "\n";}
+			JOptionPane.showMessageDialog(new JFrame(), msg,
+				    "Incorrect format", JOptionPane.ERROR_MESSAGE);}
 		else{
+		   	GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+	       	Point centerPoint = local_env.getCenterPoint();
+	       	int dx = centerPoint.x - 500 / 2;
+	        int dy = centerPoint.y - 400 / 2;	
 			ConfigFrame configframe = new ConfigFrame(iIndex, iOB, MOindex, iPro, isGWAS);
-			configframe.setResizable(true);}
+			configframe.setResizable(true);
+			configframe.setLocation(dx, dy);}
 	}
 	public void showConsole(int OBindex, int MOindex, String title, String MOPath){
 		iOB[OBindex].setPath(MOPath);
@@ -1151,7 +1152,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
         GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		Point centerPoint = local_env.getCenterPoint();
    		int dx = centerPoint.x - 500 / 2;
-    	int dy = centerPoint.y - 350 / 2;  
+   		int dy = centerPoint.y - 350 / 2;  
   		iPro[MOindex].frame.setBounds(dx - 100, dy, 500, 350);
   		iPro[MOindex].frame.setVisible(true); 
   		iPro[MOindex].frame.setTitle(title);
