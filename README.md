@@ -150,8 +150,11 @@
 
 <a name="file_format"></a>
 ### 2.3 *File formats*
-* iPat can work fine with Hapmap, numerical, VCF and PLINK format, it will recognize the file format and do a format conversion automatically if needed.
+* iPat mainly work with files in numerical format, but it can also work fine with Hapmap, VCF and PLINK format. iPat will recognize the format of input files and do a format conversion automatically if needed.
+
+<p align="center"><img src = "./md/conversion.png" width = 600></p>
  
+
 <a name="phenotype"></a>
 #### 2.3.1 Phenotype
 * Phenotype data for every formats except PLINK must contain **sample names** in the first column and **traits names** as the header: 
