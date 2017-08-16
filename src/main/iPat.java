@@ -66,6 +66,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -83,6 +84,8 @@ import javax.swing.Timer;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 
 import org.apache.commons.lang3.ArrayUtils;
 import net.miginfocom.swing.MigLayout;
@@ -389,6 +392,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				iOB[iIndex_popup].updateImage(TB_K);
 				iOB[iIndex_popup].setDeltaLocation(-adx, -ady);
 	    	}else if(source == popup_deltb){
+				removeiOB();
 	    	}else if(source == popup_openmo){
 				openfile(iOB[iIndex_popup].getPath());
 	    	}else if(source == popup_gwas){
@@ -426,7 +430,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 					    				iPro[ProIndex].command_gwas,
 					    				iPro[ProIndex].command_gs);
 					    		iPro[ProIndex].command_gwas[10] = iPro[ProIndex].command_gs[10]; // GD
-					    		iPro[ProIndex].command_gwas[11] = iPro[ProIndex].command_gs[11];}} // GM
+					    		iPro[ProIndex].command_gwas[11] = iPro[ProIndex].command_gs[11]; // GM
+					    		}} 
 		    		else if(gwas_exist){
 		    			int reply = JOptionPane.showConfirmDialog(null, ConfirmFrame(ProIndex,
 			    				iPro[ProIndex].method_gwas.getName(), null, 
@@ -434,20 +439,14 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	    					 	JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, 
 	    					 	new ImageIcon("resources/iPat_icon.png"));
 		    			if (reply == JOptionPane.YES_OPTION) {
-			    			System.out.println("1: " + iOB[iIndex_popup].name.getText());
 		    				showConsole(iIndex_popup, ProIndex, iPro[ProIndex].command_gwas[2], iPro[ProIndex].command_gwas[3]);
-			    			System.out.println("2: " + iOB[iIndex_popup].name.getText());
 		    				format_conversion(iIndex_popup, ProIndex, true);
-			    			System.out.println("3: " + iOB[iIndex_popup].name.getText());
 		    				PrintStatus(ProIndex,
 				    				iPro[ProIndex].method_gwas.getName(), null,
 				    				iPro[ProIndex].command_gwas, null);
-			    			System.out.println("4: " + iOB[iIndex_popup].name.getText());
 				    		iPro[ProIndex].runCommand(iIndex_popup, 
 				    				iPro[ProIndex].command_gwas,
-				    				null);}
-		    			System.out.println("5: " + iOB[iIndex_popup].name.getText());
-}
+				    				null);}}
 		    		else if(gs_exist){
 		    			int reply = JOptionPane.showConfirmDialog(null, ConfirmFrame(ProIndex,
 		    					null, iPro[ProIndex].method_gs.getName(),
@@ -464,8 +463,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				    				null,
 				    				iPro[ProIndex].command_gs);}}
 	    		} catch (IOException e) {e.printStackTrace();}
-	    	}else if(source == popup_delmo){
-	    	}
+	    	}else if(source == popup_delmo)
+	    		removeiOB();
 	    	iIndex_popup = -1;
 	    	repaint(); 
 	      };
@@ -679,10 +678,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			@Override
 		    public void actionPerformed(ActionEvent ae) {
 				repaint();
-				System.out.println("project act: " + hint_project_timer.isActived());
-				System.out.println("drag running: " + hint_drag_timer.isRunning());
-				System.out.println("TB length: " + getTBindex().length);
-				System.out.println("MO length: " + getMOindex().length);
 				if(!hint_project_timer.isActived() && 
 					getTBindex().length > 0 && getMOindex().length == 0){
 					hint_project_timer.setActived(true);
@@ -697,11 +692,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			@Override
 		    public void actionPerformed(ActionEvent ae) {
 				repaint();
-				System.out.println(" ====== ");
-				System.out.println("project act: " + hint_model_timer.isActived());
-				System.out.println("drag running: " + hint_project_timer.isRunning());
-				System.out.println("Group MO: " + isContainMOgroup());
-				System.out.println("MO length: " + getMOindex().length);
 				if(!hint_model_timer.isActived() &&
 					getMOindex().length > 0 && isContainMOgroup()){
 					hint_model_timer.setActived(true);
@@ -1108,8 +1098,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		if(isContainMO(gr2)) setContainMO(gr2, true);
 		else setContainMO(gr2, false);
 		// see if still a group
-		System.out.println("gr1: "+gr1 + " length " +getOBinGroup(gr1).length);
-		System.out.println("gr2: "+gr2 + " length " +getOBinGroup(gr2).length);
+		System.out.println("gr1: "+gr1 + " length " + getOBinGroup(gr1).length);
+		System.out.println("gr2: "+gr2 + " length " + getOBinGroup(gr2).length);
 		if(getOBinGroup(gr1).length == 1){
 			iOB[ob1].isGroup = false;
 			iOB[ob1].Groupindex = -1;}
@@ -1131,11 +1121,32 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		// Catch format
 		iPro[MOindex].format = catch_files(iIndex);
 		if(iPro[MOindex].isNAformat()){	
-			String msg = "No match format found. \nPlease check demo files to correct the format: \n";
+			String msg = "No match format found. \nPlease see section 2.3 from <a href=\"http://zzlab.net/iPat/iPat_manual.pdf\">iPat User Manaul</a> for details.<br>";
 			for(int i : getOBinGroup(iOB[iIndex].getGroupIndex())){
 				if(iOB[i].isMO()) continue;
-				msg = msg + "   " + iOB[i].name.getText() + ":\t" + iOB[i].type.getName() + "\n";}
-			JOptionPane.showMessageDialog(new JFrame(), msg,
+				msg = msg + "   " + iOB[i].name.getText() + ":\t" + iOB[i].type.getName() + "<br>";}
+			JEditorPane ep = new JEditorPane();
+			ep.setEditable(false);
+			ep.setBackground(new Color(237, 237, 237, 100));
+		    ep.setEditorKit(JEditorPane.createEditorKitForContentType("text/html"));
+		    ep.setText(msg);
+		    // handle link events
+	        ep.addHyperlinkListener(new HyperlinkListener() {
+	            @Override
+	            public void hyperlinkUpdate(HyperlinkEvent e) {
+	                if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+	                    if (Desktop.isDesktopSupported()) {
+	                        try {
+	                            Desktop.getDesktop().browse(e.getURL().toURI());
+	                        } catch (IOException | URISyntaxException e1) {
+	                            e1.printStackTrace();
+	                        }
+	                    }
+	                }
+	            }
+	        });
+			
+			JOptionPane.showMessageDialog(new JFrame(), ep,
 				    "Incorrect format", JOptionPane.ERROR_MESSAGE);}
 		else{
 		   	GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -1235,9 +1246,9 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			case "gBLUP":
 				TextArea.append(String.format(format1, "GWAS-Assisted:",command_gs[20]) + "\n");
 				TextArea.append(String.format(format1, "Bonferroni cutoff:", command_gs[21]) + "\n");
-				TextArea.append(String.format(format1, "SNP.fraction:", command_gwas[20]) + "\n");
-				TextArea.append(String.format(format1, "file.fragment:", command_gwas[21]) + "\n");
-				TextArea.append(String.format(format1, "model selection:", command_gwas[22]) + "\n");
+				TextArea.append(String.format(format1, "SNP.fraction:", command_gs[17]) + "\n");
+				TextArea.append(String.format(format1, "file.fragment:", command_gs[18]) + "\n");
+				TextArea.append(String.format(format1, "model selection:", command_gs[19]) + "\n");
 				break;
 			case "rrBLUP":
 				TextArea.append(String.format(format1, "GWAS-Assisted:",command_gs[19]) + "\n");
@@ -1354,9 +1365,9 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			case "gBLUP":
 				iPro[MOindex].textarea.append(String.format(format1, "GWAS-Assisted:",command_gs[20]) + "\n");
 				iPro[MOindex].textarea.append(String.format(format1, "Bonferroni cutoff:", command_gs[21]) + "\n");
-				iPro[MOindex].textarea.append(String.format(format1, "SNP.fraction:", command_gwas[20]) + "\n");
-				iPro[MOindex].textarea.append(String.format(format1, "file.fragment:", command_gwas[21]) + "\n");
-				iPro[MOindex].textarea.append(String.format(format1, "model selection:", command_gwas[22]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "SNP.fraction:", command_gs[17]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "file.fragment:", command_gs[18]) + "\n");
+				iPro[MOindex].textarea.append(String.format(format1, "model selection:", command_gs[19]) + "\n");
 				break;
 			case "rrBLUP":
 				iPro[MOindex].textarea.append(String.format(format1, "GWAS-Assisted:",command_gs[19]) + "\n");
@@ -1537,7 +1548,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	}
 	@Override
 	public void keyTyped(KeyEvent e) {}
-
 	@Override
 	public void keyPressed(KeyEvent e) {
 		int key = e.getKeyCode(); 
@@ -1661,7 +1671,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			case PLINK_bin:
 				Process p = null;
 				try {
-					p = Runtime.getRuntime().exec(new String[]{iPatPanel.jar.getParent()+"/libs/plink",
+					p = Runtime.getRuntime().exec(new String[]{iPatPanel.jar.getParent()+"/res/plink",
 							  "--bed", command[10],
 							  "--fam", command[15],
 							  "--bim", command[16], 
@@ -1893,12 +1903,10 @@ class iPatObject{
 	int Groupindex = -1;
 	public iPatObject() throws IOException{
 	}
-	
 	void remove(){
 		isDeleted = true;
 		isGroup = false;
 		containMO = false;
-		object = Object.NA;
 		Groupindex = -1;
 		setLocation(new Point(-10000, -10000));
 		updateLabel();
@@ -2025,6 +2033,9 @@ class iPatProject{
 	boolean isNAformat(){
 		return format == Format.NA ? true : false;
 	}
+	boolean isSuc(){
+		return multi_run.suc;
+	}
 	// runcommand
 	void runCommand(int index, String[] command, String[] con_command){
 		multi_run = new BGThread(index, command, con_command);
@@ -2062,6 +2073,7 @@ class iPatProject{
 		int OBindex;
 		String WD, Project;
 		String[] command, con_command;
+		boolean suc = false;
 		public BGThread(int OBindex, String[] command, String[] con_command){
 			this.OBindex = OBindex;
 			this.command = command;
@@ -2074,6 +2086,7 @@ class iPatProject{
 	        rotate_permit = true;
 			rotate_switch = true;
 			runtime = Runtime.getRuntime();
+			iPatPanel.iOB[OBindex].updateImage(iPatPanel.MOimage);
 			// Execute the command
 			try{
 				process = runtime.exec(command);
@@ -2128,10 +2141,10 @@ class iPatProject{
 				e1.printStackTrace();
 	        	Suc_or_Fal = false;}	       
 	        // Indicator
-		    if(Suc_or_Fal) 
+	        if(Suc_or_Fal) 
 		    	iPatPanel.iOB[OBindex].updateImage(iPatPanel.MO_suc); 
 		    else 
-		    	iPatPanel.iOB[OBindex].updateImage(iPatPanel.MO_fal);  
+		    	iPatPanel.iOB[OBindex].updateImage(iPatPanel.MO_fal); 
 		    // Stop rotating
 		    rotate_permit = false;
 			rotate_switch = false;

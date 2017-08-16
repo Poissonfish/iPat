@@ -48,6 +48,7 @@ tryCatch({
    # Subset Phenotype
     cat("   Loading phenotype ...")
     Y.data = fread(Y.path) %>% as.data.frame
+    if(toupper(names(Y.data)[1]) == "FID") {Y.data = Y.data[,-1]}
     subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .)
     index.trait = which(subset == "Selected") 
     if(length(index.trait) == 1){

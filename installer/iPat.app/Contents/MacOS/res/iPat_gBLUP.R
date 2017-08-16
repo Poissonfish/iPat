@@ -140,11 +140,14 @@ tryCatch({
       ## Find QTNs
       index.sig = which(map_gwas$P.value < (cutoff/nrow(gwas)))
       ## Generate a dataframe by number of QTNs
+      ### 0 QTNs
+      if(length(index.sig) == 0){
+        C.gwas = NULL
       ### 1 QTNs
-      if(length(index.sig) == 1){
+      }else if(length(index.sig) == 1){
         C.gwas = data.frame(m = GD[,index.sig])
        ### 1+ QTNs
-      }else{
+      }else if(length(index.sig) > 1){
         C.gwas = GD[,index.sig]
         ## LD Remove
         LD_remain = Blink.LDRemove(C.gwas, .7, index.sig, orientation = "col")
@@ -153,19 +156,23 @@ tryCatch({
       cat("Done\n")}
   ## Prevent c > n
     if(is.null(C)) index.C = NULL
-    if(length(Y[ ,i]) < length(index.C) + ncol(C.gwas)){
+    if(length(Y[ ,i]) < length(index.C) + length(index.sig)){
       diff = length(index.C) + ncol(C.gwas) - length(Y[,i])
       if(is.null(C))
-        C = data.frame(taxa = taxa, C.gwas[ ,1 : (ncol(C.gwas) - diff)])
+        C = data.frame(taxa = taxa, C.gwas[ ,1 : (length(index.sig) - diff)])
       else
-        C = data.frame(C, C.gwas[ ,1 : (ncol(C.gwas) - diff)])
+        C = data.frame(C, C.gwas[ ,1 : (length(index.sig) - diff)])
     }else{
-      if(is.null(C))
-        C = data.frame(taxa = taxa, C.gwas)
-      else
+      if(is.null(C)){
+        if(is.null(C.gwas)) {
+          C = NULL
+        }else{
+          C = data.frame(taxa = taxa, C.gwas)
+        }
+      }else{
         C = data.frame(C, C.gwas)
+      }
     } 
-  #if(is.na(C.inher)) C.inher = NULL else C.inher = C.inher
   # GAPIT
       x = GAPIT(
         Y = data.frame(taxa, Y[,i]),
@@ -182,7 +189,7 @@ tryCatch({
         SNP.fraction = snp.fraction,
         SNP.test=FALSE,
         memo = sprintf("%s_%s", project, trait.names[i]))
-    }
+  }
   print(warnings())
 }, error = function(e){
     stop(e)
