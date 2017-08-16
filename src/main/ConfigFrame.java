@@ -354,7 +354,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 		}
 		public void HintDrag(){
 			this.setBackground(Color.decode("#D0EDE8"));
-			msg.setText("<html><center> Drag a Method <br> Here  </center></html>");
+			msg.setText("<html><center> Drag a Package <br> Here  </center></html>");
 		}
 		public void MethodSelected(iPatProject.Method method){
 			isDeployed = true;
@@ -367,7 +367,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				String[] command_common = {
 						project_name.field.getText(), // 2
 						wd_path.field.getText(), 
-						iPatPanel.jar.getParent()+"/libs/",
+						iPatPanel.jar.getParent()+"/res/",
 						pro[MOindex].format.getName(), 
 						(String)ms_qc.combo.getSelectedItem(), 
 						(String)maf_qc.combo.getSelectedItem(), // 7 
@@ -386,7 +386,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				case GAPIT:
 					command_exe = new String[]{
 							R_exe,
-							iPatPanel.jar.getParent()+"/libs/iPat_Gapit.R"};
+							iPatPanel.jar.getParent()+"/res/iPat_Gapit.R"};
 					command_specific = new String[]{
 							(String)model_select.combo.getSelectedItem(),  // 17
 							(String)K_cluster.combo.getSelectedItem(),
@@ -397,21 +397,21 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				case FarmCPU:
 					command_exe = new String[]{
 							R_exe,
-							iPatPanel.jar.getParent()+"/libs/iPat_FarmCPU.R"};
+							iPatPanel.jar.getParent()+"/res/iPat_FarmCPU.R"};
 					command_specific = new String[]{
 							(String)method_bin.combo.getSelectedItem(),  // 17
 							(String)maxloop.combo.getSelectedItem()}; break;
 				case PLINK:
 					command_exe = new String[]{
 							R_exe,
-							iPatPanel.jar.getParent()+"/libs/iPat_PLINK.R"};
+							iPatPanel.jar.getParent()+"/res/iPat_PLINK.R"};
 					command_specific = new String[]{
 							(String)ci.combo.getSelectedItem(),  // 17
 							"TRUE"}; break;
 				case gBLUP:
 					command_exe = new String[]{
 							R_exe,
-							iPatPanel.jar.getParent()+"/libs/iPat_gBLUP.R"};
+							iPatPanel.jar.getParent()+"/res/iPat_gBLUP.R"};
 					command_specific = new String[]{
 							(String)snp_frac.combo.getSelectedItem(),  // 17
 							(String)file_frag.combo.getSelectedItem(),
@@ -421,7 +421,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				case rrBLUP:
 					command_exe = new String[]{
 							R_exe,
-							iPatPanel.jar.getParent()+"/libs/iPat_rrBLUP.R"};
+							iPatPanel.jar.getParent()+"/res/iPat_rrBLUP.R"};
 					command_specific = new String[]{
 							(String)impute_method.combo.getSelectedItem(),  // 17
 							shrink.isSelected()?"TRUE":"FALSE",
@@ -430,7 +430,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				case BGLR:
 					command_exe = new String[]{
 							R_exe,
-							iPatPanel.jar.getParent()+"/libs/iPat_BGLR.R"};	
+							iPatPanel.jar.getParent()+"/res/iPat_BGLR.R"};	
 					command_specific = new String[]{
 							(String)model_b.combo.getSelectedItem(),  // 17
 							(String)response_b.combo.getSelectedItem(),
