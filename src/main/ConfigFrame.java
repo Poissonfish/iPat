@@ -91,8 +91,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 			for (int i : iPatPanel.getOBinGroup(gr_index)){
 				System.out.println("Checking : " + i);
 				switch(ob[i].type){
-				case C: 
-					C_exist = true; C_index = i; path_C = ob[i].getPath(); break;
+				case C: C_exist = true; C_index = i; path_C = ob[i].getPath(); break;
 				case K: K_exist = true; K_index = i; path_K = ob[i].getPath(); break;}}
 		// Catch R exe path
 			switch(iPat.UserOS.type){

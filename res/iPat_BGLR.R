@@ -117,7 +117,9 @@ tryCatch({
 			if(K.path != "NA"){
 		      	cat("   Loading Kinship ...")
 				K = fread(K.path) %>% as.data.frame()
-				length(ETA) = length(ETA) + 1
+      			if(is.character(K[,1])) K = K[,-1]
+				K = as.matrix(K)
+    			length(ETA) = length(ETA) + 1
 				ETA[[length(ETA)]] = list(K = K, model = "RKHS")
 			    cat("Done\n")
 			}

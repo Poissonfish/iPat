@@ -102,8 +102,10 @@ tryCatch({
     K = tcrossprod(G.impute)
   }else{
     K = fread(K.path) %>% as.data.frame()
+    if(is.character(K[,1])) K = K[,-1]
+    K = as.matrix(K)
   }
-  for(i in 1:ncol(Y)){
+  for(i in 1:length(trait.names)){
     ## GWAS-assist
     if(gwas.assist){
       cat("   Loading QTNs information ...")
@@ -181,3 +183,24 @@ tryCatch({
 }, error = function(e){
   stop(e)
 })
+
+project="Project_2"
+wd="/Users/Poissonfish/Desktop/test/rr"
+lib="/Users/Poissonfish/git/iPat/res/"
+format="Numerical"
+ms=as.numeric("No_threshold")
+maf=as.numeric("0.05")
+Y.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.txt"
+Y.index="ExcludedsepExcludedsepSelectedsep"
+GD.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.dat"
+GM.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.map"
+C.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/covariates.txt"
+C.index="SelectedsepSelectedsepSelectedsep"
+K.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/kinship.txt"
+FAM.path="NA"
+BIM.path="NA"
+  impute = "mean"
+  shrink = "FALSE"
+  gwas.assist = "TRUE"
+  cutoff = 0.05
+

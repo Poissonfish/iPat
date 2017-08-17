@@ -120,6 +120,8 @@ tryCatch({
     }else{
       cat("   Loading Kinship ...")
       K = fread(K.path) %>% as.data.frame()
+      if(is.character(K[,1])) K = K[,-1]
+      K = data.frame(taxa = taxa, K)
       cat("Done\n")
     }
     #if(is.na(C.inher)) C.inher = NULL else C.inher = C.inher
@@ -147,8 +149,6 @@ tryCatch({
             GD = data.frame(taxa, GD),
             KI = K,
             CV = C,
-            #CV.Inheritance = C.inher,
-            #PCA.total = 3,
             kinship.cluster = ki.c,
             kinship.group = ki.g,
             group.from = g.from,
