@@ -407,7 +407,10 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	    		boolean gwas_exist = iPro[getProIndex(iIndex_popup)].isGWASDeployed(), 
 	    				gs_exist   = iPro[getProIndex(iIndex_popup)].isGSDeployed();
 	    		try {
+	    			catch_files(iIndex_popup);
 		    		if(gwas_exist && gs_exist){
+		    			reAssign(iIndex_popup, iPro[ProIndex].command_gwas);
+		    			reAssign(iIndex_popup, iPro[ProIndex].command_gs);
 		    			 int reply = JOptionPane.showConfirmDialog(null, ConfirmFrame(ProIndex,
 				    				iPro[ProIndex].method_gwas.getName(),
 				    				iPro[ProIndex].method_gs.getName(),
@@ -429,10 +432,9 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 					    		iPro[ProIndex].runCommand(iIndex_popup, 
 					    				iPro[ProIndex].command_gwas,
 					    				iPro[ProIndex].command_gs);
-					    		iPro[ProIndex].command_gwas[10] = iPro[ProIndex].command_gs[10]; // GD
-					    		iPro[ProIndex].command_gwas[11] = iPro[ProIndex].command_gs[11]; // GM
 					    		}} 
 		    		else if(gwas_exist){
+		    			reAssign(iIndex_popup, iPro[ProIndex].command_gwas);
 		    			int reply = JOptionPane.showConfirmDialog(null, ConfirmFrame(ProIndex,
 			    				iPro[ProIndex].method_gwas.getName(), null, 
 			    				iPro[ProIndex].command_gwas, null), "Your Configuration",  
@@ -448,6 +450,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				    				iPro[ProIndex].command_gwas,
 				    				null);}}
 		    		else if(gs_exist){
+		    			reAssign(iIndex_popup, iPro[ProIndex].command_gs);
 		    			int reply = JOptionPane.showConfirmDialog(null, ConfirmFrame(ProIndex,
 		    					null, iPro[ProIndex].method_gs.getName(),
 			    				null, iPro[ProIndex].command_gs), "Your Configuration",  
@@ -1685,8 +1688,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 													filename + ".map");
 				command[10] = filename + "_recode.dat";
 				command[11] = filename + "_recode.nmap";
-				iOB[GDindex].setPath(command[10]);
-				iOB[GMindex].setPath(command[11]);
 				break;}
 			iPro[ProIndex].format = iPatProject.Format.Numerical; break;
 		case PLINK:
@@ -1719,6 +1720,26 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				break;
 			case PLINK:
 				command[18] = "FALSE";
+				break;
+			case PLINK_bin:
+				Process p = null;
+				try {
+					p = Runtime.getRuntime().exec(new String[]{iPatPanel.jar.getParent()+"/res/plink",
+							  "--bed", command[10],
+							  "--fam", command[15],
+							  "--bim", command[16], 
+							  "--recode", "tab", 
+							  "--out", command[10].replaceFirst("[.][^.]+$", "")});
+					p.waitFor();
+				} catch (InterruptedException |IOException e2) {
+					e2.printStackTrace();} 
+				filename = command[10].replaceFirst("[.][^.]+$", "");
+				command[10] = filename + ".ped";
+				command[11] = filename + ".map";
+				iOB[GDindex].setPath(command[10]);
+				iOB[BIMindex].setPath(command[11]);
+				iOB[BIMindex].type = iPatObject.Filetype.GM;
+				command[18] = "FALSE";
 				break;}
 			iPro[ProIndex].format = iPatProject.Format.PLINK; break;
 		case gBLUP: case rrBLUP: case BGLR:
@@ -1749,6 +1770,24 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			iPro[ProIndex].format = iPatProject.Format.Numerical; break;
 		}
 	}	
+	private void reAssign(int index, String[] command){
+		int grIndex = iOB[index].getGroupIndex();
+		// Catch primary files
+		int index_p = iPatPanel.getIndexofType(grIndex, iPatObject.Filetype.P), 
+			index_gd = iPatPanel.getIndexofType(grIndex, iPatObject.Filetype.GD),
+			index_gm = iPatPanel.getIndexofType(grIndex, iPatObject.Filetype.GM),
+			index_fam = iPatPanel.getIndexofType(grIndex, iPatObject.Filetype.FAM),
+			index_bim = iPatPanel.getIndexofType(grIndex, iPatObject.Filetype.BIM),
+			index_c = iPatPanel.getIndexofType(grIndex, iPatObject.Filetype.C),
+			index_k = iPatPanel.getIndexofType(grIndex, iPatObject.Filetype.K);
+			command[8]  = index_p   != -1 ? iOB[index_p].getPath() : "NA";
+			command[10]	= index_gd  != -1 ? iOB[index_gd].getPath() : "NA";
+			command[11]	= index_gm  != -1 ? iOB[index_gm].getPath() : "NA";
+			command[12]	= index_c  != -1 ? iOB[index_c].getPath() : "NA";
+			command[13]	= index_k  != -1 ? iOB[index_k].getPath() : "NA";
+			command[15] = index_fam != -1 ? iOB[index_fam].getPath() : "NA";
+			command[16] = index_bim != -1 ? iOB[index_bim].getPath() : "NA";
+	}
 	
 	iPatProject.Format catch_files(int index) throws IOException{
 		// need extension (without extension): Binary fam

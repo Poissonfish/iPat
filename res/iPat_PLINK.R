@@ -46,7 +46,15 @@ tryCatch({
   # Subset Phenotype
     cat("   Loading phenotype ...")
     Y.data = fread(Y.path) %>% as.data.frame 
-    trait.name = Y.data[, -c(1, 2)] %>% names()
+    if(toupper(names(Y.data)[1]) != "FID") {
+      trait.name = Y.data[, -1] %>% names()
+      taxa = Y.data[,1]
+      Y.data = data.frame(FID = taxa, SID = taxa, Y.data[,-1])
+      Y.path = paste0(Y.path, "plink")
+      write.table(x = Y.data, file = Y.path, quote = F, row.names = F, sep = '\t')
+    }else{
+      trait.name = Y.data[, -c(1, 2)] %>% names()
+    }
     cat("Done\n")
   # Covariate
     if(C.path != "NA"){
