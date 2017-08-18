@@ -8,7 +8,7 @@ wd = args[5]
 lib = args[6]
 arg_length = 6
 
-# GM.path= "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/BSA/data.map"
+# #GM.path= "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/BSA/data.map"
 # GD.path= "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/BSA/data.bsa"
 # wd="/Users/Poissonfish/Desktop/test/seg"
 # lib = "/Users/Poissonfish/git/iPat/libs/"

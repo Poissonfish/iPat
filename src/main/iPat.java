@@ -463,8 +463,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				    				null, iPro[ProIndex].method_gs.getName(),
 				    				null, iPro[ProIndex].command_gs);
 				    		iPro[ProIndex].runCommand(iIndex_popup, 
-				    				null,
-				    				iPro[ProIndex].command_gs);}}
+				    				iPro[ProIndex].command_gs,
+				    				null);}}
 	    		} catch (IOException e) {e.printStackTrace();}
 	    	}else if(source == popup_delmo)
 	    		removeiOB();
