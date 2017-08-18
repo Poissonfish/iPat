@@ -124,7 +124,6 @@ tryCatch({
       K = data.frame(taxa = taxa, K)
       cat("Done\n")
     }
-    #if(is.na(C.inher)) C.inher = NULL else C.inher = C.inher
 
   # Model
   switch(model, 

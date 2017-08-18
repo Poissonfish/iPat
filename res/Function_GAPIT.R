@@ -1,6 +1,6 @@
 `GAPIT.0000` <-
 function(){
-##############################################################################################
+#############################################################################################
 #GAPIT: Genome Association and Prediction Integrated Tool
 #Objective 1: State of art methods for high  power, accuracy and speed;
 #Objective 2: User friendly by design, help documents, and web forum;

@@ -142,7 +142,7 @@ tryCatch({
 			        C.gwas = data.frame(m = GD[,index.sig])
 			        length(ETA) = length(ETA) + 1
 					ETA[[length(ETA)]] = list(X = C.gwas, model = "FIXED")
-			    ### 1+ QTNs
+			    ## 1+ QTNs
 			    }else if(length(index.sig) > 1){
 			    	## LD Remove
 			    	C.gwas = data.frame(GD[,index.sig])

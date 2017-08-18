@@ -16,7 +16,7 @@
   K.path  = args[13]
   FAM.path  = args[14]
   BIM.path  = args[15]
-## Method specific args
+# Method specific args
   method.bin = args[16] #"optimum"
   maxLoop = as.numeric(args[17])
 

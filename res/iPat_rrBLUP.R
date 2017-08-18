@@ -4,7 +4,7 @@
   project = args[1]
   wd = args[2]
   lib = args[3]
-  #format = args[4]
+  # format = args[4]
   ms = as.numeric(args[5])
   maf  = as.numeric(args[6])
   Y.path = args[7]
