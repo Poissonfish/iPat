@@ -120,6 +120,8 @@ tryCatch({
   }else{
     cat("   Loading Kinship ...")
     K = fread(K.path) %>% as.data.frame()
+    if(is.character(K[,1])) K = K[,-1]
+    K = data.frame(taxa = taxa, K)
     cat("Done\n")
   }
 
@@ -170,7 +172,9 @@ tryCatch({
           C = data.frame(taxa = taxa, C.gwas)
         }
       }else{
-        C = data.frame(C, C.gwas)
+        if(!is.null(C.gwas)) {
+          C = data.frame(C, C.gwas)
+        }
       }
     } 
   # GAPIT

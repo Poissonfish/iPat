@@ -452,7 +452,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 		
 		// GWAS pane
 		public void GWASPane(){
-			if(pro[MOindex].isGSDeployed()){
+			if(pro[MOindex].isGWASDeployed()){
 				panel_gwas.removeAll();	
 				enable = new JCheckBox("Enable GWAS-Assisted feature (By " + pro[MOindex].method_gwas.getName() + ")");
 				panel_gwas.setLayout(new MigLayout("fillx"));
@@ -462,6 +462,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				enable.setSelected(true);
 				enable.addActionListener(this);}
 			else{
+				panel_gwas.removeAll();	
 				panel_gwas.setLayout(new MigLayout("", "[grow]", "[grow]"));
 				JLabel na_msg = new JLabel("<html><center> GWAS-Assisted GS <br> Unavailable <br> Please select a GWAS method first </center></html>", SwingConstants.CENTER);
 				na_msg.setFont(new Font("Ariashowpril", Font.PLAIN, 18));

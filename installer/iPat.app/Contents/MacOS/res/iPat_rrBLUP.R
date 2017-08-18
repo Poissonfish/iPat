@@ -102,8 +102,10 @@ tryCatch({
     K = tcrossprod(G.impute)
   }else{
     K = fread(K.path) %>% as.data.frame()
+    if(is.character(K[,1])) K = K[,-1]
+    K = as.matrix(K)
   }
-  for(i in 1:ncol(Y)){
+  for(i in 1:length(trait.names)){
     ## GWAS-assist
     if(gwas.assist){
       cat("   Loading QTNs information ...")

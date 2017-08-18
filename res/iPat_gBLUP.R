@@ -172,7 +172,9 @@ tryCatch({
           C = data.frame(taxa = taxa, C.gwas)
         }
       }else{
-        C = data.frame(C, C.gwas)
+        if(!is.null(C.gwas)) {
+          C = data.frame(C, C.gwas)
+        }
       }
     } 
   # GAPIT

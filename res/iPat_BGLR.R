@@ -24,7 +24,6 @@
 	thin = as.numeric(args[20])
 	gwas.assist = as.logical(args[21])
   	cutoff = as.numeric(args[22])
-  	#gwas.method = args[23] 
 
 # Load libraries
   	cat("=== BGLR === \n")
