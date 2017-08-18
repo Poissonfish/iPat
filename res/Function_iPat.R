@@ -1,5 +1,5 @@
 `Blink.LDRemoveDivided`<-function(GDneo=NULL,LD=NULL,Porder=NULL,bound=FALSE,model="A",orientation=NULL,l=NULL){
-  #Objects: LD remove, especially length(Porder)>10000
+  ##Objects: LD remove, especially length(Porder)>10000
   #Authors: Yao Zhou
   #Last update: 08/15/2016
   seqQTN=NULL

@@ -185,7 +185,6 @@ tryCatch({
         KI = K,
         CV = C,
         #CV.Inheritance = C.inher,
-        #PCA.total = PCA,
         group.from = 10000,
         group.to = 10000,
         group.by = 10,

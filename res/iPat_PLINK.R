@@ -80,7 +80,7 @@ tryCatch({
   ## QC 
   if(!is.na(ms)) MS = sprintf("--geno %s", ms) else MS = character()  
   if(!is.na(maf)) MAF = sprintf("--maf %s", maf) else MAF = character()
-  ## COV and running BLINK
+  # COV and running BLINK
   if(length(C.name) > 0){
     cov = sprintf("--covar %s --covar-name %s", C.path, paste(C.name, collapse = ", "))
     paste(basic, MS, MAF, cov) %>% system() 
