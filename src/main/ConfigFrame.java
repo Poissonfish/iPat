@@ -692,7 +692,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 					K_group.combo.setSelectedItem(iPatPanel.df_K_group);
 					model_select.combo.setSelectedItem(iPatPanel.df_model_select);
 					snp_frac.combo.setSelectedItem(iPatPanel.df_snp_frac);
-					//file_frag.combo.setSelectedItem(iPatPanel.df_file_frag);
+					// file_frag.combo.setSelectedItem(iPatPanel.df_file_frag);
 					model_selection.setSelected(iPatPanel.df_model_selection);
 				// FarmCPU
 					method_bin.combo.setSelectedItem(iPatPanel.df_method_bin);

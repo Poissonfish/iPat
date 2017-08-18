@@ -1905,11 +1905,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		return format;		
 	} 
 }
-//0=combined or not(-1,1), 		0: isTempCombined
-//1= coindex, 					1: GroupTempindex
-//2=subcombined or not (-1,1) 	2: isGroup
-//3= coindex, 					3: Groupindex
-//4= if include model			4: containMO
+
 class iPatObject{
 	enum Filetype{
 		NA("Unknown"), P("Phenotype"), GD("Genotype"), GM("Map"), FAM("FAM"), BIM("BIM"), C("Covariate"), K("Kinship");
