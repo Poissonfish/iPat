@@ -407,7 +407,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	    		boolean gwas_exist = iPro[getProIndex(iIndex_popup)].isGWASDeployed(), 
 	    				gs_exist   = iPro[getProIndex(iIndex_popup)].isGSDeployed();
 	    		try {
-	    			catch_files(iIndex_popup);
+	    			iPro[ProIndex].format = catch_files(iIndex_popup);
 		    		if(gwas_exist && gs_exist){
 		    			reAssign(iIndex_popup, iPro[ProIndex].command_gwas);
 		    			reAssign(iIndex_popup, iPro[ProIndex].command_gs);
@@ -991,7 +991,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			System.out.println("index " + i + " = " + dist);
 			if(i == iIndex) 
 				continue;
-			else if(dist < minValue && dist < 100 ){
+			else if(dist < minValue && dist < 200){
 					// if two objects are not in the same group or both of them belong to group 0
 				//	((iOB[iIndex].Groupindex == -1 && iOB[i].Groupindex == -1) || iOB[iIndex].Groupindex != iOB[i].Groupindex)){
 				System.out.println("selected i = " + i);
@@ -1147,8 +1147,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	                    }
 	                }
 	            }
-	        });
-			
+	        });		
 			JOptionPane.showMessageDialog(new JFrame(), ep,
 				    "Incorrect format", JOptionPane.ERROR_MESSAGE);}
 		else{
@@ -1784,7 +1783,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			command[10]	= index_gd  != -1 ? iOB[index_gd].getPath() : "NA";
 			command[11]	= index_gm  != -1 ? iOB[index_gm].getPath() : "NA";
 			command[12]	= index_c  != -1 ? iOB[index_c].getPath() : "NA";
-			command[13]	= index_k  != -1 ? iOB[index_k].getPath() : "NA";
+			command[14]	= index_k  != -1 ? iOB[index_k].getPath() : "NA";
 			command[15] = index_fam != -1 ? iOB[index_fam].getPath() : "NA";
 			command[16] = index_bim != -1 ? iOB[index_bim].getPath() : "NA";
 	}
@@ -1799,6 +1798,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				   row2 = new String[maxfile][];
 		int[] row_count = new int[maxfile];
 		int[] col_count = new int[maxfile];
+		int BED = -1, BIM = -1, FAM = -1;
 		iPatProject.Format format = iPatProject.Format.NA;
 		// get file path from table
 		for (int i : getOBinGroup(iOB[index].getGroupIndex())){
@@ -1822,19 +1822,19 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		// determine which format
 		switch (count){
 			case 2:	
+				boolean[] PLINK_con  = {iOB[fIndex[0]].getPath().toUpperCase().endsWith("MAP") && iOB[fIndex[1]].getPath().toUpperCase().endsWith("PED") && col_count[0] == 4,
+									    iOB[fIndex[1]].getPath().toUpperCase().endsWith("MAP") && iOB[fIndex[0]].getPath().toUpperCase().endsWith("PED") && col_count[1] == 4};
 				boolean[] VCF_con = {col_count[0] - lines[0][1].split("/").length == 8 && lines[0][1].split("/").length > 1, 
 									 col_count[1] - lines[1][1].split("/").length == 8 && lines[1][1].split("/").length > 1};
 				boolean[] HMP_con = {col_count[0] - row_count[1] == 11 || col_count[0] - row_count[1] == 10,
 									  col_count[1] - row_count[0] == 11 || col_count[1] - row_count[0] == 10};
 				boolean[] NUM_con = {Arrays.asList(row2[0]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[0]) < 5,
 									 Arrays.asList(row2[1]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[1]) < 5};
-//				boolean[] BSA_con = {TB[file_index[0].tb].path.toUpperCase().endsWith("BSA") && TB[file_index[1].tb].path.toUpperCase().endsWith("MAP"),  
-//									 TB[file_index[1].tb].path.toUpperCase().endsWith("BSA") && TB[file_index[0].tb].path.toUpperCase().endsWith("MAP")};
-				System.out.println(col_count[0]);
-				System.out.println(col_count[1]);
-				System.out.println(row_count[0]);
-				System.out.println(row_count[1]);
-				if(partial_true(VCF_con)){
+				if(partial_true(PLINK_con)){
+					iOB[fIndex[0]].type = PLINK_con[0] ? iPatObject.Filetype.GM : iPatObject.Filetype.GD;
+					iOB[fIndex[1]].type = PLINK_con[1] ? iPatObject.Filetype.GD : iPatObject.Filetype.GM;
+					format = iPatProject.Format.PLINK;
+				}else if(partial_true(VCF_con)){
 					iOB[fIndex[0]].type = VCF_con[0] ? iPatObject.Filetype.GD : iPatObject.Filetype.P;
 					iOB[fIndex[1]].type = VCF_con[1] ? iPatObject.Filetype.GD : iPatObject.Filetype.P;
 					format = iPatProject.Format.VCF;
@@ -1845,11 +1845,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				}else if(partial_true(NUM_con)){
 					iOB[fIndex[0]].type = NUM_con[0] ? iPatObject.Filetype.GD : iPatObject.Filetype.P;
 					iOB[fIndex[1]].type = NUM_con[1] ? iPatObject.Filetype.GD : iPatObject.Filetype.P;
-					format = iPatProject.Format.Numerical;	
-//				}else if(partial_true(BSA_con)){
-//					file_index[0].file = BSA_con[0]?Findex.FILE.GD:Findex.FILE.GM;
-//					file_index[1].file = BSA_con[1]?Findex.FILE.GD:Findex.FILE.GM;
-//					format = FORMAT.BSA;	
+					format = iPatProject.Format.Numerical;
 				}
 				break;
 			case 3:	
@@ -1857,24 +1853,10 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				// Numerical
 				for (int i = 0; i < 3; i++){
 					int i2 = (i + 1)%3, i3 = (i + 2)%3;
-					System.out.println("col_count[i1] = "+ col_count[i]);
-					System.out.println("col_count[i2] = "+ col_count[i2]);
-					System.out.println("col_count[i3] = "+ col_count[i3]);
-					System.out.println("row_count[i1] = "+ row_count[i]);
-					System.out.println("row_count[i2] = "+ row_count[i2]);
-					System.out.println("row_count[i3] = "+ row_count[i3]);
-					System.out.println("______________________________");
-					System.out.println("differvalue = "+ diffValues(row2[i]));
-					System.out.println(Arrays.asList(row2[i]).containsAll(Arrays.asList("0", "1", "2")));
-					System.out.println("______________________________");
 					if(Arrays.asList(row2[i]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[i]) < 6){
 						iOB[fIndex[i]].type = iPatObject.Filetype.GD;
 						iOB[fIndex[i2]].type = (col_count[i2] == 3 && Math.abs(col_count[i] - row_count[i2]) <= 1) ? iPatObject.Filetype.GM : iPatObject.Filetype.P; // m or m+1 - m or m+1 = -1, 0 1
 						iOB[fIndex[i3]].type = (col_count[i3] == 3 && Math.abs(col_count[i] - row_count[i3]) <= 1 && iOB[fIndex[i2]].type != iPatObject.Filetype.GM) ? iPatObject.Filetype.GM : iPatObject.Filetype.P; 
-
-						System.out.println("type[i] = "+ iOB[fIndex[i]].type);
-						System.out.println("type[i2] = "+ iOB[fIndex[i2]].type);
-						System.out.println("type[i2] = "+ iOB[fIndex[i3]].type);
 						if(Arrays.asList(getTypeinGroup(iOB[index].getGroupIndex())).containsAll(Arrays.asList(iPatObject.Filetype.GD, iPatObject.Filetype.GM, iPatObject.Filetype.P))){
 							format = iPatProject.Format.Numerical; 
 							break;}}}
@@ -1890,10 +1872,19 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 						int P = 3 - PED - MAP;
 						iOB[fIndex[P]].type = iPatObject.Filetype.P;
 						format = iPatProject.Format.PLINK;}}
+				//Binary
+				if(format != iPatProject.Format.Numerical && format != iPatProject.Format.PLINK){
+					for (int i = 0; i < 3; i++){
+						if(iOB[fIndex[i]].getPath().toUpperCase().endsWith("BED")){
+							iOB[fIndex[i]].type = iPatObject.Filetype.GD; BED = i;}
+						else if(iOB[fIndex[i]].getPath().toUpperCase().endsWith("BIM") && col_count[i] == 6){
+							iOB[fIndex[i]].type = iPatObject.Filetype.BIM; BIM = i;}
+						else if(iOB[fIndex[i]].getPath().toUpperCase().endsWith("FAM") && col_count[i] == 6){
+							iOB[fIndex[i]].type = iPatObject.Filetype.FAM; FAM = i;}}
+					if(BED!=-1 && BIM!=-1 && FAM!=-1) format = iPatProject.Format.PLINK_bin;}
 				break;
 			case 4:
 				//Binary
-				int BED = -1, BIM = -1, FAM = -1;
 				for (int i = 0; i < 4; i++){
 					if(iOB[fIndex[i]].getPath().toUpperCase().endsWith("BED")){
 						iOB[fIndex[i]].type = iPatObject.Filetype.GD; BED = i;}

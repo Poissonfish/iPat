@@ -24,7 +24,6 @@
 	thin = as.numeric(args[20])
 	gwas.assist = as.logical(args[21])
   	cutoff = as.numeric(args[22])
-  	#gwas.method = args[23] 
 
 # Load libraries
   	cat("=== BGLR === \n")
@@ -117,7 +116,9 @@ tryCatch({
 			if(K.path != "NA"){
 		      	cat("   Loading Kinship ...")
 				K = fread(K.path) %>% as.data.frame()
-				length(ETA) = length(ETA) + 1
+      			if(is.character(K[,1])) K = K[,-1]
+				K = as.matrix(K)
+    			length(ETA) = length(ETA) + 1
 				ETA[[length(ETA)]] = list(K = K, model = "RKHS")
 			    cat("Done\n")
 			}
