@@ -1096,8 +1096,11 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			gr2 = iOB[ob2].getGroupIndex();
 		Groupcount ++;
 		// see if contain MO
+		System.out.println("Group1: " + gr1);
 		if(isContainMO(gr1)) setContainMO(gr1, true);
 		else setContainMO(gr1, false);
+
+		System.out.println("Group1: " + gr2);
 		if(isContainMO(gr2)) setContainMO(gr2, true);
 		else setContainMO(gr2, false);
 		// see if still a group
