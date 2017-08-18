@@ -167,3 +167,4 @@ class Fade_timer extends Timer{
 		return out;
 	}
 }
+//
