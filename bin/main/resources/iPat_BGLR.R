@@ -24,6 +24,7 @@
 	thin = as.numeric(args[20])
 	gwas.assist = as.logical(args[21])
   	cutoff = as.numeric(args[22])
+  	#gwas.method = args[23] 
 
 # Load libraries
   	cat("=== BGLR === \n")
@@ -116,9 +117,7 @@ tryCatch({
 			if(K.path != "NA"){
 		      	cat("   Loading Kinship ...")
 				K = fread(K.path) %>% as.data.frame()
-      			if(is.character(K[,1])) K = K[,-1]
-				K = as.matrix(K)
-    			length(ETA) = length(ETA) + 1
+				length(ETA) = length(ETA) + 1
 				ETA[[length(ETA)]] = list(K = K, model = "RKHS")
 			    cat("Done\n")
 			}
@@ -164,3 +163,34 @@ tryCatch({
 }, error = function(e){
 	stop(e)	
 })
+
+project="Project_1"
+wd="/Users/Poissonfish/Desktop/test/farm"
+lib="/Users/Poissonfish/git/iPat/libs/"
+format="PLINK"
+ms=as.numeric("No_threshold")
+maf=as.numeric("0.05")
+Y.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/PLINK/simb.txt"
+Y.index="ExcludedsepExcludedsepSelectedsep"
+GD.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/PLINK/sim_recode.dat"
+GM.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/PLINK/sim_recode.nmap"
+C.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/covariates.txt"
+C.index="NA"
+K.path="NA"
+FAM.path="NA"
+BIM.path="NA"
+model = "BRR"
+response = "gaussian"
+nIter = 1200 
+burnIn = 200
+thin = 5
+gwas.assist = as.logical("TRUE") 
+cutoff = .05 
+
+
+# ETA<-list(list(K=KI,model='RKHS')) 
+# fm<-BGLR(y= Y.train, ETA=ETA,nIter=12000, burnIn=2000,saveAt='RKHS_h=0.5_', verbose = F)
+# cor(fm$yHat[sam], Y.valid)
+# ETA = list(list(K = KI, model = 'RKHS'), list(X=G, model='BL'))
+# fm2<-BGLR(y= Y.train, ETA=ETA,nIter=12000, burnIn=2000,saveAt='RKHS_h=0.5_', verbose = F)
+# cor(fm2$yHat[sam], Y.valid)

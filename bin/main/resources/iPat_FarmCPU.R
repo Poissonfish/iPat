@@ -1,9 +1,8 @@
 # Input arguments
   args = commandArgs(trailingOnly=TRUE)
-
 ## Common args
   project = args[1]
-  wd = args[2]	
+  wd = args[2]
   lib = args[3]
   format = args[4]
   ms = as.numeric(args[5])
@@ -11,7 +10,7 @@
   Y.path = args[7]
   Y.index = args[8]
   GD.path = args[9]
-  GM.path  = args[10]	
+  GM.path  = args[10]
   C.path = args[11]
   C.index = args[12]
   K.path  = args[13]
@@ -21,31 +20,13 @@
   method.bin = args[16] #"optimum"
   maxLoop = as.numeric(args[17])
 
-tryCatch({
-
-if(!"pacman"%in% installed.packages()[,"Package"]){
-  install.packages("pacman", repos="http://cran.rstudio.com/")
-}
-print("complete install pacman")
-pacman::p_load(multtest, bigmemory, biganalytics, data.table, magrittr, MASS, gplots, compiler, scatterplot3d, R.utils, ape)
-print("complete pacman")
-if(!"multtest"%in% installed.packages()[,"Package"]){
-    source("http://www.bioconductor.org/biocLite.R") 
-    biocLite("multtest")
-}
-print("complete biolite")
-
 # Load libraries
   cat("=== FarmCPU ===\n")
-  print("   Loading libraries ...")
-  setwd(lib) 
-#  list.of.packages <- c("multtest", "bigmemory", "biganalytics", "data.table", "magrittr", "MASS", "gplots", "compiler", "scatterplot3d", "R.utils", "ape")
-#  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-#  if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
-#  if(!"multtest"%in% installed.packages()[,"Package"]){
-#    source("http://www.bioconductor.org/biocLite.R") 
-#    biocLite("multtest")
-#  }
+  cat("   Loading libraries ...")
+  setwd(lib)
+  list.of.packages <- c("bigmemory", "biganalytics", "data.table", "magrittr", "MASS", "gplots", "compiler", "scatterplot3d", "R.utils", "ape")
+  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+  if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
   library(bigmemory)
   library(biganalytics)
   library(compiler) 
@@ -62,11 +43,11 @@ print("complete biolite")
   source("./Function_FarmCPU.R")
   cat("Done\n")
 
+tryCatch({  
   setwd(wd)
    # Subset Phenotype
     cat("   Loading phenotype ...")
     Y.data = fread(Y.path) %>% as.data.frame
-    if(toupper(names(Y.data)[1]) == "FID") {Y.data = Y.data[,-1]}
     subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .)
     index.trait = which(subset == "Selected") 
     if(length(index.trait) == 1){
@@ -137,22 +118,68 @@ print("complete biolite")
   stop(e)
 })
 
-project="Project_2"
-wd="C:\\Users\\Poissonfish"
-lib="C:\\Users\\Poissonfish\\git\\iPat\\res"
-format="Hapmap"
-ms=as.numeric("No_threshold")
-maf=as.numeric("0.05")
-Y.path="C:\\Users\\Poissonfish\\Desktop\\demo_data\\Hapmap\\data.txt"
-Y.index="SelectedsepSelectedsepSelectedsep"
-GD.path="C:\\Users\\Poissonfish\\Desktop\\demo_data\\Hapmap\\data_recode.dat"
-GM.path="C:\\Users\\Poissonfish\\Desktop\\demo_data\\Hapmap\\data_recode.nmap"
-C.path="NA"
-C.index="NA"
-K.path="NA"
-FAM.path="NA"
-BIM.path="NA"
- method.bin = "static"
-  maxLoop = 10
+  # C.index = "SelectedsepExcludedsepSelectedsep"
+  # C.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/covariates.txt"
 
+   # # Sorted by P-value
+   #  SNP_p = data.frame(name = x$GWAS$SNP, p = x$GWAS$P.value)
+   #  SNP_p = SNP_p[order(SNP_p$p),]
+   #  # Select associated SNPs
+   #  sig = SNP_p$p < (.05)/nrow(SNP_p) #length(SNPname)
+   #  GD_sig = GD[,SNP_p$name[sig]] 
+   #  # Build covariates with associated SNPs
+   #  if(is.null(ncol(GD_sig))){ # only 1 QTN detected
+   #    marker = as.character(SNP_p$name[sig]) 
+   #    if(is.null(ncol(C))) CV = data.frame(Y[,1], marker = GD_sig) else CV = cbind(Y[,1], marker = GD_sig, C)
+   #    if(length(C.inher)==0) C.inher = NULL else C.inher = C.inher + 1
+   #  }else if(ncol(GD_sig)==0){  # No QTN detected
+   #    if(is.null(ncol(C))) CV = NULL else CV = cbind(Y[,1], C)
+   #  }else{
+   #    # LD Remove
+   #    LD_remain = Blink.LDRemove(GD_sig, .7, 1:sum(sig), orientation = "col")
+   #    GD_sig = GD_sig[,LD_remain] 
+   #    # Check number
+   #    if(is.null(ncol(C)) && nrow(Y) < ncol(GD_sig)){ # no C provided  
+   #      redundant = ncol(GD_sig) - nrow(Y)
+   #      GD_sig = GD_sig[,1:(ncol(GD_sig) - redundant)]
+   #    }else if(!is.null(ncol(C)) && nrow(Y) < (ncol(GD_sig) + ncol(C))){ # C provided
+   #      redundant = ncol(GD_sig) + ncol(C) - nrow(Y)
+   #      GD_sig = GD_sig[,1:(ncol(GD_sig) - redundant)]
+   #    }
+   #    if(is.null(ncol(C))) CV = cbind(Y[,1],GD_sig) else CV = cbind(Y[,1], GD_sig, C)
+   #    if(length(C.inher)==0) C.inher = NULL else C.inher = C.inher + ncol(GD_sig)
+   #  }
 
+   #  # GAPIT do prediction
+   #  pred <- GAPIT(
+   #    Y = Y[,c(1,1+i)],
+   #    GM = GM,
+   #    GD = GD,       
+   #    PCA.total=3,
+   #    CV = CV,
+   #    CV.Inheritance = C.inher,
+   #    group.from=10000,
+   #    group.to=10000,
+   #    group.by=10,
+   #    SNP.test=FALSE,
+   #    memo= trait_names[i]
+   #  )
+   #  
+
+# project = "Project_1" 
+# wd = "/Users/Poissonfish/Desktop/test/farm"
+# lib = "/Users/Poissonfish/git/iPat/libs/"
+# format = "Numeric" 
+# ms = as.numeric("No threshold") 
+# maf = as.numeric(0.05) 
+# Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.txt" 
+# Y.index = "SelectedsepExcludedsepSelectedsep" 
+# GD.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.dat" 
+# GM.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.map" 
+# C.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/covariates.txt"
+# C.index = "SelectedsepExcludedsepSelectedsep"
+# K.path = "NA"
+# FAM.path = "NA"
+# BIM.path = "NA"
+# method.bin = "static" 
+# maxLoop = as.numeric(10) 

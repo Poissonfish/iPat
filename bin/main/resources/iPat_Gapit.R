@@ -23,17 +23,18 @@
   snp.fraction = as.numeric(args[19])
   file.fragment = as.numeric(args[20])
   model.s = as.logical(args[21])
-lib="C:\\Users\\Poissonfish\\git\\iPat\\res"
+
 # Load libraries
   cat("=== GAPIT ===\n")
-  cat("   Installing libraries if need ...")
-  setwd(lib)
-tryCatch({  
-  source("./iPat_installation.R")
-}, error = function(e){
-    stop(e)
-})
   cat("   Loading libraries ...")
+  setwd(lib)
+  list.of.packages <- c("MASS", "data.table", "magrittr", "gplots", "compiler", "scatterplot3d", "R.utils")
+  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+  if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
+  if(!'multtest'%in% installed.packages()[,"Package"]){
+    source("http://www.bioconductor.org/biocLite.R") 
+    biocLite("multtest")
+  }
   library(MASS) # required for ginv
   library(multtest)
   library(gplots)
@@ -52,7 +53,6 @@ tryCatch({
   # Subset Phenotype
   cat("   Loading phenotype ...")
   Y.data = fread(Y.path) %>% as.data.frame
-  if(toupper(names(Y.data)[1]) == "FID") {Y.data = Y.data[,-1]}
   subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .)
   index.trait = which(subset == "Selected") 
   if(length(index.trait) == 1){
@@ -102,12 +102,11 @@ tryCatch({
       # 1 c
       }else if(length(index.C) == 1){
         name = names(C.data)[index.C]
-        C = data.frame(taxa = taxa, c = C.data[, index.C])
+        C = data.frame(c = C.data[, index.C])
         names(C) = name
       # More than 1 c
       }else{
         C = C.data[, index.C]
-        C = data.frame(taxa = taxa, C)
       }
       cat("Done\n")
     }else{
@@ -119,8 +118,6 @@ tryCatch({
     }else{
       cat("   Loading Kinship ...")
       K = fread(K.path) %>% as.data.frame()
-      if(is.character(K[,1])) K = K[,-1]
-      K = data.frame(taxa = taxa, K)
       cat("Done\n")
     }
     #if(is.na(C.inher)) C.inher = NULL else C.inher = C.inher
@@ -147,7 +144,9 @@ tryCatch({
             GM = GM,
             GD = data.frame(taxa, GD),
             KI = K,
-            CV = C,
+            CV = data.frame(taxa, C),
+            #CV.Inheritance = C.inher,
+            #PCA.total = 3,
             kinship.cluster = ki.c,
             kinship.group = ki.g,
             group.from = g.from,
@@ -165,25 +164,81 @@ tryCatch({
     stop(e)
 })
 
+# #
 
-project="Project_1"
-wd= "C:\\Users\\Poissonfish"
-lib="C:\\Users\\Poissonfish\\Desktop\\iPat\\res"
-format="Hapmap"
-ms=as.numeric("No_threshold")
+
+project="Project"
+wd="/Users/Poissonfish/Desktop/test/bglr"
+lib="/Users/Poissonfish/git/iPat/libs/"
+format="Numerical"
+ms=as.numeric("0.2")
 maf=as.numeric("0.05")
-Y.path="C:\\Users\\Poissonfish\\Desktop\\demo_data\\Hapmap\\data.txt"
-Y.index="SelectedsepSelectedsepSelectedsep"
-GD.path="C:\\Users\\Poissonfish\\Desktop\\demo_data\\Hapmap\\data_recode.dat"
-GM.path="C:\\Users\\Poissonfish\\Desktop\\demo_data\\Hapmap\\data_recode.nmap"
-C.path="NA"
-C.index="NA"
+Y.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Hapmap/data.txt"
+Y.index="SelectedsepExcludedsepExcludedsep"
+GD.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Hapmap/data_recode.dat"
+GM.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Hapmap/data_recode.nmap"
+C.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/covariates.txt"
+C.index="ExcludedsepExcludedsepSelectedsep"
 K.path="NA"
 FAM.path="NA"
 BIM.path="NA"
-  model = "GLM"
-  ki.c = "average"
-  ki.g = "Mean"
-  snp.fraction = 1
-  file.fragment = NULL
-  model.s = FALSE
+model = "GLM"
+ki.c = "average"
+ki.g = "Mean"
+snp.fraction = 1
+file.fragment = NULL
+model.s = as.logical("FALSE") 
+
+
+# if(multi){
+#   nT = ncol(Y.file) - 1
+#   # Imputation by mean
+#   for(i in 2:ncol(Y.file)){
+#     mean = mean(Y.file[,i] %>% na.omit())
+#     na_index = Y.file[,i] %>% is.na()
+#     Y.file[na_index,i] = mean 
+#   }
+#   # PCA
+#   Y.PCA = prcomp(Y.file[,-1])
+#   Y.eigvec = Y.PCA$rotation
+#   Y.eigval = (Y.PCA$sdev)^2
+#   cum.var = cumsum(Y.eigval)/sum(Y.eigval)
+#   pca.index = 1 : (which(cum.var > .9) %>% min)
+#   Y.tran = Y.PCA$x[,pca.index] %>% as.matrix
+#   Y = data.frame(Y.file[,1],Y.tran)
+#   npc = ncol(Y) - 1
+#   m = ifelse(is.null(G), ncol(GD) - 1, nrow(G) - 1)
+#   array.effect = matrix(ncol = npc, nrow = m)
+#   # GAPIT
+#   for (i in 1 : npc){
+#     x=GAPIT(
+#       Y = Y[,c(1,1+i)],
+#       G = G,
+#       GM = GM,
+#       GD = GD,
+#       KI = K,
+#       SNP.test = SNP.test,
+#       CV = C,
+#       CV.Inheritance = C.inher,
+#       PCA.total = PCA,
+#       kinship.cluster = ki.c,
+#       kinship.group = ki.g,
+#       group.from = g.from,
+#       group.to = g.to,
+#       group.by = g.by,
+#       Model.selection = model.s,
+#       SNP.fraction = snp.fraction,
+#       file.fragment = file.fragment,
+#       file.output = F
+#     )
+#     u.effect = x$effect.snp
+#     u.effect[is.na(u.effect)] = 0
+#     array.effect[,i] = u.effect
+#   }
+#   # Real effects recover
+#   real.effect = array.effect %*% t(Y.eigvec[, pca.index])
+#   for (i in 1 : nT){
+
+#   }
+# # Y.recover = (t(Y.tran %*% t(Y.eigvec)) + PCA$center) %>% t()
+# }

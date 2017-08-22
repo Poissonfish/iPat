@@ -102,10 +102,8 @@ tryCatch({
     K = tcrossprod(G.impute)
   }else{
     K = fread(K.path) %>% as.data.frame()
-    if(is.character(K[,1])) K = K[,-1]
-    K = as.matrix(K)
   }
-  for(i in 1:length(trait.names)){
+  for(i in 1:ncol(Y)){
     ## GWAS-assist
     if(gwas.assist){
       cat("   Loading QTNs information ...")
@@ -183,3 +181,54 @@ tryCatch({
 }, error = function(e){
   stop(e)
 })
+
+# project="Project_1"
+# wd="/Users/Poissonfish/Desktop/test/rr"
+# lib="/Users/Poissonfish/git/iPat/libs/"
+# format="Hapmap"
+# ms=as.numeric("No_threshold")
+# maf=as.numeric("0.05")
+# Y.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Hapmap/data.txt"
+# Y.index="SelectedsepExcludedsepExcludedsep"
+# GD.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Hapmap/data_recode.dat"
+# GM.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Hapmap/data_recode.nmap"
+# C.path="NA"
+# C.index="NA"
+# K.path="NA"
+# FAM.path="NA"
+# BIM.path="NA"
+# impute = "mean"
+# shrink = FALSE
+# gwas.assist = TRUE
+# cutoff = .05
+
+# A.mat(M,shrink=TRUE) -> for low density markers Vanraden
+# Vu = estimator for 
+# output add Project name
+#  EM imputation algorithm for GBS data (Poland et al. 2012)
+# Shrinkage estimation can improve the accuracy of genome-wide marker-assisted selection, partic- ularly at low marker density (Endelman and Jannink 2012).
+# GM = read.table("/Users/Poissonfish/Dropbox/MeetingSlides/iPat/demo_data/numeric/data.map", head = T)
+# # validation rrBLUP
+# sam = sample(nrow(Y), round(nrow(Y)*.2))
+# Y.train = Y
+# Y.train[sam,] = NA
+# Y.valid = Y[sam,]
+# pca = prcomp(G)
+# CO = pca$x[,1:3]
+# KI= GAPIT.kinship.VanRaden(snps=as.matrix(G))
+# A = A.mat(G)
+# B = tcrossprod(G)
+# G.impute =  A.mat(G, shrink = TRUE, impute.method = "EM", return.imputed = TRUE, max.missing = ms)$imputed
+# ans1 <- mixed.solve(Y.train[,1], K =, return.Hinv = TRUE, SE = TRUE)
+# ans2 <- mixed.solve(Y.train[,1], K = A.mat(cbind(G, CO)), return.Hinv = TRUE, SE = TRUE)
+# ans3 <- mixed.solve(Y.train[,1], X = CO, K = A.mat(G), return.Hinv = TRUE, SE = TRUE)
+# ans4 <- mixed.solve(Y.train[,1], K = KI, return.Hinv = TRUE, SE = TRUE)
+# ans5 <- mixed.solve(Y.train[,1], K = tcrossprod(G.impute), return.Hinv = TRUE, SE = TRUE)
+# ans6 <- mixed.solve(Y.train[,1], X = CO, K = tcrossprod(G.impute), return.Hinv = TRUE, SE = TRUE)
+# cor(ans1$u[sam], Y.valid)
+# cor(ans2$u[sam], Y.valid)
+# cor(ans3$u[sam], Y.valid)
+# cor(ans4$u[sam], Y.valid)
+# cor(ans5$u[sam], Y.valid)
+# cor(ans6$u[sam], Y.valid)
+
