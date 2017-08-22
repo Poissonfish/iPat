@@ -289,7 +289,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
     //object select
 	int TBindex_select = 0;
 	int MOindex_select = 0;
-    	int object_selected = -1;   //1 table, 2 model
+    int object_selected = -1;   //1 table, 2 model
 	int select_intex= -1;
 	//Gear rotate
 	static double rotate = Math.toRadians(0);
@@ -432,6 +432,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	    			open_config(iIndex_popup, false);
 				} catch (IOException e) {e.printStackTrace();}
 	    	}else if(source == popup_run){
+	    		iOB[iIndex_popup].updateImage(MOimage);
 	    		boolean gwas_exist = iPro[getProIndex(iIndex_popup)].isGWASDeployed(), 
 	    				gs_exist   = iPro[getProIndex(iIndex_popup)].isGSDeployed();
 	    		try {
@@ -1152,6 +1153,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	}
 	public void open_config(int iIndex, boolean isGWAS) throws IOException{
 		int MOindex = getProIndex(iIndex);		
+		iOB[iIndex].updateImage(MOimage);
 		// Catch format
 		iPro[MOindex].format = catch_files(iIndex);
 		if(iPro[MOindex].isNAformat()){	
@@ -1219,7 +1221,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		DrawLinkedLine(g); //object_link
 		// Draw OB image
 		for (int i = 0; i < iOBcount; i++){
-			if(!iOB[i].isDeleted)
+			int ProIndex = getProIndex(i);
+			if(!iOB[i].isDeleted && !iPro[ProIndex].rotate_switch)
 				g.drawImage(iOB[i].image, iOB[i].X, iOB[i].Y, this);}
 		// Make gear rotate
 		for (int i = 0; i < MOcount; i++){

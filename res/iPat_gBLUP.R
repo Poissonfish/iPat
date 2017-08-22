@@ -27,13 +27,6 @@
   cat("=== GAPIT ===\n")
   cat("   Loading libraries ...")
   setwd(lib)
-  list.of.packages <- c("MASS", "data.table", "magrittr", "gplots", "compiler", "scatterplot3d", "R.utils")
-  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-  if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
-  if(!'multtest'%in% installed.packages()[,"Package"]){
-    source("http://www.bioconductor.org/biocLite.R") 
-    biocLite("multtest")
-  }
   library(MASS) # required for ginv
   library(multtest)
   library(gplots)
@@ -46,7 +39,6 @@
   source("./Function_FarmCPU.R")
   source("./Function_GAPIT.R")
   cat("Done\n")
-
 tryCatch({  
   setwd(wd)
   # Subset Phenotype

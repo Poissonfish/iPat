@@ -1,7 +1,6 @@
 # Input arguments
   args = commandArgs(trailingOnly=TRUE)
-
-## Common args
+# Common args
   project = args[1]
   wd = args[2]	
   lib = args[3]
@@ -20,32 +19,10 @@
 ## Method specific args
   method.bin = args[16] #"optimum"
   maxLoop = as.numeric(args[17])
-
-tryCatch({
-
-if(!"pacman"%in% installed.packages()[,"Package"]){
-  install.packages("pacman", repos="http://cran.rstudio.com/")
-}
-print("complete install pacman")
-pacman::p_load(multtest, bigmemory, biganalytics, data.table, magrittr, MASS, gplots, compiler, scatterplot3d, R.utils, ape)
-print("complete pacman")
-if(!"multtest"%in% installed.packages()[,"Package"]){
-    source("http://www.bioconductor.org/biocLite.R") 
-    biocLite("multtest")
-}
-print("complete biolite")
-
 # Load libraries
   cat("=== FarmCPU ===\n")
   print("   Loading libraries ...")
   setwd(lib) 
-#  list.of.packages <- c("multtest", "bigmemory", "biganalytics", "data.table", "magrittr", "MASS", "gplots", "compiler", "scatterplot3d", "R.utils", "ape")
-#  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-#  if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
-#  if(!"multtest"%in% installed.packages()[,"Package"]){
-#    source("http://www.bioconductor.org/biocLite.R") 
-#    biocLite("multtest")
-#  }
   library(bigmemory)
   library(biganalytics)
   library(compiler) 
@@ -62,6 +39,7 @@ print("complete biolite")
   source("./Function_FarmCPU.R")
   cat("Done\n")
 
+tryCatch({
   setwd(wd)
    # Subset Phenotype
     cat("   Loading phenotype ...")

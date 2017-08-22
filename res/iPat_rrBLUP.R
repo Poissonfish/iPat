@@ -25,9 +25,6 @@
   cat("=== rrBLUP ===\n")
   cat("   Loading libraries ...")
   setwd(lib)
-  list.of.packages = c("data.table", "magrittr", "rrBLUP")
-  new.packages <- list.of.packages[!(list.of.packages%in% installed.packages()[,"Package"])]
-  if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
   library(rrBLUP)
   library(data.table)
   library(magrittr)

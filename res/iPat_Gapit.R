@@ -23,17 +23,10 @@
   snp.fraction = as.numeric(args[19])
   file.fragment = as.numeric(args[20])
   model.s = as.logical(args[21])
-lib="C:\\Users\\Poissonfish\\git\\iPat\\res"
 # Load libraries
-  cat("=== GAPIT ===\n")
-  cat("   Installing libraries if need ...")
-  setwd(lib)
-tryCatch({  
-  source("./iPat_installation.R")
-}, error = function(e){
-    stop(e)
-})
+  cat("=== GAPIT ===")
   cat("   Loading libraries ...")
+  setwd(lib)
   library(MASS) # required for ginv
   library(multtest)
   library(gplots)
@@ -164,7 +157,6 @@ tryCatch({
 }, error = function(e){
     stop(e)
 })
-
 
 project="Project_1"
 wd= "C:\\Users\\Poissonfish"
