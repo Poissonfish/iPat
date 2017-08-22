@@ -23,18 +23,10 @@
   snp.fraction = as.numeric(args[19])
   file.fragment = as.numeric(args[20])
   model.s = as.logical(args[21])
-
 # Load libraries
-  cat("=== GAPIT ===\n")
+  cat("=== GAPIT ===")
   cat("   Loading libraries ...")
   setwd(lib)
-  list.of.packages <- c("MASS", "data.table", "magrittr", "gplots", "compiler", "scatterplot3d", "R.utils")
-  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-  if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
-  if(!'multtest'%in% installed.packages()[,"Package"]){
-    source("http://www.bioconductor.org/biocLite.R") 
-    biocLite("multtest")
-  }
   library(MASS) # required for ginv
   library(multtest)
   library(gplots)
@@ -165,3 +157,25 @@ tryCatch({
 }, error = function(e){
     stop(e)
 })
+
+project="Project_1"
+wd= "C:\\Users\\Poissonfish"
+lib="C:\\Users\\Poissonfish\\Desktop\\iPat\\res"
+format="Hapmap"
+ms=as.numeric("No_threshold")
+maf=as.numeric("0.05")
+Y.path="C:\\Users\\Poissonfish\\Desktop\\demo_data\\Hapmap\\data.txt"
+Y.index="SelectedsepSelectedsepSelectedsep"
+GD.path="C:\\Users\\Poissonfish\\Desktop\\demo_data\\Hapmap\\data_recode.dat"
+GM.path="C:\\Users\\Poissonfish\\Desktop\\demo_data\\Hapmap\\data_recode.nmap"
+C.path="NA"
+C.index="NA"
+K.path="NA"
+FAM.path="NA"
+BIM.path="NA"
+  model = "GLM"
+  ki.c = "average"
+  ki.g = "Mean"
+  snp.fraction = 1
+  file.fragment = NULL
+  model.s = FALSE

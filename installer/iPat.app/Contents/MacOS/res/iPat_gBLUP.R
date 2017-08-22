@@ -27,13 +27,6 @@
   cat("=== GAPIT ===\n")
   cat("   Loading libraries ...")
   setwd(lib)
-  list.of.packages <- c("MASS", "data.table", "magrittr", "gplots", "compiler", "scatterplot3d", "R.utils")
-  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-  if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
-  if(!'multtest'%in% installed.packages()[,"Package"]){
-    source("http://www.bioconductor.org/biocLite.R") 
-    biocLite("multtest")
-  }
   library(MASS) # required for ginv
   library(multtest)
   library(gplots)
@@ -46,7 +39,6 @@
   source("./Function_FarmCPU.R")
   source("./Function_GAPIT.R")
   cat("Done\n")
-
 tryCatch({  
   setwd(wd)
   # Subset Phenotype
@@ -155,28 +147,29 @@ tryCatch({
         LD_remain = Blink.LDRemove(C.gwas, .7, index.sig, orientation = "col")
         C.gwas = C.gwas[ ,LD_remain] 
       }
-      cat("Done\n")}
   ## Prevent c > n
-    if(is.null(C)) index.C = NULL
-    if(length(Y[ ,i]) < length(index.C) + length(index.sig)){
-      diff = length(index.C) + ncol(C.gwas) - length(Y[,i])
-      if(is.null(C))
-        C = data.frame(taxa = taxa, C.gwas[ ,1 : (length(index.sig) - diff)])
-      else
-        C = data.frame(C, C.gwas[ ,1 : (length(index.sig) - diff)])
-    }else{
-      if(is.null(C)){
-        if(is.null(C.gwas)) {
-          C = NULL
-        }else{
-          C = data.frame(taxa = taxa, C.gwas)
-        }
+      if(is.null(C)) index.C = NULL
+      if(length(Y[ ,i]) < length(index.C) + length(index.sig)){
+        diff = length(index.C) + ncol(C.gwas) - length(Y[,i])
+        if(is.null(C))
+          C = data.frame(taxa = taxa, C.gwas[ ,1 : (length(index.sig) - diff)])
+        else
+          C = data.frame(C, C.gwas[ ,1 : (length(index.sig) - diff)])
       }else{
-        if(!is.null(C.gwas)) {
-          C = data.frame(C, C.gwas)
+        if(is.null(C)){
+          if(is.null(C.gwas)) {
+            C = NULL
+          }else{
+            C = data.frame(taxa = taxa, C.gwas)
+          }
+        }else{
+          if(!is.null(C.gwas)) {
+            C = data.frame(C, C.gwas)
+          }
         }
-      }
-    } 
+      } 
+      cat("Done\n")
+    }
   # GAPIT
       x = GAPIT(
         Y = data.frame(taxa, Y[,i]),
