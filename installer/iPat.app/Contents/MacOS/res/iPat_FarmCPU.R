@@ -1,8 +1,8 @@
 # Input arguments
   args = commandArgs(trailingOnly=TRUE)
-## Common args
+# Common args
   project = args[1]
-  wd = args[2]
+  wd = args[2]	
   lib = args[3]
   format = args[4]
   ms = as.numeric(args[5])
@@ -10,7 +10,7 @@
   Y.path = args[7]
   Y.index = args[8]
   GD.path = args[9]
-  GM.path  = args[10]
+  GM.path  = args[10]	
   C.path = args[11]
   C.index = args[12]
   K.path  = args[13]
@@ -19,14 +19,10 @@
 ## Method specific args
   method.bin = args[16] #"optimum"
   maxLoop = as.numeric(args[17])
-
 # Load libraries
   cat("=== FarmCPU ===\n")
-  cat("   Loading libraries ...")
-  setwd(lib)
-  list.of.packages <- c("bigmemory", "biganalytics", "data.table", "magrittr", "MASS", "gplots", "compiler", "scatterplot3d", "R.utils", "ape")
-  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-  if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
+  print("   Loading libraries ...")
+  setwd(lib) 
   library(bigmemory)
   library(biganalytics)
   library(compiler) 
@@ -43,7 +39,7 @@
   source("./Function_FarmCPU.R")
   cat("Done\n")
 
-tryCatch({  
+tryCatch({
   setwd(wd)
    # Subset Phenotype
     cat("   Loading phenotype ...")
@@ -118,3 +114,23 @@ tryCatch({
 },error = function(e){
   stop(e)
 })
+
+project="Project_2"
+wd="C:\\Users\\Poissonfish"
+lib="C:\\Users\\Poissonfish\\git\\iPat\\res"
+format="Hapmap"
+ms=as.numeric("No_threshold")
+maf=as.numeric("0.05")
+Y.path="C:\\Users\\Poissonfish\\Desktop\\demo_data\\Hapmap\\data.txt"
+Y.index="SelectedsepSelectedsepSelectedsep"
+GD.path="C:\\Users\\Poissonfish\\Desktop\\demo_data\\Hapmap\\data_recode.dat"
+GM.path="C:\\Users\\Poissonfish\\Desktop\\demo_data\\Hapmap\\data_recode.nmap"
+C.path="NA"
+C.index="NA"
+K.path="NA"
+FAM.path="NA"
+BIM.path="NA"
+ method.bin = "static"
+  maxLoop = 10
+
+

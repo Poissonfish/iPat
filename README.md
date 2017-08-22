@@ -9,13 +9,18 @@
 ## [Demo data](http://zzlab.net/iPat/demo.zip)
 ## [User manual (pdf)](http://zzlab.net/iPat/iPat_manual.pdf)
 
+# Why iPat?
+#### Intelligent Prediction and Association Tool (iPat) is a software with a user-friendly graphical user interface (GUI). With iPat, GWAS or GS can be performed using a pointing device to simply drag and/or click on graphical elements to specify input data files, choose input parameters, and select analytical models. It not only makes users who feel more confortable with GUI more flexible to do functional genomic studies in different statistical methods, but make the learning curve gradual for the first-time users.
+ 
 # Table of Contents
 #### 1. [Getting start](#get_start)
 > 1-1 [Operation environment](#env)
 
-> 1-2 [Windows users](#win)
+> 1-2 [Set up R environment](#setR)
 
-> 1-3 [Mac OS users](#mac)
+> 1-3 [Windows users](#win)
+
+> 1-4 [Mac OS users](#mac)
 
 #### 2. [Interface](#interface)
 > 2-1 [Import files](#import_files)
@@ -75,42 +80,32 @@
 ### 1.1 Operation environment* The operation environment need to meet the following requirement:
 	* Operation System: Windows or Mac OS X .
 	* [Java Runtime Environment (JRE)](http://www.oracle.com/technetwork/java/javase/downloads/index.html): Version 8 or later.
-	* [R](https://www.r-project.org): Version 3.4.0 or later. 
+	* [R](https://www.r-project.org): Version 3.4.1 or later. 
+
+<a name="setR"></a>
+### 1.2 Set up R environment
+* Open R software and run
+
+```r
+source("http://zzlab.net/iPat/iPat_installation.r")
+```
+
+this command will install all the required r packges automatically
+
+<p align="center"><p align="center"><img src = "./md/installation.png" width = 450></p>
+
 
 <a name="win"></a>
-### 1.2 Windows users
-
-#### 1.2.1 Set up R environment
-* If you can call R from the commnad-line window (cmd.exe) by typing "R" or "r", then you can skip to section 1.2.2. Otherwise, please follow the instruction below to get your system compatible with iPat.
-
-* Open R software, and type ```R.home("bin")``` in the console. It will return a path to the executable R. Copy this path to the clipboard.
-<p align="center"><p align="center"><img src = "./md/rconsole.png" width = 700></p>
-
-* Search keyword "system" from Windows, and open "System".
-<p align="center"><p align="center"><img src = "./md/search.png" width = 350></p>
-
-* Then select "Advanced system settings" at the left side of the panel.
-<p align="center"><p align="center"><img src = "./md/system.png" width = 700></p>
-
-* And click "Environment Variable..." at the bottom-right area.
-<p align="center"><p align="center"><img src = "./md/advance.png" width = 450></p>
-
-* The pop-up windows will display two set of system variables. Highligh the system variable "Path" at the bottom list, and click "Edit". 
-<p align="center"><p align="center"><img src = "./md/env.png" width = 450></p>
-
-* Almost there. Click "new" and paste the path you got from the clipboard, then click "OK" to save the configuration.
-<p align="center"><p align="center"><img src = "./md/rhome.png" width = 450></p>
-
-#### 1.2.2 Extract iPat.exe from iPat.zip
+### 1.3 Windows users
 * Download [iPat.zip](http://zzlab.net/iPat/iPat.zip) and decompress it. You will then get a folder named "iPat", which contains a executable file "iPat.exe" and a folder "libs".
 
-* It's noted that users are alway required to place "iPat.exe" and the folder "libs" in the same folder (directory) so that iPat can function normally.
+* It's noted that users are alway required to place "iPat.exe" and the folder "res" in the same folder (directory) so that iPat can function normally.
 <p align="center"><p align="center"><img src = "./md/install_win.png" width = 450></p>
 
 * Double click 'iPat.exe' to launch iPat.
 
 <a name="mac"></a>
-### 1.3 Mac OS users
+### 1.4 Mac OS users
 * Download [iPat_Installer.dmg](http://zzlab.net/iPat/iPat_Installer.dmg) and mount it on Mac. 
 
 * Follow the instruction to install iPat.
@@ -156,13 +151,19 @@
 #### 2.3.1 Phenotype
 * Phenotype data for every formats except PLINK must contain **sample names** in the first column and **traits names** as the header: 
 
+<center>
+
 |taxa|trait 1|trait 2|
 |:-:|:-:|:-:|
 |sample1| 
 |sample2|
 |sample3|
 
+</center>
+
 * Phenotype data for PLINK must contain **sample and family names** in the first 2 columns and **traits names** as the header:
+
+<center>
 
 |FID|SID|trait 1|trait 2|
 |:-:|:-:|:-:|:-:|
@@ -170,18 +171,26 @@
 |family 2|sample2|
 |family 3|sample3|
 
+</center>
+
 <a name="hmp"></a>
 #### 2.3.2 Hapmap
-* Genotype data, the header is requried to be provided:
+* Genotype data, the header is requried to be **provided**:
+
+<center>
 
 |rs| alleles| chrom|pos| strand|assembly| center| protLSID| assayLSID|panel| QCcode| sample 1| sample 2| sample 3|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |marker 1|A/C|1|157104|+|AGPv1|Panzea|NA|NA|maize282|NA|CC|CC|AA|
 |marker 2|C/G|1|1947984|+|AGPv1|Panzea|NA|NA|maize282|NA|GG|GG|CC|
 
+</center>
+
 <a name="num"></a>
 #### 2.3.3 Numeric
-* Genotype data, samples are recorded in rows. The header and sample names can be omitted:
+* Genotype data, samples are recorded in rows. The header and sample names can be **omitted**:
+
+<center>
 
 |taxa|marker 1|marker 2|marker 3|
 |:-:|:-:|:-:|:-:|
@@ -189,7 +198,11 @@
 |sample2|0|0|0|
 |sample3|1|0|0
 
-* Map information, the header is requried to be provided:
+</center>
+
+* Map information, the header is requried to be **provided**:
+
+<center>
 
 |SNP|Chromosome| Position|
 |:-:|:-:|:-:|
@@ -197,18 +210,26 @@
 |marker 2|1|1947984|
 |marker 3|1|2914066|
 
+</center>
+
 <a name="vcf"></a>
 #### 2.3.4 VCF
-* Genotype data, the header is requried to be provided:
+* Genotype data, the header is requried to be **provided**:
+
+<center>
 
 |CHROM| POS|ID|REF|ALT|QUAL|FILTER|INFO|FORMAT|sample 1| sample 2| sample 3|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |1|157104|marker 1|A|C|.|PASS|.|GT|0/0|1/1|0/0|
 |1|1947984|marker 2|C|G|.|PASS|.|GT|0/0|1/1|1/1|
 
+</center>
+
 <a name="plink"></a> 
 #### 2.3.5 PLINK (the header should be removed)
 * Genotype data (.ped). Missing value can be filled as "0":
+
+<center>
 
 |Family ID|Sample ID|Paternal ID|Maternal ID|Sex|Affection|marker 1|marker 2|marker 3|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -216,13 +237,19 @@
 |FAM1|NA06991|0|0|1|1|A A|T T|A A|
 |0|NA06993|0|0|1|1|C T|C C|T T|
 
+</center>
+
 * Map information (.map):
+
+<center>
 
 |Chromosome|Marker ID|Genetic distance|Physical Position|
 |:-:|:-:|:-:|:-:|
 |1|marker 1|0|157104|
 |1|marker 2|0|1947984|
 |1|marker 3|0|2914066|
+
+</center>
 
 <a name="plinkb"></a> 
 #### 2.3.6 Binary PLINK (the header should be removed)
@@ -232,18 +259,25 @@
 
 * FAM file:
 
+<center>
+
 |Family ID|Sample ID|Paternal ID|Maternal ID|Sex|Affection|
 |:-:|:-:|:-:|:-:|:-:|:-:|
 |FAM1|NA06985|0|0|1|1|
 |FAM1|NA06991|0|0|1|1|
 
+</center>
+
 * BIM file:
+
+<center>
 
 |Chromosome|Marker ID|Genetic distance|Physical Position|Allele 1|Allele 2|
 |:-:|:-:|:-:|:-:|:-:|:-:|
 |1|marker 1|0|157104|A|C|
 |1|marker 2|0|1947984|A|T|
-<a name="C_K"></a>### 2.4 *Covariates and kinship*
+
+</center><a name="C_K"></a>### 2.4 *Covariates and kinship*
 
 <a name="add_ck"></a>
 #### 2.4.1 Add additional information to iPat* Covariates provided by users will be treated as **fixed effect** in the selected model except in BGLR. 
@@ -256,7 +290,9 @@
 
 <a name="cov"></a>
 #### 2.4.2 Covariates
-* Demo format for a covarate file. The header is required to be provided:
+* Demo format for a covarate file. The header is required to be **provided**:
+
+<center>
 
 |PC1|PC2|PC3|
 |:-:|:-:|:-:|
@@ -264,16 +300,22 @@
 |1.6858820|-5.08378277|-0.4069675|
 |0.2579269|-6.29547725|2.6867939|
 
+</center>
+
 <a name="kin"></a>
 #### 2.4.3 Kinship
 
-* Demo format for a kinship file. Taxa name is required while the header can be omitted:
+* Demo format for a kinship file. Taxa name is required while the header can be **omitted**:
+
+<center>
 
 |taxa|sample 1|sample 2|sample 3|
 |:-:|:-:|:-:|:-:|
 |sample 1|2.00000000| 0.22883683| 0.22932180|0.26884221|
 |sample 2| 0.22883683|2.00000000|0.24496455|0.29370841|
 |sample 3|0.22932180 | 0.24496455 | 2.00000000 | 0.21485867 |
+
+</center>
 
 * If there is no user-define kinship, a kinship will be generated by the selected package:
 
