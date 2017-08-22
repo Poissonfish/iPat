@@ -1222,7 +1222,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		// Draw OB image
 		for (int i = 0; i < iOBcount; i++){
 			int ProIndex = getProIndex(i);
-			if(!iOB[i].isDeleted && !iPro[ProIndex].rotate_switch)
+			if(!iOB[i].isDeleted && 
+			  ((iOB[i].isMO() && !iPro[ProIndex].rotate_switch) || (iOB[i].isTB())))
 				g.drawImage(iOB[i].image, iOB[i].X, iOB[i].Y, this);}
 		// Make gear rotate
 		for (int i = 0; i < MOcount; i++){
