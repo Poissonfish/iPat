@@ -10,7 +10,7 @@
 ## [User manual (pdf)](http://zzlab.net/iPat/iPat_manual.pdf)
 
 # Why iPat?
-#### Intelligent Prediction and Association Tool (iPat) is a software with a user-friendly graphical user interface (GUI). With iPat, GWAS or GS can be performed using a pointing device to simply drag and/or click on graphical elements to specify input data files, choose input parameters, and select analytical models. It not only makes users who feel more confortable with GUI more flexible to do functional genomic studies in different statistical methods, but make the learning curve gradual for the first-time users.
+ Intelligent Prediction and Association Tool (iPat) is a software with a user-friendly graphical user interface (GUI). With iPat, GWAS or GS can be performed using a pointing device to simply drag and/or click on graphical elements to specify input data files, choose input parameters, and select analytical models. It not only makes users who feel more confortable with GUI more flexible to do functional genomic studies in different statistical methods, but make the learning curve gradual for the first-time users.
  
 # Table of Contents
 #### 1. [Getting start](#get_start)
