@@ -310,11 +310,18 @@ public class ConfigFrame extends JFrame implements ActionListener{
 			pane_config.MethodSelected(pro[MOindex].method_gs);
 	}
 	public void restore(){
-		project_name.field.setText("Project_" + MOindex);
+		project_name.field.setText("Project_" + (MOindex + 1));
 		wd_path.field.setText(iPatPanel.df_wd);
 		maf_qc.combo.setSelectedItem(iPatPanel.df_maf);
 		ms_qc.combo.setSelectedItem(iPatPanel.df_ms);
 		pane_config.restore(isGWAS);
+		pane_config.Clear();
+		pane_config.RemoveMethod();
+		pane_config.HintDrag();
+		if(isGWAS)
+			pro[MOindex].setGWASmethod(iPatProject.Method.NA);	
+		else if(!isGWAS)
+			pro[MOindex].setGSmethod(iPatProject.Method.NA);
 	}
 	public class MLabel extends JLabel {
 		public MLabel(String name){
@@ -334,6 +341,10 @@ public class ConfigFrame extends JFrame implements ActionListener{
 			this.setLayout(new MigLayout("", "[grow]", "[grow]"));
 			this.add(msg, "grow");	
 			HintDrag();
+		}
+		public void RemoveMethod(){
+			existmethod = iPatProject.Method.NA;
+			isDeployed = false;
 		}
 		public void Clear(){
 			this.removeAll();
@@ -458,6 +469,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				panel_gwas.setLayout(new MigLayout("", "[grow]", "[grow]"));
 				JLabel na_msg = new JLabel("<html><center> GWAS-Assisted GS <br> Unavailable <br> Please select a GWAS method first </center></html>", SwingConstants.CENTER);
 				na_msg.setFont(new Font("Ariashowpril", Font.PLAIN, 18));
+				enable.setSelected(false);
 				panel_gwas.add(na_msg, "grow");}
 		}
 		@Override
