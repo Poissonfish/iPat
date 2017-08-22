@@ -1,4 +1,4 @@
- package main;
+package main;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -58,8 +58,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 	// For Command used
 	public static String 	path_P = "NA", path_G = "NA", path_M = "NA", 
 							path_C = "NA", path_K = "NA",
-							path_FAM = "NA", path_BIM = "NA", 
-							R_exe = "NA";
+							path_FAM = "NA", path_BIM = "NA";
 	public static boolean C_exist = false, K_exist = false;
 	public static int C_index = 0, K_index = 0;
 	
@@ -93,16 +92,11 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				switch(ob[i].type){
 				case C: C_exist = true; C_index = i; path_C = ob[i].getPath(); break;
 				case K: K_exist = true; K_index = i; path_K = ob[i].getPath(); break;}}
-		// Catch R exe path
-			switch(iPat.UserOS.type){
-				case Windows: 	R_exe = "Rscript"; break;
-				case Mac: 		R_exe = "/usr/local/bin/Rscript"; break;
-				case Linux: 	R_exe = "/usr/local/bin/Rscript"; break;}
+
 		// Replace MO icon to original one
 			ob[iIndex].updateImage(iPatPanel.MOimage);
 		// Bottom pane
 			bottom_restore.addActionListener(this);
-			//bottom_restore.setFont(new Font("Ariashowpril", Font.PLAIN, 30));
 		// Config pane
 			pane_config = new ConfigPane();
 			pane_config.setBorder(BorderFactory.createLoweredBevelBorder());
@@ -294,7 +288,6 @@ public class ConfigFrame extends JFrame implements ActionListener{
 		path_C = "NA";
 		path_K = "NA";
 	}
-	
 	public void refresh(){
 		this.setVisible(true);
 	}
@@ -383,9 +376,10 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				String[] command_specific = null;
 				switch(existmethod){
 				case GAPIT:
+					System.out.println("Path to " + Paths.get(iPatPanel.jar.getParent(), "res", "iPat_GAPIT.R").toString());
 					command_exe = new String[]{
-							R_exe,
-							iPatPanel.jar.getParent()+"/res/iPat_Gapit.R"};
+							iPat.R_exe,
+							Paths.get(iPatPanel.jar.getParent(), "res", "iPat_GAPIT.R").toString()};
 					command_specific = new String[]{
 							(String)model_select.combo.getSelectedItem(),  // 17
 							(String)K_cluster.combo.getSelectedItem(),
@@ -395,22 +389,22 @@ public class ConfigFrame extends JFrame implements ActionListener{
 							model_selection.isSelected()?"TRUE":"FALSE"}; break;
 				case FarmCPU:
 					command_exe = new String[]{
-							R_exe,
-							iPatPanel.jar.getParent()+"/res/iPat_FarmCPU.R"};
+							iPat.R_exe,
+							Paths.get(iPatPanel.jar.getParent(), "res", "iPat_FarmCPU.R").toString()};
 					command_specific = new String[]{
 							(String)method_bin.combo.getSelectedItem(),  // 17
 							(String)maxloop.combo.getSelectedItem()}; break;
 				case PLINK:
 					command_exe = new String[]{
-							R_exe,
-							iPatPanel.jar.getParent()+"/res/iPat_PLINK.R"};
+							iPat.R_exe,
+							Paths.get(iPatPanel.jar.getParent(), "res", "iPat_PLINK.R").toString()};
 					command_specific = new String[]{
 							(String)ci.combo.getSelectedItem(),  // 17
 							"TRUE"}; break;
 				case gBLUP:
 					command_exe = new String[]{
-							R_exe,
-							iPatPanel.jar.getParent()+"/res/iPat_gBLUP.R"};
+							iPat.R_exe,
+							Paths.get(iPatPanel.jar.getParent(), "res", "iPat_gBLUP.R").toString()};
 					command_specific = new String[]{
 							(String)snp_frac.combo.getSelectedItem(),  // 17
 							(String)file_frag.combo.getSelectedItem(),
@@ -419,8 +413,8 @@ public class ConfigFrame extends JFrame implements ActionListener{
 							(String)bonferroni.combo.getSelectedItem()}; break; // 21
 				case rrBLUP:
 					command_exe = new String[]{
-							R_exe,
-							iPatPanel.jar.getParent()+"/res/iPat_rrBLUP.R"};
+							iPat.R_exe,
+							Paths.get(iPatPanel.jar.getParent(), "res", "iPat_rrBLUP.R").toString()};
 					command_specific = new String[]{
 							(String)impute_method.combo.getSelectedItem(),  // 17
 							shrink.isSelected()?"TRUE":"FALSE",
@@ -428,8 +422,8 @@ public class ConfigFrame extends JFrame implements ActionListener{
 							(String)bonferroni.combo.getSelectedItem()}; break;
 				case BGLR:
 					command_exe = new String[]{
-							R_exe,
-							iPatPanel.jar.getParent()+"/res/iPat_BGLR.R"};	
+							iPat.R_exe,
+							Paths.get(iPatPanel.jar.getParent(), "res", "iPat_BGLR.R").toString()};
 					command_specific = new String[]{
 							(String)model_b.combo.getSelectedItem(),  // 17
 							(String)response_b.combo.getSelectedItem(),
@@ -442,14 +436,12 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				String[] command =  ArrayUtils.addAll(command_exe, ArrayUtils.addAll(command_common, command_specific));
 				return command;
 		}
-		
 		// Common used
 		JTabbedPane pane = new JTabbedPane();
 		JPanel panel_gwas = new JPanel();
 		JCheckBox enable = new JCheckBox("");
 		Group_Combo bonferroni = new Group_Combo("Bonferroni cut-off",  
 				new String[]{"0.05", "0.01", "0.005", "0.001", "0.0001"});
-		
 		// GWAS pane
 		public void GWASPane(){
 			if(pro[MOindex].isGWASDeployed()){
@@ -527,7 +519,6 @@ public class ConfigFrame extends JFrame implements ActionListener{
 			pane.addTab("Advance", panel_advance);
 			this.add(pane, "grow");
 		}
-		
 		JPanel panel_farm;
 		Group_Combo method_bin = new Group_Combo("Method bin", 
 				new String[]{"static", "optimum"});
@@ -583,7 +574,6 @@ public class ConfigFrame extends JFrame implements ActionListener{
 			pane.addTab("rrBLUP input", panel_rrblup);
 			this.add(pane, "grow");
 		}
-		
 		JPanel panel_args_b;
 		Group_Combo model_b = new Group_Combo("Model of the Predictor (Markers)", 
 				new String[]{"BRR", "BayesA", "BL", "BayesB", "BayesC", "FIXED"});

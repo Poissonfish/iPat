@@ -27,10 +27,6 @@
   list.of.packages <- c("magrittr", "bigmemory", "biganalytics", "data.table","MASS", "gplots", "compiler", "scatterplot3d", "R.utils", "snpMatrix")
   new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
-  if(!'multtest'%in% installed.packages()[,"Package"]){
-    source("http://www.bioconductor.org/biocLite.R") 
-    biocLite("multtest")
-  }  
   library(magrittr)
   library(bigmemory)
   library(biganalytics)
@@ -50,15 +46,7 @@ tryCatch({
   # Subset Phenotype
     cat("   Loading phenotype ...")
     Y.data = fread(Y.path) %>% as.data.frame 
-    if(toupper(names(Y.data)[1]) != "FID") {
-      trait.name = Y.data[, -1] %>% names()
-      taxa = Y.data[,1]
-      Y.data = data.frame(FID = taxa, SID = taxa, Y.data[,-1])
-      Y.path = paste0(Y.path, "plink")
-      write.table(x = Y.data, file = Y.path, quote = F, row.names = F, sep = '\t')
-    }else{
-      trait.name = Y.data[, -c(1, 2)] %>% names()
-    }
+    trait.name = Y.data[, -c(1, 2)] %>% names()
     cat("Done\n")
   # Covariate
     if(C.path != "NA"){
@@ -108,3 +96,30 @@ tryCatch({
 }, error = function(e){
   stop(e)
 })
+
+  
+project="Project_2"
+wd="/Users/Poissonfish/Desktop/test/rr"
+lib="/Users/Poissonfish/git/iPat/libs/"
+format="VCF"
+ms=as.numeric("No_threshold")
+maf=as.numeric("0.05")
+Y.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/dataplink.txt"
+Y.index="SelectedsepSelectedsepSelectedsep"
+GD.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/VCF/data_recode.ped"
+GM.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/VCF/data_recode.map"
+C.path="/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/covariates.txt"
+C.index="SelectedsepSelectedsepSelectedsep"
+K.path="NA"
+FAM.path="NA"
+BIM.path="NA"
+ci = as.numeric(0.95)
+binary = as.logical(FALSE)
+ 
+# Y.index = "SelectedsepExcludedsepSelectedsep" 
+# C.index = "SelectedsepExcludedsepSelectedsep" 
+# FAM.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/PLINK/simb.fam"
+# BIM.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/PLINK/simb.bim"
+# ci = 0.95 
+# GD.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/PLINK/simb.bed"
+# Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/PLINK/simb.txt"

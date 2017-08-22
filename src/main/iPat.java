@@ -45,12 +45,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -96,8 +98,9 @@ public class iPat {
 	static int PHeight=190;
 	static String folder_path = new String("path");
 	static String OS_string;
-	public static OS UserOS = new OS();
-	public static iPatPanel ipat;
+	static OS UserOS = new OS();
+	static String R_exe = "NA";
+	static iPatPanel ipat;
 	
 	public static void main(String[] args) throws IOException{  
 		System.out.println("Welcome to iPat!");
@@ -107,7 +110,32 @@ public class iPat {
 		else if(OS_string.toUpperCase().contains("MAC"))
 			UserOS.type = OS.TYPE.Mac;
 		else
-			UserOS.type = OS.TYPE.Linux;		
+			UserOS.type = OS.TYPE.Linux;
+		// Catch R exe path
+		switch(UserOS.type){
+			case Windows: 	
+				File file = new File(Paths.get("C:\\","Program Files", "R").toString());
+				String[] directories = file.list(new FilenameFilter() {
+				  @Override
+				  public boolean accept(File current, String name) {
+				    return new File(current, name).isDirectory();
+				  }
+				});
+				int ver_int = -1;
+				int ver_index = -1;
+				for(int i = 0; i < directories.length; i++){
+					String name = directories[i];
+					name = name.replaceAll("\\.", "");
+					name = name.replaceAll("R-", "");
+					int ver = Integer.parseInt(name);
+					if (ver > ver_int){
+						ver_int = ver;
+						ver_index = i;
+					}
+				}
+				R_exe = Paths.get("C:\\","Program Files", "R", directories[ver_index], "bin", "Rscript").toString();  break;
+			case Mac: 		R_exe = "/usr/local/bin/Rscript"; break;
+			case Linux: 	R_exe = "/usr/local/bin/Rscript"; break;}
 		System.out.println("You're running iPat on "+ UserOS.type);// Mac OS X, Windows 10
 		JFrame main = new JFrame();
 		//Set to center
@@ -2118,6 +2146,10 @@ class iPatProject{
 			iPatPanel.iOB[OBindex].updateImage(iPatPanel.MOimage);
 			// Execute the command
 			try{
+//				ProcessBuilder pb = new ProcessBuilder(command);
+//					pb. redirectErrorStream(true);
+//
+//					process = pb.start();
 				process = runtime.exec(command);
 	    	}catch (IOException e1) {e1.printStackTrace();}	
 			if(iPatPanel.debug){

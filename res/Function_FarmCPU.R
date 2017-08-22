@@ -1,6 +1,6 @@
 `FarmCPU.0000` <-
 function(){
-    ##################################################################
+    #################################################################
     #FarmCPU: Fixed and random model Circuitous Probability Unification
     #This is an R package to perform GWAS and genome prediction
     #Designed by Zhiwu Zhang

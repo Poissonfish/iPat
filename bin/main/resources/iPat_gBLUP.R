@@ -90,7 +90,7 @@ tryCatch({
     # No NA allowed in GAPIT
       GD[is.na(GD)] = 1
     cat("Done\n")
- # Covariate
+  # Covariate
     if(C.path != "NA"){
       cat("   Loading covariates ...")
       C.data = fread(C.path) %>% as.data.frame()
@@ -103,12 +103,11 @@ tryCatch({
       # 1 c
       }else if(length(index.C) == 1){
         name = names(C.data)[index.C]
-        C = data.frame(taxa = taxa, c = C.data[, index.C])
+        C = data.frame(c = C.data[, index.C])
         names(C) = name
       # More than 1 c
       }else{
         C = C.data[, index.C]
-        C = data.frame(taxa = taxa, C)
       }
       cat("Done\n")
     }else{
@@ -120,8 +119,6 @@ tryCatch({
   }else{
     cat("   Loading Kinship ...")
     K = fread(K.path) %>% as.data.frame()
-    if(is.character(K[,1])) K = K[,-1]
-    K = data.frame(taxa = taxa, K)
     cat("Done\n")
   }
 
@@ -142,14 +139,11 @@ tryCatch({
       ## Find QTNs
       index.sig = which(map_gwas$P.value < (cutoff/nrow(gwas)))
       ## Generate a dataframe by number of QTNs
-      ### 0 QTNs
-      if(length(index.sig) == 0){
-        C.gwas = NULL
       ### 1 QTNs
-      }else if(length(index.sig) == 1){
+      if(length(index.sig) == 1){
         C.gwas = data.frame(m = GD[,index.sig])
        ### 1+ QTNs
-      }else if(length(index.sig) > 1){
+      }else{
         C.gwas = GD[,index.sig]
         ## LD Remove
         LD_remain = Blink.LDRemove(C.gwas, .7, index.sig, orientation = "col")
@@ -158,32 +152,26 @@ tryCatch({
       cat("Done\n")}
   ## Prevent c > n
     if(is.null(C)) index.C = NULL
-    if(length(Y[ ,i]) < length(index.C) + length(index.sig)){
+    if(length(Y[ ,i]) < length(index.C) + ncol(C.gwas)){
       diff = length(index.C) + ncol(C.gwas) - length(Y[,i])
       if(is.null(C))
-        C = data.frame(taxa = taxa, C.gwas[ ,1 : (length(index.sig) - diff)])
+        C = data.frame(C.gwas[ ,1 : (ncol(C.gwas) - diff)])
       else
-        C = data.frame(C, C.gwas[ ,1 : (length(index.sig) - diff)])
+        C = data.frame(C, C.gwas[ ,1 : (ncol(C.gwas) - diff)])
     }else{
-      if(is.null(C)){
-        if(is.null(C.gwas)) {
-          C = NULL
-        }else{
-          C = data.frame(taxa = taxa, C.gwas)
-        }
-      }else{
-        if(!is.null(C.gwas)) {
-          C = data.frame(C, C.gwas)
-        }
-      }
+      if(is.null(C))
+        C = data.frame(C.gwas)
+      else
+        C = data.frame(C, C.gwas)
     } 
+  #if(is.na(C.inher)) C.inher = NULL else C.inher = C.inher
   # GAPIT
       x = GAPIT(
         Y = data.frame(taxa, Y[,i]),
         GM = GM,
         GD = data.frame(taxa, GD),
         KI = K,
-        CV = C,
+        CV = data.frame(taxa, C),
         #CV.Inheritance = C.inher,
         #PCA.total = PCA,
         group.from = 10000,
@@ -193,8 +181,12 @@ tryCatch({
         SNP.fraction = snp.fraction,
         SNP.test=FALSE,
         memo = sprintf("%s_%s", project, trait.names[i]))
-  }
+    }
   print(warnings())
 }, error = function(e){
     stop(e)
 })
+
+
+
+
