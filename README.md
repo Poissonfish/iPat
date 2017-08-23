@@ -39,7 +39,7 @@
 
 >> 2.3.5 [PLINK](#plink)
 
->> 2.3.6 [Binary PLINK] (#plinkb)
+>> 2.3.6 [Binary PLINK](#plinkb)
 
 > 2-4 [Covariates and kinship](#C_K)
 

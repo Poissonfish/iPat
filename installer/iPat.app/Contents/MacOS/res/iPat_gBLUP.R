@@ -152,19 +152,19 @@ tryCatch({
       if(length(Y[ ,i]) < length(index.C) + length(index.sig)){
         diff = length(index.C) + ncol(C.gwas) - length(Y[,i])
         if(is.null(C))
-          C = data.frame(taxa = taxa, C.gwas[ ,1 : (length(index.sig) - diff)])
+          C.final = data.frame(taxa = taxa, C.gwas[ ,1 : (length(index.sig) - diff)])
         else
-          C = data.frame(C, C.gwas[ ,1 : (length(index.sig) - diff)])
+          C.final = data.frame(C, C.gwas[ ,1 : (length(index.sig) - diff)])
       }else{
         if(is.null(C)){
           if(is.null(C.gwas)) {
-            C = NULL
+            C.final = NULL
           }else{
-            C = data.frame(taxa = taxa, C.gwas)
+            C.final = data.frame(taxa = taxa, C.gwas)
           }
         }else{
           if(!is.null(C.gwas)) {
-            C = data.frame(C, C.gwas)
+            C.final = data.frame(C, C.gwas)
           }
         }
       } 
@@ -176,7 +176,7 @@ tryCatch({
         GM = GM,
         GD = data.frame(taxa, GD),
         KI = K,
-        CV = C,
+        CV = C.final,
         #CV.Inheritance = C.inher,
         #PCA.total = PCA,
         group.from = 10000,
