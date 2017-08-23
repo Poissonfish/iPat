@@ -21,7 +21,7 @@
   maxLoop = as.numeric(args[17])
 # Load libraries
   cat("=== FarmCPU ===\n")
-  print("   Loading libraries ...")
+  cat("   Loading libraries ...")
   setwd(lib) 
   library(bigmemory)
   library(biganalytics)
@@ -114,23 +114,3 @@ tryCatch({
 },error = function(e){
   stop(e)
 })
-
-project="Project_2"
-wd="C:\\Users\\Poissonfish"
-lib="C:\\Users\\Poissonfish\\git\\iPat\\res"
-format="Hapmap"
-ms=as.numeric("No_threshold")
-maf=as.numeric("0.05")
-Y.path="C:\\Users\\Poissonfish\\Desktop\\demo_data\\Hapmap\\data.txt"
-Y.index="SelectedsepSelectedsepSelectedsep"
-GD.path="C:\\Users\\Poissonfish\\Desktop\\demo_data\\Hapmap\\data_recode.dat"
-GM.path="C:\\Users\\Poissonfish\\Desktop\\demo_data\\Hapmap\\data_recode.nmap"
-C.path="NA"
-C.index="NA"
-K.path="NA"
-FAM.path="NA"
-BIM.path="NA"
- method.bin = "static"
-  maxLoop = 10
-
-
