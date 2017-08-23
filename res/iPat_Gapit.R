@@ -24,7 +24,7 @@
   file.fragment = as.numeric(args[20])
   model.s = as.logical(args[21])
 # Load libraries
-  cat("=== GAPIT ===")
+  cat("=== GAPIT ===\n")
   cat("   Loading libraries ...")
   setwd(lib)
   library(MASS) # required for ginv
@@ -157,25 +157,3 @@ tryCatch({
 }, error = function(e){
     stop(e)
 })
-
-project="Project_1"
-wd= "C:\\Users\\Poissonfish"
-lib="C:\\Users\\Poissonfish\\Desktop\\iPat\\res"
-format="Hapmap"
-ms=as.numeric("No_threshold")
-maf=as.numeric("0.05")
-Y.path="C:\\Users\\Poissonfish\\Desktop\\demo_data\\Hapmap\\data.txt"
-Y.index="SelectedsepSelectedsepSelectedsep"
-GD.path="C:\\Users\\Poissonfish\\Desktop\\demo_data\\Hapmap\\data_recode.dat"
-GM.path="C:\\Users\\Poissonfish\\Desktop\\demo_data\\Hapmap\\data_recode.nmap"
-C.path="NA"
-C.index="NA"
-K.path="NA"
-FAM.path="NA"
-BIM.path="NA"
-  model = "GLM"
-  ki.c = "average"
-  ki.g = "Mean"
-  snp.fraction = 1
-  file.fragment = NULL
-  model.s = FALSE

@@ -1847,10 +1847,10 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				System.out.println(lines[count][1]);
 				// Get first two lines information if not null
 				if(lines[count][0] != null && lines[count][1] != null){
-					row1[count] = lines[count][0].split("\t");
-					if(row1[count].length <= 1) row1[count] = lines[count][0].split(" ");
-					row2[count] = lines[count][1].split("\t");	
-					if(row2[count].length <= 1) row2[count] = lines[count][0].split(" ");
+					row1[count] = lines[count][0].replaceAll("\"", "").split("\t");
+					if(row1[count].length <= 1) row1[count] = lines[count][0].replaceAll("\"", "").split(" +");
+					row2[count] = lines[count][1].replaceAll("\"", "").split("\t");
+					if(row2[count].length <= 1) row2[count] = lines[count][1].replaceAll("\"", "").split(" +");
 					row_count[count] = countLines(iOB[i].getPath());
 					col_count[count] = row2[count].length;}
 				count++;}}
@@ -1888,6 +1888,14 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				// Numerical
 				for (int i = 0; i < 3; i++){
 					int i2 = (i + 1)%3, i3 = (i + 2)%3;
+//					System.out.println("diffValues = " + diffValues(row2[i]));
+//					System.out.println("contain 0 1 2? " + Arrays.asList(row2[i]).containsAll(Arrays.asList("0", "1", "2")));
+//					System.out.println("cols of i = " + col_count[i]);
+//					System.out.println(row2[i][0]+" & "+row2[i][1]+" & "+row2[i][2]);
+//					System.out.println("cols of i2 = " + col_count[i2]);
+//					System.out.println(row2[i2][0]+" & "+row2[i2][1]+" & "+row2[i2][2]+" & "+row2[i2][3]);
+//					System.out.println("row of i2 = " + row_count[i2]);
+//					System.out.println("row of i3 = " + row_count[i3]);
 					if(Arrays.asList(row2[i]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[i]) < 6){
 						iOB[fIndex[i]].type = iPatObject.Filetype.GD;
 						iOB[fIndex[i2]].type = (col_count[i2] == 3 && Math.abs(col_count[i] - row_count[i2]) <= 1) ? iPatObject.Filetype.GM : iPatObject.Filetype.P; // m or m+1 - m or m+1 = -1, 0 1
