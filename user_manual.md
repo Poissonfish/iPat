@@ -138,7 +138,7 @@ this command will install all the required r packges automatically
 ### 2.2 *Create a project*
 * After importing the files, double clicking on anywhere in iPat to create a new project (a gear icon).
 * Build a project by dragging a files over the project icon. A dashline will be shown between the file and project, which mean this file has been already included in this project. The below two are examples for a valid project. <p align="center"><img src = "./md/linkages.png" width = 400></p>
-* A valid project must include a certain number of required files, **no less, no more.** Otherwise iPat won't work and will return an error message. Valid datasets for each format can be found from the table below:
+* **[IMPORTANT]** A valid project must include a certain number of required files, **no less, no more.** Otherwise iPat won't work and will return an error message. Valid datasets for each format can be found from the table below:
 
 <center>
 
@@ -147,8 +147,8 @@ this command will install all the required r packges automatically
 |Hapmap|Genotype<br>(.hmp)|Phenotype<br>(.txt)| None | None |
 |Numeric|Genotype<br>(.dat)|Phenotype<br>(.txt)|Map information (.map)<br>(Only required for GWAS)| None |
 |VCF   |Genotype<br>(.vcf)|Phenotype<br>(.txt)| None | None |
-|PLINK|Genotype<br>(.ped)|Phenotype<br>(.txt)|Map information (.map)| None |
-|PLINK<br>(binary)|Genotype<br>(.bed)|Phenotype<br>(.txt)|Map information (.bim)| Individual information<br>(.fam)|
+|PLINK|Genotype<br>(.ped)|Phenotype(.txt)<br>(Only required for multiple traits)|Map information (.map)| None |
+|PLINK<br>(binary)|Genotype<br>(.bed)|Phenotype(.txt)<br>(Only required for multiple traits)|Map information (.bim)| Individual information<br>(.fam)|
 
 </center>
 
@@ -370,13 +370,14 @@ Tools implemented in iPat allow users to do genome-wide associate study (GWAS) a
 |:--|:---|:---|:--:|
 |Covariates|Covaraite names|Subsetting covaraites data|All covariates are selected|
 |PLINK input|C.I.|The desired coverage for a confidence interval|0.95|
+|PLINK input|Method|Regression methods of the study, available options are "GLM" and "Logistic regression"|GLM|
 
 <div style="page-break-after: always;"></div>
 <a name="rrblup"></a>
 ### 3.4 rrBLUP|Category|Parameters|Definitions| Default|
 |:--|:---|:---|:--:|
 |Covariates|Covaraite names|Subsetting covaraites data|All covariates are selected|
-|rrBLUP input|Shrinkage estimation|Shrinkage estimation can improve the accuracy of genome-wide marker-assisted selection, particularly at low marker density (Endelman and Jannink 2012)||
+|rrBLUP input|Shrinkage estimation|Shrinkage estimation can improve the accuracy of genome-wide marker-assisted selection, particularly at low marker density (Endelman and Jannink 2012)|TRUE|
 |rrBLUP input|impute.method|Imputation algorithm for missing values in markers data|mean|
 
 <a name="bglr"></a>
