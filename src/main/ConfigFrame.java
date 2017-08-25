@@ -111,10 +111,22 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				panel_wd.add(wd_path.browse, "cell 2 1 1 1");
 				wd_path.browse.addActionListener(this);
 			// Phenotype panel initialization
-				String headline = iPatPanel.read_lines(path_P, 1)[0];
+				// phenotype not applicable
+				if(path_P.equals("NA")){
+					pro[MOindex].trait_names = new String[]{"NA", "NA"};
+					pro[MOindex].initial_phenotype(false);
+					JPanel nullpanel = new JPanel(new MigLayout("", "[grow]", "[grow]"));
+					JLabel na_msg = new JLabel("<html><center> Subsetting unavailable </center></html>", SwingConstants.CENTER);
+					na_msg.setFont(new Font("Ariashowpril", Font.PLAIN, 18));
+					nullpanel.add(na_msg, "grow");
+					scroll_phenotype = new JScrollPane(nullpanel,
+			                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+			                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);}
 				// if never initialized
-				if(pro[MOindex].trait_names.length <= 1){
+				else if(pro[MOindex].trait_names.length <= 1){
+					String headline = iPatPanel.read_lines(path_P, 1)[0];
 					pro[MOindex].trait_names = headline.split("\t").length <= 1 ? headline.split(" ") : headline.split("\t");
+					// Other format with PLINK phenotype
 					if(pro[MOindex].trait_names[0].toUpperCase().equals("FID"))
 						pro[MOindex].initial_phenotype(true);						
 					else{
@@ -122,11 +134,10 @@ public class ConfigFrame extends JFrame implements ActionListener{
 						case PLINK: case PLINK_bin:
 							pro[MOindex].initial_phenotype(true); break;
 						default:
-							pro[MOindex].initial_phenotype(false); break;}}							
-					}
-				scroll_phenotype = new JScrollPane(pro[MOindex].panel_phenotype,
-		                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-		                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+							pro[MOindex].initial_phenotype(false); break;}}
+					scroll_phenotype = new JScrollPane(pro[MOindex].panel_phenotype,
+			                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+			                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);}
 			// QC panel initialization
 				panel_qc = new JPanel(new MigLayout("fillx"));
 				panel_qc.add(ms_qc.name, "cell 0 0, align r");
@@ -411,7 +422,8 @@ public class ConfigFrame extends JFrame implements ActionListener{
 							Paths.get(iPatPanel.jar.getParent(), "res", "iPat_PLINK.R").toString()};
 					command_specific = new String[]{
 							(String)ci.combo.getSelectedItem(),  // 17
-							"TRUE"}; break;
+							"TRUE", 
+							(String)model.combo.getSelectedItem()}; break;
 				case gBLUP:
 					command_exe = new String[]{
 							iPat.R_exe,
@@ -553,6 +565,8 @@ public class ConfigFrame extends JFrame implements ActionListener{
 		JPanel panel_plink;
 		Group_Combo ci = new Group_Combo("C.I.",
 				new String[]{"0.95", "0.975", "0.995"}); 
+		Group_Combo model = new Group_Combo("Method", 
+				new String[]{"GLM", "Logistic Regression"});
 		void config_plink() throws IOException{
 			this.removeAll();
 			pane = new JTabbedPane();
@@ -560,6 +574,8 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				panel_plink = new JPanel(new MigLayout("fillx"));
 				panel_plink.add(ci.name, "cell 0 0, align r");
 				panel_plink.add(ci.combo, "cell 1 0, align l");
+				panel_plink.add(model.name, "cell 0 1, align r");
+				panel_plink.add(model.combo, "cell 1 1, align l");
 			if(C_exist) pane.addTab("Covariates", scroll_cov);
 			else pane.addTab("Covariates", pro[MOindex].panel_cov);
 			pane.addTab("PLINK input", panel_plink);

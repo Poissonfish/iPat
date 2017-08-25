@@ -440,6 +440,12 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		    		if(gwas_exist && gs_exist){
 		    			reAssign(iIndex_popup, iPro[ProIndex].command_gwas);
 		    			reAssign(iIndex_popup, iPro[ProIndex].command_gs);
+		    			if(iPro[ProIndex].command_gwas[8].equals("NA")){
+		    				String temp = null;
+		    				switch(iPro[ProIndex].format){
+		    				case PLINK: temp = iPro[ProIndex].command_gwas[10]; break; 
+		    				case PLINK_bin: temp = iPro[ProIndex].command_gwas[15]; break;}
+		    				iPro[ProIndex].command_gs[8] = temp.substring(0, temp.length() - 3) + "plinktrait";}
 		    			 int reply = JOptionPane.showConfirmDialog(null, ConfirmFrame(ProIndex,
 				    				iPro[ProIndex].method_gwas.getName(),
 				    				iPro[ProIndex].method_gs.getName(),
@@ -1188,6 +1194,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	       	Point centerPoint = local_env.getCenterPoint();
 	       	int dx = centerPoint.x - 500 / 2;
 	        int dy = centerPoint.y - 400 / 2;	
+	        System.out.println("MOindex : " + MOindex);
 			ConfigFrame configframe = new ConfigFrame(iIndex, iOB, MOindex, iPro, isGWAS);
 			configframe.setResizable(true);
 			configframe.setLocation(dx, dy);}
@@ -1822,7 +1829,6 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			command[15] = index_fam != -1 ? iOB[index_fam].getPath() : "NA";
 			command[16] = index_bim != -1 ? iOB[index_bim].getPath() : "NA";
 	}
-	
 	iPatProject.Format catch_files(int index) throws IOException{
 		// need extension (without extension): Binary fam
 		// type record which table is P(1), C(2) or K(3)
@@ -1843,8 +1849,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				lines[count] = read_lines(iOB[i].getPath(), 2);
 				fIndex[count] = i;
 				// Print first two lines
-				System.out.println(lines[count][0]);
-				System.out.println(lines[count][1]);
+//				System.out.println(lines[count][0]);
+//				System.out.println(lines[count][1]);
 				// Get first two lines information if not null
 				if(lines[count][0] != null && lines[count][1] != null){
 					row1[count] = lines[count][0].replaceAll("\"", "").split("\t");
@@ -1867,7 +1873,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 									 Arrays.asList(row2[1]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[1]) < 5};
 				if(partial_true(PLINK_con)){
 					iOB[fIndex[0]].type = PLINK_con[0] ? iPatObject.Filetype.GM : iPatObject.Filetype.GD;
-					iOB[fIndex[1]].type = PLINK_con[1] ? iPatObject.Filetype.GD : iPatObject.Filetype.GM;
+					iOB[fIndex[1]].type = PLINK_con[1] ? iPatObject.Filetype.GM : iPatObject.Filetype.GD;
 					format = iPatProject.Format.PLINK;
 				}else if(partial_true(VCF_con)){
 					iOB[fIndex[0]].type = VCF_con[0] ? iPatObject.Filetype.GD : iPatObject.Filetype.P;
@@ -1888,14 +1894,14 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				// Numerical
 				for (int i = 0; i < 3; i++){
 					int i2 = (i + 1)%3, i3 = (i + 2)%3;
-//					System.out.println("diffValues = " + diffValues(row2[i]));
-//					System.out.println("contain 0 1 2? " + Arrays.asList(row2[i]).containsAll(Arrays.asList("0", "1", "2")));
-//					System.out.println("cols of i = " + col_count[i]);
-//					System.out.println(row2[i][0]+" & "+row2[i][1]+" & "+row2[i][2]);
-//					System.out.println("cols of i2 = " + col_count[i2]);
-//					System.out.println(row2[i2][0]+" & "+row2[i2][1]+" & "+row2[i2][2]+" & "+row2[i2][3]);
-//					System.out.println("row of i2 = " + row_count[i2]);
-//					System.out.println("row of i3 = " + row_count[i3]);
+					System.out.println("i differvalue : " + diffValues(row2[i]));
+					System.out.println("i containall : " + Arrays.asList(row2[i]).containsAll(Arrays.asList("0", "1", "2")));
+					System.out.println("i  col count : " + col_count[i]);
+					System.out.println("i2 col count : " + col_count[i2]);
+					System.out.println("i3 col count : " + col_count[i3]);
+					System.out.println("i row count : " + row_count[i]);
+					System.out.println("i2 row count : " + row_count[i2]);
+					System.out.println("i3 row count : " + row_count[i3]);
 					if(Arrays.asList(row2[i]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[i]) < 6){
 						iOB[fIndex[i]].type = iPatObject.Filetype.GD;
 						iOB[fIndex[i2]].type = (col_count[i2] == 3 && Math.abs(col_count[i] - row_count[i2]) <= 1) ? iPatObject.Filetype.GM : iPatObject.Filetype.P; // m or m+1 - m or m+1 = -1, 0 1
