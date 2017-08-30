@@ -157,3 +157,22 @@ tryCatch({
 }, error = function(e){
     stop(e)
 })
+
+Command: 
+/usr/local/bin/Rscript /Users/Poissonfish/git/iPat/res/iPat_GAPIT.R Project_1 /Users/Poissonfish/Desktop/test/farm /Users/Poissonfish/git/iPat/res/ Numerical No_threshold 0.05 /Users/Poissonfish/git/iPat/demo_data/Numeric/data.txt ExcludedsepExcludedsepSelectedsep /Users/Poissonfish/git/iPat/demo_data/Numeric/data.dat /Users/Poissonfish/git/iPat/demo_data/Numeric/data.map NA NA NA NA NA GLM average Mean 1 NULL FALSE 
+For R: 
+project="Project_1"
+wd="/Users/Poissonfish/Desktop/test/farm"
+lib="/Users/Poissonfish/git/iPat/res/"
+format="Numerical"
+ms=as.numeric("No_threshold")
+maf=as.numeric("0.05")
+Y.path="/Users/Poissonfish/git/iPat/demo_data/Numeric/data.txt"
+Y.index="ExcludedsepExcludedsepSelectedsep"
+GD.path="/Users/Poissonfish/git/iPat/demo_data/Numeric/data.dat"
+GM.path="/Users/Poissonfish/git/iPat/demo_data/Numeric/data.map"
+C.path="NA"
+C.index="NA"
+K.path="NA"
+FAM.path="NA"
+BIM.path="NA"

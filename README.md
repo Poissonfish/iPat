@@ -68,8 +68,13 @@
 
 > 3.5 [BGLR](#bglr)
 
-#### 4. [Support](#support)
-#### 5. [Citation](#cite)
+#### 4. [Tutorial] (#exp)
+> 4-1 [Example 1 : Perform GWAS by FarmCPU (Format: VCF)](#e1)
+
+> 4-2 [Example 2 : Perform GWAS-assisted GS by GAPIT and BGLR (Format: PLINK)](#e2)
+
+#### 5. [Support](#support)
+#### 6. [Citation](#cite)
 
 <br><br><br>
 
@@ -325,7 +330,7 @@ this command will install all the required r packges automatically
 |:--:|:---:|
 |GAPIT|VanRaden (VanRaden, 2008),  <br> Loiselle (Loiselle *et al.*, 1995) <br> or EMMA (Kang *et al.*, 2008)|
 |FarmCPU|FARM-CPU (Liu *et al.*, 2016)|
-|PLINK|User-provided|
+|PLINK|Not available|
 |rrBLUP|VanRaden (VanRaden, 2008)|
 |BGLR|User-provided|
 
@@ -353,7 +358,8 @@ this command will install all the required r packges automatically
 |Quality Control|By MAF|Filtering out markers based on minor allele frequency|0.05|
  </center>
 
-* To select a method, simply drag a "method block" to the left-side area. And tap on this area for further defining (The information of method-specific arguments can be found in the section 3) . 
+* To select a method, simply drag a "method block" to the left-side area. And tap on this area for further defining 
+(see [section 3](#gwas) for details)
 <p align="center"><img src = "./md/dragmethod.png" width = 1200></p>
 
 * After defining the analysis, user can start to run the procedure by clicking ‘Run’ at the pop-up menu of the project.
@@ -377,9 +383,18 @@ this command will install all the required r packges automatically
 <p align="center"><img src = "./md/output.png" width = 500></p>
 <a name="delete"></a>
 ### 2.8 *Remove files from iPat*
-* Users are allowed to remove projects or files from iPat in the pop-up menu through right clicking on them, or simply press <kbd>Backspace</kbd> (press <kbd>delete</kbd> on Mac) after selecting them.
+Users are allowed to remove projects, files and linkage from iPat in 3 ways:
+
+* Drag any object to the bottom-left area and release to remove it.
+
+<p align="center"><img src = "./md/delete2.png" width = 500></p>
+
+
+* Right click on an object to open a pop-up menu then delete it
 
 <p align="center"><img src = "./md/delete.png" width = 500></p>
+
+* Or, simply press <kbd>Backspace</kbd> (press <kbd>delete</kbd> on Mac) after selecting an object.
 
 <a name="gwas"></a>## 3. GWAS and GS
 Tools implemented in iPat allow users to do genome-wide associate study (GWAS) and genomic selection (GS). Curretly GWAS can be performed by GAPIT, FarmCPU and PLINK, and GS can be done by GAPIT, rrBLUP and BGLR in iPat. Tables below are the input arguments available in iPat:
@@ -425,10 +440,63 @@ Tools implemented in iPat allow users to do genome-wide associate study (GWAS) a
 |BGLR|burnIn| The number of samples discarded|200|
 |BGLR|thin| The number of thinning|5|
 
-<a name="support"></a>## 4 Support
-* If there is any difficulty on iPat, please leave your question in the page of [issue report](https://github.com/Poissonfish/iPat/issues).
+<a name="exp"></a>
+## 4. Tutorial
+
+### Case study: Perform GWAS-assisted GS by FarmCPU and BGLR (Format: VCF)
+
+* Drag genotype file formated in VCF and phenotype file from folder to iPat.
+
+<p align="center"><img src = "./md/tutor1.png" width = 700></p>
+
+* Double click at anywhare in iPat to create a new project (gear shape icon). 
+
+<p align="center"><img src = "./md/tutor2.png" width = 700></p>
+
+* Drag both files and hover them over the project to build a linkage. For every files that have a linkage built with the same project would be treated as a group in iPat. 
+
+<p align="center"><img src = "./md/tutor3.png" width = 700></p>
+
+* Apart from the required files (i.e. genotype and phenotype), users can also add covariates to improve the analysis (see [section 2.4](#C_K) for details)
+
+<p align="center"><img src = "./md/tutor4.png" width = 700></p>
+
+* After building the group for analysis properly, right click on the project and choose "GWAS (Empty)" to define the configuration for GWAS.
+
+<p align="center"><img src = "./md/tutor5.png" width = 700></p>
+
+* Drag the label "FarmCPU" to the left-side area, and release to deploy FarmCPU in GWAS. 
+  
+<p align="center"><img src = "./md/tutor6.png" width = 700></p>
+
+* Users may continue to set output directory, quality control and other input arguments, or close the window to have the configuration stored.
+
+<p align="center"><img src = "./md/tutor7.png" width = 700></p>
+
+* Since we hope to use the information gained from FarmCPU to improve the prediction accuracy in BGLR, we need to right click on the project again and choose "GS (Empty)" to define GS in BGLR.
+
+<p align="center"><img src = "./md/tutor8.png" width = 700></p>
+
+* Again, drag "BGLR" to the left-side area to deploy, and users can further define the configuration in GS.
+
+<p align="center"><img src = "./md/tutor9.png" width = 700></p>
+
+* After getting everything set, right click on the project and choose "Run" to start the analysis.
+
+<p align="center"><img src = "./md/tutor10.png" width = 700></p>
+
+* The project icon will be labeled a green dot after a successful run. Double click on it to inspect results.
+
+<p align="center"><img src = "./md/tutor11.png" width = 700></p>
+
+* In the folder where files imported, iPat will generate a set of converted files if needed.
+
+<p align="center"><img src = "./md/tutor12.png" width = 700></p>
+
+<a name="support"></a>## 5. Support
+* If there is any difficulty on iPat, please leave your questions in the page of [issue report](https://github.com/Poissonfish/iPat/issues).
 * Or you can directly send an email to the author [James Chen](mailto:chun-peng.chen@wsu.edu)
 
 <a name="cite"></a>
-## 5 Citation
+## 6. Citation
 * Bradbury,P.J. et al. (2007) TASSEL: software for association mapping of complex traits in diverse samples. Bioinformatics, 23, 2633–2635.* Endelman,J. (2011) Ridge regression and other kernels for genomic selection in the R package rrBLUP. Plant Genome, 4, 250–255.* Kang,H.M. et al. (2008) Efficient control of population structure in model organism association mapping. Genetics, 178, 1709–1723.* Liu,X. et al. (2016) Iterative Usage of Fixed and Random Effect Models for Powerful and Efficient Genome-Wide Association Studies. PLoS Genet., 12, e1005767.* Purcell,S. et al. (2007) PLINK: A Tool Set for Whole-Genome Association and Population-Based Linkage Analyses. Am J Hum Genet, 81, 559–575.* Tang,Y. et al. (2016) GAPIT Version 2: An Enhanced Integrated Tool for Genomic Association and Prediction. Plant J., 9.

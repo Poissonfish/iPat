@@ -188,7 +188,9 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			   Groupindex = -1, Groupcount = 0;
 	// link
 	static Point lineST = new Point(0, 0),
-	        	 lineED = new Point(0, 0);
+	        	 lineED = new Point(0, 0),
+	        	 linedragST = new Point(0, 0),
+	        	 linedragED = new Point(0, 0);
 	static int[][] iOBlink = new int[LINEMAX][2];
 	static boolean[] iOBlink_delete = new boolean[LINEMAX];
 	static int lineindex = -1, 
@@ -378,8 +380,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		this.Wide = Wideint;
 		this.Heigth = Heigthint;
 		this.panelHeigth = pH;
-		delbboundx = Wide - 50;
-		delbboundy = Heigth - 70;	
+		delbboundx = Wide - 110;
+		delbboundy = Heigth - 150;	
 	    InputMap im = this.getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
 	    ActionMap am = this.getActionMap();
 	    im.put(KeyStroke.getKeyStroke((char) KeyEvent.VK_BACK_SPACE), "delete"); 
@@ -661,7 +663,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		//this.setLayout(new MigLayout("debug, fill","[grow]","[grow]"));
 		this.setLayout(null);
 		this.add(startPanel);
-		startPanel.setBounds(0,0,Wide,Heigth);
+		startPanel.setBounds(0, 0, Wide, Heigth);
 		//this.add(nullPanel,"grow"); 
 		startPanel.setOpaque(false);
 			
@@ -789,6 +791,14 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 			@Override 
 			public void mouseReleased(MouseEvent ev){			
 				if(iIndex_target != -1) BuildLinkage();
+				if(removeornot && ev.getY() > delbboundy && ev.getX() > delbboundx){
+					if (iIndex != -1)
+						removeiOB();
+					else if(lineindex != -1)
+						removeiLine();			
+    				trashl.setBounds(new Rectangle(-1000, -50, Wide, 300));  				
+					trashl.setVisible(true);
+					removeornot=false;}
 				iIndex = -1;
 				iIndex_target = -1;
 				Groupindex = -1;
@@ -829,15 +839,47 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	}
 	@Override
 	 public void mouseDragged(MouseEvent ev) {
-		Point point_drag = ev.getPoint();
+		Point pt = ev.getPoint();
 		if(iIndex != -1) {
 			LinkToObject();
 			if(isInBoundary() ||
-			  (isEscapeToLeft()  && isMoveToRight(point_drag))    || (isEscapeToRight() && isMoveToLeft(point_drag)) ||
-			  (isEscapeToAbove() && isMoveToDownward(point_drag)) || (isEscapeToBelow() && isMoveToUpward(point_drag))){
-				iOB[iIndex].setDeltaLocation(point_drag.getX() - temppt.getX(), point_drag.getY() - temppt.getY());
+			  (isEscapeToLeft()  && isMoveToRight(pt))    || (isEscapeToRight() && isMoveToLeft(pt)) ||
+			  (isEscapeToAbove() && isMoveToDownward(pt)) || (isEscapeToBelow() && isMoveToUpward(pt))){
+				iOB[iIndex].setDeltaLocation(pt.getX() - temppt.getX(), pt.getY() - temppt.getY());
 				iOB[iIndex].updateLabel();
-				temppt = point_drag;}}
+				temppt = pt;}}
+		// Drag line segment, and prevent from creating line when draging objects
+		if(iIndex == -1 && lineindex != -1){ 
+			linedragST = new Point(pt.x - 30 + 10, pt.y - 30);
+			linedragED = new Point(pt.x + 30 + 10, pt.y + 30);}
+		// Trash hint show
+		if((iIndex != -1 || lineindex != -1) && pt.y > delbboundy && pt.x > delbboundx && !removeornot){
+			TrashAnimation = new Timer(15, new ActionListener() {
+				int i=0;
+			    @Override
+			    public void actionPerformed(ActionEvent ae) {
+			    	if(i < 10 && TA){
+			    		trashl.setBounds(new Rectangle(Wide - trashW,  Heigth - trashH - 20, trashW, trashH));
+			    		trashl.setIcon(new ImageIcon(Trash[i]));
+						startPanel.setLayer(trashl, new Integer(200));
+						trashl.setVisible(true);
+						startPanel.revalidate();  
+				        i++;
+			    	}else{
+			    		TrashAnimation.stop();
+			    		i=0;
+			    		TA=false;
+			    	}
+			    }
+			});	
+			TA = true;
+			TrashAnimation.start();
+			removeornot = true;}
+		else if(pt.y < delbboundy || pt.x < delbboundx){
+			trashl.setBounds(new Rectangle(Wide, -50, Wide, 300));
+			startPanel.setLayer(trashl, new Integer(1));
+			trashl.setVisible(true);
+			removeornot = false;}	
 		repaint();	
 	}
 	
@@ -1225,6 +1267,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 	    super.paintComponent(g);	
 	    g.setColor(ovalcolor);
 		Draw_Lines(g, lineST, lineED, dashed); //temp_link 
+		Draw_Lines(g, linedragST, linedragED, dashed); //drag_link
 		DrawLinkedLine(g); //object_link
 		// Draw OB image
 		for (int i = 0; i < iOBcount; i++){
