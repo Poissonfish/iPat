@@ -180,7 +180,7 @@ this command will install all the required r packges automatically
 
 <a name="hmp"></a>
 #### 2.3.2 Hapmap
-* Genotype data, the header is requried to be provided:
+* Genotype data, the header is **requried** to be provided:
 
 |rs| alleles| chrom|pos| strand|assembly| center| protLSID| assayLSID|panel| QCcode| sample 1| sample 2| sample 3|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -190,7 +190,7 @@ this command will install all the required r packges automatically
 <div style="page-break-after: always;"></div>
 <a name="num"></a>
 #### 2.3.3 Numeric
-* Genotype data, samples are recorded in rows. The header and sample names can be omitted:
+* Genotype data, samples are recorded in rows. The header and sample names can be **omitted**:
 
 |taxa|marker 1|marker 2|marker 3|
 |:-:|:-:|:-:|:-:|
@@ -198,7 +198,7 @@ this command will install all the required r packges automatically
 |sample2|0|0|0|
 |sample3|1|0|0
 
-* Map information, the header is requried to be provided:
+* Map information, the header is **requried** to be provided:
 
 |SNP|Chromosome| Position|
 |:-:|:-:|:-:|
@@ -208,7 +208,7 @@ this command will install all the required r packges automatically
 
 <a name="vcf"></a>
 #### 2.3.4 VCF
-* Genotype data, the header is requried to be provided:
+* Genotype data, the header is **requried** to be provided:
 
 |CHROM| POS|ID|REF|ALT|QUAL|FILTER|INFO|FORMAT|sample 1| sample 2| sample 3|
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -265,7 +265,7 @@ this command will install all the required r packges automatically
 
 <a name="cov"></a>
 #### 2.4.2 Covariates
-* Demo format for a covarate file. The header is required to be provided:
+* Demo format for a covarate file. The header is **required** to be provided:
 
 |PC1|PC2|PC3|
 |:-:|:-:|:-:|
@@ -276,7 +276,7 @@ this command will install all the required r packges automatically
 <a name="kin"></a>
 #### 2.4.3 Kinship
 
-* Demo format for a kinship file. Taxa name is required while the header can be omitted:
+* Demo format for a kinship file. Taxa name is **required** while the header can be omitted:
 
 |taxa|sample 1|sample 2|sample 3|
 |:-:|:-:|:-:|:-:|

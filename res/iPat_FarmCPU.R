@@ -114,3 +114,21 @@ tryCatch({
 },error = function(e){
   stop(e)
 })
+
+project="Project_1"
+wd="/Users/Poissonfish/Desktop/test/farm"
+lib="/Users/Poissonfish/git/iPat/res/"
+format="Numerical"
+ms=as.numeric("No_threshold")
+maf=as.numeric("0.05")
+Y.path="/Users/Poissonfish/git/iPat/demo_data/Numeric/data.txt"
+Y.index="SelectedsepSelectedsepSelectedsep"
+GD.path="/Users/Poissonfish/git/iPat/demo_data/Numeric/data.dat"
+GM.path="/Users/Poissonfish/git/iPat/demo_data/Numeric/data.map"
+C.path="NA"
+C.index="NA"
+K.path="NA"
+FAM.path="NA"
+BIM.path="NA"
+  method.bin = "static"
+  maxLoop = 10
