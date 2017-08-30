@@ -69,9 +69,7 @@
 > 3.5 [BGLR](#bglr)
 
 #### 4. [Tutorial](#exp)
-> 4-1 [Example 1 : Perform GWAS by FarmCPU (Format: VCF)](#e1)
-
-> 4-2 [Example 2 : Perform GWAS-assisted GS by GAPIT and BGLR (Format: PLINK)](#e2)
+> [Case study: Perform GWAS-assisted GS by FarmCPU and BGLR (Format: VCF)](#e1)
 
 #### 5. [Support](#support)
 #### 6. [Citation](#cite)
