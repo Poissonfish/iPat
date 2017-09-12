@@ -117,11 +117,12 @@ colnames(grpblock)=c("grp","block","ID")
 #Indicators: 1-Phenotype, 1.5- unphenotyped but in a group with other phenotyped, 2-rest  (Zhiwu, Dec 7,2012)
 #GAU0 <- merge(GAU[order.block,-3], grpblock, by.x = "X2", by.y = "grp")
 #GAU=GAU0[,c(2,1,3,4)]
-
+#print(head(GAU))
 GAU1 <- merge(GAU[order.block,], grpblock, by.x = "X2", by.y = "grp")
 #print(GAU1)
 GAU1[,4]=(as.numeric(GAU1[,3])+as.numeric(GAU1[,4]))/2
 #print(GAU1)
+
 GAU=GAU1[,c(2,1,4,5)]
 KW=KG[grp.1,grp.1]
 KO=KG[grp.2,grp.2]
@@ -2416,12 +2417,16 @@ if(genoFormat=="EMMA"){
 `GAPIT.GS` <-
 function(KW,KO,KWO,GAU,UW){
 #Object: to derive BLUP for the individuals without phenotype
+#UW:BLUP and PEV of ID with phenotyp
 #Output: BLUP
 #Authors: Zhiwu Zhang 
 # Last update: Oct 22, 2015  by Jiabo Wang
 ##############################################################################################
 #print(length(UW))
 UO=try(t(KWO)%*%solve(KW)%*%UW,silent=TRUE)
+#print(dim(KWO))
+#print(dim(KW))
+#print(dim(KWO))
 if(inherits(UO, "try-error")) UO=t(KWO)%*%ginv(KW)%*%UW
 n=ncol(UW) #get number of columns, add additional for individual name
 
@@ -2859,6 +2864,7 @@ if(KI!=1) {
     print("Plotting Kinship")
     
     theKin=as.matrix(KI[,-1])
+    line.names <- KI[,1]
     colnames(theKin)=KI[,1]
     rownames(theKin)=KI[,1]
     distance.matrix=dist(theKin,upper=TRUE)
@@ -2867,6 +2873,8 @@ if(KI!=1) {
     ##plot NJtree
     if (!is.null(NJtree.group))
     {clusMember <- cutree(hc, k = NJtree.group)
+        compress_z=table(clusMember,paste(line.names))
+        type_col=rainbow(NJtree.group)
     type_col=rainbow(NJtree.group)
     Optimum=c(nrow(theKin),kinship.cluster,NJtree.group)
     rm(distance.matrix,hc)
@@ -2901,7 +2909,11 @@ Memory=GAPIT.Memory(Memory=Memory,Infor="prepare NJ TREE")
 #legend("topright",legend=c(paste("Tatal numerber of individuals is ",),lty=0,cex=1.3,bty="n",bg=par("bg"))
     legend("topright",legend=paste(c("Tatal individuals is: ","Group method: ","Group number: "), Optimum[c(1:3)], sep=""),lty=0,cex=1.3,bty="n",bg=par("bg"))
     dev.off()
+    
     }
+    
+    write.table(compress_z,paste("GAPIT.Kin.NJtree.compress_z.txt",sep=""),quote=F)
+
     print("Kinship NJ TREE PDF created!")
  
 Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="plot NJ TREE")
@@ -2998,12 +3010,14 @@ if(is.null(KI) & (!is.null(GD) |!is.null(GK)) & kinship.algorithm!="SUPER")
 if(!is.null(theKin)){
   colnames(theKin)=myGT
   rownames(theKin)=myGT
+  line.names <- myGT
   if (!is.null(NJtree.group))
   {
   distance.matrix=dist(theKin,upper=TRUE)
   hc=hclust(distance.matrix,method=kinship.cluster)
   hcd = as.dendrogram(hc)
   clusMember <- cutree(hc, k = NJtree.group)
+  compress_z=table(clusMember,paste(line.names))
   type_col=rainbow(NJtree.group)
   Optimum=c(nrow(theKin),kinship.cluster,NJtree.group)
   }
@@ -3036,6 +3050,9 @@ if(!is.null(theKin)){
     dev.off()
     }
     # print(Optimum)
+    
+    write.table(compress_z,paste("GAPIT.Kin.NJtree.compress_z.txt",sep=""),quote=F)
+
     print("Kinship NJ TREE PDF created!")
     
     Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="plot NJ TREE")
@@ -4153,6 +4170,8 @@ colnames(CV)=c("taxa","overall")
 #Remove duplicat and integragation of data
 print("QC is in process...")
 
+
+#print(dim(Y))
 CVI <- CV
 if(QC)
 {
@@ -4166,10 +4185,13 @@ if(QC)
   if(noCV)CVI=qc$CV #this part will make GS without CV not present all prediction
   my_taxa=as.character(KI[,1])
 }
+
+#print(dim(KI))
 #Output phenotype
 colnames(Y)=c("Taxa",name.of.trait)
-try(write.table(Y, paste("GAPIT.", name.of.trait,".phenotype.csv" ,sep = ""), quote = FALSE, sep = ",", row.names = FALSE,col.names = TRUE))
-
+if(file.output)
+{try(write.table(Y, paste("GAPIT.", name.of.trait,".phenotype.csv" ,sep = ""), quote = FALSE, sep = ",", row.names = FALSE,col.names = TRUE))
+}
 #TDP
 if(kinship.algorithm=="None" )
 {
@@ -4391,6 +4413,7 @@ Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="PreP3D 2_cp")
 Memory=GAPIT.Memory(Memory=Memory,Infor="PreP3D 2_cp")
 
 #print("BK...")
+
 bk <- GAPIT.Block(Z=Z,GA=cp$GA,KG=cp$KG)
 
 Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="PreP3D 2_bk")
@@ -4576,7 +4599,7 @@ if(Model.selection == TRUE){
 
   Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="PreP3D 2_cp")
   Memory=GAPIT.Memory(Memory=Memory,Infor="PreP3D 2_cp")
-
+  
   bk <- GAPIT.Block(Z=Z,GA=cp$GA,KG=cp$KG)
   Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="PreP3D 2_bk")
   Memory=GAPIT.Memory(Memory=Memory,Infor="PreP3D 2 bk")
@@ -4974,10 +4997,10 @@ Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="Extract p3d results")
 Memory=GAPIT.Memory(Memory=Memory,Infor="Extract p3d results")
 print("p3d objects transfered")  
 
-#where does it start: 886
-}else{
-  print("The head of myBread$GWAS is")
-  print(head(myBread$GWAS))
+#where does it start: 936
+}else{  #byPass
+    #print("The head of myBread$GWAS is")
+  #print(head(myBread$GWAS))
   
   GPS=myBread$BLUP
   ps=myBread$GWAS[,4]
@@ -5031,7 +5054,7 @@ if((!byPass)&(!Model.selection)){
        #beta.Inheritance=p3d$effect.cv[1:(1+CV.Inheritance)]
     #print(beta.Inheritance)
     #if(length(beta)==1)CV=X
-    all_BLUE=try(my_allX%*%p3d$effect.cv)
+    all_BLUE=try(my_allX%*%p3d$effect.cv,silent=T)
     if(inherits(BLUE, "try-error")) all_BLUE = NA
     
 
@@ -5269,6 +5292,15 @@ DPP=50000,cutOff=0.01,band=5,seqQTN=NULL,plot.style="Oceanic",CG=NULL,plot.bin=1
     GI.MP=matrix(as.numeric(as.matrix(GI.MP) ) ,nrow(GI.MP),ncol(GI.MP))
     GI.MP=GI.MP[order(GI.MP[,2]),]
     GI.MP=GI.MP[order(GI.MP[,1]),]
+    #print("@@@@@")
+    #print(dim(GD))
+    #print(dim(GI.MP))
+    if(!is.null(GD))
+    {  if(ncol(GD)!=nrow(GI.MP))
+    {print("GD does not mach GM in Manhattan !!!")
+    return
+    }}
+    #print("!!")
     #GI.MP[,5]=1:(nrow(GI.MP))
   #print(head(GI.MP,20))
     #Remove all SNPs that do not have a choromosome, bp position and p value(NA)
@@ -5280,7 +5312,7 @@ DPP=50000,cutOff=0.01,band=5,seqQTN=NULL,plot.style="Oceanic",CG=NULL,plot.bin=1
     #Retain SNPs that have P values between 0 and 1 (not na etc)
     GI.MP <- GI.MP[GI.MP[,3]>0,]
     GI.MP <- GI.MP[GI.MP[,3]<=1,]
-    
+    if(!is.null(GD)) GD=GD[,GI.MP[,3]<=1]
     #Remove chr 0 and 99
     GI.MP <- GI.MP[GI.MP[,1]!=0,]
     #GI.MP <- GI.MP[GI.MP[,1]!=99,]
@@ -5292,6 +5324,11 @@ DPP=50000,cutOff=0.01,band=5,seqQTN=NULL,plot.style="Oceanic",CG=NULL,plot.bin=1
     bonferroniCutOff=-log10(cutOff/numMarker)
     
     #Replace P the -log10 of the P-values
+    if(!is.null(GD))
+    {  if(ncol(GD)!=nrow(GI.MP))
+    {print("GD does not mach GM in Manhattan !!!")
+    return
+    }}
     GI.MP[,3] <-  -log10(GI.MP[,3])
     index_GI=GI.MP[,3]>0
     GI.MP <- GI.MP[index_GI,]
@@ -5346,7 +5383,7 @@ DPP=50000,cutOff=0.01,band=5,seqQTN=NULL,plot.style="Oceanic",CG=NULL,plot.bin=1
             bin.set=NULL
             r2_color=matrix(0,nrow(subset),2)
             #r2_color
-            print(paste("choosed ",num.row,"candidata gene in ",i," chromosome ",sep="") )
+            print(paste("select ",num.row," candidate gene in ",i," chromosome ",sep="") )
             #print(sig.mp)
             if(length(unique(sig.index))==2)
             {
@@ -5476,7 +5513,7 @@ DPP=50000,cutOff=0.01,band=5,seqQTN=NULL,plot.style="Oceanic",CG=NULL,plot.bin=1
         col.cougars=rep(c(  '#990000',    'dimgray'),ceiling(numCHR/2))
     
         if(plot.style=="Rainbow")plot.color= col.Rainbow
-        if(plot.style =="FarmCPU")plot.color= col.FarmCPU
+        if(plot.style =="FarmCPU")plot.color= col.Rainbow
         if(plot.style =="Rushville")plot.color= col.Rushville
         if(plot.style =="Congress")plot.color= col.Congress
         if(plot.style =="Ocean")plot.color= col.Ocean
@@ -6063,7 +6100,7 @@ if(a2>0&NQTN>=nint){
     if(orientation=="row") myY=cbind(NA,as.data.frame(y))
     
     #Convert to category phenotype
-    if(category>2){
+    if(category>1){
       myQuantile =(0:category)/category
       y.num= myY[,2]
       cutoff=quantile(y.num, myQuantile)
@@ -6072,7 +6109,7 @@ if(a2>0&NQTN>=nint){
     }
     
     #Binary phenotype
-    if(category==2){
+    if(category==0){
       #Standardization
       #print("Binary phenotype")
       #print(mean(effect))
@@ -7331,7 +7368,7 @@ function(P.values, plot.type = "log_P_values", name.of.trait = "Trait",DPP=50000
 
 `GAPIT` <-
 function(Y=NULL,G=NULL,GD=NULL,GM=NULL,KI=NULL,Z=NULL,CV=NULL,CV.Inheritance=NULL,GP=NULL,GK=NULL,
-                group.from=30 ,group.to=1000000,group.by=10,DPP=100000, 
+                group.from=1000000 ,group.to=1000000,group.by=10,DPP=100000, 
                 kinship.cluster="average", kinship.group='Mean',kinship.algorithm="VanRaden",                                                    
                 bin.from=10000,bin.to=10000,bin.by=10000,inclosure.from=10,inclosure.to=10,inclosure.by=10,
                 SNP.P3D=TRUE,SNP.effect="Add",SNP.impute="Middle",PCA.total=0, SNP.fraction = 1, seed = 123, BINS = 20,SNP.test=TRUE, 
@@ -7340,7 +7377,7 @@ function(Y=NULL,G=NULL,GD=NULL,GM=NULL,KI=NULL,Z=NULL,CV=NULL,CV.Inheritance=NUL
                 file.G=NULL, file.Ext.G=NULL,file.GD=NULL, file.GM=NULL, file.Ext.GD=NULL,file.Ext.GM=NULL, 
                 ngrid = 100, llim = -10, ulim = 10, esp = 1e-10,
                 LD.chromosome=NULL,LD.location=NULL,LD.range=NULL,
-                sangwich.top=NULL,sangwich.bottom=NULL,QC=TRUE,GTindex=NULL,LD=0.1,NJtree.group=NULL,NJtree.type=c("fan","unrooted"),plot.bin=10^9,
+                sangwich.top=NULL,sangwich.bottom=NULL,QC=TRUE,GTindex=NULL,LD=0.1,NJtree.group=NULL,NJtree.type=c("fan","unrooted"),plot.bin=10^5,
                 file.output=TRUE,cutOff=0.01, Model.selection = FALSE,output.numerical = FALSE,
                 output.hapmap = FALSE, Create.indicator = FALSE,
         QTN=NULL, QTN.round=1,QTN.limit=0, QTN.update=TRUE, QTN.method="Penalty", Major.allele.zero = FALSE,
@@ -7564,7 +7601,7 @@ return(NULL)
     
     #Discard negative
     t=abs(t)
-    
+    #print("@@@@@@@@@@@@@@")
     #sort t and se
     position=order(t,decreasing = TRUE)
     t=t[position]
@@ -7621,7 +7658,8 @@ return(NULL)
     #legend("bottomright", colnames(power), pch = c(1:nc), lty = c(1,2),col=c(1:nc))
    legend("bottomright", colnames(power), pch = c(nc:1), lty = c(1,2),col=c(nc:1),lwd=2,bty="n")
     palette("default")      # reset back to the default
-
+    #print("@@@@@@@@@@@@@@")
+    #print(power)
     dev.off()
 print("ROC completed!")
     
@@ -7655,8 +7693,9 @@ DPP=100000,cutOff=.01,threshold.output=.01,MAF=NULL,seqQTN=NULL,MAF.calculate=FA
 #print(seqQTN)
 #Manhattan Plots
 #print("Manhattan plot (Genomewise)..." )
+
 if(plot.style=="FarmCPU"){
-    GAPIT.Manhattan(GI.MP = GWAS[,2:4], name.of.trait = name.of.trait, DPP=DPP, plot.type = "Genomewise",cutOff=cutOff,seqQTN=seqQTN,plot.style=plot.style)
+    GAPIT.Manhattan(GI.MP = GWAS[,2:4], name.of.trait = name.of.trait, DPP=DPP, plot.type = "Genomewise",cutOff=cutOff,seqQTN=seqQTN,plot.style="Oceanic")
 }
 if(plot.style=="rainbow"){
 GAPIT.Manhattan(GI.MP = GWAS[,2:4], name.of.trait = name.of.trait, DPP=DPP, plot.type = "Genomewise",cutOff=cutOff,seqQTN=seqQTN,plot.style=plot.style)
@@ -7672,7 +7711,7 @@ GAPIT.Manhattan(GI.MP = GWAS[,2:4], name.of.trait = name.of.trait, DPP=DPP, plot
 #    GAPIT.QQ(P.values = GWAS[,4], name.of.trait = name.of.trait,DPP=DPP)
 #}
 #if(plot.style=="nature"){
-GAPIT.QQ(P.values = GWAS[,4], name.of.trait = name.of.trait,DPP=DPP,plot.style=plot.style)
+GAPIT.QQ(P.values = GWAS[,4], name.of.trait = name.of.trait,DPP=DPP,plot.style="rainbow")
     #}
 #Association Table
 #print("Create association table..." )
@@ -7876,14 +7915,14 @@ for (i in 1:m)
       K.X.svd= svd(K.X) ###start 2012.4.16 by qishan
   
        d=K.X.svd$d
-       d=d[d>1e-8]
+       d=d[d>1e-10]
        d=d^2
 
        U1=K.X.svd$u   
        U1=U1[,1:length(d)]  ### end 2012.4.16 by qishan
  
        n<-nrow(U1)
-
+#print(n)
       
        I= diag(1,nrow(U1))
       
@@ -7895,7 +7934,7 @@ for (i in 1:m)
          XX2<- crossprod((I-tcrossprod(U1,U1))%*%X,(I-tcrossprod(U1,U1))%*%X)/delta
          #iXX<-solve(XX1+XX2) 
          
-           iXX <- try(solve(XX1+XX2))
+           iXX <- try(solve(XX1+XX2),silent=T)
      if(inherits(iXX, "try-error")){
      iXX <- ginv(XX1+XX2)
      }
@@ -8025,7 +8064,7 @@ for (i in 1:m)
          Xt <- crossprod(U, X) 
          XX1<- crossprod(Xt, Xt)
          XX2<- crossprod((I-tcrossprod(U1,U1))%*%X,(I-tcrossprod(U1,U1))%*%X)/delta
-                iXX <- try(solve(XX1+XX2))
+                iXX <- try(solve(XX1+XX2),silent=T)
      if(inherits(iXX, "try-error")){
      iXX <- ginv(XX1+XX2)
      }
@@ -8491,6 +8530,7 @@ gs <- GAPIT.GS(KW=bk$KW,KO=bk$KO,KWO=bk$KWO,GAU=bk$GAU,UW=cbind(emma_REMLE$uhat,
  #print(gs$BLUP[53:62,])
 prediction=as.matrix(BB$BLUP)+as.numeric(as.vector(BB$emma_BLUE))
 all_gs=cbind(BB,prediction)
+colnames(all_gs)=c("Taxa","Group","RefInf","ID","BLUP","PEV","BLUE","Prediction")
   #print("GAPIT SUPER GS completed successfully for multiple traits. Results are saved")
   return (list(GPS=BB,Pred=all_gs,Compression=Compression,kinship=my_allKI,SUPER_kinship=SUPER_myKI,SUPER_GD=SUPER_optimum_GD ,PC=my_allCV,Timmer=Timmer,Memory=Memory,GWAS=NULL ))
 

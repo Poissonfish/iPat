@@ -24,7 +24,6 @@
 	thin = as.numeric(args[20])
 	gwas.assist = as.logical(args[21])
   	cutoff = as.numeric(args[22])
-
 # Load libraries
   	cat("=== BGLR === \n")
 	cat("   Loading libraries ...")
@@ -47,25 +46,27 @@ tryCatch({
 	setwd(wd)
 	# Subset Phenotype
   	cat("   Loading phenotype ...")
-	  Y.data = fread(Y.path) %>% as.data.frame
-	  if(toupper(names(Y.data)[1]) == "FID") {Y.data = Y.data[,-1]}
-	  subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .)
-	  index.trait = which(subset == "Selected") 
-	  if(length(index.trait) == 1){
-	    Y = data.frame(y = Y.data[, index.trait + 1])
-	    names(Y) = names(Y.data)[1 + index.trait] 
-	  }else{
-	    Y = Y.data[, index.trait + 1]
-	  }
+	Y.data = fread(Y.path) %>% as.data.frame
+	if(toupper(names(Y.data)[1]) == "FID") {Y.data = Y.data[,-1]}
+	subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .)
+	index.trait = which(subset == "Selected") 
+	if(length(index.trait) == 1){
+    	Y = data.frame(y = Y.data[, index.trait + 1])
+    	names(Y) = names(Y.data)[1 + index.trait] 
+  	}else{
+    	Y = Y.data[, index.trait + 1]
+  	}
 	# Assign Variables
 	taxa = Y.data[,1]
 	trait.names = names(Y)
+  	if(is.character(Y[,1])) Y = apply(Y, 2, as.numeric)
     cat("Done\n")
     # Genotype
     cat("   Loading genotype ...")
     GD = fread(GD.path) %>% as.data.frame()
     GM = fread(GM.path) %>% as.data.frame()
     if(is.character(GD[,1])) GD = GD[,-1]
+    if(is.character(GD[,1])) GD = apply(GD, 2, as.numeric)
     cat("Done\n")
 	# QC
     cat("   Quality control ...")
@@ -151,6 +152,18 @@ tryCatch({
 		blr = BGLR(y = Y[,i], ETA = ETA, response_type = response, 
 				   nIter = nIter, burnIn = burnIn, thin = thin, verbose = FALSE,
 				   saveAt = sprintf("BGLR_%s_%s_", project, trait.names[i])) 
+		write.table(data.frame(blr$yHat),
+                sprintf("BGLR_%s_%s_GEBV.dat", project, trait.names[i]),
+                row.names = F, col.names = F, quote = F, sep = '\t')
+		pdf(sprintf("BGLR_%s_%s_GEBV_value.pdf", project, trait.names[i]), width = 5, height = 5)
+		plot(blr$y, blr$yHat, main = "Phenotype v.s. GEBV")
+		dev.off()
+		pdf(sprintf("BGLR_%s_%s_GEBV_var.pdf", project, trait.names[i]), width = 5, height = 5)
+		plot(blr$y, blr$SD.yHat, main = "Phenotype v.s. SD of GEBV")
+		dev.off()
+		pdf(sprintf("BGLR_%s_%s_GEBV_hist.pdf", project, trait.names[i]), width = 5, height = 5)
+		hist(blr$yHat, main = "Distribution of GEBV")
+		dev.off()
 	    cat("Done\n")
 	}
 	print(warnings())

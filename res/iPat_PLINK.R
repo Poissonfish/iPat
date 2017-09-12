@@ -45,12 +45,13 @@ tryCatch({
     cat("   Loading phenotype ...")
     if(Y.path == "NA"){
       if(binary){
-        Y.data = fread(FAM.path) %>% as.data.frame
+        Y.data = fread(FAM.path, na.strings = c("NA", "NaN")) %>% as.data.frame
         Y.path = paste0(FAM.path %>% substr(1, nchar(.) - 3), "plinktrait")
-        write.table(x = data.frame(FID = Y.data[,1], SID = Y.data[,2], trait = Y.data[,6]),
+        Y = data.frame(FID = Y.data[,1], SID = Y.data[,2], trait = Y.data[,6])
+        write.table(x = Y,
                     file = Y.path, quote = F, row.names = F, sep = '\t')
       }else{
-        Y.data = fread(GD.path) %>% as.data.frame
+        Y.data = fread(GD.path, na.strings = c("NA", "NaN")) %>% as.data.frame
         Y.path = paste0(GD.path %>% substr(1, nchar(.) - 3), "plinktrait")
         write.table(x = data.frame(FID = Y.data[,1], SID = Y.data[,2], trait = Y.data[,6]),
                     file = Y.path, quote = F, row.names = F, sep = '\t')
@@ -59,7 +60,7 @@ tryCatch({
       trait_count = 1
       suffix = ".assoc"
     }else{
-      Y.data = fread(Y.path) %>% as.data.frame 
+      Y.data = fread(Y.path, na.strings = c("NA", "NaN")) %>% as.data.frame 
       if(toupper(names(Y.data)[1]) != "FID") {
         trait.name = Y.data[, -1] %>% names()
         taxa = Y.data[,1]
@@ -69,6 +70,7 @@ tryCatch({
       }else{
         trait.name = Y.data[, -c(1, 2)] %>% names()
       }
+      Y = Y.data
       trait_count = (names(Y.data) %>% length()) - 2
       suffix = ".qassoc"
     }
@@ -117,11 +119,12 @@ tryCatch({
     cat(sprintf("   Plotting trait %s ...", t))
     data = fread(paste0(project, ".P", t, suffix),header=T)
     data = na.omit(data) %>% (function(x){x[order(x$CHR,x$BP),c("CHR", "SNP", "BP", "P")]}) %>% as.data.frame
-    GAPIT.Manhattan(GI.MP= data[,c(1,3,4)], name.of.trait = sprintf("Trait_%d", t))
-    GAPIT.QQ(data$P, name.of.trait = sprintf("Trait_%d", t))
-    write.table(x = data.frame(SNP = data$SNP, P.value = data$P),
-                  file = sprintf("%s_%s_GWAS.txt", project, trait.name[t]),
-                  quote = F, row.names = F, sep = "\t")
+    iPat.Manhattan(GI.MP = data[,c(1,3,4)], filename = sprintf("iPat_%s_%s", project, trait.name[t]))
+    iPat.QQ(data$P, filename = sprintf("iPat_%s_%s", project, trait.name[t]))
+    iPat.Phenotype.View(myY = data.frame(Y[,1], Y[, 2 + t]), filename = sprintf("iPat_%s_%s", project, trait.name[t]))
+    write.table(x = data.frame(SNP = data$SNP, Chromosom = data$CHR, Position = data$BP, P.value = data$P),
+                file = sprintf("iPat_%s_%s_GWAS.txt", project, trait.name[t]),
+                quote = F, row.names = F, sep = "\t")
     cat("Done\n")
   }
 }, error = function(e){

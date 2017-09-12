@@ -56,12 +56,14 @@ tryCatch({
   # Assign Variables
     taxa = Y.data[,1]
     trait.names = names(Y) 
+    if(is.character(Y[,1])) Y = apply(Y, 2, as.numeric)
     cat("Done\n")
     # Genptype
     cat("   Loading genotype ...")
     GD = fread(GD.path) %>% as.data.frame()
     GM = fread(GM.path) %>% as.data.frame()
     if(is.character(GD[,1])) GD = GD[,-1]
+    if(is.character(GD[,1])) GD = apply(GD, 2, as.numeric)
     cat("Done\n")
   # QC
     cat("   Quality control ...")
