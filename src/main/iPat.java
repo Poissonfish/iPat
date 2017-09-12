@@ -352,7 +352,7 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 							  df_niter_b = "1200", df_burnin_b = "200", df_thin_b = "5";
 			  // GWAS-Assist
 				static String df_bon = "0.05";
-				static boolean df_enable = true;
+				static boolean df_enable = false;
 	// Value Stored
 		// Common
 				static String[] project = new String[MOMAX];
@@ -592,8 +592,8 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 		} catch (IOException ex){}
 		try{
 			for (int i=0; i<10; i++){
-				Trash[i] = ImageIO.read(getClass().getResource("resources/trash"+i+".png"));
-				White[i] = ImageIO.read(getClass().getResource("resources/white"+i+".png"));
+				Trash[i] = ImageIO.read(getClass().getResource("resources/trash" + i + ".png"));
+				White[i] = ImageIO.read(getClass().getResource("resources/white" + i + ".png"));
 			}
 			trashH= Trash[0].getHeight(null);
 			trashW= Trash[0].getWidth(null);	
@@ -801,6 +801,9 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 					removeornot=false;}
 				iIndex = -1;
 				iIndex_target = -1;
+				lineindex = -1;
+				linedragST.setLocation(0, 0);
+				linedragED.setLocation(0, 0);
 				Groupindex = -1;
 				repaint();
 			}	
@@ -1750,8 +1753,9 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				break;
 			case PLINK:
 				new iPat_converter("plink", "num", command[10], command[11]);
-				command[10] = command[10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
-				command[11] = command[11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
+				filename = command[10].replaceFirst("[.][^.]+$", "");
+				command[10] = filename + "_recode.dat";
+				command[11] = filename + "_recode.nmap";
 				iOB[GDindex].setPath(command[10]);
 				iOB[GMindex].setPath(command[11]);
 				break;
@@ -1796,8 +1800,9 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				break;
 			case Numerical:
 				new iPat_converter("num", "plink", command[10], command[11]);
-				command[10] = command[10].replaceFirst("[.][^.]+$", "") + "_recode.ped";
-				command[11] = command[11].replaceFirst("[.][^.]+$", "") + "_recode.map";
+				filename = command[10].replaceFirst("[.][^.]+$", "");
+				command[10] = filename + "_recode.ped";
+				command[11] = filename + "_recode.map";
 				iOB[GDindex].setPath(command[10]);
 				iOB[GMindex].setPath(command[11]);
 				command[18] = "FALSE";
@@ -1846,8 +1851,9 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				break;
 			case PLINK:
 				new iPat_converter("plink", "num", command[10], command[11]);
-				command[10] = command[10].replaceFirst("[.][^.]+$", "") + "_recode.dat";
-				command[11] = command[11].replaceFirst("[.][^.]+$", "") + "_recode.nmap";
+				filename = command[10].replaceFirst("[.][^.]+$", "");
+				command[10] = filename + "_recode.dat";
+				command[11] = filename + "_recode.nmap";
 				iOB[GDindex].setPath(command[10]);
 				iOB[GMindex].setPath(command[11]);
 				break;}
@@ -1891,15 +1897,17 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				System.out.println(iOB[i].getPath());
 				lines[count] = read_lines(iOB[i].getPath(), 2);
 				fIndex[count] = i;
-				// Print first two lines
+//				// Print first two lines
 //				System.out.println(lines[count][0]);
 //				System.out.println(lines[count][1]);
 				// Get first two lines information if not null
 				if(lines[count][0] != null && lines[count][1] != null){
 					row1[count] = lines[count][0].replaceAll("\"", "").split("\t");
 					if(row1[count].length <= 1) row1[count] = lines[count][0].replaceAll("\"", "").split(" +");
+					if(row1[count].length <= 1) row1[count] = lines[count][0].replaceAll("\"", "").split(",");
 					row2[count] = lines[count][1].replaceAll("\"", "").split("\t");
 					if(row2[count].length <= 1) row2[count] = lines[count][1].replaceAll("\"", "").split(" +");
+					if(row2[count].length <= 1) row2[count] = lines[count][1].replaceAll("\"", "").split(",");
 					row_count[count] = countLines(iOB[i].getPath());
 					col_count[count] = row2[count].length;}
 				count++;}}
@@ -1937,14 +1945,14 @@ class iPatPanel extends JPanel implements MouseMotionListener, KeyListener{
 				// Numerical
 				for (int i = 0; i < 3; i++){
 					int i2 = (i + 1)%3, i3 = (i + 2)%3;
-					System.out.println("i differvalue : " + diffValues(row2[i]));
-					System.out.println("i containall : " + Arrays.asList(row2[i]).containsAll(Arrays.asList("0", "1", "2")));
-					System.out.println("i  col count : " + col_count[i]);
-					System.out.println("i2 col count : " + col_count[i2]);
-					System.out.println("i3 col count : " + col_count[i3]);
-					System.out.println("i row count : " + row_count[i]);
-					System.out.println("i2 row count : " + row_count[i2]);
-					System.out.println("i3 row count : " + row_count[i3]);
+//					System.out.println("i differvalue : " + diffValues(row2[i]));
+//					System.out.println("i containall : " + Arrays.asList(row2[i]).containsAll(Arrays.asList("0", "1", "2")));
+//					System.out.println("i  col count : " + col_count[i]);
+//					System.out.println("i2 col count : " + col_count[i2]);
+//					System.out.println("i3 col count : " + col_count[i3]);
+//					System.out.println("i row count : " + row_count[i]);
+//					System.out.println("i2 row count : " + row_count[i2]);
+//					System.out.println("i3 row count : " + row_count[i3]);
 					if(Arrays.asList(row2[i]).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2[i]) < 6){
 						iOB[fIndex[i]].type = iPatObject.Filetype.GD;
 						iOB[fIndex[i2]].type = (col_count[i2] == 3 && Math.abs(col_count[i] - row_count[i2]) <= 1) ? iPatObject.Filetype.GM : iPatObject.Filetype.P; // m or m+1 - m or m+1 = -1, 0 1

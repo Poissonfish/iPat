@@ -56,12 +56,14 @@ tryCatch({
   # Assign Variables
     taxa = Y.data[,1]
     trait.names = names(Y) 
+    if(is.character(Y[,1])) Y = apply(Y, 2, as.numeric)
     cat("Done\n")
     # Genptype
     cat("   Loading genotype ...")
     GD = fread(GD.path) %>% as.data.frame()
     GM = fread(GM.path) %>% as.data.frame()
     if(is.character(GD[,1])) GD = GD[,-1]
+    if(is.character(GD[,1])) GD = apply(GD, 2, as.numeric)
     cat("Done\n")
   # QC
     cat("   Quality control ...")
@@ -93,6 +95,7 @@ tryCatch({
       C = NULL
     }
   # FarmCPU
+    iPat.Genotype.View(myGD = data.frame(taxa, GD), filename = sprintf("iPat_%s", project))
     for (i in 1:length(trait.names)){
       x = FarmCPU(
             Y = data.frame(taxa, Y[,i]),
@@ -106,29 +109,12 @@ tryCatch({
             MAF.calculate = MAF.calculate,
             maf.threshold = maf,
             memo = sprintf("%s_%s", project, trait.names[i]))
-      write.table(x = data.frame(SNP = x$GWAS$SNP, P.value = x$GWAS$P.value),
-                  file = sprintf("%s_%s_GWAS.txt", project, trait.names[i]),
+      iPat.Phenotype.View(myY = data.frame(taxa, Y[,i]), filename = sprintf("iPat_%s_%s", project, trait.names[i]))
+      write.table(x = data.frame(SNP = x$GWAS$SNP, Chromosom = x$GWAS$Chromosome, Position = x$GWAS$Position, P.value = x$GWAS$P.value, MAF = x$GWAS$maf),
+                  file = sprintf("iPat_%s_%s_GWAS.txt", project, trait.names[i]),
                   quote = F, row.names = F, sep = "\t")
     }
   print(warnings())
 },error = function(e){
   stop(e)
 })
-
-project="Project_1"
-wd="/Users/Poissonfish/Desktop/test/farm"
-lib="/Users/Poissonfish/git/iPat/res/"
-format="Numerical"
-ms=as.numeric("No_threshold")
-maf=as.numeric("0.05")
-Y.path="/Users/Poissonfish/git/iPat/demo_data/Numeric/data.txt"
-Y.index="SelectedsepSelectedsepSelectedsep"
-GD.path="/Users/Poissonfish/git/iPat/demo_data/Numeric/data.dat"
-GM.path="/Users/Poissonfish/git/iPat/demo_data/Numeric/data.map"
-C.path="NA"
-C.index="NA"
-K.path="NA"
-FAM.path="NA"
-BIM.path="NA"
-  method.bin = "static"
-  maxLoop = 10

@@ -45,12 +45,12 @@ tryCatch({
     cat("   Loading phenotype ...")
     if(Y.path == "NA"){
       if(binary){
-        Y.data = fread(FAM.path) %>% as.data.frame
+        Y.data = fread(FAM.path, na.strings = c("NA", "NaN")) %>% as.data.frame
         Y.path = paste0(FAM.path %>% substr(1, nchar(.) - 3), "plinktrait")
         write.table(x = data.frame(FID = Y.data[,1], SID = Y.data[,2], trait = Y.data[,6]),
                     file = Y.path, quote = F, row.names = F, sep = '\t')
       }else{
-        Y.data = fread(GD.path) %>% as.data.frame
+        Y.data = fread(GD.path, na.strings = c("NA", "NaN")) %>% as.data.frame
         Y.path = paste0(GD.path %>% substr(1, nchar(.) - 3), "plinktrait")
         write.table(x = data.frame(FID = Y.data[,1], SID = Y.data[,2], trait = Y.data[,6]),
                     file = Y.path, quote = F, row.names = F, sep = '\t')
@@ -59,7 +59,7 @@ tryCatch({
       trait_count = 1
       suffix = ".assoc"
     }else{
-      Y.data = fread(Y.path) %>% as.data.frame 
+      Y.data = fread(Y.path, na.strings = c("NA", "NaN")) %>% as.data.frame 
       if(toupper(names(Y.data)[1]) != "FID") {
         trait.name = Y.data[, -1] %>% names()
         taxa = Y.data[,1]

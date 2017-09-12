@@ -59,11 +59,26 @@ class iPat_converter{
 	}
 	public static String[][] read_table(String filename, int size) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(filename));
-        String[][] lines = new String[size][];
-        int index = 0;
+        int index = 0, redundant = 0;
         String readline = null;
-        while((readline = reader.readLine()) != null)
-        	lines[index++] = readline.split("\t");	
+        String[][] lines = null;
+        String sep = "\t";
+        while((readline = reader.readLine()) != null){
+        	if(index == 0){
+        		if(readline.startsWith("##")){
+        			redundant++;
+        			continue;}
+        		else{
+            		lines = new String[size - redundant][];}
+        		lines[index] = readline.replaceAll("\"", "").split(sep);
+        		if(lines[index].length <= 1){
+        			sep = " +";
+            		lines[index] = readline.replaceAll("\"", "").split(sep);}
+        		if(lines[index].length <= 1){
+        			sep = ",";
+            		lines[index] = readline.replaceAll("\"", "").split(sep);}}
+        	lines[index++] = readline.replaceAll("\"", "").split(sep);   	
+        }
         return lines;
     }
 	public static int getCountofLines(String filename) throws IOException {
@@ -91,7 +106,7 @@ class iPat_converter{
 		boolean header_GD = table_GD[0][1].length() == 1 ? false:true,
 				contain_taxa = table_GD[1][0].length() == 1 ? false:true;
 		try{
-			FileWriter fr = new FileWriter(GM_path.replaceFirst("[.][^.]+$", "") + "_recode.ped");
+			FileWriter fr = new FileWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.ped");
 		    BufferedWriter br = new BufferedWriter(fr);
 		    PrintWriter out = new PrintWriter(br);
 		    if(contain_taxa){
@@ -122,7 +137,7 @@ class iPat_converter{
 		// map
 		boolean header_GM = table_GM[0][1].length() == 1 ? false:true;
 		try{
-			FileWriter fr = new FileWriter(GM_path.replaceFirst("[.][^.]+$", "") + "_recode.map");
+			FileWriter fr = new FileWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.map");
 		    BufferedWriter br = new BufferedWriter(fr);
 		    PrintWriter out = new PrintWriter(br);
 		    for(int row = header_GM ? 1 : 0; row < size_GM; row++)
@@ -249,7 +264,7 @@ class iPat_converter{
 		}catch(IOException e){System.out.println(e);}	
 		// GM
 		try{
-			FileWriter fr = new FileWriter(GM_path.replaceFirst("[.][^.]+$", "") + "_recode.nmap");
+			FileWriter fr = new FileWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.nmap");
 		    BufferedWriter br = new BufferedWriter(fr);
 		    PrintWriter out = new PrintWriter(br);
 		    out.write("SNP\tChromosome\tPosition\n");
@@ -305,7 +320,7 @@ class iPat_converter{
 		System.out.println("V -> N" + " GD: " + GD_path);
 		int size_GD = getCountofLines(GD_path), start_line = 0;
 		String[][] table_GD = read_table(GD_path, size_GD);
-		while(table_GD[start_line].length == 1) start_line++;
+		size_GD = table_GD.length;
 		// gd
 		try{
 			FileWriter fr = new FileWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.dat");
