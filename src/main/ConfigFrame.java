@@ -46,8 +46,9 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				new String[]{"No_threshold", "0.05", "0.1", "0.2"});	
 	ConfigPane pane_config;
 	JButton bottom_restore = new JButton("Restore Defaults");
-		
-	int NumOfMethod = 6;
+	
+	// GAPIT, FarmCPU, PLINK, gBLUP, rrBLUP, BGLR, BSA
+	int NumOfMethod = 7;
 	MLabel[] label_method = new MLabel[NumOfMethod];
 	Point tempLabel = new Point(-1, -1);
 	Point pt;
@@ -63,15 +64,16 @@ public class ConfigFrame extends JFrame implements ActionListener{
 	public static int C_index = 0, K_index = 0;
 	
 	iPatProject.Method[] ListGWAS = {iPatProject.Method.GAPIT, iPatProject.Method.FarmCPU, iPatProject.Method.PLINK}, 
-						 ListGS = {iPatProject.Method.gBLUP, iPatProject.Method.rrBLUP, iPatProject.Method.BGLR};
+						 ListGS = {iPatProject.Method.gBLUP, iPatProject.Method.rrBLUP, iPatProject.Method.BGLR},
+						 ListBSA = {iPatProject.Method.BSA};
 	iPatProject.Method indexDrag = iPatProject.Method.NA;
 	// GWAS-assist
 	JCheckBox gwas_enable = new JCheckBox();
 	
-	public ConfigFrame(int iIndex,  iPatObject[] ob, int MOindex, iPatProject[] pro, boolean isGWAS) throws IOException{
+	public ConfigFrame(int iIndex,  iPatObject[] ob, int MOindex, iPatProject[] pro, boolean isGWAS, boolean isBSA) throws IOException{
 		this.iIndex = iIndex;
 		this.ob = ob;
-		gr_index = ob[iIndex].getGroupIndex();
+		this.gr_index = ob[iIndex].getGroupIndex();
 		this.MOindex = MOindex;
 		this.pro = pro;
 		this.format = pro[MOindex].format;
@@ -154,22 +156,37 @@ public class ConfigFrame extends JFrame implements ActionListener{
 			pane_top.addTab("Phenotype", scroll_phenotype);
 			pane_top.addTab("Quality Control", panel_qc);
 		// Main pane
-			pane_main = new JPanel(new MigLayout("fill", "[grow][grow]", "[grow][grow][grow]"));
-			if(isGWAS){
+			if (isGWAS) {
+				pane_main = new JPanel(new MigLayout("fill", "[grow][grow]", "[grow][grow][grow]"));
 				pane_main.add(label_method[iPatProject.Method.GAPIT.getIndex()]   = new MLabel("GAPIT"), "cell 1 0, grow, w 150:150:");
 				pane_main.add(label_method[iPatProject.Method.FarmCPU.getIndex()] = new MLabel("FarmCPU"), "cell 1 1, grow, w 150:150:");
 				pane_main.add(label_method[iPatProject.Method.PLINK.getIndex()]   = new MLabel("PLINK"), "cell 1 2, grow, w 150:150:");
 				pane_top.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), 
 						"GWAS (Format: " + format + ")", TitledBorder.CENTER, TitledBorder.TOP, null, Color.RED));}
-			else{
+			else if (!isGWAS && !isBSA) {
+				pane_main = new JPanel(new MigLayout("fill", "[grow][grow]", "[grow][grow][grow]"));
 				pane_main.add(label_method[iPatProject.Method.gBLUP.getIndex()]  = new MLabel("<html> GAPIT <br> (gBLUP)</html>"), "cell 1 0, grow, w 150:150:");
 				pane_main.add(label_method[iPatProject.Method.rrBLUP.getIndex()] = new MLabel("rrBLUP"), "cell 1 1, grow, w 150:150:");
 				pane_main.add(label_method[iPatProject.Method.BGLR.getIndex()]   = new MLabel("BGLR"), "cell 1 2, grow, w 150:150:");
 				pane_top.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), 
-						"GS (Format: " + format + ")", TitledBorder.CENTER, TitledBorder.TOP, null, Color.RED));}        
-			pane_main.add(pane_config, "cell 0 0 1 3, grow, w 470:470:, h 270:270:");
-			pane_main.add(pane_top, "dock north, h 200:200:");
-			pane_main.add(bottom_restore, "cell 0 3 2 1, align l");
+						"GS (Format: " + format + ")", TitledBorder.CENTER, TitledBorder.TOP, null, Color.RED));
+			} else {
+				pane_main = new JPanel(new MigLayout("fill", "[grow]", "[grow]"));
+				pane_top.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), 
+						"Bulk Segregation Analysis", TitledBorder.CENTER, TitledBorder.TOP, null, Color.RED));
+			}
+			if (isBSA) {
+				pane_main.add(pane_config, "cell 0 0, grow");
+				pane_config.config_bsa();
+				pane_main.add(pane_top, "dock north, h 200:200:");
+				pane_main.add(bottom_restore, "cell 0 3 2 1, align l");
+				pane_config.MethodSelected(iPatProject.Method.BSA);
+			} else {
+				pane_main.add(pane_config, "cell 0 0 1 3, grow, w 470:470:, h 270:270:");
+				pane_main.add(pane_top, "dock north, h 200:200:");
+				pane_main.add(bottom_restore, "cell 0 3 2 1, align l");				
+			}
+
 		load();
 		this.setLocation(600, 500);
 		this.setContentPane(pane_main);
@@ -179,22 +196,40 @@ public class ConfigFrame extends JFrame implements ActionListener{
 			@Override
 			public void mousePressed(MouseEvent e){
 				pt = e.getPoint();
-				for(iPatProject.Method PressedMethod : (isGWAS ? ListGWAS:ListGS)){
-					if(label_method[PressedMethod.getIndex()].getBounds().contains(pt)){
+				for (iPatProject.Method PressedMethod : (isGWAS ? ListGWAS:ListGS)) {
+					if (label_method[PressedMethod.getIndex()].getBounds().contains(pt)) {
 						indexDrag = PressedMethod; 
 						tempLabel = label_method[PressedMethod.getIndex()].getLocation();
-						break;}}	
-				if(pane_config.isDeployed && pane_config.getBounds().contains(pt)){
+						break;
+					}
+				}	
+				if (pane_config.isDeployed && pane_config.getBounds().contains(pt)) {
 					try { 
-						switch(pane_config.existmethod){
-							case GAPIT: 	pane_config.config_gapit(); break;
-							case FarmCPU: 	pane_config.config_farm(); break;
-							case PLINK: 	pane_config.config_plink(); break;
-							case gBLUP: 	pane_config.config_gblup(); break;
-							case rrBLUP: 	pane_config.config_rrblup(); break;
-							case BGLR: 		pane_config.config_bglr(); break;}
+						switch (pane_config.existmethod) {
+							case GAPIT: 		
+								pane_config.config_gapit(); 
+								break;
+							case FarmCPU: 	
+								pane_config.config_farm(); 
+								break;
+							case PLINK: 		
+								pane_config.config_plink(); 
+								break;
+							case gBLUP: 		
+								pane_config.config_gblup(); 
+								break;
+							case rrBLUP: 	
+								pane_config.config_rrblup(); 
+								break;
+							case BGLR: 		
+								pane_config.config_bglr(); 
+								break;
+						}
 						refresh();
-					} catch (IOException e1) {e1.printStackTrace();}}
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
 			}
 			@Override
 			public void mouseReleased(MouseEvent e){
@@ -204,7 +239,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 					if(pane_config.getBounds().contains(e.getPoint())){
 						pane_config.MethodSelected(indexDrag);
 						try {
-						switch(indexDrag){
+						switch (indexDrag){
 						case GAPIT: preCovPane(C_exist, new String[]{"Selected", "Excluded"}); break;
 						case FarmCPU: preCovPane(C_exist, new String[]{"Selected", "Excluded"}); break;
 						case PLINK: preCovPane(C_exist, new String[]{"Selected", "Excluded"}); break;
@@ -270,25 +305,30 @@ public class ConfigFrame extends JFrame implements ActionListener{
 					repaint();}
             }
 		});
-		this.addWindowListener(new WindowAdapter(){
+		this.addWindowListener (new WindowAdapter() {
 			@Override
-			public void windowClosing(WindowEvent e) {
+			public void windowClosing (WindowEvent e) {
 				System.out.println("closed");
 				if(pane_config.isDeployed){
-					if(isGWAS){ 
+					if (isGWAS) { 
 						pro[MOindex].command_gwas = pane_config.MethodCommand();
 						if(pro[MOindex].isGSDeployed()) {
 							pro[MOindex].command_gs[2] = pro[MOindex].command_gwas[2]; 
 							pro[MOindex].command_gs[3] = pro[MOindex].command_gwas[3]; 
 						}
-						pro[MOindex].setGWASmethod(pane_config.existmethod);}
-					else{
+						pro[MOindex].setGWASmethod(pane_config.existmethod);
+					} else if (!isGWAS && !isBSA) {
 						pro[MOindex].command_gs = pane_config.MethodCommand();
 						if(pro[MOindex].isGWASDeployed()) {
 							pro[MOindex].command_gwas[2] = pro[MOindex].command_gs[2];
 							pro[MOindex].command_gwas[3] = pro[MOindex].command_gs[3];
 						}
-						pro[MOindex].setGSmethod(pane_config.existmethod);}}
+						pro[MOindex].setGSmethod(pane_config.existmethod);
+					} else {
+						pro[MOindex].command_bsa = pane_config.MethodCommand();
+						pro[MOindex].setBSAmethod(true);
+					}
+				}
 				ob[iIndex].setLabel(project_name.field.getText());
 				ob[iIndex].setPath(wd_path.field.getText());
 				save();
@@ -412,7 +452,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 			// Get specific method
 				String[] command_exe = null;
 				String[] command_specific = null;
-				switch(existmethod){
+				switch (existmethod) {
 				case GAPIT:
 					System.out.println("Path to " + Paths.get(iPatPanel.jar.getParent(), "res", "iPat_GAPIT.R").toString());
 					command_exe = new String[]{
@@ -445,32 +485,41 @@ public class ConfigFrame extends JFrame implements ActionListener{
 							iPat.R_exe,
 							Paths.get(iPatPanel.jar.getParent(), "res", "iPat_gBLUP.R").toString()};
 					command_specific = new String[]{
-							(String)snp_frac.combo.getSelectedItem(),  // 17
-							(String)file_frag.combo.getSelectedItem(),
-							model_selection.isSelected()?"TRUE":"FALSE",
-							gwas_enable.isSelected()?"TRUE":"FALSE",
-							(String)bonferroni.combo.getSelectedItem()}; break; // 21
+							(String) snp_frac.combo.getSelectedItem(),  // 17
+							(String) file_frag.combo.getSelectedItem(),
+							model_selection.isSelected() ? "TRUE" : "FALSE",
+							gwas_enable.isSelected() ? "TRUE" : "FALSE",
+							(String) bonferroni.combo.getSelectedItem()}; break; // 21
 				case rrBLUP:
 					command_exe = new String[]{
 							iPat.R_exe,
 							Paths.get(iPatPanel.jar.getParent(), "res", "iPat_rrBLUP.R").toString()};
 					command_specific = new String[]{
-							(String)impute_method.combo.getSelectedItem(),  // 17
+							(String) impute_method.combo.getSelectedItem(),  // 17
 							shrink.isSelected()?"TRUE":"FALSE",
 							gwas_enable.isSelected()?"TRUE":"FALSE",
-							(String)bonferroni.combo.getSelectedItem()}; break;
+							(String) bonferroni.combo.getSelectedItem()}; break;
 				case BGLR:
 					command_exe = new String[]{
 							iPat.R_exe,
 							Paths.get(iPatPanel.jar.getParent(), "res", "iPat_BGLR.R").toString()};
 					command_specific = new String[]{
-							(String)model_b.combo.getSelectedItem(),  // 17
-							(String)response_b.combo.getSelectedItem(),
-							(String)niter_b.combo.getSelectedItem(),
-							(String)burnin_b.combo.getSelectedItem(),							
-							(String)thin_b.combo.getSelectedItem(),  // 21
-							gwas_enable.isSelected()?"TRUE":"FALSE",
-							(String)bonferroni.combo.getSelectedItem()}; break;}
+							(String) model_b.combo.getSelectedItem(),  // 17
+							(String) response_b.combo.getSelectedItem(),
+							(String) niter_b.combo.getSelectedItem(),
+							(String) burnin_b.combo.getSelectedItem(),							
+							(String) thin_b.combo.getSelectedItem(),  // 21
+							gwas_enable.isSelected() ? "TRUE" : "FALSE",
+							(String) bonferroni.combo.getSelectedItem()}; break;
+				case BSA:
+					command_exe = new String[] {
+							iPat.R_exe,
+							Paths.get(iPatPanel.jar.getParent(), "res", "iPat_BSA.R").toString()};
+					command_specific = new String[]{
+							(String) window_bsa.combo.getSelectedItem(),  // 17
+							(String) pow_bsa.combo.getSelectedItem()};
+							break;
+				}
 				// combine whole command
 				String[] command =  ArrayUtils.addAll(command_exe, ArrayUtils.addAll(command_common, command_specific));
 				return command;
@@ -482,7 +531,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				new String[]{"0.05", "0.01", "0.005", "0.001", "0.0001"});
 		// GWAS pane
 		public void GWASPane(){
-			if(pro[MOindex].isGWASDeployed()){
+			if (pro[MOindex].isGWASDeployed()){
 				panel_gwas.removeAll();	
 				gwas_enable = new JCheckBox("Enable GWAS-Assisted feature (By " + pro[MOindex].method_gwas.getName() + ")");
 				panel_gwas.setLayout(new MigLayout("fillx"));
@@ -491,7 +540,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				panel_gwas.add(bonferroni.combo, "wrap");
 				gwas_enable.setSelected(true);
 				gwas_enable.addActionListener(this);}
-			else{
+			else {
 				panel_gwas.removeAll();	
 				panel_gwas.setLayout(new MigLayout("", "[grow]", "[grow]"));
 				JLabel na_msg = new JLabel("<html><center> GWAS-Assisted GS <br> Unavailable <br> Please select a GWAS method first </center></html>", SwingConstants.CENTER);
@@ -628,7 +677,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				new String[]{"200", "500", "700", "1000", "2000"});
 		Group_Combo thin_b = new Group_Combo("thin", 
 				new String[]{"1", "2", "5", "10"}); // 5
-		void config_bglr() throws IOException{
+		void config_bglr() throws IOException {
 			this.removeAll();
 			pane = new JTabbedPane();
 			// gwas
@@ -651,8 +700,26 @@ public class ConfigFrame extends JFrame implements ActionListener{
 			pane.addTab("BGLR input", panel_args_b);
 			this.add(pane, "grow");		
 		}
+		JPanel panel_args_bsa;
+		Group_Combo window_bsa = new Group_Combo("Window size", 
+				new String[] {"10000", "20000", "30000", "50000", "100000"}), 
+					pow_bsa = new Group_Combo("Power of ED", 
+				new String[] {"1", "2", "3", "4", "5"});
+		
+		void config_bsa() throws IOException {
+			this.removeAll();
+			pane = new JTabbedPane();
+			// specific
+				panel_args_bsa = new JPanel(new MigLayout("fillx"));
+				panel_args_bsa.add(window_bsa.name, "cell 0 0, align r");
+				panel_args_bsa.add(window_bsa.combo, "cell 1 0, align l");
+				panel_args_bsa.add(pow_bsa.name, "cell 0 1, align r");
+				panel_args_bsa.add(pow_bsa.combo, "cell 1 1, align l");
+			pane.addTab("BSA input", panel_args_bsa);
+			this.add(pane, "grow");		
+		}
 		void save (boolean isGWAS){
-			if(isGWAS){
+			if (isGWAS) {
 				// GAPIT
 					iPatPanel.K_algoriithm = (String) K_algorithm.combo.getSelectedItem();
 					iPatPanel.K_cluster = (String) K_cluster.combo.getSelectedItem();
@@ -665,8 +732,8 @@ public class ConfigFrame extends JFrame implements ActionListener{
 					iPatPanel.method_bin = (String) method_bin.combo.getSelectedItem();
 					iPatPanel.maxloop = (String) maxloop.combo.getSelectedItem();
 				// PLINK
-					iPatPanel.ci = (String) ci.combo.getSelectedItem();}
-			else{
+					iPatPanel.ci = (String) ci.combo.getSelectedItem();
+			} else {
 				// gBLUP
 					iPatPanel.snp_frac = (String) snp_frac.combo.getSelectedItem();
 					//iPatPanel.file_frag = (String) file_frag.combo.getSelectedItem();
@@ -681,13 +748,16 @@ public class ConfigFrame extends JFrame implements ActionListener{
 					iPatPanel.burnin_b = (String) burnin_b.combo.getSelectedItem();
 					iPatPanel.thin_b = (String) thin_b.combo.getSelectedItem();	
 				// GWAS
-					iPatPanel.bon = (String)bonferroni.combo.getSelectedItem();
-					iPatPanel.enable = gwas_enable.isSelected();}	
-
+					iPatPanel.bon = (String) bonferroni.combo.getSelectedItem();
+					iPatPanel.enable = gwas_enable.isSelected();
+			}
+			// BSA
+				iPatPanel.window_bsa = (String) window_bsa.combo.getSelectedItem();
+				iPatPanel.pow_bsa = (String) pow_bsa.combo.getSelectedItem();
 			System.out.println("selected? : " + gwas_enable.isSelected());
 		}
-		void load (boolean isGWAS){
-			if(isGWAS){
+		void load (boolean isGWAS) {
+			if (isGWAS) {
 				// GAPIT
 					K_algorithm.combo.setSelectedItem(iPatPanel.K_algoriithm);
 					K_cluster.combo.setSelectedItem(iPatPanel.K_cluster);
@@ -700,8 +770,8 @@ public class ConfigFrame extends JFrame implements ActionListener{
 					method_bin.combo.setSelectedItem(iPatPanel.method_bin);
 					maxloop.combo.setSelectedItem(iPatPanel.maxloop);
 				// PLINK
-					ci.combo.setSelectedItem(iPatPanel.ci);}
-			else{
+					ci.combo.setSelectedItem(iPatPanel.ci);
+			} else {
 				// gBLUP
 					snp_frac.combo.setSelectedItem(iPatPanel.snp_frac);
 					//file_frag.combo.setSelectedItem(iPatPanel.file_frag);
@@ -717,10 +787,14 @@ public class ConfigFrame extends JFrame implements ActionListener{
 					thin_b.combo.setSelectedItem(iPatPanel.thin_b);
 				// GWAS
 					bonferroni.combo.setSelectedItem(iPatPanel.bon);
-					gwas_enable.setSelected(false);}
+					gwas_enable.setSelected(false);
+			}
+			// BSA
+			window_bsa.combo.setSelectedItem(iPatPanel.window_bsa);
+			pow_bsa.combo.setSelectedItem(iPatPanel.pow_bsa);
 		}
-		void restore (boolean isGWAS){
-			if(isGWAS){
+		void restore (boolean isGWAS) {
+			if (isGWAS) {
 				// GAPIT
 					K_algorithm.combo.setSelectedItem(iPatPanel.df_K_algoriithm);
 					K_cluster.combo.setSelectedItem(iPatPanel.df_K_cluster);
@@ -733,8 +807,8 @@ public class ConfigFrame extends JFrame implements ActionListener{
 					method_bin.combo.setSelectedItem(iPatPanel.df_method_bin);
 					maxloop.combo.setSelectedItem(iPatPanel.df_maxloop);
 				// PLINK
-					ci.combo.setSelectedItem(iPatPanel.df_ci);}
-			else{
+					ci.combo.setSelectedItem(iPatPanel.df_ci);
+			} else {
 				// gBLUP
 					snp_frac.combo.setSelectedItem(iPatPanel.df_snp_frac);
 					//file_frag.combo.setSelectedItem(iPatPanel.df_file_frag);
@@ -750,7 +824,10 @@ public class ConfigFrame extends JFrame implements ActionListener{
 					thin_b.combo.setSelectedItem(iPatPanel.df_thin_b);
 				// GWAS
 					bonferroni.combo.setSelectedItem(iPatPanel.df_bon);
-					gwas_enable.setSelected(iPatPanel.df_enable);}
+					gwas_enable.setSelected(iPatPanel.df_enable);
+			}
+			window_bsa.combo.setSelectedItem(iPatPanel.df_window_bsa);
+			pow_bsa.combo.setSelectedItem(iPatPanel.df_pow_bsa);
 		}
 	}
 }

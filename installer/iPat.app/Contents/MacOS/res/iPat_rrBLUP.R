@@ -104,12 +104,13 @@ tryCatch({
     if(is.character(K[,1])) K = K[,-1]
     K = as.matrix(K)
   }
+  iPat.Genotype.View(myGD = data.frame(taxa, GD), filename = sprintf("iPat_%s", project))
   for(i in 1:length(trait.names)){
     ## GWAS-assist
     if(gwas.assist){
       cat("   Loading QTNs information ...")
       ## Read GWAS result
-      gwas = fread(sprintf("%s_%s_GWAS.txt", project, trait.names[i]))
+      gwas = fread(sprintf("iPat_%s_%s_GWAS.txt", project, trait.names[i]))
       ## Merge GM and p-value
       names(GM)[1] = "SNP"
       map_gwas = data.frame(GM, P.value = gwas$P.value[match(GM$SNP, gwas$SNP)])
@@ -164,26 +165,27 @@ tryCatch({
         ans = mixed.solve(Y[,i], X = C, K = K, return.Hinv = TRUE, SE = TRUE)
       }
     }
+    iPat.Phenotype.View(myY = data.frame(taxa, Y[,i]), filename = sprintf("iPat_%s_%s", project, trait.names[i]))
     beta.name = names(ans$beta)
     Stat = c("Vu", "Ve", paste0("beta.", beta.name), paste0("beta.SE.", beta.name), "LL")
-    pdf(sprintf("rrBLUP_%s_%s_GEBV_value.pdf", project, trait.names[i]), width = 5, height = 5)
+    pdf(sprintf("iPat_%s_%s_GEBV_value.pdf", project, trait.names[i]), width = 5, height = 5)
     plot(Y[,i], ans$u, main = "Phenotype v.s. GEBV")
     dev.off()
-    pdf(sprintf("rrBLUP_%s_%s_GEBV_var.pdf", project, trait.names[i]), width = 5, height = 5)
+    pdf(sprintf("iPat_%s_%s_GEBV_SD.pdf", project, trait.names[i]), width = 5, height = 5)
     plot(Y[,i], ans$u.SE, main = "Phenotype v.s. SD of GEBV")
     dev.off()
-    pdf(sprintf("rrBLUP_%s_%s_GEBV_hist.pdf", project, trait.names[i]), width = 5, height = 5)
+    pdf(sprintf("iPat_%s_%s_GEBV_hist.pdf", project, trait.names[i]), width = 5, height = 5)
     hist(ans$u, main = "Distribution of GEBV")
     dev.off()
     write.table(data.frame(Stat,
                            Value = c(ans$Vu, ans$Ve, ans$beta, ans$beta.SE, ans$LL)),
-                sprintf("rrBLUP_%s_%s_stat.txt", project, trait.names[i]),
+                sprintf("iPat_%s_%s_stat.txt", project, trait.names[i]),
                 row.names = F, quote = F, sep = '\t')
-    write.table(data.frame(u = ans$u, u.SE = ans$u.SE), 
-                sprintf("rrBLUP_%s_%s_EBV.txt", project, trait.names[i]),
+    write.table(data.frame(taxa = taxa, u = ans$u, u.SE = ans$u.SE), 
+                sprintf("iPat_%s_%s_EBV.txt", project, trait.names[i]),
                 row.names = F, quote = F, sep = '\t')
     write.table(ans$Hinv, 
-                sprintf("rrBLUP_%s_%s_InverseH.txt", project, trait.names[i]),
+                sprintf("iPat_%s_%s_InverseH.txt", project, trait.names[i]),
                 row.names = F, quote = F, sep = '\t')
    cat("Done\n")
   }

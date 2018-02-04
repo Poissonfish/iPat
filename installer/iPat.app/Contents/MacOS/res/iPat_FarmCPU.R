@@ -95,6 +95,7 @@ tryCatch({
       C = NULL
     }
   # FarmCPU
+    iPat.Genotype.View(myGD = data.frame(taxa, GD), filename = sprintf("iPat_%s", project))
     for (i in 1:length(trait.names)){
       x = FarmCPU(
             Y = data.frame(taxa, Y[,i]),
@@ -108,8 +109,9 @@ tryCatch({
             MAF.calculate = MAF.calculate,
             maf.threshold = maf,
             memo = sprintf("%s_%s", project, trait.names[i]))
-      write.table(x = data.frame(SNP = x$GWAS$SNP, P.value = x$GWAS$P.value),
-                  file = sprintf("%s_%s_GWAS.txt", project, trait.names[i]),
+      iPat.Phenotype.View(myY = data.frame(taxa, Y[,i]), filename = sprintf("iPat_%s_%s", project, trait.names[i]))
+      write.table(x = data.frame(SNP = x$GWAS$SNP, Chromosom = x$GWAS$Chromosome, Position = x$GWAS$Position, P.value = x$GWAS$P.value, MAF = x$GWAS$maf),
+                  file = sprintf("iPat_%s_%s_GWAS.txt", project, trait.names[i]),
                   quote = F, row.names = F, sep = "\t")
     }
   print(warnings())

@@ -90,6 +90,7 @@ tryCatch({
       	GD[is.na(GD)] = 1
     cat("Done\n")
 	# BGLR
+	iPat.Genotype.View(myGD = data.frame(taxa, GD), filename = sprintf("iPat_%s", project))
 	for (i in 1:length(trait.names)){
 		# Define ETA in BGLR
 		ETA = list(list(X = GD, model = model))
@@ -120,7 +121,7 @@ tryCatch({
 			if(gwas.assist){
       			cat("   Loading QTNs information ...")
 				## Read GWAS result
-			    gwas = fread(sprintf("%s_%s_GWAS.txt", project, trait.names[i]))
+			    gwas = fread(sprintf("iPat_%s_%s_GWAS.txt", project, trait.names[i]))
 			    ## Merge GM and p-value
 			    names(GM)[1] = "SNP"
 			    map_gwas = data.frame(GM, P.value = gwas$P.value[match(GM$SNP, gwas$SNP)])
@@ -152,16 +153,16 @@ tryCatch({
 		blr = BGLR(y = Y[,i], ETA = ETA, response_type = response, 
 				   nIter = nIter, burnIn = burnIn, thin = thin, verbose = FALSE,
 				   saveAt = sprintf("BGLR_%s_%s_", project, trait.names[i])) 
-		write.table(data.frame(blr$yHat),
-                sprintf("BGLR_%s_%s_GEBV.dat", project, trait.names[i]),
+		write.table(data.frame(taxa = taxa, Pred = blr$yHat, SD = blr$SD.yHat),
+                sprintf("iPat_%s_%s_EBV.dat", project, trait.names[i]),
                 row.names = F, col.names = F, quote = F, sep = '\t')
-		pdf(sprintf("BGLR_%s_%s_GEBV_value.pdf", project, trait.names[i]), width = 5, height = 5)
+		pdf(sprintf("iPat_%s_%s_GEBV_value.pdf", project, trait.names[i]), width = 5, height = 5)
 		plot(blr$y, blr$yHat, main = "Phenotype v.s. GEBV")
 		dev.off()
-		pdf(sprintf("BGLR_%s_%s_GEBV_var.pdf", project, trait.names[i]), width = 5, height = 5)
+		pdf(sprintf("iPat_%s_%s_GEBV_SD.pdf", project, trait.names[i]), width = 5, height = 5)
 		plot(blr$y, blr$SD.yHat, main = "Phenotype v.s. SD of GEBV")
 		dev.off()
-		pdf(sprintf("BGLR_%s_%s_GEBV_hist.pdf", project, trait.names[i]), width = 5, height = 5)
+		pdf(sprintf("iPat_%s_%s_GEBV_hist.pdf", project, trait.names[i]), width = 5, height = 5)
 		hist(blr$yHat, main = "Distribution of GEBV")
 		dev.off()
 	    cat("Done\n")
