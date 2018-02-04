@@ -190,7 +190,7 @@ tryCatch({
         SNP.test=FALSE,
         memo = sprintf("%s_%s", project, trait.names[i]))
       iPat.Phenotype.View(myY = data.frame(taxa, Y[,i]), filename = sprintf("iPat_%s_%s", project, trait.names[i]))
-      write.table(x = data.frame(taxa = x$Pred$taxa, Pred = x$Pred$Prediction, PEV = x$Pred$PEV),
+      write.table(x = data.frame(taxa = x$Pred$Taxa, Pred = x$Pred$Prediction, PEV = x$Pred$PEV),
             file = sprintf("iPat_%s_%s_EBV.txt", project, trait.names[i]),
             quote = F, row.names = F, sep = "\t")
       pdf(sprintf("iPat_%s_%s_GEBV_value.pdf", project, trait.names[i]), width = 5, height = 5)

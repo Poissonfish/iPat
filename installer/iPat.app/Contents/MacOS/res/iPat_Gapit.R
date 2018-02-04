@@ -74,16 +74,18 @@ tryCatch({
       GD = GD[, MS <= ms]
       GM = GM[MS <= ms, ]}
     # MAF
+    GD_temp = GD
+    GD_temp[is.na(GD)] = 1
+    MAF = apply(GD_temp, 2, mean) %>% 
+          as.matrix() %>% 
+          apply(1, function(x) min(1 - x/2, x/2))
     if(!is.na(maf)){
-      GD_temp = GD
-      GD_temp[is.na(GD)] = 1
-      MAF = apply(GD_temp, 2, mean) %>% 
-            as.matrix() %>% 
-            apply(1, function(x) min(1 - x/2, x/2))
       GD = GD[, MAF >= maf]
-      GM = GM[MAF >= maf, ]}
+      GM = GM[MAF >= maf, ]
+      MAF = MAF[MAF >= maf]
+    }
     # No NA allowed in GAPIT
-      GD[is.na(GD)] = 1
+    GD[is.na(GD)] = 1
     cat("Done\n")
   # Covariate
     if(C.path != "NA"){
@@ -137,6 +139,7 @@ tryCatch({
       g.by = 10}
   )
   # GAPIT
+    iPat.Genotype.View(myGD = data.frame(taxa, GD), filename = sprintf("iPat_%s", project))
     for (i in 1:length(trait.names)){   
       x = GAPIT(
             Y = data.frame(taxa, Y[,i]),
@@ -152,8 +155,9 @@ tryCatch({
             Model.selection = model.s,
             SNP.fraction = snp.fraction,
             memo = sprintf("%s_%s", project, trait.names[i]))
-      write.table(x = data.frame(SNP = x$GWAS$SNP, P.value = x$GWAS$P.value),
-                file = sprintf("%s_%s_GWAS.txt", project, trait.names[i]),
+      iPat.Phenotype.View(myY = data.frame(taxa, Y[,i]), filename = sprintf("iPat_%s_%s", project, trait.names[i]))
+      write.table(x = data.frame(SNP = x$GWAS$SNP, Chromosom = x$GWAS$Chromosome, Position = x$GWAS$Position, P.value = x$GWAS$P.value, MAF = MAF),
+                file = sprintf("iPat_%s_%s_GWAS.txt", project, trait.names[i]),
                 quote = F, row.names = F, sep = "\t")
     }
   print(warnings())

@@ -119,13 +119,13 @@ tryCatch({
     K = data.frame(taxa = taxa, K)
     cat("Done\n")
   }
-
+  iPat.Genotype.View(myGD = data.frame(taxa, GD), filename = sprintf("iPat_%s", project))
   for (i in 1:length(trait.names)){   
   # GWAS-assist
     if(gwas.assist){
       cat("   Loading QTNs information ...")
       ## Read GWAS result
-      gwas = fread(sprintf("%s_%s_GWAS.txt", project, trait.names[i]))
+      gwas = fread(sprintf("iPat_%s_%s_GWAS.txt", project, trait.names[i]))
       ## Merge GM and p-value
       names(GM)[1] = "SNP"
       map_gwas = data.frame(GM, P.value = gwas$P.value[match(GM$SNP, gwas$SNP)])
@@ -157,7 +157,7 @@ tryCatch({
         if(is.null(C))
           C.final = data.frame(taxa = taxa, C.gwas[ ,1 : (length(index.sig) - diff)])
         else
-          C.final = data.frame(C, C.gwas[ ,1 : (length(index.sig) - diff)])
+          C.final = data.frame(C, C.gwas[ , 1 : (length(index.sig) - diff)])
       }else{
         if(is.null(C)){
           if(is.null(C.gwas)) {
@@ -189,6 +189,19 @@ tryCatch({
         SNP.fraction = snp.fraction,
         SNP.test=FALSE,
         memo = sprintf("%s_%s", project, trait.names[i]))
+      iPat.Phenotype.View(myY = data.frame(taxa, Y[,i]), filename = sprintf("iPat_%s_%s", project, trait.names[i]))
+      write.table(x = data.frame(taxa = x$Pred$Taxa, Pred = x$Pred$Prediction, PEV = x$Pred$PEV),
+            file = sprintf("iPat_%s_%s_EBV.txt", project, trait.names[i]),
+            quote = F, row.names = F, sep = "\t")
+      pdf(sprintf("iPat_%s_%s_GEBV_value.pdf", project, trait.names[i]), width = 5, height = 5)
+      plot(Y[,i], x$Pred$Prediction, main = "Phenotype v.s. GEBV")
+      dev.off()
+      pdf(sprintf("iPat_%s_%s_GEBV_PEV.pdf", project, trait.names[i]), width = 5, height = 5)
+      plot(Y[,i], x$Pred$PEV, main = "Phenotype v.s. PEV")
+      dev.off()
+      pdf(sprintf("iPat_%s_%s_GEBV_hist.pdf", project, trait.names[i]), width = 5, height = 5)
+      hist(x$Pred$Prediction, main = "Distribution of GEBV")
+      dev.off()
   }
   print(warnings())
 }, error = function(e){
