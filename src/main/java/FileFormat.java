@@ -11,4 +11,8 @@ public enum FileFormat {
     String getName () {
         return this.name;
     }
+
+    boolean isNA() {
+        return this == NA;
+    }
 }

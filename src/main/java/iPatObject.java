@@ -1,21 +1,18 @@
 import net.miginfocom.swing.MigLayout;
-
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 
-abstract class iPatObject implements MouseListener, MouseMotionListener, ActionListener {
+abstract class iPatObject implements ActionListener {
     // Global
     static int countOB = 0;
     // Object
     Rectangle bound;
     Image icon;
-    File file;
+    iFile file;
     JLabel name;
     int indexOB;
 
@@ -32,10 +29,10 @@ abstract class iPatObject implements MouseListener, MouseMotionListener, ActionL
     // Menu
     static JMenuItem menuOpen, menuDel;
 
-    public iPatObject(int x, int y, int w, int h, File file) {
+    public iPatObject(int x, int y) {
         this.indexOB = this.countOB ++;
         name = new JLabel();
-        this.setBound(new Rectangle(x, y, w, h));
+        this.setBound(new Rectangle(x, y, 0, 0));
         this.isDeleted = false;
         this.isGroup = false;
         this.isContainMO = false;
@@ -48,7 +45,14 @@ abstract class iPatObject implements MouseListener, MouseMotionListener, ActionL
         updateLabel();
     }
     void setBoundXY(int newX, int newY) {
-        this.bound = new Rectangle(newX, newY, this.getWidth(), this.getHeight());
+        int x = newX;
+        int y = newY;
+        int xLimit = iPat.WINDOWSIZE.getWidth();
+        int yLimit = iPat.WINDOWSIZE.getHeight();
+        // Avoid dragging the object out of screen
+        if (x + this.getWidth() <= xLimit && x >= 0 &&
+            y + this.getHeight() <= yLimit && y >= 0)
+            this.bound = new Rectangle(newX, newY, this.getWidth(), this.getHeight());
         updateLabel();
     }
     void setBoundWH(int newW, int newH) {
@@ -56,9 +60,12 @@ abstract class iPatObject implements MouseListener, MouseMotionListener, ActionL
         updateLabel();
     }
     void setDeltaBound(int dx, int dy) {
-        this.bound = new Rectangle(this.getX() + dx, this.getY() + dy, this.getWidth(), this.getHeight());
-        updateLabel();
+        this.setBoundXY(this.getX() + dx, this.getY() + dy);
     }
+    void setDeltaBound(double dx, double dy) {
+        this.setBoundXY(this.getX() + (int)dx, this.getY() + (int)dy);
+    }
+
     void updateLabel(){
         this.name.setLocation(this.getX(), this.getY() + this.getHeight());
         this.name.setSize(200, 15);
@@ -66,6 +73,8 @@ abstract class iPatObject implements MouseListener, MouseMotionListener, ActionL
     Rectangle getBound() {
         return this.bound;
     }
+
+    // Edge
     int getX() {
         return (int)this.bound.getX();
     }
@@ -85,25 +94,33 @@ abstract class iPatObject implements MouseListener, MouseMotionListener, ActionL
 
     // File/Image
     void setIcon(String filename) {
-        try {
-            this.icon = ImageIO.read(getClass().getResourceAsStream("../resources/" + filename));
-        } catch(IOException e) {
-            e.printStackTrace();
-        }
+        this.icon = iPat.IMGLIB.getImage(filename);
         setBound(new Rectangle(this.getX(), this.getY(),
                 this.icon.getWidth(null),
                 this.icon.getHeight(null)));
     }
+
+    Image getImage() {
+        return this.icon;
+    }
+
     String getPath(){
         return this.file.getPath();
     }
+
+    JLabel getLabel() {
+        return this.name;
+    }
+
     void setLabel(String text){
         this.name.setText(text);
     }
-    void setFile(String text){
-        this.file = new File(text);
+
+    void setFile(String text) throws IOException {
+        this.file = new iFile(text);
         this.name.setText(this.file.getName());
     }
+
     void remove() {
         this.isDeleted = true;
         this.isGroup = false;
@@ -113,14 +130,26 @@ abstract class iPatObject implements MouseListener, MouseMotionListener, ActionL
     }
 
     // Group
-    int getIndexGr(){
+    int getIndex() {
+        return this.indexOB;
+    }
+    int getGrIndex(){
         return this.indexGr;
     }
+
+    void setGrIndex(int gr) {
+        this.indexGr = gr;
+        this.isGroup = (gr != -1);
+    }
+    void setContainMO(boolean isContain) {
+        this.isContainMO = isContain;
+    }
+
     boolean isGroup() {
-        return false;
+        return this.isGroup;
     }
     boolean isContainMO() {
-        return false;
+        return this.isContainMO;
     }
 
     // boolean
@@ -137,9 +166,8 @@ abstract class iPatObject implements MouseListener, MouseMotionListener, ActionL
     // Mouse event
     abstract void iniMenu();
 
-    void dropMenu(MouseEvent e, JPopupMenu menu) {
-        menu.show(e.getComponent(), e.getX(), e.getY());
-    }
+    abstract void dropMenu(MouseEvent e);
+
     JMenuItem iniMenuItem(String name) {
         JMenuItem item = new JMenuItem(name);
         item.setHorizontalTextPosition(JMenuItem.RIGHT);
@@ -149,229 +177,34 @@ abstract class iPatObject implements MouseListener, MouseMotionListener, ActionL
     boolean isPointed(MouseEvent e) {
         return this.getBound().contains(e.getPoint());
     }
-    void openFile(String path) {
-        File file = new File(path);
+    void openFile() {
         try {
-            Desktop.getDesktop().open(file);
+            Desktop.getDesktop().open(this.file);
         } catch(IOException e) {
             e.printStackTrace();
         }
     }
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        // When double left click
-        if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
-            // If the pointer is on the object
-            if (isPointed(e))
-                openFile(this.getPath());
-        }
-    }
-
-    @Override
-    abstract public void mousePressed(MouseEvent e);
-
-    @Override
-    abstract public void mouseReleased(MouseEvent e);
-
-    @Override
-    abstract public void mouseEntered(MouseEvent e);
-
-    @Override
-    abstract public void mouseExited(MouseEvent e);
-
-    @Override
-    abstract public void mouseDragged(MouseEvent e);
-
-    @Override
-    abstract public void mouseMoved(MouseEvent e);
 }
-class iPatProject {
-
-
-    Method method_gwas = Method.NA,
-            method_gs = Method.NA;
-    boolean method_bsa = false;
-    // running project
-    boolean rotate_switch = false;
-    boolean rotate_permit = false;
-    JTextArea textarea = new JTextArea();
-    JScrollPane scroll = new JScrollPane(textarea,
-            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-    JFrame frame = new JFrame();
-    BGThread multi_run;
-    Runtime runtime;
-    Process process;
-    public iPatProject () {
-        textarea.setEditable(false);
-        frame.setContentPane(scroll);
-    }
-    // set
-    void setGWASmethod (Method method) {
-        method_gwas = method;
-    }
-    void setGSmethod (Method method) {
-        method_gs = method;
-    }
-    void setBSAmethod (boolean isBSA) {
-        method_bsa = isBSA;
-    }
-    // is
-    boolean isGWASDeployed () {
-        return method_gwas != Method.NA ? true : false;
-    }
-    boolean isGSDeployed () {
-        return method_gs != Method.NA ? true : false;
-    }
-    boolean isBSADeployed () {
-        return method_bsa;
-    }
-    boolean isNAformat () {
-        return format == Format.NA ? true : false;
-    }
-    boolean isSuc () {
-        return multi_run.suc;
-    }
-    // runcommand
-    void runCommand (int index, String[] command, String[] con_command) {
-        multi_run = new BGThread(index, command, con_command);
-        multi_run.start();
-    }
-    void initial_phenotype(boolean isPLINK){
-        if(isPLINK)
-            panel_phenotype = new selectablePanel(trait_names.length - 2, ArrayUtils.remove(ArrayUtils.remove(trait_names, 0), 0), new String[]{"Selected", "Excluded"});
-        else
-            panel_phenotype = new selectablePanel(trait_names.length - 1, ArrayUtils.remove(trait_names, 0), new String[]{"Selected", "Excluded"});
-    }
-    void initial_cov(int cov_length, String[] cov_name, String[] model){
-        panel_cov = new selectablePanel(cov_length, cov_name, model);
-    }
-    class selectablePanel extends JPanel{
-        public Group_Combo[] CO;
-        public int size;
-        public selectablePanel(int size, String[] co_names, String[] methods){
-            this.size = size;
-            this.setLayout(new MigLayout("fillx"));
-            CO = new Group_Combo[size];
-            for(int i = 0; i < size; i++){
-                CO[i] = new Group_Combo(co_names[i], methods);
-                this.add(CO[i].name);
-                this.add(CO[i].combo, "wrap");
-            }
-        }
-        public String getSelected(){
-            String index_cov = "";
-            for(int i = 0; i < size; i++){index_cov = index_cov + (String)CO[i].combo.getSelectedItem() + "sep";}
-            return index_cov;
-        }
-    }
-    class BGThread extends Thread{
-        int OBindex;
-        String WD, Project;
-        String[] command, con_command;
-        boolean suc = false;
-        public BGThread(int OBindex, String[] command, String[] con_command){
-            this.OBindex = OBindex;
-            this.command = command;
-            this.Project = command[2];
-            this.WD = command[3];
-            this.con_command = con_command;}
-        @Override
-        public void run(){
-            String line = ""; Boolean Suc_or_Fal = true;
-            rotate_permit = true;
-            rotate_switch = true;
-            runtime = Runtime.getRuntime();
-            iPatPanel.iOB[OBindex].updateImage(iPatPanel.MOimage);
-            // Execute the command
-            try{
-//				ProcessBuilder pb = new ProcessBuilder(command);
-//					pb. redirectErrorStream(true);
-//
-//					process = pb.start();
-                process = runtime.exec(command);
-            }catch (IOException e1) {e1.printStackTrace();}
-            if(iPatPanel.debug){
-                // Print command
-                textarea.append("Command: \n");
-                for (int i = 0; i < command.length; i++) textarea.append(command[i] + " ");
-                textarea.append("\nFor R: \n");
-                textarea.append("project=\""+command[2]+"\"\n");
-                textarea.append("wd=\""+command[3]+"\"\n");
-                textarea.append("lib=\""+command[4]+"\"\n");
-                textarea.append("format=\""+command[5]+"\"\n");
-                textarea.append("ms=as.numeric(\""+command[6]+"\")\n");
-                textarea.append("maf=as.numeric(\""+command[7]+"\")\n");
-                textarea.append("Y.path=\""+command[8]+"\"\n");
-                textarea.append("Y.index=\""+command[9]+"\"\n");
-                textarea.append("GD.path=\""+command[10]+"\"\n");
-                textarea.append("GM.path=\""+command[11]+"\"\n");
-                textarea.append("C.path=\""+command[12]+"\"\n");
-                textarea.append("C.index=\""+command[13]+"\"\n");
-                textarea.append("K.path=\""+command[14]+"\"\n");
-                textarea.append("FAM.path=\""+command[15]+"\"\n");
-                textarea.append("BIM.path=\""+command[16]+"\"\n");}
-            textarea.append("\n");
-            textarea.setCaretPosition(textarea.getDocument().getLength());
-            try {
-                // Print output message to the panel
-                System.out.println("begin to print, "+OBindex);
-                BufferedReader input_stream = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                BufferedReader error_stream = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-                while((line = input_stream.readLine()) != null){
-                    textarea.append(line+ System.getProperty("line.separator"));
-                    textarea.setCaretPosition(textarea.getDocument().getLength());}
-                process.waitFor();
-                // Direct error to a file
-                PrintWriter errWriter = new PrintWriter(new BufferedWriter(new FileWriter(WD + "/" + Project + ".err", true)));
-                boolean err_close = false;
-                try{
-                    // Print error if there is any error message
-                    while((line = error_stream.readLine()) != null){
-                        err_close = true;
-                        errWriter.println(line);
-                        if(line.toUpperCase().indexOf("ERROR") >= 0) Suc_or_Fal = false;}
-                } catch(IOException e){}
-                if(err_close) errWriter.close();
-                // Direct output to a file from panel
-                File outfile = new File(WD + "/" + Project + ".log");
-                FileWriter outWriter = new FileWriter(outfile.getAbsoluteFile(), false);
-                textarea.write(outWriter);
-            } catch (IOException | InterruptedException e1) {
-                e1.printStackTrace();
-                Suc_or_Fal = false;}
-            // Indicator
-            if(Suc_or_Fal)
-                iPatPanel.iOB[OBindex].updateImage(iPatPanel.MO_suc);
-            else
-                iPatPanel.iOB[OBindex].updateImage(iPatPanel.MO_fal);
-            // Stop rotating
-            rotate_permit = false;
-            rotate_switch = false;
-            iPatPanel.iOB[OBindex].updateLabel();
-            System.out.println("done");
-            process.destroy();
-            // Run next procedure if needed
-            if(con_command!=null){
-                multi_run = new BGThread(OBindex, con_command, null);
-                multi_run.start();}
-        }
-    }
-}
-
 
 class iPatFile extends iPatObject {
     private FileType fileType = FileType.NA;
+    // Menu
     JPopupMenu menuFile;
     JMenuItem menuIsRegular,
             menuIsCov,
             menuIsKin;
 
-    public iPatFile(int x, int y, int w, int h, File file) throws IOException {
-        super(x, y, w, h, file);
+    public iPatFile(int x, int y, String filename) throws IOException {
+        super(x, y);
+        // Define the file
         this.isFile = true;
         this.isModule = false;
-        setIcon("File.png");
+        this.isContainMO = false;
+        this.file = new iFile(filename);
+        this.setLabel(this.file.getName());
+        setIcon("file");
+        // Define Menu
+        iniMenu();
     }
 
     void iniMenu() {
@@ -380,8 +213,8 @@ class iPatFile extends iPatObject {
         this.menuOpen = iniMenuItem("Open File");
         this.menuIsRegular = iniMenuItem("Assign as a regular file");
         this.menuIsCov = iniMenuItem("Assign as a covariates file");
-        this. menuIsKin = iniMenuItem("Assign as a kinship file");
-        this. menuDel = iniMenuItem("Remove this file");
+        this.menuIsKin = iniMenuItem("Assign as a kinship file");
+        this.menuDel = iniMenuItem("Remove this file");
         // Construct menu
         this.menuFile.add(menuOpen);
         this.menuFile.add(menuIsRegular);
@@ -394,33 +227,8 @@ class iPatFile extends iPatObject {
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseDragged(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseMoved(MouseEvent e) {
-
+    void dropMenu(MouseEvent e) {
+        this.menuFile.show(e.getComponent(), e.getX(), e.getY());
     }
 
     @Override
@@ -440,34 +248,57 @@ class iPatModule extends iPatObject {
     JMenuItem menuRun;
     // Module define
     int indexMO;
-    SelectPanel panelPhenotype;
-    SelectPanel panelCov;
-    String[] traitNames;
+    ArrayList<String> traitNames;
     // Command
-    ArrayList<String> commandGWAS;
-    ArrayList<String> commandGS;
-    ArrayList<String> commandBSA;
+    Command commandGWAS;
+    Command commandGS;
+    Command commandBSA;
     ToolType toolGWAS;
     ToolType toolGS;
     boolean callBSA;
+    FileFormat format;
+    // Durning running (GUI)
+    boolean rotateSwitch;
+    boolean rotatePermit;
+    JTextArea areaText;
+    JScrollPane areaScroll;
+    JFrame areaFrame;
+    // During running (BG)
+    boolean success;
 
-    FileFormat format = FileFormat.NA;
-
-    public iPatModule(int x, int y, int w, int h, File file) throws IOException {
-        super(x, y, w, h, file);
+    public iPatModule(int x, int y) throws IOException {
+        super(x, y);
         // Define module
         this.isFile = false;
         this.isModule = true;
+        this.isContainMO = true;
         this.indexMO = countMO++;
+        this.setLabel("Module " + (this.indexMO + 1));
+        setIcon("module");
         // Define Menu
-        setIcon("Module.png");
         iniMenu();
         // Define command
-
-        toolGWAS = ToolType.NA;
-        toolGS = ToolType.NA;
-        callBSA = false;
-
+        this.format  = FileFormat.NA;
+        this.commandGWAS = new Command();
+        this.commandGS = new Command();
+        this.commandBSA = new Command();
+        this.toolGWAS = ToolType.NA;
+        this.toolGS = ToolType.NA;
+        this.callBSA = false;
+        // Panel
+        this.traitNames = new ArrayList<String>();
+        // During running (GUI)
+        this.rotateSwitch = false;
+        this.rotatePermit = false;
+        this.areaText = new JTextArea();
+        this.areaText.setEditable(false);
+        this.areaScroll = new JScrollPane(areaText,
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        this.areaFrame = new JFrame();
+        this.areaFrame.setContentPane(areaScroll);
+        // During running (BG)
+        this.success = false;
     }
 
     void iniMenu() {
@@ -492,38 +323,37 @@ class iPatModule extends iPatObject {
         this.menuMO.setBorder(new BevelBorder(BevelBorder.RAISED));
     }
 
-
     @Override
-    public void mousePressed(MouseEvent e) {
-        if (SwingUtilities.isRightMouseButton(e))
-            dropMenu(e, this.menuMO);
+    void dropMenu(MouseEvent e) {
+        this.menuMO.show(e.getComponent(), e.getX(), e.getY());
     }
 
-    @Override
-    public void mouseReleased(MouseEvent e) {
-
+    // set
+    void setGWASMethod (ToolType method) {
+        this.toolGWAS = method;
     }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-
+    void setGSMethod (ToolType method) {
+        this.toolGS = method;
     }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-
+    void setBSAMethod (boolean isBSA) {
+        this.callBSA = isBSA;
     }
-
-    @Override
-    public void mouseDragged(MouseEvent e) {
-
+    // is
+    boolean isGWASDeployed () {
+        return toolGWAS.isDeployed();
     }
-
-    @Override
-    public void mouseMoved(MouseEvent e) {
-
+    boolean isGSDeployed () {
+        return toolGS.isDeployed();
     }
-
+    boolean isBSADeployed () {
+        return this.callBSA;
+    }
+    boolean isNAformat () {
+        return this.format.isNA();
+    }
+    boolean isSuccessFul () {
+        return this.success;
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -535,27 +365,64 @@ class iPatModule extends iPatObject {
         }
     }
 
-    class SelectPanel extends JPanel{
-        public GroupCombo[] combo;
-        public int size;
+    void runCommand(Command firstCommand, Command secondCommand) throws IOException {
+        Runtime runtime;
+        Process process = null;
+        Thread thread;
+        BufferedReader streamInput, streamError;
+        String tempString;
+        PrintWriter writerInput, writerError;
 
-        public SelectPanel(int size, String[] coNames, String[] methods){
-            this.size = size;
-            this.setLayout(new MigLayout("fillx"));
-            combo = new GroupCombo[size];
-            for(int i = 0; i < size; i++){
-                combo[i] = new GroupCombo(coNames[i], methods);
-                this.add(combo[i].getLabel());
-                this.add(combo[i].getCombo(), "wrap");
-            }
+        setIcon("module");
+        this.rotatePermit = true;
+        this.rotateSwitch = true;
+        runtime = Runtime.getRuntime();
+        try {
+            process = runtime.exec(firstCommand.getCommand());
+        } catch (IOException e) {
+            this.success = false;
+            e.printStackTrace();
         }
-
-        public String getSelected(){
-            StringBuffer indexCov = new StringBuffer();
-            for (int i = 0; i < size; i ++)
-                indexCov.append((String)combo[i].getCombo().getSelectedItem() + "sep");
-            return indexCov.toString();
+        this.areaText.append("\n");
+        this.areaText.setCaretPosition(this.areaText.getDocument().getLength());
+        streamInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        streamError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+        while ((tempString = streamInput.readLine()) != null) {
+            this.areaText.append(tempString + System.getProperty("line.separator"));
+            this.areaText.setCaretPosition(this.areaText.getDocument().getLength());
         }
+        try {
+            process.waitFor();
+        } catch (InterruptedException e) {
+            this.success = false;
+            e.printStackTrace();
+        }
+        // Output error message
+        boolean errorClose = false;
+        writerError = new PrintWriter(new BufferedWriter(new FileWriter(firstCommand.getWD() + "/" + firstCommand.getProject() + ".err", true)));
+        while((tempString = streamError.readLine()) != null) {
+            errorClose = true;
+            writerError.println(tempString);
+            if (tempString.toUpperCase().contains("ERROR"))
+                this.success = false;
+        }
+        if (errorClose)
+            writerError.close();
+        // Output normal message
+        File fileOutput = new File(firstCommand.getWD() + "/" + firstCommand.getProject() + ".log");
+        FileWriter writerOut = new FileWriter(fileOutput.getAbsoluteFile(), false);
+        areaText.write(writerOut);
+        // Change icon based on successful or not
+        if (this.success)
+            setIcon("moduleSuc");
+        else
+            setIcon("moduleFal");
+        // Stop rotating
+        this.rotatePermit = false;
+        this.rotateSwitch = false;
+        process.destroy();
+        // Run next command if needed
+        if (secondCommand != null)
+            this.runCommand(secondCommand, null);
     }
-
 }

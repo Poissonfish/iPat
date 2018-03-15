@@ -1,8 +1,13 @@
+import net.miginfocom.swing.MigLayout;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.Hashtable;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 class AlphaLabel extends JLabel {
     private float alpha = 1f;
@@ -24,89 +29,150 @@ class AlphaLabel extends JLabel {
     }
 }
 
-class GroupValue {
-    private JLabel name = new JLabel();
+class GroupValue extends JPanel{
+    private JLabel name;
     private JTextField field;
 
     public GroupValue (int length, String text) {
-        field = new JTextField(length);
-        name.setText(text);
+        super(new MigLayout("fillx", "[grow][grow]", "[]"));
+        this.name = new JLabel(text);
+        this.field = new JTextField(length);
+        this.add(this.name, "cell 0 0, align r");
+        this.add(this.name, "cell 1 0, align l");
+    }
+
+    String getValue() {
+        return this.field.getText();
     }
 }
 
-class GroupRadioButton{
-    private ButtonGroup	group = new ButtonGroup();
-    private JRadioButton[] button;
+class GroupCheckBox extends JPanel{
+    JCheckBox check;
 
-    public GroupRadioButton (int size) {
-        button = new JRadioButton[size];
-        for (int i = 0; i < size; i ++) {
-            button[i] = new JRadioButton("");
-            group.add(button[i]);
-        }
+    public GroupCheckBox (String text) {
+        super(new MigLayout("fillx", "[grow]", "[]"));
+        this.check = new JCheckBox();
+        this.check.setText(text);
+        this.check.setSelected(false);
+        this.add(this.check, "cell 0 0, align r");
     }
-
-    public void setName (int num, String text) {
-        button[num].setText(text);
+    void setCheck(boolean check) {
+        this.check.setSelected(check);
+    }
+    boolean isCheck() {
+        return this.check.isSelected();
     }
 }
 
-class GroupCheckBox implements ActionListener {
-    private JCheckBox check = new JCheckBox();
-    private JTextField field;
+class GroupCombo extends JPanel {
+    private JComboBox combo;
+    private JLabel name;
 
-    public GroupCheckBox (int length, String text) {
-        field  = new JTextField(length);
-        check.setText(text);
-        check.setSelected(false);
-        check.addActionListener(this);
-        field.setEnabled(false);
+    public GroupCombo (String text, String[] list) {
+        super(new MigLayout("fillx", "[grow][grow]", "[]"));
+        this.name = new JLabel(text);
+        this.combo = new JComboBox(list);
+        this.add(this.name, "cell 0 0, align r");
+        this.add(this.combo, "cell 1 0, align l");
+    }
+
+    String getValue() {
+        return (String)this.combo.getSelectedItem();
+    }
+}
+
+// name value slider |------------|
+class GroupSlider extends JPanel implements ChangeListener {
+    private JSlider slider;
+    private JLabel name;
+    private JLabel value;
+    private boolean isDouble = false;
+    private boolean isPow = false;
+
+    public GroupSlider(String name, int min, int max, int defaultVal, int minTick, int majTick) {
+        super(new MigLayout("fillx", "[grow][grow][grow]", "[]"));
+        this.name = new JLabel(name + " :");
+        this.value = new JLabel(Integer.toString(defaultVal));
+        this.slider = new JSlider(JSlider.HORIZONTAL, min, max, defaultVal);
+        this.slider.setMinorTickSpacing(minTick);
+        this.slider.setMajorTickSpacing(majTick);
+        this.slider.setPaintTicks(true);
+        this.slider.setPaintLabels(true);
+        this.slider.setLabelTable(this.slider.createStandardLabels(majTick));
+        this.slider.addChangeListener(this);
+        this.add(this.name, "cell 0 0, align r");
+        this.add(this.value, "cell 1 0, align l");
+        this.add(this.slider, "cell 2 0, align l");
+    }
+
+    public GroupSlider(String name, double min, double max, double defaultVal, String[] tablename) {
+        super(new MigLayout("fillx", "[grow][grow][grow]", "[]"));
+        this.name = new JLabel(name + " :");
+        this.value = new JLabel(Double.toString(defaultVal));
+        this.slider = new JSlider(JSlider.HORIZONTAL, (int) (min * 1000) , (int) (max * 1000), (int) (defaultVal * 1000));
+        this.isDouble = true;
+        this.slider.setMinorTickSpacing(5);
+        this.slider.setMajorTickSpacing(10);
+        this.slider.setPaintTicks(true);
+        this.slider.setPaintLabels(true);
+        Hashtable table = new Hashtable();
+        for (int i = 0; i < table.size(); i ++)
+            table.put((int)(Double.parseDouble(tablename[i]) * 1000), tablename[i]);
+        this.slider.setLabelTable(table);
+        this.slider.addChangeListener(this);
+        this.add(this.name, "cell 0 0, align r");
+        this.add(this.value, "cell 1 0, align l");
+        this.add(this.slider, "cell 2 0, align l");
+    }
+
+    int getIntValue() {
+        return this.slider.getValue();
+    }
+
+    String getStrValue() {
+        return Integer.toString(this.slider.getValue());
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void stateChanged(ChangeEvent e) {
         Object source = e.getSource();
-
-        if (source == check)
-            field.setEnabled(!field.isEnabled());
+        if (source == this.slider && !this.isDouble)
+            this.value.setText(Integer.toString(slider.getValue()));
+        else if (source == this.slider && this.isDouble)
+            this.value.setText(Double.toString(slider.getValue()/(double)1000));
     }
 }
 
-class GroupCombo {
-    private JComboBox combo;
-    private JLabel name = new JLabel();
-
-    public GroupCombo (String text, String[] list) {
-        name.setText(text);
-        combo = new JComboBox(list);
-    }
-
-    JLabel getLabel() {
-        return this.name;
-    }
-
-    JComboBox getCombo() {
-        return this.combo;
-    }
-}
-class GroupPath {
-    private JLabel name = new JLabel();
-    private JButton browse = new JButton("Browse");
-    private JTextField field = new JTextField(15);
+// name field browse
+class GroupPath extends JPanel implements ActionListener {
+    JLabel name;
+    JButton browse;
+    JTextField field;
 
     public GroupPath (String text) {
-        name.setText(text);
+        super(new MigLayout("fillx", "[grow][grow][grow]", "[]"));
+        name = new JLabel();
+        browse = new JButton("Browse");
+        field = new JTextField(15);
+        this.name.setText(text);
+        this.browse.addActionListener(this);
+        this.add(this.name, "cell 0 0, grow");
+        this.add(this.field, "cell 1 0");
+        this.add(this.browse, "cell 2 0");
+    }
+
+    String getPath() {
+        return this.field.getText();
     }
 
     public void setPath (boolean showDirOnly) {
         String msg;
-
         if (showDirOnly)
             msg = "Choose a output directory";
         else
             msg = "Choose a file";
         File selectedFile = getChooserFile(msg, showDirOnly);
-        field.setText(selectedFile.getAbsolutePath());
+        this.field.setText(selectedFile.getAbsolutePath());
     }
 
     public File getChooserFile (String title, boolean showDirOnly) {
@@ -139,6 +205,13 @@ class GroupPath {
                 selectedfile = chooser.getFiles()[0];
         }
         return selectedfile;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        Object source = e.getSource();
+        if (source == browse)
+            setPath(true);
     }
 }
 

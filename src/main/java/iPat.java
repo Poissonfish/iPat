@@ -4,17 +4,25 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
 
 public class iPat {
     static UserOS USEROS;
     static WindowSize WINDOWSIZE;
     static String REXC;
+    static FileLib FILELIB;
+    static ImageLib IMGLIB;
+    static TextLib TXTLIB;
 
-    public iPat() {
+    public iPat() throws URISyntaxException {
         USEROS = getOS();
+        WINDOWSIZE = new WindowSize();
         WINDOWSIZE = setWindowSize(1200, 700, 190);
         REXC = getREXC();
+        FILELIB = new FileLib();
+        IMGLIB = new ImageLib();
+        TXTLIB = new TextLib();
         printWelcomeMsg();
         launchIPat();
     }
@@ -110,8 +118,8 @@ public class iPat {
         iPat.setFocusable(true); // Keylistener
         iPat.requestFocusInWindow(); // Keylistener
         // Add the panel into JFrame
-        Container contentPane = iPatFrame.getContentPane();
-        contentPane.add(iPat);
+        iPatFrame.setContentPane(iPat);
+        iPatFrame.show();
     }
 }
 
@@ -120,6 +128,10 @@ class WindowSize {
     private int height;
     private int pHeight;
     private Dimension dim;
+
+    public WindowSize() {
+        dim = new Dimension();
+    }
 
     void setWidth(int width) {
         this.width = width;
