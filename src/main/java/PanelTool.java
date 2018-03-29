@@ -32,18 +32,19 @@ class PanelGAPIT extends PanelTool {
                 new String[]{"Mean", "Max", "Min", "Median"});
         comboModel = new GroupCombo("Select a model",
                 new String[]{"GLM", "MLM", "CMLM"});
-        basic.add(comboModel, "cell 0 0");
-        basic.add(comboKCluster, "cell 0 1");
-        basic.add(comboKGrp, "cell 0 2");
+        basic.add(comboModel, "cell 0 0, align c");
+        basic.add(comboKCluster, "cell 0 1, align c");
+        basic.add(comboKGrp, "cell 0 2, align c");
         // Adv features
         adv = new JPanel(new MigLayout("fillx", "[]", "[grow][grow]"));
-        slideSNPfrac = new GroupSlider("SNP.fraction", 0, 1, 1, new String[]{"0.2", "0.4", "0.6", "0.8", "1"});
+        slideSNPfrac = new GroupSlider("SNP.fraction", 5, 5, new String[]{"0.2", "0.4", "0.6", "0.8", "1"});
         slidefilefrag = new GroupSlider("File fragment", 1, 512, 1, 64, 128);
         checkModelSelect = new JCheckBox("Model selection");
         adv.add(slideSNPfrac, "cell 0 0");
-        adv.add(checkModelSelect, "cell 0 1 2 1");
+        adv.add(checkModelSelect, "cell 0 1 2 1, align c");
         // cov
-        cov.setAsRegular();
+        if (!cov.isEmpty())
+            cov.setAsRegular();
         // Build tab pane
         this.addTab("Basic Input", basic);
         this.addTab("Advance Input", adv);
@@ -52,12 +53,13 @@ class PanelGAPIT extends PanelTool {
 
     @Override
     ArrayList<String> getCommand() {
-        ArrayList<String> command = new ArrayList<String>();
+        ArrayList<String> command = new ArrayList<>();
+        command.add("-arg");
         command.add(comboModel.getValue());
         command.add(comboKCluster.getValue());
         command.add(comboKGrp.getValue());
         command.add(slideSNPfrac.getStrValue());
-        command.add(checkModelSelect.isSelected() ? "True" : "False");
+        command.add(checkModelSelect.isSelected() ? "TRUE" : "FALSE");
         return command;
     }
 }
@@ -72,11 +74,12 @@ class PanelFarmCPU extends PanelTool {
         basic = new JPanel(new MigLayout("fillx"));
         comboBin = new GroupCombo("Method bin",
                 new String[]{"static", "optimum"});
-        slideLoop = new GroupSlider("maxLoop", 1, 20, 10, 2, 5);
+        slideLoop = new GroupSlider("maxLoop", 10, 10, new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"});
         basic.add(comboBin, "cell 0 0");
         basic.add(slideLoop, "cell 0 1");
         // cov
-        cov.setAsRegular();
+        if (!cov.isEmpty())
+            cov.setAsRegular();
         // Build tab pane
         this.addTab("FarmCPU input", basic);
         this.addTab("Covariates", cov.getPane());
@@ -84,7 +87,8 @@ class PanelFarmCPU extends PanelTool {
 
     @Override
     ArrayList<String> getCommand() {
-        ArrayList<String> command = new ArrayList<String>();
+        ArrayList<String> command = new ArrayList<>();
+        command.add("-arg");
         command.add(comboBin.getValue());
         command.add(slideLoop.getStrValue());
         return command;
@@ -99,13 +103,14 @@ class PanelPlink extends PanelTool {
     public PanelPlink(ModuleConfig.PanelCov cov) {
         // Basic features
         basic = new JPanel(new MigLayout("fillx"));
-        slideCI = new GroupSlider("C.I.", 0.5, 1, 0.95, new String[]{"0.5", "0.68", "0.95"});
+        slideCI = new GroupSlider("C.I.", 3, 3, new String[]{"0.5", "0.68", "0.95"});
         comboModel = new GroupCombo("Method",
                 new String[]{"GLM", "Logistic Regression"});
         basic.add(slideCI, "cell 0 0");
         basic.add(comboModel, "cell 0 1");
         // cov
-        cov.setAsRegular();
+        if (!cov.isEmpty())
+            cov.setAsRegular();
         // Build tab pane
         this.addTab("PLINK input", basic);
         this.addTab("Covariates", cov.getPane());
@@ -113,7 +118,8 @@ class PanelPlink extends PanelTool {
 
     @Override
     ArrayList<String> getCommand() {
-        ArrayList<String> command = new ArrayList<String>();
+        ArrayList<String> command = new ArrayList<>();
+        command.add("-arg");
         command.add(slideCI.getStrValue());
         command.add(comboModel.getValue());
         return command;
@@ -128,12 +134,13 @@ class PanelgBLUP extends PanelTool {
     public PanelgBLUP(ModuleConfig.PanelCov cov) {
         // Adv features
         adv = new JPanel(new MigLayout("fillx"));
-        slideSNPfrac = new GroupSlider("SNP.fraction", 0, 1, 1, new String[]{"0.2", "0.4", "0.6", "0.8", "1"});
+        slideSNPfrac = new GroupSlider("SNP.fraction", 5, 5, new String[]{"0.2", "0.4", "0.6", "0.8", "1"});
         checkModelSelect = new JCheckBox("Model selection");
         adv.add(slideSNPfrac, "cell 0 0");
         adv.add(checkModelSelect, "cell 0 1 2 1");
         // cov
-        cov.setAsRegular();
+        if (!cov.isEmpty())
+            cov.setAsRegular();
         // Build tab pane
         this.addTab("GAPIT Input", adv);
         this.addTab("Covariates", cov.getPane());
@@ -142,6 +149,7 @@ class PanelgBLUP extends PanelTool {
     @Override
     ArrayList<String> getCommand() {
         ArrayList<String> command = new ArrayList<String>();
+        command.add("-arg");
         command.add(slideSNPfrac.getStrValue());
         command.add(checkModelSelect.isSelected() ? "True" : "False");
         return command;
@@ -161,7 +169,8 @@ class PanelrrBLUP extends PanelTool {
         basic.add(comboImpute, "cell 0 0");
         basic.add(checkShrink, "cell 0 1 2 1, align c");
         // cov
-        cov.setAsRegular();
+        if (!cov.isEmpty())
+            cov.setAsRegular();
         // Build tab pane
         this.addTab("rrBLUP Input", basic);
         this.addTab("Covariates", cov.getPane());
@@ -170,6 +179,7 @@ class PanelrrBLUP extends PanelTool {
     @Override
     ArrayList<String> getCommand() {
         ArrayList<String> command = new ArrayList<String>();
+        command.add("-arg");
         command.add(comboImpute.getValue());
         command.add(checkShrink.isSelected() ? "True" : "False");
         return command;
@@ -200,7 +210,8 @@ class PanelBGLR extends PanelTool  {
         basic.add(slideBurnIn, "cell 0 3");
         basic.add(slideThin, "cell 0 4");
         // cov
-        cov.setAsBayes();
+        if (!cov.isEmpty())
+            cov.setAsBayes();
         // Build tab pane
         this.addTab("BGLR Input", basic);
         this.addTab("Covariates", cov.getPane());
@@ -209,6 +220,7 @@ class PanelBGLR extends PanelTool  {
     @Override
     ArrayList<String> getCommand() {
         ArrayList<String> command = new ArrayList<String>();
+        command.add("-arg");
         command.add(comboModel.getValue());
         command.add(comboResponse.getValue());
         command.add(slideBurnIn.getStrValue());
@@ -227,7 +239,7 @@ class PanelBSA extends PanelTool {
         // Basic features
         basic = new JPanel(new MigLayout("fillx", "[]", "[grow][grow]"));
         slideWindow = new GroupSlider("Window size", 10000, 100000, 20000, 5000, 20000);
-        slidePower = new GroupSlider("Poiwer of ED", 1, 5, 2, 1, 5);
+        slidePower = new GroupSlider("Power of ED", 1, 5, 4, 1, 5);
         basic.add(slideWindow, "cell 0 0");
         basic.add(slidePower, "cell 0 1");
         // Build tab pane
@@ -237,6 +249,7 @@ class PanelBSA extends PanelTool {
     @Override
     ArrayList<String> getCommand() {
         ArrayList<String> command = new ArrayList<String>();
+        command.add("-arg");
         command.add(slideWindow.getStrValue());
         command.add(slidePower.getStrValue());
         return command;

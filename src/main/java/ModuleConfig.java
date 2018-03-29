@@ -2,14 +2,25 @@ import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Hashtable;
 
 
-public class ModuleConfig extends JFrame implements ActionListener {
+public class ModuleConfig extends JFrame implements ActionListener, WindowListener{
+    // index
+    int index;
+    int indexConfig;
+    // method
+    MethodType method;
+    // format
+    FileFormat format;
     // Panel (Structure
     JPanel paneMain;
     PanelBottom paneBottom;
@@ -23,10 +34,15 @@ public class ModuleConfig extends JFrame implements ActionListener {
     // Button restore
     JButton buttonRestore;
 
-    public ModuleConfig(MethodType method, ToolType tool, FileFormat format, iFile fileP, iFile fileC) {
+    public ModuleConfig(int index, String name, MethodType method, ToolType tool, FileFormat format, iFile fileP, iFile fileC, int indexConfig) {
         // initialize objects
-        this.paneWD = new PanelWD();
-        this.panePhenotype = new PanelPhenotype(fileP);
+        this.index = index;
+        this.indexConfig = indexConfig;
+        this.method = method;
+        this.format = format;
+        this.paneWD = new PanelWD(name);
+        this.paneWD.setPath(iPat.MODVAL.mapCommon.get("wd"));
+        this.panePhenotype = new PanelPhenotype(fileP, format);
         this.paneQC = new PanelQC();
         this.paneTop = new JTabbedPane();
         this.buttonRestore = new JButton("Restore Defaults");
@@ -39,29 +55,34 @@ public class ModuleConfig extends JFrame implements ActionListener {
                         "GWAS (Format: " + format + ")",
                         TitledBorder.CENTER, TitledBorder.TOP, null, Color.RED)
                 );
+                break;
             case GS:
                 this.paneTop.setBorder(new TitledBorder(
                         new EtchedBorder(EtchedBorder.LOWERED, null, null),
                         "GS (Format: " + format + ")",
                         TitledBorder.CENTER, TitledBorder.TOP, null, Color.RED)
                 );
+                break;
             case BSA:
                 this.paneTop.setBorder(new TitledBorder(
                         new EtchedBorder(EtchedBorder.LOWERED, null, null),
                         "Bulk Segregation Analysis",
                         TitledBorder.CENTER, TitledBorder.TOP, null, Color.RED)
                 );
+                break;
         }
         // Assemble
         this.paneTop.addTab("Working Directory", this.paneWD);
         this.paneTop.addTab("Phenotype", this.panePhenotype.getPane());
         this.paneTop.addTab("Quality Control", this.paneQC);
         this.paneBottom = new PanelBottom(method, tool, fileC);
+        this.paneBottom.setBorder("Tool Config.");
         // Layout
-        this.paneMain = new JPanel(new MigLayout("fillx", "[]", "[grow][grow]"));
+        this.paneMain = new JPanel(new MigLayout("fillx", "[]", "[][]"));
         this.paneMain.add(this.paneTop, "cell 0 0, grow");
         this.paneMain.add(this.paneBottom.getPanel(), "cell 0 1, grow");
         // JFrame
+        this.addWindowListener(this);
         this.setLocation(600, 500);
         this.setContentPane(this.paneMain);
         this.setVisible(true);
@@ -79,20 +100,63 @@ public class ModuleConfig extends JFrame implements ActionListener {
 
     }
 
-    Command getCommand() {
+    int getIndex() {
+        return this.index;
+    }
+
+    int getIndexConfig() {
+        return this.indexConfig;
+    }
+
+    ArrayList<Command> getCommand() {
         // If no command out there
         if (!this.isDeployed())
             return null;
         // Instantiate command object
-        Command newCommand = new Command();
+        ArrayList<Command> newCommand = new ArrayList<>();
+        Command command1 = new Command();
+        Command command2 = new Command();
         // Common command
-        newCommand.addWD(this.paneWD.getPath());
-        newCommand.addProject(this.paneWD.getProject());
-        newCommand.addArg("-phenotype", this.panePhenotype.getSelected());
-        newCommand.addArg("-maf", this.paneQC.getMAF());
-        newCommand.addArg("-ms", this.paneQC.getMS());
-        // Specific command
-        newCommand.addAll(this.paneBottom.getCommand());
+        switch (this.getTool()) {
+            case GAPIT:
+                command1.add(iPat.REXC);
+                command1.add(iPat.FILELIB.getAbsolutePath("iPatGAPIT.r"));
+                break;
+            case FarmCPU:
+                command1.add(iPat.REXC);
+                command1.add(iPat.FILELIB.getAbsolutePath("iPatFarmCPU.r"));
+                break;
+            case PLINK:
+                command1.add(iPat.REXC);
+                command1.add(iPat.FILELIB.getAbsolutePath("iPatPLINK.r"));
+                break;
+            case gBLUP:
+                command1.add(iPat.REXC);
+                command1.add(iPat.FILELIB.getAbsolutePath("iPatgBLUP.r"));
+                break;
+            case rrBLUP:
+                command1.add(iPat.REXC);
+                command1.add(iPat.FILELIB.getAbsolutePath("iPatrrBLUP.r"));
+                break;
+            case BGLR:
+                command1.add(iPat.REXC);
+                command1.add(iPat.FILELIB.getAbsolutePath("iPatBGLR.r"));
+                break;
+            case BSA:
+                command1.add(iPat.REXC);
+                command1.add(iPat.FILELIB.getAbsolutePath("iPatBSA.r"));
+                break;
+        }
+        command1.addWD(this.paneWD.getPath());
+        command1.addProject(this.paneWD.getProject());
+        command1.addArg("-pSelect", this.panePhenotype.getSelected());
+        command1.addArg("-maf", this.paneQC.getMAF());
+        command1.addArg("-ms", this.paneQC.getMS());
+        command1.addArg("-format", this.format.getName());
+        // Specific command and cov
+        command1.addAll(this.paneBottom.getCommand());
+        // add to arraylist
+        newCommand.add(command1);
         // Return
         return newCommand;
     }
@@ -101,8 +165,50 @@ public class ModuleConfig extends JFrame implements ActionListener {
         return this.paneBottom.getTool();
     }
 
+    MethodType getMethod() {
+        return this.method;
+    }
+
     boolean isDeployed() {
         return this.paneBottom.isDeployed();
+    }
+
+    @Override
+    public void windowOpened(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowClosing(WindowEvent e) {
+        // so that the list will know which panel is closing
+        System.out.println("Config closing (inter)");
+        System.out.println("Token is : " + this.getIndexConfig());
+        iPatList.token = this.getIndexConfig();
+    }
+
+    @Override
+    public void windowClosed(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowIconified(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowDeiconified(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowActivated(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowDeactivated(WindowEvent e) {
+
     }
 
 
@@ -117,7 +223,7 @@ public class ModuleConfig extends JFrame implements ActionListener {
         iFile file;
         ArrayList<String> traitNames;
 
-        public PanelPhenotype (iFile file) {
+        public PanelPhenotype (iFile file, FileFormat format) {
             this.panelNA = new JPanel(new MigLayout("", "[grow]", "[grow]"));
             this.msgNA = new JLabel("<html><center> Phenotype Not Found </center></html>", SwingConstants.CENTER);
             this.msgNA.setFont(iPat.TXTLIB.plain);
@@ -125,9 +231,10 @@ public class ModuleConfig extends JFrame implements ActionListener {
             this.scroll = new JScrollPane(this.panelNA, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                     JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
             this.file = file;
+            setupTraits(format);
         }
 
-        String[] getTraits (FileFormat format) {
+        void setupTraits (FileFormat format) {
             String tempStr = null;
             Boolean isContainFID = false;
             try {
@@ -145,7 +252,7 @@ public class ModuleConfig extends JFrame implements ActionListener {
             this.panel = new SelectPanel(this.traitNames.toArray(new String[0]), new String[]{"Selected", "Excluded"});
             this.scroll = new JScrollPane(this.panel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                     JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            return this.traitNames.toArray(new String[0]);
+//            return this.traitNames.toArray(new String[0]);
         }
 
         String getSelected() {
@@ -157,25 +264,29 @@ public class ModuleConfig extends JFrame implements ActionListener {
         }
     }
 
-    class PanelQC extends JPanel{
-        // GUI objects
-        GroupSlider ms;
-        GroupSlider maf;
+    class PanelQC extends JPanel {
+        // MS
+        GroupSlider sliderMS;
+        // MAF
+        GroupSlider sliderMAF;
 
         public PanelQC() {
-            super(new MigLayout("fillx", "[grow]", "[]"));
-            this.ms = new GroupSlider("By missing rate", 0, 0.5, 0.2, new String[]{"0", "0.05", "0.1", "0.2", "0.5"});
-            this.maf = new GroupSlider("By MAF", 0, 0.5, 0.05, new String[]{"0", "0.05", "0.1", "0.2", "0.5"});
-            this.add(ms, "cell 0 0");
-            this.add(maf, "cell 0 1");
+            super(new MigLayout("fillx", "[]", "[grow][grow]"));
+
+            this.sliderMS = new GroupSlider("By missing rate", 5, 4,
+                    new String[]{"0", "0.05", "0.1", "0.2", "0.5"});
+            this.sliderMAF = new GroupSlider("By missing rate", 5, 3,
+                    new String[]{"0", "0.01", "0.05", "0.1", "0.2"});
+            this.add(this.sliderMS, "cell 0 0, grow");
+            this.add(this.sliderMAF, "cell 0 1, grow");
         }
 
         String getMS() {
-            return Double.toString(this.ms.getIntValue() / (double)1000);
+            return this.sliderMS.getStrValue();
         }
 
         String getMAF() {
-            return Double.toString(this.maf.getIntValue() / (double)1000);
+            return this.sliderMAF.getStrValue();
         }
     }
 
@@ -185,9 +296,10 @@ public class ModuleConfig extends JFrame implements ActionListener {
         GroupPath path;
         JLabel format;
 
-        public PanelWD() {
+        public PanelWD(String name) {
             super(new MigLayout("fill", "[grow]", "[grow][grow]"));
-            this.project = new GroupValue(3, "Project Name");
+            this.project = new GroupValue(7, "Module Name");
+            this.project.setValue(name);
             this.path = new GroupPath("Output Directory");
             this.format = new JLabel("");
             this.add(this.project, "cell 0 0, grow");
@@ -201,6 +313,14 @@ public class ModuleConfig extends JFrame implements ActionListener {
         String getPath() {
             return this.path.getPath();
         }
+
+        void setProject(String value) {
+            this.project.setValue(value);
+        }
+
+        void setPath(String value) {
+            this.path.setPath(value);
+        }
     }
 
     class PanelBottom implements MouseListener, MouseMotionListener {
@@ -212,7 +332,7 @@ public class ModuleConfig extends JFrame implements ActionListener {
         ToolType toolDrag;
         ILabel labelTemp;
         Point ptTemp;
-        Point ptMouse;
+        Point ptPress;
         // iLabel
         ILabel labelGAPIT;
         ILabel labelFarmCPU;
@@ -234,6 +354,7 @@ public class ModuleConfig extends JFrame implements ActionListener {
                     this.panel.add(labelGAPIT, "cell 1 0, grow, w 150:150:");
                     this.panel.add(labelFarmCPU, "cell 1 1, grow, w 150:150:");
                     this.panel.add(labelPLINK, "cell 1 2, grow, w 150:150:");
+                    break;
                 case GS:
                     // ILabel
                     labelgBLUP   = new ILabel("<html> GAPIT <br> (gBLUP)</html>");
@@ -244,14 +365,24 @@ public class ModuleConfig extends JFrame implements ActionListener {
                     this.panel.add(labelgBLUP, "cell 1 0, grow, w 150:150:");
                     this.panel.add(labelrrBLUP, "cell 1 1, grow, w 150:150:");
                     this.panel.add(labelBGLR, "cell 1 2, grow, w 150:150:");
+                    break;
                 case BSA:
                     this.panel = new JPanel(new MigLayout("fill", "[grow]", "[grow]"));
+                    break;
             }
             this.config = new PanelConfig(method, tool, fileC);
             this.toolDrag = ToolType.NA;
             this.panel.add(this.config, "cell 0 0 1 3, grow, w 470:470:, h 270:270:");
+            this.panel.addMouseListener(this);
+            this.panel.addMouseMotionListener(this);
         }
 
+        void setBorder(String title) {
+            this.panel.setBorder(new TitledBorder(
+                    new EtchedBorder(EtchedBorder.LOWERED, null, null),
+                    title,
+                    TitledBorder.CENTER, TitledBorder.TOP, null, Color.RED));
+        }
         JPanel getPanel() {
             return this.panel;
         }
@@ -260,7 +391,7 @@ public class ModuleConfig extends JFrame implements ActionListener {
             return this.config.getTool();
         }
 
-        ArrayList<String> getCommand() {
+        Command getCommand() {
             return this.config.getCommand();
         }
 
@@ -276,7 +407,7 @@ public class ModuleConfig extends JFrame implements ActionListener {
         @Override
         public void mousePressed(MouseEvent e) {
             Point pt = e.getPoint();
-            this.ptMouse = pt;
+            this.ptPress = pt;
             // If on the method label, record the method and its location
             if (this.method == MethodType.GWAS) {
                 if (labelGAPIT.getBounds().contains(pt)) {
@@ -314,7 +445,7 @@ public class ModuleConfig extends JFrame implements ActionListener {
                 }
             }
             // If on the config panel (tap)
-            if (this.config.getBounds().contains(pt))
+            if (this.config.getBounds().contains(pt) && this.config.isDeployed())
                 this.config.showDeployedPane();
             // Refresh GUI
             this.config.setVisible(true);
@@ -328,12 +459,12 @@ public class ModuleConfig extends JFrame implements ActionListener {
                 // Entering config panel
                 if (this.config.getBounds().contains(pt))
                     this.config.changeFontDrop();
-                    // Exiting config panel
+                // Exiting config panel
                 else
                     this.config.changeFontDrag();
                 // Update position of label
-                this.labelTemp.setLocation(this.ptMouse.x - pt.x + this.ptTemp.x,
-                        this.ptMouse.y - pt.y + this.ptTemp.y);
+                this.labelTemp.setLocation(pt.x - this.ptPress.x + this.ptTemp.x,
+                        pt.y - this.ptPress.y + this.ptTemp.y);
             }
         }
 
@@ -351,8 +482,9 @@ public class ModuleConfig extends JFrame implements ActionListener {
                 if (this.config.getBounds().contains(pt)) {
                     this.config.setDeployedTool(this.toolDrag);
                     this.config.changeFontSelected();
+                    this.config.setTapped(false);
                 // or drop elsewhere and there's a method occupied (show detail), and has been tapped
-                } else if (this.config.isTapped())
+                } else if (this.config.isDeployed() && this.config.isTapped())
                     this.config.showDeployedPane();
                 // or drop elsewhere and there's a method occupied (font select), and hasn't tapped yet
                 else if (this.config.isDeployed() && !this.config.isTapped())
@@ -420,25 +552,34 @@ public class ModuleConfig extends JFrame implements ActionListener {
 
             void showDeployedPane() {
                 this.removeAll();
-                switch(this.toolDeployed) {
-                    case GAPIT: this.paneDeploy = new PanelGAPIT(this.paneCov);
-                        break;
-                    case FarmCPU: this.paneDeploy = new PanelFarmCPU(this.paneCov);
-                        break;
-                    case PLINK: this.paneDeploy = new PanelPlink(this.paneCov);
-                        break;
-                    case gBLUP: this.paneDeploy = new PanelgBLUP(this.paneCov);
-                        break;
-                    case rrBLUP: this.paneDeploy = new PanelrrBLUP(this.paneCov);
-                        break;
-                    case BGLR: this.paneDeploy = new PanelBGLR(this.paneCov);
-                        break;
-                    case BSA: this.paneDeploy = new PanelBSA();
-                        break;
+                this.revalidate();
+                this.repaint();
+                System.out.println("remove!");
+                if (!this.isTapped()) {
+                    switch (this.toolDeployed) {
+                        case GAPIT: this.paneDeploy = new PanelGAPIT(this.paneCov);
+                            break;
+                        case FarmCPU: this.paneDeploy = new PanelFarmCPU(this.paneCov);
+                            break;
+                        case PLINK: this.paneDeploy = new PanelPlink(this.paneCov);
+                            break;
+                        case gBLUP: this.paneDeploy = new PanelgBLUP(this.paneCov);
+                            break;
+                        case rrBLUP: this.paneDeploy = new PanelrrBLUP(this.paneCov);
+                            break;
+                        case BGLR: this.paneDeploy = new PanelBGLR(this.paneCov);
+                            break;
+                        case BSA: this.paneDeploy = new PanelBSA();
+                            break;
+                    }
+                    this.isTapped = true;
                 }
                 this.setLayout(new MigLayout("", "[grow]", "[grow]"));
-                this.add(this.paneDeploy);
-                this.isTapped = true;
+                this.add(this.paneDeploy, "grow");
+            }
+
+            void setTapped(boolean isTapped) {
+                this.isTapped = isTapped;
             }
 
             boolean isTapped() {
@@ -449,8 +590,65 @@ public class ModuleConfig extends JFrame implements ActionListener {
                 return this.isDeployed;
             }
 
-            ArrayList<String> getCommand() {
-                return this.paneDeploy.getCommand();
+            Command getCommand() {
+                Command command = new Command();
+                // get cov select
+                if (this.isTapped()) {
+                    command.addAll(this.paneCov.getCommand());
+                    command.addAll(this.paneDeploy.getCommand());
+                    return command;
+                // return default command
+                } else {
+                    command.addArg("-cSelect", "NA");
+                    HashMap<String, String> map;
+                    switch (this.toolDeployed) {
+                        case GAPIT:
+                            map = iPat.MODVAL.mapGAPIT;
+                            command.add("-arg");
+                            command.add(map.get("model"));
+                            command.add(map.get("cluster"));
+                            command.add(map.get("group"));
+                            command.add(map.get("snpfrac"));
+                            command.add(map.get("checkS"));
+                            return command;
+                        case FarmCPU:
+                            map = iPat.MODVAL.mapFarmCPU;
+                            command.add("-arg");
+                            command.add(map.get("combo"));
+                            command.add(map.get("loop"));
+                            return command;
+                        case PLINK:
+
+                        case gBLUP:
+                            map = iPat.MODVAL.mapgBLUP;
+                            command.add("-arg");
+                            command.add(map.get("snpfrac"));
+                            command.add(map.get("checkS"));
+                            return command;
+                        case rrBLUP:
+                            map = iPat.MODVAL.maprrBLUP;
+                            command.add("-arg");
+                            command.add(map.get("impute"));
+                            command.add(map.get("shrink"));
+                            return command;
+                        case BGLR:
+                            map = iPat.MODVAL.mapBGLR;
+                            command.add("-arg");
+                            command.add(map.get("model"));
+                            command.add(map.get("response"));
+                            command.add(map.get("niter"));
+                            command.add(map.get("burn"));
+                            command.add(map.get("thin"));
+                            return command;
+                        case BSA:
+                            map = iPat.MODVAL.mapBGLR;
+                            command.add("-arg");
+                            command.add(map.get("window"));
+                            command.add(map.get("power"));
+                            return command;
+                    }
+                }
+                return null;
             }
 
             ToolType getTool() {
@@ -473,16 +671,19 @@ public class ModuleConfig extends JFrame implements ActionListener {
             }
 
             void changeFontDrop() {
+                this.clearContent();
                 this.setBackground(iPat.IMGLIB.colorHintDrop);
                 this.msg.setText("<html><center> Drop <br> to <br> Deploy </center></html>");
             }
 
             void changeFontDrag() {
+                this.clearContent();
                 this.setBackground(iPat.IMGLIB.colorHintDrag);
                 this.msg.setText("<html><center> Drag a Package <br> Here  </center></html>");
             }
 
             void changeFontSelected() {
+                this.clearContent();
                 this.setBackground(iPat.IMGLIB.colorHintTap);
                 this.msg.setText("<html><center>"+ this.toolDeployed +"<br> Selected <br> (Tap for details) </center></html>");
             }
@@ -502,10 +703,12 @@ public class ModuleConfig extends JFrame implements ActionListener {
         // GWAS_Assisted
         GroupSlider slideCutoff;
         GroupCheckBox checkGWAS;
-
+        // file is Empty
+        boolean isEmpty = false;
         public PanelCov (MethodType method, iFile file) {
+            this.isEmpty = file.isEmpty();
             // If no covariate file
-            if (file.isEmpty()) {
+            if (this.isEmpty) {
                 this.panelNA = new JPanel(new MigLayout("", "[grow]", "[grow]"));
                 this.msgNA = new JLabel("<html><center> Covariates Not Found </center></html>", SwingConstants.CENTER);
                 this.msgNA.setFont(iPat.TXTLIB.plain);
@@ -532,19 +735,23 @@ public class ModuleConfig extends JFrame implements ActionListener {
                 this.checkGWAS = new GroupCheckBox("Includes seleted SNPs from GWAS");
                 this.checkGWAS.setCheck(false);
                 this.checkGWAS.check.addActionListener(this);
-                this.slideCutoff = new GroupSlider("Bonferroni cutoff (Power of 10)", -2, -10, -3, 1, 3);
-                this.slideCutoff.setEnabled(false);
+                this.slideCutoff = new GroupSlider("Bonferroni cutoff (Power of 10)", 2, 10, 3, 1, 3);
+                this.slideCutoff.slider.setEnabled(false);
                 // Assemble
                 this.paneMain = new JPanel(new MigLayout("fillx", "[grow]", "[grow][grow][grow]"));
                 this.paneMain.add(this.checkGWAS, "grow, cell 0 0");
                 this.paneMain.add(this.slideCutoff, "grow, cell 0 1");
-                this.paneMain.add(this.scroll, "grow cell 0 2");
+                this.paneMain.add(this.scroll, "grow, cell 0 2");
             // Assemble : if is GWAS
             } else {
                 // Assemble
                 this.paneMain = new JPanel(new MigLayout("fillx", "[grow]", "[grow]"));
-                this.paneMain.add(this.scroll, "grow cell 0 0");
+                this.paneMain.add(this.scroll, "grow, cell 0 0");
             }
+        }
+
+        boolean isEmpty() {
+            return this.isEmpty;
         }
 
         String[] getCovs () {
@@ -552,7 +759,7 @@ public class ModuleConfig extends JFrame implements ActionListener {
         }
 
         String getSelected () {
-            return this.panel.getSelected();
+            return isEmpty ? "NA" : this.panel.getSelected();
         }
 
         void setAsBayes() {
@@ -567,11 +774,17 @@ public class ModuleConfig extends JFrame implements ActionListener {
             return this.paneMain;
         }
 
+        Command getCommand() {
+            Command command = new Command();
+            command.addArg("-cSelect", this.getSelected());
+            return command;
+        }
+
         @Override
         public void actionPerformed(ActionEvent e) {
             Object obs = e.getSource();
-            if (obs == checkGWAS)
-                slideCutoff.setEnabled(!slideCutoff.isEnabled());
+            if (obs == checkGWAS.check)
+                slideCutoff.slider.setEnabled(!slideCutoff.slider.isEnabled());
         }
     }
 
@@ -585,7 +798,7 @@ public class ModuleConfig extends JFrame implements ActionListener {
             combo = new GroupCombo[names.length];
             for(int i = 0; i < this.size; i++){
                 combo[i] = new GroupCombo(names[i], items);
-                this.add(combo[i]);
+                this.add(combo[i], "wrap, align c");
             }
         }
 

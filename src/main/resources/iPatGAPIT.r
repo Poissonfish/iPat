@@ -1,6 +1,11 @@
 # Input arguments
   args = commandArgs(trailingOnly=TRUE)
 # Common args
+  for (arg in args) {
+    switch (arg) {
+      case("-")
+    }
+  }
   project = args[1]
   wd = args[2]
   lib = args[3]
@@ -24,6 +29,9 @@
   file.fragment = as.numeric(args[20])
   model.s = as.logical(args[21])
 
+
+
+
 # Load libraries
   cat("=== GAPIT ===\n")
   cat("   Loading libraries ...")
@@ -32,7 +40,7 @@
   new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
   if(!'multtest'%in% installed.packages()[,"Package"]){
-    source("http://www.bioconductor.org/biocLite.R") 
+    source("http://www.bioconductor.org/biocLite.R")
     biocLite("multtest")
   }
   library(MASS) # required for ginv
@@ -45,24 +53,24 @@
   library(magrittr)
   source("./Function_iPat.R")
   source("./Function_FarmCPU.R")
-  source("./Function_GAPIT.R") 
+  source("./Function_GAPIT.R")
   cat("Done\n")
 
-tryCatch({  
+tryCatch({
   setwd(wd)
   # Subset Phenotype
   cat("   Loading phenotype ...")
   Y.data = fread(Y.path) %>% as.data.frame
   subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .)
-  index.trait = which(subset == "Selected") 
+  index.trait = which(subset == "Selected")
   if(length(index.trait) == 1){
     Y = data.frame(y = Y.data[, index.trait + 1])
-    names(Y) = names(Y.data)[1 + index.trait] 
+    names(Y) = names(Y.data)[1 + index.trait]
   }else
     Y = Y.data[, index.trait + 1]
   # Assign Variables
   taxa = Y.data[,1]
-  trait.names = names(Y) 
+  trait.names = names(Y)
   cat("Done\n")
   # Genptype
     cat("   Loading genotype ...")
@@ -81,8 +89,8 @@ tryCatch({
     if(!is.na(maf)){
       GD_temp = GD
       GD_temp[is.na(GD)] = 1
-      MAF = apply(GD_temp, 2, mean) %>% 
-            as.matrix() %>% 
+      MAF = apply(GD_temp, 2, mean) %>%
+            as.matrix() %>%
             apply(1, function(x) min(1 - x/2, x/2))
       GD = GD[, MAF >= maf]
       GM = GM[MAF >= maf, ]}
@@ -123,7 +131,7 @@ tryCatch({
     #if(is.na(C.inher)) C.inher = NULL else C.inher = C.inher
 
   # Model
-  switch(model, 
+  switch(model,
     GLM = {
       g.from = 1
       g.to = 1
@@ -138,7 +146,7 @@ tryCatch({
       g.by = 10}
   )
   # GAPIT
-    for (i in 1:length(trait.names)){   
+    for (i in 1:length(trait.names)){
       x = GAPIT(
             Y = data.frame(taxa, Y[,i]),
             GM = GM,
@@ -187,7 +195,7 @@ ki.c = "average"
 ki.g = "Mean"
 snp.fraction = 1
 file.fragment = NULL
-model.s = as.logical("FALSE") 
+model.s = as.logical("FALSE")
 
 
 # if(multi){
@@ -196,7 +204,7 @@ model.s = as.logical("FALSE")
 #   for(i in 2:ncol(Y.file)){
 #     mean = mean(Y.file[,i] %>% na.omit())
 #     na_index = Y.file[,i] %>% is.na()
-#     Y.file[na_index,i] = mean 
+#     Y.file[na_index,i] = mean
 #   }
 #   # PCA
 #   Y.PCA = prcomp(Y.file[,-1])

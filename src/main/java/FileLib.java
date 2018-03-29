@@ -38,4 +38,18 @@ public class FileLib {
         }
         return null;
     }
+
+    String getAbsolutePath(String name) {
+        switch (name) {
+            case "iPatGAPIT.r": return this.fileGAPIT.getAbsolutePath();
+            case "iPatFarmCPU.r": return this.fileFarmCPU.getAbsolutePath();
+            case "iPatPLINK.r": return this.filePLINK.getAbsolutePath();
+            case "iPatgBLUP.r": return this.filegBLUP.getAbsolutePath();
+            case "iPatrrBLUP.r": return this.filerrBLUP.getAbsolutePath();
+            case "iPatBGLR.r": return this.fileBGLR.getAbsolutePath();
+            case "iPatBSA.r": return this.fileBSA.getAbsolutePath();
+            case "plink.r": return this.exePLINK.getAbsolutePath();
+        }
+        return null;
+    }
 }

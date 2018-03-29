@@ -1,35 +1,12 @@
-# Input arguments
-  args = commandArgs(trailingOnly=TRUE)
-## Common args
-  project = args[1]
-  wd = args[2]
-  lib = args[3]
-  format = args[4]
-  ms = as.numeric(args[5])
-  maf  = as.numeric(args[6])
-  Y.path = args[7]
-  Y.index = args[8]
-  GD.path = args[9]
-  GM.path  = args[10]
-  C.path = args[11]
-  C.index = args[12]
-  K.path  = args[13]
-  FAM.path  = args[14]
-  BIM.path  = args[15]
-## Method specific args
-  method.bin = args[16] #"optimum"
-  maxLoop = as.numeric(args[17])
-
-# Load libraries
+tryCatch({
+# Library
   cat("=== FarmCPU ===\n")
   cat("   Loading libraries ...")
-  setwd(lib)
-  list.of.packages <- c("bigmemory", "biganalytics", "data.table", "magrittr", "MASS", "gplots", "compiler", "scatterplot3d", "R.utils", "ape")
-  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-  if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
+  library(magrittr)
+  library(data.table)
   library(bigmemory)
   library(biganalytics)
-  library(compiler) 
+  library(compiler)
   library(data.table)
   library(magrittr)
   library(MASS) # required for ginv
@@ -38,148 +15,148 @@
   library(scatterplot3d)
   library(R.utils)
   library(ape)
-  source("./Function_iPat.R")
-  source("./Function_GAPIT.R")
-  source("./Function_FarmCPU.R")
+  source("/Users/jameschen/IdeaProjects/iPat/target/classes/Function_iPat.R")
+  source("/Users/jameschen/IdeaProjects/iPat/target/classes/Function_GAPIT.R")
+  source("/Users/jameschen/IdeaProjects/iPat/target/classes/Function_FarmCPU.R")
   cat("Done\n")
 
-tryCatch({  
-  setwd(wd)
-   # Subset Phenotype
-    cat("   Loading phenotype ...")
-    Y.data = fread(Y.path) %>% as.data.frame
-    subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .)
-    index.trait = which(subset == "Selected") 
-    if(length(index.trait) == 1){
-      Y = data.frame(y = Y.data[, index.trait + 1])
-      names(Y) = names(Y.data)[1 + index.trait] 
-    }else{
-      Y = Y.data[, index.trait + 1]
-    }
-  # Assign Variables
-    taxa = Y.data[,1]
-    trait.names = names(Y) 
-    cat("Done\n")
-    # Genptype
-    cat("   Loading genotype ...")
-    GD = fread(GD.path) %>% as.data.frame()
-    GM = fread(GM.path) %>% as.data.frame()
-    if(is.character(GD[,1])) GD = GD[,-1]
-    cat("Done\n")
-  # QC
-    cat("   Quality control ...")
-    # Missing rate
-    if(!is.na(ms)){
-      MS = is.na(GD) %>% apply(2, function(x) sum(x)/length(x))
-      GD = GD[, MS <= ms]
-      GM = GM[MS <= ms, ]
-    }
-    # MAF
-    MAF.calculate = ifelse(maf == "No threshold", FALSE, TRUE)
-    cat("Done\n")
-  # Covariate
-    if(C.path != "NA"){
-      cat("   Loading covariates ...")
-      C.data = fread(C.path) %>% as.data.frame()
-      if(is.character(C.data[,1])) C.data = C.data[,-1]
-      C.model.name = C.index %>% strsplit(split = "sep") %>% do.call(c, .)
-      index.C = which(C.model.name == "Selected")
-      if(length(index.C) == 1){
-        name = names(C.data)[index.C]
-        C = data.frame(c = C.data[, index.C])
-        names(C) = name
-      }else{
-        C = C.data[, index.C]
+# Input arguments
+  arg = commandArgs(trailingOnly=TRUE)
+  for (i in 1 : length(arg)) {
+    switch (arg[i],
+      "-wd" = {
+        i = i + 1
+        wd = arg[i]
+        setwd(wd)
+      },
+      "-project" = {
+        i = i + 1
+        project = arg[i]
+      },
+      "-pSelect" = {
+        i = i + 1
+        selectP = arg[i]
+      },
+      "-maf" = {
+        i = i + 1
+        maf = as.numeric(arg[i])
+      },
+      "-ms" = {
+        i = i + 1
+        ms = as.numeric(arg[i])
+      },
+      "-format" = {
+        i = i + 1
+        format = arg[i]
+      },
+      "-cSelect" = {
+        i = i + 1
+        selectC = ifelse(grepl("NA", arg[i]),
+          NA, arg[i])
+      },
+      "-phenotype" = {
+        cat("   Loading phenotype ...")
+        i = i + 1
+        phenotype = fread(arg[i])
+        taxa = phenotype[ ,1]
+        nameTraits = names(phenotype)[-1]
+        cat("Done\n")
+      },
+      "-genotype" = {
+        cat("   Loading genotype ...")
+        i = i + 1
+        genotype = fread(arg[i])
+        if (is.character(genotype[[1]]))
+          genotype = genotype[ ,-1]
+        cat("Done\n")
+      },
+      "-map" = {
+        cat("   Loading map ...")
+        i = i + 1
+        if (grepl("/NA", arg[i]))
+          map = NULL
+        else
+          map = fread(arg[i])
+        cat("Done\n")
+      },
+      "-cov" = {
+        cat("   Checking covariates ...")
+        i = i + 1
+        if (grepl("/NA", arg[i]))
+          cov = NULL
+        else
+          cov = fread(arg[i])
+        if (is.character(cov[[1]]))
+          cov = cov[ ,-1]
+        cat("Done\n")
+      },
+      "-kin" = {
+        cat("   Checking kinship ...")
+        i = i + 1
+        if (grepl("/NA", arg[i]))
+          kin = NULL
+        else
+          kin = fread(arg[i])
+        cat("Done\n")
+      },
+      "-arg" = {
+        i = i + 1
+        method.bin = arg[i]
+        i = i + 1
+        maxLoop = as.numeric(arg[i])
       }
-    cat("Done\n")
-    }else{
-      C = NULL
-    }
-  # FarmCPU
-    for (i in 1:length(trait.names)){
-      x = FarmCPU(
-            Y = data.frame(taxa, Y[,i]),
-            GM = GM,
-            GD = data.frame(taxa, GD),
-            CV = C,
-            method.bin = method.bin,
-            bin.size = c(5e5, 5e6, 5e7), # Default set of bin.size 
-            bin.selection = seq(10, 100, 10), # Default set of bin.selection
-            maxLoop = maxLoop,
-            MAF.calculate = MAF.calculate,
-            maf.threshold = maf,
-            memo = sprintf("%s_%s", project, trait.names[i]))
-      write.table(x = data.frame(SNP = x$GWAS$SNP, P.value = x$GWAS$P.value),
-                  file = sprintf("%s_%s_GWAS.txt", project, trait.names[i]),
-                  quote = F, row.names = F, sep = "\t")
-    }
-  print(warnings())
-},error = function(e){
+    )
+  }
+
+# Subset Phenotype
+  cat("   Subsetting phenotype ...")
+  indexP = selectP %>%
+    strsplit(split = "sep") %>%
+    do.call(c, .) %>%
+    (function(x){which(x == "Selected") + 1})
+  phenotype = phenotype[, ..indexP]
+  cat("Done\n")
+
+# QC
+  cat("   Quality control ...")
+  # Missing rate
+    MS = is.na(genotype) %>%
+      apply(2, function(x) sum(x)/length(x))
+    genotype = data.frame(taxa, genotype[, MS <= ms, with = FALSE])
+    map = data.frame(map[MS <= ms])
+  cat("Done\n")
+
+# Subset Covariates
+  cat("   Subsetting covariates ...")
+  if (!is.null(cov)) {
+    indexC = selectC %>%
+      strsplit(split = "sep") %>%
+      do.call(c, .) %>%
+      (function(x){which(x == "Selected")})
+    cov = data.frame(cov[, ..indexC])
+  }
+  cat("Done\n")
+
+# FarmCPU
+  for (trait in nameTraits) {
+    x = FarmCPU(
+          Y = data.frame(taxa, phenotype[, trait, with = FALSE]),
+          GM = map,
+          GD = genotype,
+          CV = cov,
+          method.bin = method.bin,
+          bin.size = c(5e5, 5e6, 5e7), # Default set of bin.size
+          bin.selection = seq(10, 100, 10), # Default set of bin.selection
+          maxLoop = maxLoop,
+          MAF.calculate = TRUE,
+          maf.threshold = maf,
+          memo = sprintf("%s_%s", project, trait))
+    write.table(x = data.frame(SNP = x$GWAS$SNP, P.value = x$GWAS$P.value),
+                file = sprintf("%s_%s_GWAS.txt", project, trait),
+                quote = F, row.names = F, sep = "\t")
+  }
+
+print(warnings())
+}, error = function(e) {
   stop(e)
 })
-
-  # C.index = "SelectedsepExcludedsepSelectedsep"
-  # C.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/covariates.txt"
-
-   # # Sorted by P-value
-   #  SNP_p = data.frame(name = x$GWAS$SNP, p = x$GWAS$P.value)
-   #  SNP_p = SNP_p[order(SNP_p$p),]
-   #  # Select associated SNPs
-   #  sig = SNP_p$p < (.05)/nrow(SNP_p) #length(SNPname)
-   #  GD_sig = GD[,SNP_p$name[sig]] 
-   #  # Build covariates with associated SNPs
-   #  if(is.null(ncol(GD_sig))){ # only 1 QTN detected
-   #    marker = as.character(SNP_p$name[sig]) 
-   #    if(is.null(ncol(C))) CV = data.frame(Y[,1], marker = GD_sig) else CV = cbind(Y[,1], marker = GD_sig, C)
-   #    if(length(C.inher)==0) C.inher = NULL else C.inher = C.inher + 1
-   #  }else if(ncol(GD_sig)==0){  # No QTN detected
-   #    if(is.null(ncol(C))) CV = NULL else CV = cbind(Y[,1], C)
-   #  }else{
-   #    # LD Remove
-   #    LD_remain = Blink.LDRemove(GD_sig, .7, 1:sum(sig), orientation = "col")
-   #    GD_sig = GD_sig[,LD_remain] 
-   #    # Check number
-   #    if(is.null(ncol(C)) && nrow(Y) < ncol(GD_sig)){ # no C provided  
-   #      redundant = ncol(GD_sig) - nrow(Y)
-   #      GD_sig = GD_sig[,1:(ncol(GD_sig) - redundant)]
-   #    }else if(!is.null(ncol(C)) && nrow(Y) < (ncol(GD_sig) + ncol(C))){ # C provided
-   #      redundant = ncol(GD_sig) + ncol(C) - nrow(Y)
-   #      GD_sig = GD_sig[,1:(ncol(GD_sig) - redundant)]
-   #    }
-   #    if(is.null(ncol(C))) CV = cbind(Y[,1],GD_sig) else CV = cbind(Y[,1], GD_sig, C)
-   #    if(length(C.inher)==0) C.inher = NULL else C.inher = C.inher + ncol(GD_sig)
-   #  }
-
-   #  # GAPIT do prediction
-   #  pred <- GAPIT(
-   #    Y = Y[,c(1,1+i)],
-   #    GM = GM,
-   #    GD = GD,       
-   #    PCA.total=3,
-   #    CV = CV,
-   #    CV.Inheritance = C.inher,
-   #    group.from=10000,
-   #    group.to=10000,
-   #    group.by=10,
-   #    SNP.test=FALSE,
-   #    memo= trait_names[i]
-   #  )
-   #  
-
-# project = "Project_1" 
-# wd = "/Users/Poissonfish/Desktop/test/farm"
-# lib = "/Users/Poissonfish/git/iPat/libs/"
-# format = "Numeric" 
-# ms = as.numeric("No threshold") 
-# maf = as.numeric(0.05) 
-# Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.txt" 
-# Y.index = "SelectedsepExcludedsepSelectedsep" 
-# GD.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.dat" 
-# GM.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.map" 
-# C.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/covariates.txt"
-# C.index = "SelectedsepExcludedsepSelectedsep"
-# K.path = "NA"
-# FAM.path = "NA"
-# BIM.path = "NA"
-# method.bin = "static" 
-# maxLoop = as.numeric(10) 

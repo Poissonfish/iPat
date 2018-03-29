@@ -1,6 +1,14 @@
 # Input arguments
   args = commandArgs(trailingOnly=TRUE)
-## Common args
+# Common args
+  for (arg in args) {
+    switch (arg) {
+      case("-wd") {
+
+      }
+      case("-")
+    }
+  }
   project = args[1]
   wd = args[2]
   lib = args[3]
@@ -29,7 +37,7 @@
   if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
   library(bigmemory)
   library(biganalytics)
-  library(compiler) 
+  library(compiler)
   library(data.table)
   library(magrittr)
   library(MASS) # required for ginv
@@ -43,22 +51,22 @@
   source("./Function_FarmCPU.R")
   cat("Done\n")
 
-tryCatch({  
+tryCatch({
   setwd(wd)
    # Subset Phenotype
     cat("   Loading phenotype ...")
     Y.data = fread(Y.path) %>% as.data.frame
     subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .)
-    index.trait = which(subset == "Selected") 
+    index.trait = which(subset == "Selected")
     if(length(index.trait) == 1){
       Y = data.frame(y = Y.data[, index.trait + 1])
-      names(Y) = names(Y.data)[1 + index.trait] 
+      names(Y) = names(Y.data)[1 + index.trait]
     }else{
       Y = Y.data[, index.trait + 1]
     }
   # Assign Variables
     taxa = Y.data[,1]
-    trait.names = names(Y) 
+    trait.names = names(Y)
     cat("Done\n")
     # Genptype
     cat("   Loading genotype ...")
@@ -103,7 +111,7 @@ tryCatch({
             GD = data.frame(taxa, GD),
             CV = C,
             method.bin = method.bin,
-            bin.size = c(5e5, 5e6, 5e7), # Default set of bin.size 
+            bin.size = c(5e5, 5e6, 5e7), # Default set of bin.size
             bin.selection = seq(10, 100, 10), # Default set of bin.selection
             maxLoop = maxLoop,
             MAF.calculate = MAF.calculate,
@@ -126,10 +134,10 @@ tryCatch({
    #  SNP_p = SNP_p[order(SNP_p$p),]
    #  # Select associated SNPs
    #  sig = SNP_p$p < (.05)/nrow(SNP_p) #length(SNPname)
-   #  GD_sig = GD[,SNP_p$name[sig]] 
+   #  GD_sig = GD[,SNP_p$name[sig]]
    #  # Build covariates with associated SNPs
    #  if(is.null(ncol(GD_sig))){ # only 1 QTN detected
-   #    marker = as.character(SNP_p$name[sig]) 
+   #    marker = as.character(SNP_p$name[sig])
    #    if(is.null(ncol(C))) CV = data.frame(Y[,1], marker = GD_sig) else CV = cbind(Y[,1], marker = GD_sig, C)
    #    if(length(C.inher)==0) C.inher = NULL else C.inher = C.inher + 1
    #  }else if(ncol(GD_sig)==0){  # No QTN detected
@@ -137,9 +145,9 @@ tryCatch({
    #  }else{
    #    # LD Remove
    #    LD_remain = Blink.LDRemove(GD_sig, .7, 1:sum(sig), orientation = "col")
-   #    GD_sig = GD_sig[,LD_remain] 
+   #    GD_sig = GD_sig[,LD_remain]
    #    # Check number
-   #    if(is.null(ncol(C)) && nrow(Y) < ncol(GD_sig)){ # no C provided  
+   #    if(is.null(ncol(C)) && nrow(Y) < ncol(GD_sig)){ # no C provided
    #      redundant = ncol(GD_sig) - nrow(Y)
    #      GD_sig = GD_sig[,1:(ncol(GD_sig) - redundant)]
    #    }else if(!is.null(ncol(C)) && nrow(Y) < (ncol(GD_sig) + ncol(C))){ # C provided
@@ -154,7 +162,7 @@ tryCatch({
    #  pred <- GAPIT(
    #    Y = Y[,c(1,1+i)],
    #    GM = GM,
-   #    GD = GD,       
+   #    GD = GD,
    #    PCA.total=3,
    #    CV = CV,
    #    CV.Inheritance = C.inher,
@@ -164,22 +172,22 @@ tryCatch({
    #    SNP.test=FALSE,
    #    memo= trait_names[i]
    #  )
-   #  
+   #
 
-# project = "Project_1" 
+# project = "Project_1"
 # wd = "/Users/Poissonfish/Desktop/test/farm"
 # lib = "/Users/Poissonfish/git/iPat/libs/"
-# format = "Numeric" 
-# ms = as.numeric("No threshold") 
-# maf = as.numeric(0.05) 
-# Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.txt" 
-# Y.index = "SelectedsepExcludedsepSelectedsep" 
-# GD.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.dat" 
-# GM.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.map" 
+# format = "Numeric"
+# ms = as.numeric("No threshold")
+# maf = as.numeric(0.05)
+# Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.txt"
+# Y.index = "SelectedsepExcludedsepSelectedsep"
+# GD.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.dat"
+# GM.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/Numeric/data.map"
 # C.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/covariates.txt"
 # C.index = "SelectedsepExcludedsepSelectedsep"
 # K.path = "NA"
 # FAM.path = "NA"
 # BIM.path = "NA"
-# method.bin = "static" 
-# maxLoop = as.numeric(10) 
+# method.bin = "static"
+# maxLoop = as.numeric(10)

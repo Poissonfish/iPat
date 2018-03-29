@@ -1,7 +1,6 @@
 import java.io.*;
 
 public class iFile extends File {
-    FileType type;
     boolean isEmpty;
 
     public iFile(String name) {
@@ -11,26 +10,36 @@ public class iFile extends File {
 
     public iFile() {
         super("NA");
+
         isEmpty = true;
+        System.out.println("the file path is : " + this.getAbsolutePath());
+    }
+
+    void setFile(iFile file) {
+        this.renameTo(file);
+        isEmpty = false;
     }
 
     boolean isEmpty() {
-        return this.isEmpty;
+        return this.getName().contains("NA");
     }
 
-    String[] getLines(int size) throws IOException {
+    // Read n line from the file
+    String[] getLines(int n) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(this.getAbsolutePath()));
-        String[] lines = new String[size];
+        String[] lines = new String[n];
         String readline;
         int nLine = 0;
-        while((readline = reader.readLine()) != null && nLine < size)  {
+        while((readline = reader.readLine()) != null && nLine < n)  {
             //VCF comment escape
             if(!readline.startsWith("##"))
                 lines[nLine++] = readline;
         }
+        reader.close();
         return lines;
     }
 
+    // Get number of lines in the file
     int getLineCount() throws IOException {
         InputStream reader = new BufferedInputStream(new FileInputStream(this.getAbsolutePath()));
         try{
@@ -45,9 +54,11 @@ public class iFile extends File {
                 }}
             return (count == 0 && !empty) ? 1 : count;
         }finally{
-            reader.close();}
+            reader.close();
+        }
     }
 
+    // Get separated string from the input [tab, space or comma]
     String[] getSepStr(String string) {
         String[] sepStr = string.replaceAll("\"", "").split("\t");
         if (sepStr.length == 1)
@@ -55,7 +66,7 @@ public class iFile extends File {
         else
             return sepStr;
         if (sepStr.length == 1)
-            sepStr = string.replaceAll("\"", "").split(" +");
+            sepStr = string.replaceAll("\"", "").split(",");
         else
             return sepStr;
         if (sepStr.length == 1)

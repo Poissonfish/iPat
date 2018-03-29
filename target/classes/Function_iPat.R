@@ -17,7 +17,7 @@
     if(bound){
       GDneo=GDneo[,sample(n,200,replace=F)]
     }
-    GDneo=t(GDneo)	
+    GDneo=t(GDneo)
   }
   for(i in 1:k){
     bottom=(i-1)*l+1
@@ -39,7 +39,7 @@
   if (model=="D"){
     GDneo=1-abs(GDneo-1)
   }
-  
+
   GDneo=as.matrix(GDneo)
   if(min(ncol(GDneo),nrow(GDneo))<201) bound=FALSE
   if(orientation=="col"){
@@ -52,10 +52,10 @@
     if(bound){
       GDneo=GDneo[,sample(n,200,replace=F)]
     }
-    GDneo=t(GDneo)	
+    GDneo=t(GDneo)
   }
-  
-  corr=cor(GDneo)	
+
+  corr=cor(GDneo)
   corr[is.na(corr)]=1
   corr[abs(corr)<=LD]=0
   corr[abs(corr)>LD]=1
@@ -68,7 +68,7 @@
     if(sum(index)!=0) Psort[i]=0
   }
   seqQTN=Porder[Psort==1]
-  return(seqQTN)	
+  return(seqQTN)
 }
 `Blink.LDRemove`<-function(GDneo=NULL,LD=NULL,Porder=NULL,bound=FALSE,model="A",orientation=NULL){
   #`Blink.LDRemovebackup`<-function(GDneo=NULL,LD=NULL,Porder=NULL,bound=FALSE,model="A",orientation=NULL){
@@ -92,25 +92,25 @@
     ls=length(Pordern)
     if(ls==lp) lp=l*tt
     if(ls<=lp){
-      is.done=TRUE	
+      is.done=TRUE
     }
     Porder = Pordern
-  }	
+  }
   if(length(Porder) > 1){
-    seqQTN=Blink.LDRemoveBlock(GDneo=GDneo,LD=LD,Porder=Porder,orientation=orientation,model=model)	
+    seqQTN=Blink.LDRemoveBlock(GDneo=GDneo,LD=LD,Porder=Porder,orientation=orientation,model=model)
   }else{
     seqQTN = Porder
   }
-  return(seqQTN)	
+  return(seqQTN)
 }
 emma.kinship <- function(snps, method="additive", use="all") {
   n0 <- sum(snps==0,na.rm=TRUE)
-  nh <- sum(snps==0.5,na.rm=TRUE)                                                                                         
+  nh <- sum(snps==0.5,na.rm=TRUE)
   n1 <- sum(snps==1,na.rm=TRUE)
   nNA <- sum(is.na(snps))
-  
+
   stopifnot(n0+nh+n1+nNA == length(snps))
-  
+
   if ( method == "dominant" ) {
     flags <- matrix(as.double(rowMeans(snps,na.rm=TRUE) > 0.5),nrow(snps),ncol(snps))
     snps[!is.na(snps) && (snps == 0.5)] <- flags[!is.na(snps) && (snps == 0.5)]
@@ -128,7 +128,7 @@ emma.kinship <- function(snps, method="additive", use="all") {
     rsnps[!is.na(snps) && (snps==0.5)] <- flags[is.na(snps) && (snps==0.5)]
     snps <- rbind(dsnps,rsnps)
   }
-  
+
   if ( use == "all" ) {
     mafs <- matrix(rowMeans(snps,na.rm=TRUE),nrow(snps),ncol(snps))
     snps[is.na(snps)] <- mafs[is.na(snps)]
@@ -136,11 +136,11 @@ emma.kinship <- function(snps, method="additive", use="all") {
   else if ( use == "complete.obs" ) {
     snps <- snps[rowSums(is.na(snps))==0,]
   }
-  
+
   n <- ncol(snps)
   K <- matrix(nrow=n,ncol=n)
   diag(K) <- 1
-  
+
   for(i in 1:(n-1)) {
     for(j in (i+1):n) {
       x <- snps[,i]*snps[,j] + (1-snps[,i])*(1-snps[,j])
@@ -202,25 +202,25 @@ emma.eigen.R.w.Z <- function(Z, K, X, complete = TRUE) {
   n <- nrow(Z)
   t <- ncol(Z)
   q <- ncol(X)
-  
-  
-  
+
+
+
   SZ <- Z - X%*%solve(crossprod(X,X))%*%crossprod(X,Z)
   eig <- eigen(K%*%crossprod(Z,SZ),symmetric=FALSE,EISPACK=TRUE)
   if ( is.complex(eig$values) ) {
     eig$values <- Re(eig$values)
-    eig$vectors <- Re(eig$vectors)    
+    eig$vectors <- Re(eig$vectors)
   }
   qr.X <- qr.Q(qr(X))
   return(list(values=eig$values[1:(t-q)],
               vectors=qr.Q(qr(cbind(SZ%*%eig$vectors[,1:(t-q)],qr.X)),
-                           complete=TRUE)[,c(1:(t-q),(t+1):n)]))   
+                           complete=TRUE)[,c(1:(t-q),(t+1):n)]))
 }
 
 emma.delta.ML.LL.wo.Z <- function(logdelta, lambda, etas, xi) {
   n <- length(xi)
   delta <- exp(logdelta)
-  return( 0.5*(n*(log(n/(2*pi))-1-log(sum((etas*etas)/(lambda+delta))))-sum(log(xi+delta))) )  
+  return( 0.5*(n*(log(n/(2*pi))-1-log(sum((etas*etas)/(lambda+delta))))-sum(log(xi+delta))) )
 }
 
 emma.delta.ML.LL.w.Z <- function(logdelta, lambda, etas.1, xi.1, n, etas.2.sq ) {
@@ -257,7 +257,7 @@ emma.delta.REML.LL.w.Z <- function(logdelta, lambda, etas.1, n, t, etas.2.sq ) {
   tq <- length(etas.1)
   nq <- n - t + tq
   delta <-  exp(logdelta)
-  return( 0.5*(nq*(log(nq/(2*pi))-1-log(sum(etas.1*etas.1/(lambda+delta))+etas.2.sq/delta))-(sum(log(lambda+delta))+(n-t)*logdelta)) ) 
+  return( 0.5*(nq*(log(nq/(2*pi))-1-log(sum(etas.1*etas.1/(lambda+delta))+etas.2.sq/delta))-(sum(log(lambda+delta))+(n-t)*logdelta)) )
 }
 
 emma.delta.REML.dLL.wo.Z <- function(logdelta, lambda, etas) {
@@ -284,16 +284,16 @@ emma.MLE <- function(y, X, K, Z=NULL, ngrids=100, llim=-10, ulim=10,
   n <- length(y)
   t <- nrow(K)
   q <- ncol(X)
-  
+
   #  stopifnot(nrow(K) == t)
   stopifnot(ncol(K) == t)
   stopifnot(nrow(X) == n)
-  
+
   if ( det(crossprod(X,X)) == 0 ) {
     warning("X is singular")
     return (list(ML=0,delta=0,ve=0,vg=0))
   }
-  
+
   if ( is.null(Z) ) {
     if ( is.null(eig.L) ) {
       eig.L <- emma.eigen.L.wo.Z(K)
@@ -302,8 +302,8 @@ emma.MLE <- function(y, X, K, Z=NULL, ngrids=100, llim=-10, ulim=10,
       eig.R <- emma.eigen.R.wo.Z(K,X)
     }
     etas <- crossprod(eig.R$vectors,y)
-    
-    
+
+
     logdelta <- (0:ngrids)/ngrids*(ulim-llim)+llim
     m <- length(logdelta)
     delta <- exp(logdelta)
@@ -312,7 +312,7 @@ emma.MLE <- function(y, X, K, Z=NULL, ngrids=100, llim=-10, ulim=10,
     Etasq <- matrix(etas*etas,n-q,m)
     LL <- 0.5*(n*(log(n/(2*pi))-1-log(colSums(Etasq/Lambdas)))-colSums(log(Xis)))
     dLL <- 0.5*delta*(n*colSums(Etasq/(Lambdas*Lambdas))/colSums(Etasq/Lambdas)-colSums(1/Xis))
-    
+
     optlogdelta <- vector(length=0)
     optLL <- vector(length=0)
     if ( dLL[1] < esp ) {
@@ -323,10 +323,10 @@ emma.MLE <- function(y, X, K, Z=NULL, ngrids=100, llim=-10, ulim=10,
       optlogdelta <- append(optlogdelta, ulim)
       optLL <- append(optLL, emma.delta.ML.LL.wo.Z(ulim,eig.R$values,etas,eig.L$values))
     }
-    
+
     for( i in 1:(m-1) )
     {
-      if ( ( dLL[i]*dLL[i+1] < 0 ) && ( dLL[i] > 0 ) && ( dLL[i+1] < 0 ) ) 
+      if ( ( dLL[i]*dLL[i+1] < 0 ) && ( dLL[i] > 0 ) && ( dLL[i+1] < 0 ) )
       {
         r <- uniroot(emma.delta.ML.dLL.wo.Z, lower=logdelta[i], upper=logdelta[i+1], lambda=eig.R$values, etas=etas, xi=eig.L$values)
         optlogdelta <- append(optlogdelta, r$root)
@@ -346,9 +346,9 @@ emma.MLE <- function(y, X, K, Z=NULL, ngrids=100, llim=-10, ulim=10,
     etas.1 <- etas[1:(t-q)]
     etas.2 <- etas[(t-q+1):(n-q)]
     etas.2.sq <- sum(etas.2*etas.2)
-    
+
     logdelta <- (0:ngrids)/ngrids*(ulim-llim)+llim
-    
+
     m <- length(logdelta)
     delta <- exp(logdelta)
     Lambdas <- matrix(eig.R$values,t-q,m) + matrix(delta,t-q,m,byrow=TRUE)
@@ -356,7 +356,7 @@ emma.MLE <- function(y, X, K, Z=NULL, ngrids=100, llim=-10, ulim=10,
     Etasq <- matrix(etas.1*etas.1,t-q,m)
     #LL <- 0.5*(n*(log(n/(2*pi))-1-log(colSums(Etasq/Lambdas)+etas.2.sq/delta))-colSums(log(Xis))+(n-t)*log(deltas))
     dLL <- 0.5*delta*(n*(colSums(Etasq/(Lambdas*Lambdas))+etas.2.sq/(delta*delta))/(colSums(Etasq/Lambdas)+etas.2.sq/delta)-(colSums(1/Xis)+(n-t)/delta))
-    
+
     optlogdelta <- vector(length=0)
     optLL <- vector(length=0)
     if ( dLL[1] < esp ) {
@@ -367,10 +367,10 @@ emma.MLE <- function(y, X, K, Z=NULL, ngrids=100, llim=-10, ulim=10,
       optlogdelta <- append(optlogdelta, ulim)
       optLL <- append(optLL, emma.delta.ML.LL.w.Z(ulim,eig.R$values,etas.1,eig.L$values,n,etas.2.sq))
     }
-    
+
     for( i in 1:(m-1) )
     {
-      if ( ( dLL[i]*dLL[i+1] < 0 ) && ( dLL[i] > 0 ) && ( dLL[i+1] < 0 ) ) 
+      if ( ( dLL[i]*dLL[i+1] < 0 ) && ( dLL[i] > 0 ) && ( dLL[i+1] < 0 ) )
       {
         r <- uniroot(emma.delta.ML.dLL.w.Z, lower=logdelta[i], upper=logdelta[i+1], lambda=eig.R$values, etas.1=etas.1, xi.1=eig.L$values, n=n, etas.2.sq = etas.2.sq )
         optlogdelta <- append(optlogdelta, r$root)
@@ -379,17 +379,17 @@ emma.MLE <- function(y, X, K, Z=NULL, ngrids=100, llim=-10, ulim=10,
     }
     #    optdelta <- exp(optlogdelta)
   }
-  
+
   maxdelta <- exp(optlogdelta[which.max(optLL)])
   maxLL <- max(optLL)
   if ( is.null(Z) ) {
-    maxva <- sum(etas*etas/(eig.R$values+maxdelta))/n    
+    maxva <- sum(etas*etas/(eig.R$values+maxdelta))/n
   }
   else {
     maxva <- (sum(etas.1*etas.1/(eig.R$values+maxdelta))+etas.2.sq/maxdelta)/n
   }
   maxve <- maxva*maxdelta
-  
+
   return (list(ML=maxLL,delta=maxdelta,ve=maxve,vg=maxva))
 }
 
@@ -398,22 +398,22 @@ emma.REMLE <- function(y, X, K, Z=NULL, ngrids=100, llim=-10, ulim=10,
   n <- length(y)
   t <- nrow(K)
   q <- ncol(X)
-  
+
   #  stopifnot(nrow(K) == t)
   stopifnot(ncol(K) == t)
   stopifnot(nrow(X) == n)
-  
+
   if ( det(crossprod(X,X)) == 0 ) {
     warning("X is singular")
     return (list(REML=0,delta=0,ve=0,vg=0))
   }
-  
+
   if ( is.null(Z) ) {
     if ( is.null(eig.R) ) {
       eig.R <- emma.eigen.R.wo.Z(K,X)
     }
     etas <- crossprod(eig.R$vectors,y)
-    
+
     logdelta <- (0:ngrids)/ngrids*(ulim-llim)+llim
     m <- length(logdelta)
     delta <- exp(logdelta)
@@ -421,7 +421,7 @@ emma.REMLE <- function(y, X, K, Z=NULL, ngrids=100, llim=-10, ulim=10,
     Etasq <- matrix(etas*etas,n-q,m)
     LL <- 0.5*((n-q)*(log((n-q)/(2*pi))-1-log(colSums(Etasq/Lambdas)))-colSums(log(Lambdas)))
     dLL <- 0.5*delta*((n-q)*colSums(Etasq/(Lambdas*Lambdas))/colSums(Etasq/Lambdas)-colSums(1/Lambdas))
-    
+
     optlogdelta <- vector(length=0)
     optLL <- vector(length=0)
     if ( dLL[1] < esp ) {
@@ -432,10 +432,10 @@ emma.REMLE <- function(y, X, K, Z=NULL, ngrids=100, llim=-10, ulim=10,
       optlogdelta <- append(optlogdelta, ulim)
       optLL <- append(optLL, emma.delta.REML.LL.wo.Z(ulim,eig.R$values,etas))
     }
-    
+
     for( i in 1:(m-1) )
     {
-      if ( ( dLL[i]*dLL[i+1] < 0 ) && ( dLL[i] > 0 ) && ( dLL[i+1] < 0 ) ) 
+      if ( ( dLL[i]*dLL[i+1] < 0 ) && ( dLL[i] > 0 ) && ( dLL[i+1] < 0 ) )
       {
         r <- uniroot(emma.delta.REML.dLL.wo.Z, lower=logdelta[i], upper=logdelta[i+1], lambda=eig.R$values, etas=etas)
         optlogdelta <- append(optlogdelta, r$root)
@@ -452,14 +452,14 @@ emma.REMLE <- function(y, X, K, Z=NULL, ngrids=100, llim=-10, ulim=10,
     etas.1 <- etas[1:(t-q)]
     etas.2 <- etas[(t-q+1):(n-q)]
     etas.2.sq <- sum(etas.2*etas.2)
-    
+
     logdelta <- (0:ngrids)/ngrids*(ulim-llim)+llim
     m <- length(logdelta)
     delta <- exp(logdelta)
     Lambdas <- matrix(eig.R$values,t-q,m) + matrix(delta,t-q,m,byrow=TRUE)
     Etasq <- matrix(etas.1*etas.1,t-q,m)
     dLL <- 0.5*delta*((n-q)*(colSums(Etasq/(Lambdas*Lambdas))+etas.2.sq/(delta*delta))/(colSums(Etasq/Lambdas)+etas.2.sq/delta)-(colSums(1/Lambdas)+(n-t)/delta))
-    
+
     optlogdelta <- vector(length=0)
     optLL <- vector(length=0)
     if ( dLL[1] < esp ) {
@@ -470,10 +470,10 @@ emma.REMLE <- function(y, X, K, Z=NULL, ngrids=100, llim=-10, ulim=10,
       optlogdelta <- append(optlogdelta, ulim)
       optLL <- append(optLL, emma.delta.REML.LL.w.Z(ulim,eig.R$values,etas.1,n,t,etas.2.sq))
     }
-    
+
     for( i in 1:(m-1) )
     {
-      if ( ( dLL[i]*dLL[i+1] < 0 ) && ( dLL[i] > 0 ) && ( dLL[i+1] < 0 ) ) 
+      if ( ( dLL[i]*dLL[i+1] < 0 ) && ( dLL[i] > 0 ) && ( dLL[i+1] < 0 ) )
       {
         r <- uniroot(emma.delta.REML.dLL.w.Z, lower=logdelta[i], upper=logdelta[i+1], lambda=eig.R$values, etas.1=etas.1, n=n, t1=t, etas.2.sq = etas.2.sq )
         optlogdelta <- append(optlogdelta, r$root)
@@ -481,18 +481,18 @@ emma.REMLE <- function(y, X, K, Z=NULL, ngrids=100, llim=-10, ulim=10,
       }
     }
     #    optdelta <- exp(optlogdelta)
-  }  
-  
+  }
+
   maxdelta <- exp(optlogdelta[which.max(optLL)])
   maxLL <- max(optLL)
   if ( is.null(Z) ) {
-    maxva <- sum(etas*etas/(eig.R$values+maxdelta))/(n-q)    
+    maxva <- sum(etas*etas/(eig.R$values+maxdelta))/(n-q)
   }
   else {
     maxva <- (sum(etas.1*etas.1/(eig.R$values+maxdelta))+etas.2.sq/maxdelta)/(n-q)
   }
   maxve <- maxva*maxdelta
-  
+
   return (list(REML=maxLL,delta=maxdelta,ve=maxve,vg=maxva))
 }
 
@@ -505,15 +505,15 @@ emma.ML.LRT <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
   }
   if ( is.null(X0) ) {
     X0 <- matrix(1,ncol(ys),1)
-  }  
-  
+  }
+
   g <- nrow(ys)
   n <- ncol(ys)
   m <- nrow(xs)
   t <- ncol(xs)
   q0 <- ncol(X0)
   q1 <- q0 + 1
-  
+
   if ( !ponly ) {
     ML1s <- matrix(nrow=m,ncol=g)
     ML0s <- matrix(nrow=m,ncol=g)
@@ -523,26 +523,26 @@ emma.ML.LRT <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
   stats <- matrix(nrow=m,ncol=g)
   ps <- matrix(nrow=m,ncol=g)
   ML0 <- vector(length=g)
-  
+
   stopifnot(nrow(K) == t)
   stopifnot(ncol(K) == t)
   stopifnot(nrow(X0) == n)
-  
+
   if ( sum(is.na(ys)) == 0 ) {
     eig.L <- emma.eigen.L(Z,K)
     eig.R0 <- emma.eigen.R(Z,K,X0)
-    
+
     for(i in 1:g) {
       ML0[i] <- emma.MLE(ys[i,],X0,K,Z,ngrids,llim,ulim,esp,eig.L,eig.R0)$ML
     }
-    
+
     x.prev <- vector(length=0)
-    
+
     for(i in 1:m) {
       vids <- !is.na(xs[i,])
       nv <- sum(vids)
       xv <- xs[i,vids]
-      
+
       if ( ( mean(xv) <= 0 ) || ( mean(xv) >= 1 ) ) {
         if (!ponly) {
           stats[i,] <- rep(NA,g)
@@ -572,20 +572,20 @@ emma.ML.LRT <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
           vrows <- as.logical(rowSums(Z[,vids]))
           nr <- sum(vrows)
           X <- cbind(X0[vrows,,drop=FALSE],Z[vrows,vids]%*%t(xs[i,vids,drop=FALSE]))
-          eig.R1 = emma.eigen.R.w.Z(Z[vrows,vids],K[vids,vids],X)          
+          eig.R1 = emma.eigen.R.w.Z(Z[vrows,vids],K[vids,vids],X)
         }
-        
+
         for(j in 1:g) {
           if ( nv == t ) {
             MLE <- emma.MLE(ys[j,],X,K,Z,ngrids,llim,ulim,esp,eig.L,eig.R1)
-            #            MLE <- emma.MLE(ys[j,],X,K,Z,ngrids,llim,ulim,esp,eig.L,eig.R1)            
-            if (!ponly) { 
+            #            MLE <- emma.MLE(ys[j,],X,K,Z,ngrids,llim,ulim,esp,eig.L,eig.R1)
+            if (!ponly) {
               ML1s[i,j] <- MLE$ML
               vgs[i,j] <- MLE$vg
               ves[i,j] <- MLE$ve
             }
             stats[i,j] <- 2*(MLE$ML-ML0[j])
-            
+
           }
           else {
             if ( is.null(Z) ) {
@@ -598,12 +598,12 @@ emma.ML.LRT <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
                 MLE1 <- emma.MLE(ys[j,],X,K,Z,ngrids,llim,ulim,esp,eig.L)
               }
               else {
-                eig.L0 <- emma.eigen.L.w.Z(Z[vrows,vids],K[vids,vids])              
+                eig.L0 <- emma.eigen.L.w.Z(Z[vrows,vids],K[vids,vids])
                 MLE0 <- emma.MLE(ys[j,vrows],X0[vrows,,drop=FALSE],K[vids,vids],Z[vrows,vids],ngrids,llim,ulim,esp,eig.L0)
                 MLE1 <- emma.MLE(ys[j,vrows],X,K[vids,vids],Z[vrows,vids],ngrids,llim,ulim,esp,eig.L0)
               }
             }
-            if (!ponly) { 
+            if (!ponly) {
               ML1s[i,j] <- MLE1$ML
               ML0s[i,j] <- MLE0$ML
               vgs[i,j] <- MLE1$vg
@@ -622,26 +622,26 @@ emma.ML.LRT <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
   else {
     eig.L <- emma.eigen.L(Z,K)
     eig.R0 <- emma.eigen.R(Z,K,X0)
-    
+
     for(i in 1:g) {
-      vrows <- !is.na(ys[i,])      
+      vrows <- !is.na(ys[i,])
       if ( is.null(Z) ) {
         ML0[i] <- emma.MLE(ys[i,vrows],X0[vrows,,drop=FALSE],K[vrows,vrows],NULL,ngrids,llim,ulim,esp)$ML
       }
       else {
         vids <- colSums(Z[vrows,]>0)
-        
-        ML0[i] <- emma.MLE(ys[i,vrows],X0[vrows,,drop=FALSE],K[vids,vids],Z[vrows,vids],ngrids,llim,ulim,esp)$ML        
+
+        ML0[i] <- emma.MLE(ys[i,vrows],X0[vrows,,drop=FALSE],K[vids,vids],Z[vrows,vids],ngrids,llim,ulim,esp)$ML
       }
     }
-    
+
     x.prev <- vector(length=0)
-    
+
     for(i in 1:m) {
       vids <- !is.na(xs[i,])
       nv <- sum(vids)
       xv <- xs[i,vids]
-      
+
       if ( ( mean(xv) <= 0 ) || ( mean(xv) >= 1 ) ) {
         if (!ponly) {
           stats[i,] <- rep(NA,g)
@@ -651,7 +651,7 @@ emma.ML.LRT <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
           ML0s[,i] <- rep(NA,g)
         }
         ps[i,] = rep(1,g)
-      }      
+      }
       else if ( identical(x.prev, xv) ) {
         if ( !ponly ) {
           stats[i,] <- stats[i-1,]
@@ -666,7 +666,7 @@ emma.ML.LRT <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
           X <- cbind(X0,xs[i,])
           if ( nv == t ) {
             eig.R1 = emma.eigen.R.wo.Z(K,X)
-          }          
+          }
         }
         else {
           vrows <- as.logical(rowSums(Z[,vids]))
@@ -675,7 +675,7 @@ emma.ML.LRT <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
             eig.R1 = emma.eigen.R.w.Z(Z,K,X)
           }
         }
-        
+
         for(j in 1:g) {
           #          print(j)
           vrows <- !is.na(ys[j,])
@@ -683,7 +683,7 @@ emma.ML.LRT <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
             nr <- sum(vrows)
             if ( is.null(Z) ) {
               if ( nr == n ) {
-                MLE <- emma.MLE(ys[j,],X,K,NULL,ngrids,llim,ulim,esp,eig.L,eig.R1)                
+                MLE <- emma.MLE(ys[j,],X,K,NULL,ngrids,llim,ulim,esp,eig.L,eig.R1)
               }
               else {
                 MLE <- emma.MLE(ys[j,vrows],X[vrows,],K[vrows,vrows],NULL,ngrids,llim,ulim,esp)
@@ -691,15 +691,15 @@ emma.ML.LRT <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
             }
             else {
               if ( nr == n ) {
-                MLE <- emma.MLE(ys[j,],X,K,Z,ngrids,llim,ulim,esp,eig.L,eig.R1)                
+                MLE <- emma.MLE(ys[j,],X,K,Z,ngrids,llim,ulim,esp,eig.L,eig.R1)
               }
               else {
                 vtids <- as.logical(colSums(Z[vrows,,drop=FALSE]))
                 MLE <- emma.MLE(ys[j,vrows],X[vrows,],K[vtids,vtids],Z[vrows,vtids],ngrids,llim,ulim,esp)
               }
             }
-            
-            if (!ponly) { 
+
+            if (!ponly) {
               ML1s[i,j] <- MLE$ML
               vgs[i,j] <- MLE$vg
               ves[i,j] <- MLE$ve
@@ -720,7 +720,7 @@ emma.ML.LRT <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
               MLE0 <- emma.MLE(ys[j,vtrows],X0[vtrows,,drop=FALSE],K[vtids,vtids],Z[vtrows,vtids],ngrids,llim,ulim,esp,eig.L0)
               MLE1 <- emma.MLE(ys[j,vtrows],X[vtrows,],K[vtids,vtids],Z[vtrows,vtids],ngrids,llim,ulim,esp,eig.L0)
             }
-            if (!ponly) { 
+            if (!ponly) {
               ML1s[i,j] <- MLE1$ML
               vgs[i,j] <- MLE1$vg
               ves[i,j] <- MLE1$ve
@@ -734,14 +734,14 @@ emma.ML.LRT <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
         }
         ps[i,] <- pchisq(stats[i,],1,lower.tail=FALSE)
       }
-    }    
+    }
   }
   if ( ponly ) {
     return (ps)
   }
   else {
     return (list(ps=ps,ML1s=ML1s,ML0s=ML0s,stats=stats,vgs=vgs,ves=ves))
-  }  
+  }
 }
 
 emma.REML.t <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim=10, esp=1e-10, ponly = FALSE) {
@@ -754,18 +754,18 @@ emma.REML.t <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
   if ( is.null(X0) ) {
     X0 <- matrix(1,ncol(ys),1)
   }
-  
+
   g <- nrow(ys)
   n <- ncol(ys)
   m <- nrow(xs)
   t <- ncol(xs)
   q0 <- ncol(X0)
   q1 <- q0 + 1
-  
+
   stopifnot(nrow(K) == t)
   stopifnot(ncol(K) == t)
   stopifnot(nrow(X0) == n)
-  
+
   if ( !ponly ) {
     REMLs <- matrix(nrow=m,ncol=g)
     vgs <- matrix(nrow=m,ncol=g)
@@ -774,17 +774,17 @@ emma.REML.t <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
   dfs <- matrix(nrow=m,ncol=g)
   stats <- matrix(nrow=m,ncol=g)
   ps <- matrix(nrow=m,ncol=g)
-  
+
   if ( sum(is.na(ys)) == 0 ) {
     eig.L <- emma.eigen.L(Z,K)
-    
+
     x.prev <- vector(length=0)
-    
+
     for(i in 1:m) {
       vids <- !is.na(xs[i,])
       nv <- sum(vids)
       xv <- xs[i,vids]
-      
+
       if ( ( mean(xv) <= 0 ) || ( mean(xv) >= 1 ) ) {
         if ( !ponly ) {
           vgs[i,] <- rep(NA,g)
@@ -794,7 +794,7 @@ emma.REML.t <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
           stats[i,] <- rep(NA,g)
         }
         ps[i,] = rep(1,g)
-        
+
       }
       else if ( identical(x.prev, xv) ) {
         if ( !ponly ) {
@@ -812,11 +812,11 @@ emma.REML.t <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
           eig.R1 = emma.eigen.R.wo.Z(K[vids,vids],X)
         }
         else {
-          vrows <- as.logical(rowSums(Z[,vids]))              
+          vrows <- as.logical(rowSums(Z[,vids]))
           X <- cbind(X0[vrows,,drop=FALSE],Z[vrows,vids,drop=FALSE]%*%t(xs[i,vids,drop=FALSE]))
           eig.R1 = emma.eigen.R.w.Z(Z[vrows,vids],K[vids,vids],X)
         }
-        
+
         for(j in 1:g) {
           if ( nv == t ) {
             REMLE <- emma.REMLE(ys[j,],X,K,Z,ngrids,llim,ulim,esp,eig.R1)
@@ -832,7 +832,7 @@ emma.REML.t <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
             Xt <- crossprod(U,X)
             iXX <- solve(crossprod(Xt,Xt))
             beta <- iXX%*%crossprod(Xt,yt)
-            
+
             if ( !ponly ) {
               vgs[i,j] <- REMLE$vg
               ves[i,j] <- REMLE$ve
@@ -850,7 +850,7 @@ emma.REML.t <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
               dfs[i,j] <- nr - q1
             }
             else {
-              eig.L0 <- emma.eigen.L.w.Z(Z[vrows,vids,drop=FALSE],K[vids,vids])              
+              eig.L0 <- emma.eigen.L.w.Z(Z[vrows,vids,drop=FALSE],K[vids,vids])
               yv <- ys[j,vrows]
               nr <- sum(vrows)
               tv <- sum(vids)
@@ -877,14 +877,14 @@ emma.REML.t <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
   else {
     eig.L <- emma.eigen.L(Z,K)
     eig.R0 <- emma.eigen.R(Z,K,X0)
-    
+
     x.prev <- vector(length=0)
-    
+
     for(i in 1:m) {
       vids <- !is.na(xs[i,])
       nv <- sum(vids)
       xv <- xs[i,vids]
-      
+
       if ( ( mean(xv) <= 0 ) || ( mean(xv) >= 1 ) ) {
         if (!ponly) {
           vgs[i,] <- rep(NA,g)
@@ -893,7 +893,7 @@ emma.REML.t <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
           dfs[i,] <- rep(NA,g)
         }
         ps[i,] = rep(1,g)
-      }      
+      }
       else if ( identical(x.prev, xv) ) {
         if ( !ponly ) {
           stats[i,] <- stats[i-1,]
@@ -916,9 +916,9 @@ emma.REML.t <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
           X <- cbind(X0,Z[,vids,drop=FALSE]%*%t(xs[i,vids,drop=FALSE]))
           if ( nv == t ) {
             eig.R1 = emma.eigen.R.w.Z(Z,K,X)
-          }          
+          }
         }
-        
+
         for(j in 1:g) {
           vrows <- !is.na(ys[j,])
           if ( nv == t ) {
@@ -927,7 +927,7 @@ emma.REML.t <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
             if ( is.null(Z) ) {
               if ( nr == n ) {
                 REMLE <- emma.REMLE(yv,X,K,NULL,ngrids,llim,ulim,esp,eig.R1)
-                U <- eig.L$vectors * matrix(sqrt(1/(eig.L$values+REMLE$delta)),n,n,byrow=TRUE)                
+                U <- eig.L$vectors * matrix(sqrt(1/(eig.L$values+REMLE$delta)),n,n,byrow=TRUE)
               }
               else {
                 eig.L0 <- emma.eigen.L.wo.Z(K[vrows,vrows,drop=FALSE])
@@ -939,7 +939,7 @@ emma.REML.t <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
             else {
               if ( nr == n ) {
                 REMLE <- emma.REMLE(yv,X,K,Z,ngrids,llim,ulim,esp,eig.R1)
-                U <- eig.L$vectors * matrix(c(sqrt(1/(eig.L$values+REMLE$delta)),rep(sqrt(1/REMLE$delta),n-t)),n,n,byrow=TRUE)                
+                U <- eig.L$vectors * matrix(c(sqrt(1/(eig.L$values+REMLE$delta)),rep(sqrt(1/REMLE$delta),n-t)),n,n,byrow=TRUE)
               }
               else {
                 vtids <- as.logical(colSums(Z[vrows,,drop=FALSE]))
@@ -949,7 +949,7 @@ emma.REML.t <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
               }
               dfs[i,j] <- nr-q1
             }
-            
+
             yt <- crossprod(U,yv)
             Xt <- crossprod(U,X[vrows,,drop=FALSE])
             iXX <- solve(crossprod(Xt,Xt))
@@ -992,12 +992,12 @@ emma.REML.t <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
               REMLs[i,j] <- REMLE$REML
             }
             stats[i,j] <- beta[q1]/sqrt(iXX[q1,q1]*REMLE$vg)
-            
+
           }
         }
-        ps[i,] <- 2*pt(abs(stats[i,]),dfs[i,],lower.tail=FALSE)        
+        ps[i,] <- 2*pt(abs(stats[i,]),dfs[i,],lower.tail=FALSE)
       }
-    }    
+    }
   }
   if ( ponly ) {
     return (ps)
@@ -1006,4 +1006,3 @@ emma.REML.t <- function(ys, xs, K, Z=NULL, X0 = NULL, ngrids=100, llim=-10, ulim
     return (list(ps=ps,REMLs=REMLs,stats=stats,dfs=dfs,vgs=vgs,ves=ves))
   }
 }
-

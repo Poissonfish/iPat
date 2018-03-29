@@ -34,7 +34,7 @@ public class ImageLib {
 
     public ImageLib() {
         // Stroke
-        dashed = new BasicStroke(3,
+        dashed = new BasicStroke(2,
                 BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
                 0, new float[] {10, 10}, 0);
         solid = new BasicStroke(3,
@@ -85,6 +85,20 @@ public class ImageLib {
             case "hintModule" : return this.hintModule;
             case "hintDrag" : return this.hintDrag;
             case "hintDrop" : return this.hintDrop;
+        }
+        return null;
+    }
+
+    Color getColor(String name) {
+        switch (name) {
+            case "red" : return this.red;
+            case "lightred" : return this.lightred;
+            case "dlightred" : return this.dlightred;
+            case "ovalcolor" : return this.ovalcolor;
+            case "themecolor" : return this.themecolor;
+            case "colorHintDrop" : return this.colorHintDrop;
+            case "colorHintDrag" : return this.colorHintDrag;
+            case "colorHintTap" : return this.colorHintTap;
         }
         return null;
     }

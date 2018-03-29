@@ -30,7 +30,7 @@
   library(magrittr)
   library(bigmemory)
   library(biganalytics)
-  library(compiler) #this library is already installed in R 
+  library(compiler) #this library is already installed in R
   library(data.table)
   library(MASS) # required for ginv
   library(multtest)
@@ -45,7 +45,7 @@ tryCatch({
   setwd(lib)
   # Subset Phenotype
     cat("   Loading phenotype ...")
-    Y.data = fread(Y.path) %>% as.data.frame 
+    Y.data = fread(Y.path) %>% as.data.frame
     trait.name = Y.data[, -c(1, 2)] %>% names()
     cat("Done\n")
   # Covariate
@@ -63,19 +63,19 @@ tryCatch({
   # PLINK
   ## Basic
   if(binary){
-    basic = sprintf("%s --bed %s --bim %s --fam %s --assoc --allow-no-sex --adjust -ci %s --pheno %s --all-pheno -out %s", 
+    basic = sprintf("%s --bed %s --bim %s --fam %s --assoc --allow-no-sex --adjust -ci %s --pheno %s --all-pheno -out %s",
                     file.path(lib, "plink"), GD.path, BIM.path, FAM.path, ci, Y.path, file.path(wd, project))
   }else{
-    basic = sprintf("%s --ped %s --map %s --assoc --allow-no-sex --adjust -ci %s --pheno %s --all-pheno -out %s", 
+    basic = sprintf("%s --ped %s --map %s --assoc --allow-no-sex --adjust -ci %s --pheno %s --all-pheno -out %s",
                     file.path(lib, "plink"), GD.path, GM.path, ci, Y.path, file.path(wd, project))
   }
-  ## QC 
-  if(!is.na(ms)) MS = sprintf("--geno %s", ms) else MS = character()  
+  ## QC
+  if(!is.na(ms)) MS = sprintf("--geno %s", ms) else MS = character()
   if(!is.na(maf)) MAF = sprintf("--maf %s", maf) else MAF = character()
   ## COV and running BLINK
   if(length(C.name) > 0){
     cov = sprintf("--covar %s --covar-name %s", C.path, paste(C.name, collapse = ", "))
-    paste(basic, MS, MAF, cov) %>% system() 
+    paste(basic, MS, MAF, cov) %>% system()
   }else{
     paste(basic, MS, MAF) %>% system()
   }
@@ -97,7 +97,7 @@ tryCatch({
   stop(e)
 })
 
-  
+
 project="Project_2"
 wd="/Users/Poissonfish/Desktop/test/rr"
 lib="/Users/Poissonfish/git/iPat/libs/"
@@ -115,11 +115,11 @@ FAM.path="NA"
 BIM.path="NA"
 ci = as.numeric(0.95)
 binary = as.logical(FALSE)
- 
-# Y.index = "SelectedsepExcludedsepSelectedsep" 
-# C.index = "SelectedsepExcludedsepSelectedsep" 
+
+# Y.index = "SelectedsepExcludedsepSelectedsep"
+# C.index = "SelectedsepExcludedsepSelectedsep"
 # FAM.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/PLINK/simb.fam"
 # BIM.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/PLINK/simb.bim"
-# ci = 0.95 
+# ci = 0.95
 # GD.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/PLINK/simb.bed"
 # Y.path = "/Users/Poissonfish/Dropbox/MeetingSlides/iPat/Demo_data/PLINK/simb.txt"

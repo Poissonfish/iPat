@@ -14,6 +14,8 @@ public class iPat {
     static FileLib FILELIB;
     static ImageLib IMGLIB;
     static TextLib TXTLIB;
+    static MapValue DEFAULTVAL;
+    static MapValue MODVAL;
 
     public iPat() throws URISyntaxException {
         USEROS = getOS();
@@ -23,6 +25,8 @@ public class iPat {
         FILELIB = new FileLib();
         IMGLIB = new ImageLib();
         TXTLIB = new TextLib();
+        DEFAULTVAL = new MapValue();
+        MODVAL = new MapValue();
         printWelcomeMsg();
         launchIPat();
     }

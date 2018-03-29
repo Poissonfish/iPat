@@ -34,15 +34,19 @@ class GroupValue extends JPanel{
     private JTextField field;
 
     public GroupValue (int length, String text) {
-        super(new MigLayout("fillx", "[grow][grow]", "[]"));
+        super(new MigLayout("fillx", "[120::][grow]", "[]"));
         this.name = new JLabel(text);
         this.field = new JTextField(length);
         this.add(this.name, "cell 0 0, align r");
-        this.add(this.name, "cell 1 0, align l");
+        this.add(this.field, "cell 1 0, align l");
     }
 
     String getValue() {
         return this.field.getText();
+    }
+
+    void setValue(String val) {
+        this.field.setText(val);
     }
 }
 
@@ -83,14 +87,15 @@ class GroupCombo extends JPanel {
 
 // name value slider |------------|
 class GroupSlider extends JPanel implements ChangeListener {
-    private JSlider slider;
+    JSlider slider;
     private JLabel name;
     private JLabel value;
     private boolean isDouble = false;
     private boolean isPow = false;
+    private Hashtable<Integer, JLabel> table;
 
     public GroupSlider(String name, int min, int max, int defaultVal, int minTick, int majTick) {
-        super(new MigLayout("fillx", "[grow][grow][grow]", "[]"));
+        super(new MigLayout("fillx", "[120::][30!][150::]", "[]"));
         this.name = new JLabel(name + " :");
         this.value = new JLabel(Integer.toString(defaultVal));
         this.slider = new JSlider(JSlider.HORIZONTAL, min, max, defaultVal);
@@ -100,29 +105,29 @@ class GroupSlider extends JPanel implements ChangeListener {
         this.slider.setPaintLabels(true);
         this.slider.setLabelTable(this.slider.createStandardLabels(majTick));
         this.slider.addChangeListener(this);
-        this.add(this.name, "cell 0 0, align r");
-        this.add(this.value, "cell 1 0, align l");
-        this.add(this.slider, "cell 2 0, align l");
+        this.add(this.name, "cell 0 0, grow, align r");
+        this.add(this.value, "cell 1 0, grow, align l");
+        this.add(this.slider, "cell 2 0, grow, align r");
     }
 
-    public GroupSlider(String name, double min, double max, double defaultVal, String[] tablename) {
-        super(new MigLayout("fillx", "[grow][grow][grow]", "[]"));
+    public GroupSlider(String name, int max, int defaultVal, String[] tablename) {
+        super(new MigLayout("fillx", "[120::][30!][150::]", "[]"));
+
         this.name = new JLabel(name + " :");
-        this.value = new JLabel(Double.toString(defaultVal));
-        this.slider = new JSlider(JSlider.HORIZONTAL, (int) (min * 1000) , (int) (max * 1000), (int) (defaultVal * 1000));
-        this.isDouble = true;
-        this.slider.setMinorTickSpacing(5);
-        this.slider.setMajorTickSpacing(10);
+        this.slider = new JSlider (JSlider.HORIZONTAL, 1, max, defaultVal);
+        this.table = new Hashtable<>();
+        for (int i = 0; i < tablename.length; i ++)
+            this.table.put(i + 1, new JLabel(tablename[i]));
+        this.slider.setMajorTickSpacing(1);
         this.slider.setPaintTicks(true);
         this.slider.setPaintLabels(true);
-        Hashtable table = new Hashtable();
-        for (int i = 0; i < table.size(); i ++)
-            table.put((int)(Double.parseDouble(tablename[i]) * 1000), tablename[i]);
         this.slider.setLabelTable(table);
+        this.value = new JLabel(this.table.get(defaultVal).getText());
+        this.isDouble = true;
         this.slider.addChangeListener(this);
-        this.add(this.name, "cell 0 0, align r");
-        this.add(this.value, "cell 1 0, align l");
-        this.add(this.slider, "cell 2 0, align l");
+        this.add(this.name, "cell 0 0, grow, align r");
+        this.add(this.value, "cell 1 0, grow, align l");
+        this.add(this.slider, "cell 2 0, grow, align r");
     }
 
     int getIntValue() {
@@ -130,7 +135,7 @@ class GroupSlider extends JPanel implements ChangeListener {
     }
 
     String getStrValue() {
-        return Integer.toString(this.slider.getValue());
+        return this.table.get(this.slider.getValue()).getText();
     }
 
     @Override
@@ -139,7 +144,7 @@ class GroupSlider extends JPanel implements ChangeListener {
         if (source == this.slider && !this.isDouble)
             this.value.setText(Integer.toString(slider.getValue()));
         else if (source == this.slider && this.isDouble)
-            this.value.setText(Double.toString(slider.getValue()/(double)1000));
+            this.value.setText(this.table.get(this.slider.getValue()).getText());
     }
 }
 
@@ -150,22 +155,26 @@ class GroupPath extends JPanel implements ActionListener {
     JTextField field;
 
     public GroupPath (String text) {
-        super(new MigLayout("fillx", "[grow][grow][grow]", "[]"));
+        super(new MigLayout("fillx", "[120::][grow][grow]", "[]"));
         name = new JLabel();
         browse = new JButton("Browse");
-        field = new JTextField(15);
+        field = new JTextField(20);
         this.name.setText(text);
         this.browse.addActionListener(this);
-        this.add(this.name, "cell 0 0, grow");
-        this.add(this.field, "cell 1 0");
-        this.add(this.browse, "cell 2 0");
+        this.add(this.name, "cell 0 0, align r");
+        this.add(this.field, "cell 1 0, align l");
+        this.add(this.browse, "cell 2 0, align l");
     }
 
     String getPath() {
         return this.field.getText();
     }
 
-    public void setPath (boolean showDirOnly) {
+    void setPath (String path) {
+        this.field.setText(path);
+    }
+
+    void setPath (boolean showDirOnly) {
         String msg;
         if (showDirOnly)
             msg = "Choose a output directory";
