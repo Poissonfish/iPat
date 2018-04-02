@@ -70,14 +70,12 @@ class iPatList implements ActionListener, WindowListener {
         this.menuGS = iniMenuItem("GS (Empty)");
         this.menuBSA = iniMenuItem("BSA (Empty)");
         this.menuRun = iniMenuItem("Run");
-        this.menuDelMO = iniMenuItem("Remove this module");
         // file
         this.menuFile = new JPopupMenu();
         this.menuOpenFile = iniMenuItem("Open File");
         this.menuIsRegular = iniMenuItem("Assign as a regular file");
         this.menuIsCov = iniMenuItem("Assign as a covariates file");
         this.menuIsKin = iniMenuItem("Assign as a kinship file");
-        this.menuDelFile = iniMenuItem("Remove this file");
         // Construct menu
         // module
         this.menuMO.add(menuOpenMO);
@@ -87,14 +85,11 @@ class iPatList implements ActionListener, WindowListener {
         this.menuMO.addSeparator();
         this.menuMO.add(menuRun);
         this.menuRun.setEnabled(false);
-        this.menuMO.add(menuDelMO);
         // file
         this.menuFile.add(menuOpenFile);
         this.menuFile.add(menuIsRegular);
         this.menuFile.add(menuIsCov);
         this.menuFile.add(menuIsKin);
-        this.menuFile.addSeparator();
-        this.menuFile.add(menuDelFile);
         // Layout (module)
         this.menuMO.setBorder(new BevelBorder(BevelBorder.RAISED));
         this.menuFile.setBorder(new BevelBorder(BevelBorder.RAISED));
@@ -403,6 +398,7 @@ class iPatList implements ActionListener, WindowListener {
 //                    this.getModuleN(indexMO).setMap(isPLINK[1] ? this.getFileN(i1).getFile() : this.getFileN(i2).getFile());
                     return FileFormat.BSA;
                 }
+                break;
             case 3:
                 // Numerical
                 for (int i = 0; i < 3; i++) {
@@ -464,6 +460,7 @@ class iPatList implements ActionListener, WindowListener {
                 }
                 if (BED != -1 && BIM != -1 && FAM != -1)
                     return FileFormat.PLINKBIN;
+                break;
             case 4:
                 // Binary
                 BED = -1;
@@ -490,6 +487,7 @@ class iPatList implements ActionListener, WindowListener {
                         return FileFormat.PLINKBIN;
                     }
                 }
+                break;
         }
         return FileFormat.NA;
     }
@@ -627,14 +625,13 @@ class iPatList implements ActionListener, WindowListener {
     void removeLine(int index) {
         int index1 = this.indexLineSt.get(index);
         int index2 = this.indexLineEd.get(index);
-        System.out.println("line index : " + index);
-        System.out.println("line index1 : " + index1);
-        System.out.println("line index2 : " + index2);
         // break linkage and update two group
         this.breakLinkage(index1, index2);
+        this.countGr ++;
         // Rearrange line list
         this.indexLineSt.remove(index);
         this.indexLineEd.remove(index);
+
     }
 
     // similar to removeLine but arrange it at final
@@ -661,7 +658,6 @@ class iPatList implements ActionListener, WindowListener {
             this.indexLineSt.remove(i);
             this.indexLineEd.remove(i);
         }
-        System.out.println("=====");
         this.printStat();
     }
 
@@ -710,7 +706,7 @@ class iPatList implements ActionListener, WindowListener {
         // Remove list
         this.listOB.remove(index);
         this.indexGr.remove(index);
-        System.out.println("===== remove");
+
         this.printStat();
     }
 
@@ -720,7 +716,9 @@ class iPatList implements ActionListener, WindowListener {
         this.setNewGrIndexRecur(index1, index2);
         // get group index from both object
         int indexGr1 = this.getGrIndex(index1);
+        System.out.println("indexGr1 = " + indexGr1);
         int indexGr2 = this.getGrIndex(index2);
+        System.out.println("indexGr2 = " + indexGr2);
         // update ContainMO status
         this.setGrOfContainMO(indexGr1, isGroupContainCO(indexGr1));
         this.setGrOfContainMO(indexGr2, isGroupContainCO(indexGr2));
@@ -735,7 +733,13 @@ class iPatList implements ActionListener, WindowListener {
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
         MethodType method = MethodType.NA;
-        if (source == this.menuGWAS) {
+        if (source == this.menuIsRegular) {
+            this.getFileN(this.indexSelected).setAsRegular();
+        } else if (source == this.menuIsCov) {
+            this.getFileN(this.indexSelected).setAsCov();
+        } else if (source == this.menuIsKin) {
+            this.getFileN(this.indexSelected).setAsKin();
+        } else if (source == this.menuGWAS) {
             method = MethodType.GWAS;
         } else if (source == this.menuGS) {
             method = MethodType.GS;
@@ -743,43 +747,76 @@ class iPatList implements ActionListener, WindowListener {
             method = MethodType.BSA;
         } else if (source == this.menuRun) {
             iPatModule mo = this.getModuleN(this.indexSelected);
-            // Add command for launching Appxw
-            ArrayList<Command> commandGWAS = mo.getCommandGWAS();
-            ArrayList<Command> commandGS = mo.getCommandGS();
-            ArrayList<Command> commandBSA = mo.getCommandBSA();
+            FileFormat format = mo.getFormat();
+            // Add command for launching app
+            Command commandGWAS = mo.getCommandGWAS();
+            Command commandGS = mo.getCommandGS();
+            Command commandBSA = mo.getCommandBSA();
             ArrayList<Command> commandRun = new ArrayList<>();
-            // Add file information
-            Command commandFile = new Command();
-            commandFile.addArg("-phenotype",
-                    this.getFile(this.indexSelected, FileType.Phenotype).getAbsolutePath());
-            commandFile.addArg("-genotype",
-                    this.getFile(this.indexSelected, FileType.Genotype).getAbsolutePath());
-            commandFile.addArg("-map",
-                    this.getFile(this.indexSelected, FileType.Map).getAbsolutePath());
-            commandFile.addArg("-cov",
-                    this.getFile(this.indexSelected, FileType.Covariate).getAbsolutePath());
-            commandFile.addArg("-kin",
-                    this.getFile(this.indexSelected, FileType.Kinship).getAbsolutePath());
-            // Add to GWAS command
-            switch (mo.getDeployedGWASTool()) {
-                case GAPIT: case FarmCPU: commandGWAS.get(0).addAll(commandFile);
-                    break;
-                case PLINK:
+            // do conversion if needed, add filepaths to the command
+            try {
+                String pathGD = this.getFile(this.indexSelected, FileType.Genotype).getAbsolutePath();
+                String pathGM = this.getFile(this.indexSelected, FileType.Map).getAbsolutePath();
+                String filename = pathGD.replaceFirst("[.][^.]+$", "");
+                // GWAS
+                if (mo.isGWASDeployed()) {
+                    boolean isPLINK = mo.getDeployedGWASTool() == ToolType.PLINK;
+                    new iPatConverter(format,
+                            isPLINK ? FileFormat.PLINK : FileFormat.Numeric,
+                            pathGD, pathGM);
+                    if (isPLINK) {
+                        pathGD = filename + "_recode.ped";
+                        pathGM = filename + "_recode.map";
+                    } else if (format != FileFormat.Numeric) {
+                        pathGD = filename + "_recode.dat";
+                        pathGM = filename + "_recode.nmap";
+                        format = FileFormat.Numeric;
+                    }
+                    commandGWAS.addArg("-phenotype",
+                            this.getFile(this.indexSelected, FileType.Phenotype).getAbsolutePath());
+                    commandGWAS.addArg("-genotype", pathGD);
+                    commandGWAS.addArg("-map", pathGM);
+                    commandGWAS.addArg("-cov",
+                            this.getFile(this.indexSelected, FileType.Covariate).getAbsolutePath());
+                    commandGWAS.addArg("-kin",
+                            this.getFile(this.indexSelected, FileType.Kinship).getAbsolutePath());
+                }
+                // GS
+                if (mo.isGSDeployed()) {
+                    new iPatConverter(format, FileFormat.Numeric,
+                            pathGD, pathGM);
+                    if (format != FileFormat.Numeric) {
+                        filename = pathGD.replaceFirst("[.][^.]+$", "");
+                        pathGD = filename + "_recode.dat";
+                        pathGM = filename + "_recode.nmap";
+                    }
+                    commandGS.addArg("-phenotype",
+                            this.getFile(this.indexSelected, FileType.Phenotype).getAbsolutePath());
+                    commandGS.addArg("-genotype", pathGD);
+                    commandGS.addArg("-map", pathGM);
+                    commandGS.addArg("-cov",
+                            this.getFile(this.indexSelected, FileType.Covariate).getAbsolutePath());
+                    commandGS.addArg("-kin",
+                            this.getFile(this.indexSelected, FileType.Kinship).getAbsolutePath());
+                }
+                // BSA
+                if (mo.isBSADeployed()) {
+                    commandGS.addArg("-phenotype",
+                            this.getFile(this.indexSelected, FileType.Phenotype).getAbsolutePath());
+                    commandGS.addArg("-genotype", pathGD);
+                    commandGS.addArg("-map", pathGM);
+
+                }
+                // assemble command
+                commandRun.add(commandGWAS);
+                commandRun.add(commandGS);
+                commandRun.add(commandBSA);
+                mo.run(commandRun);
+            } catch (IOException e1) {
+                e1.printStackTrace();
             }
-            // Add to GS command
-            switch (mo.getDeployedGSTool()) {
-                case gBLUP: case rrBLUP: case BGLR: commandGS.get(0).addAll(commandFile);
-                    break;
-            }
-            // Add to BSA command
-            if (mo.isBSADeployed())
-                commandBSA.get(0).addAll(commandFile);
-            // assemble command
-            commandRun.addAll(commandGWAS);
-            commandRun.addAll(commandGS);
-            commandRun.addAll(commandBSA);
-            mo.run(commandRun);
         }
+        // Open config panel
         if (method != MethodType.NA && source != this.menuRun) {
             iPatModule ob = this.getModuleN(this.indexSelected);
             ob.setIcon("module");
@@ -788,10 +825,13 @@ class iPatList implements ActionListener, WindowListener {
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
-            ModuleConfig newConfig = new ModuleConfig(this.indexSelected, ob.getLabel().getText(), method,
-                    ob.getDeployedGWASTool(), ob.getFormat(),
-                    this.getFile(this.indexSelected, FileType.Phenotype),
-                    this.getFile(this.indexSelected, FileType.Covariate), this.countConfig ++);
+            ModuleConfig newConfig = new ModuleConfig(this.indexSelected, ob.getName(), method,
+                    method == MethodType.GWAS ? ob.getDeployedGWASTool() : ob.getDeployedGSTool(),
+                    ob.getFormat(),
+                    this.getFile(this.indexSelected, FileType.Phenotype), ob.getPhenotype(),
+                    this.getFile(this.indexSelected, FileType.Covariate),
+                    method == MethodType.GWAS ? ob.getCovGWAS() : ob.getCovGS(),
+                    this.countConfig ++);
             newConfig.addWindowListener(this);
             this.config.add(newConfig);
             this.indexSelected = -1;
@@ -808,16 +848,21 @@ class iPatList implements ActionListener, WindowListener {
         System.out.println("Config closing (outer)");
         System.out.println("Token is : " + this.token);
         int indexTarget = this.token;
+        int cumulate = 0;
         for (int i : this.deletedConfig) {
             if (indexTarget > i)
-                indexTarget--;
+                cumulate++;
         }
+        indexTarget -= cumulate;
         System.out.println("Add " + this.token + " to delete array");
         this.deletedConfig.add(this.token);
         // get command from closing panel
+        System.out.println("get " + indexTarget);
         ModuleConfig configTemp = this.config.get(indexTarget);
         iPatModule moTemp = this.getModuleN(configTemp.getIndex());
-        moTemp.setLabel(configTemp.paneWD.getProject());
+        moTemp.setPhenotype(configTemp.panePhenotype.getSelected());
+        moTemp.setFile(configTemp.paneWD.getPath());
+        moTemp.setName(configTemp.paneWD.getProject());
         if (configTemp.isDeployed()) {
             switch (configTemp.getMethod()) {
                 case GWAS:
@@ -825,17 +870,18 @@ class iPatList implements ActionListener, WindowListener {
                     moTemp.setCommandGWAS(configTemp.getCommand());
                     break;
                 case GS:
-                    moTemp.setCommandGS(configTemp.getCommand());
                     moTemp.setDeployedGSTool(configTemp.getTool());
+                    moTemp.setCommandGS(configTemp.getCommand());
                     break;
                 case BSA:
-                    moTemp.setcommandBSA(configTemp.getCommand());
+                    moTemp.setCommandBSA(configTemp.getCommand());
                     moTemp.setBSA(true);
                     break;
             }
         }
         System.out.println("Remove " + indexTarget);
         this.config.remove(indexTarget);
+        System.out.println("Now the length is " + this.config.size());
     }
 
     @Override

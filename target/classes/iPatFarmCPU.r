@@ -2,8 +2,6 @@ tryCatch({
 # Library
   cat("=== FarmCPU ===\n")
   cat("   Loading libraries ...")
-  library(magrittr)
-  library(data.table)
   library(bigmemory)
   library(biganalytics)
   library(compiler)
@@ -15,6 +13,8 @@ tryCatch({
   library(scatterplot3d)
   library(R.utils)
   library(ape)
+  library(magrittr)
+  library(data.table)
   source("/Users/jameschen/IdeaProjects/iPat/target/classes/Function_iPat.R")
   source("/Users/jameschen/IdeaProjects/iPat/target/classes/Function_GAPIT.R")
   source("/Users/jameschen/IdeaProjects/iPat/target/classes/Function_FarmCPU.R")
@@ -59,7 +59,6 @@ tryCatch({
         i = i + 1
         phenotype = fread(arg[i])
         taxa = phenotype[ ,1]
-        nameTraits = names(phenotype)[-1]
         cat("Done\n")
       },
       "-genotype" = {
@@ -114,6 +113,7 @@ tryCatch({
     strsplit(split = "sep") %>%
     do.call(c, .) %>%
     (function(x){which(x == "Selected") + 1})
+  nameTraits = names(phenotype)[indexP]
   phenotype = phenotype[, ..indexP]
   cat("Done\n")
 

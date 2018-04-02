@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Hashtable;
+import java.util.Map;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -83,6 +84,10 @@ class GroupCombo extends JPanel {
     String getValue() {
         return (String)this.combo.getSelectedItem();
     }
+
+    void setValue(int index) {
+        this.combo.setSelectedIndex(index);
+    }
 }
 
 // name value slider |------------|
@@ -92,10 +97,10 @@ class GroupSlider extends JPanel implements ChangeListener {
     private JLabel value;
     private boolean isDouble = false;
     private boolean isPow = false;
-    private Hashtable<Integer, JLabel> table;
+    private Hashtable<Integer, JLabel> tableVal, tableLabel;
 
-    public GroupSlider(String name, int min, int max, int defaultVal, int minTick, int majTick) {
-        super(new MigLayout("fillx", "[120::][30!][150::]", "[]"));
+    GroupSlider(String name, int min, int max, int defaultVal, int minTick, int majTick) {
+        super(new MigLayout("fillx", "[grow][grow]", "[]"));
         this.name = new JLabel(name + " :");
         this.value = new JLabel(Integer.toString(defaultVal));
         this.slider = new JSlider(JSlider.HORIZONTAL, min, max, defaultVal);
@@ -105,29 +110,55 @@ class GroupSlider extends JPanel implements ChangeListener {
         this.slider.setPaintLabels(true);
         this.slider.setLabelTable(this.slider.createStandardLabels(majTick));
         this.slider.addChangeListener(this);
-        this.add(this.name, "cell 0 0, grow, align r");
-        this.add(this.value, "cell 1 0, grow, align l");
-        this.add(this.slider, "cell 2 0, grow, align r");
+        this.add(this.name, "cell 0 0, grow, align l");
+        this.add(this.value, "cell 1 0, grow, align r");
+        this.add(this.slider, "cell 0 1 2 1, grow, align c");
     }
 
-    public GroupSlider(String name, int max, int defaultVal, String[] tablename) {
-        super(new MigLayout("fillx", "[120::][30!][150::]", "[]"));
-
+    GroupSlider(String name, int defaultVal, String[] tableVal, String[] tableLabel) {
+        super(new MigLayout("fillx", "[grow][grow]", "[]"));
+        int size = tableVal.length;
         this.name = new JLabel(name + " :");
-        this.slider = new JSlider (JSlider.HORIZONTAL, 1, max, defaultVal);
-        this.table = new Hashtable<>();
-        for (int i = 0; i < tablename.length; i ++)
-            this.table.put(i + 1, new JLabel(tablename[i]));
+        this.slider = new JSlider (JSlider.HORIZONTAL, 1, size, defaultVal);
+        this.tableVal = new Hashtable<>();
+        this.tableLabel = new Hashtable<>();
+        for (int i = 0; i < size; i ++) {
+            this.tableLabel.put(i + 1, new JLabel(tableLabel[i]));
+            this.tableVal.put(i + 1, new JLabel(tableVal[i]));
+        }
         this.slider.setMajorTickSpacing(1);
         this.slider.setPaintTicks(true);
         this.slider.setPaintLabels(true);
-        this.slider.setLabelTable(table);
-        this.value = new JLabel(this.table.get(defaultVal).getText());
+        this.slider.setLabelTable(this.tableLabel);
+        this.value = new JLabel(this.tableLabel.get(defaultVal).getText());
         this.isDouble = true;
         this.slider.addChangeListener(this);
-        this.add(this.name, "cell 0 0, grow, align r");
-        this.add(this.value, "cell 1 0, grow, align l");
-        this.add(this.slider, "cell 2 0, grow, align r");
+        this.add(this.name, "cell 0 0, grow, align l");
+        this.add(this.value, "cell 1 0, grow, align r");
+        this.add(this.slider, "cell 0 1 2 1, grow, align c");
+    }
+
+    GroupSlider(String name, int defaultVal, String[] tableVal) {
+        super(new MigLayout("fillx", "[grow][grow]", "[]"));
+        int size = tableVal.length;
+        this.name = new JLabel(name + " :");
+        this.slider = new JSlider (JSlider.HORIZONTAL, 1, size, defaultVal);
+        this.tableVal = new Hashtable<>();
+        this.tableLabel = new Hashtable<>();
+        for (int i = 0; i < size; i ++) {
+            this.tableLabel.put(i + 1, new JLabel(tableVal[i]));
+            this.tableVal.put(i + 1, new JLabel(tableVal[i]));
+        }
+        this.slider.setMajorTickSpacing(1);
+        this.slider.setPaintTicks(true);
+        this.slider.setPaintLabels(true);
+        this.slider.setLabelTable(this.tableLabel);
+        this.value = new JLabel(this.tableLabel.get(defaultVal).getText());
+        this.isDouble = true;
+        this.slider.addChangeListener(this);
+        this.add(this.name, "cell 0 0, grow, align l");
+        this.add(this.value, "cell 1 0, grow, align r");
+        this.add(this.slider, "cell 0 1 2 1, grow, align c");
     }
 
     int getIntValue() {
@@ -135,7 +166,18 @@ class GroupSlider extends JPanel implements ChangeListener {
     }
 
     String getStrValue() {
-        return this.table.get(this.slider.getValue()).getText();
+        return this.tableVal.get(this.slider.getValue()).getText();
+    }
+
+    void setStrValue(String val) {
+        int key = 0;
+        for (Map.Entry<Integer, JLabel> entry : this.tableVal.entrySet()) {
+            if (val.equals(entry.getValue().getText())) {
+                key = entry.getKey();
+                break;
+            }
+        }
+        this.slider.setValue(key);
     }
 
     @Override
@@ -144,7 +186,7 @@ class GroupSlider extends JPanel implements ChangeListener {
         if (source == this.slider && !this.isDouble)
             this.value.setText(Integer.toString(slider.getValue()));
         else if (source == this.slider && this.isDouble)
-            this.value.setText(this.table.get(this.slider.getValue()).getText());
+            this.value.setText(this.tableLabel.get(this.slider.getValue()).getText());
     }
 }
 

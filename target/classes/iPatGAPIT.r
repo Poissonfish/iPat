@@ -54,7 +54,6 @@ tryCatch({
         i = i + 1
         phenotype = fread(arg[i])
         taxa = phenotype[ ,1]
-        nameTraits = names(phenotype)[-1]
         cat("Done\n")
       },
       "-genotype" = {
@@ -115,6 +114,7 @@ tryCatch({
     strsplit(split = "sep") %>%
     do.call(c, .) %>%
     (function(x){which(x == "Selected") + 1})
+  nameTraits = names(phenotype)[indexP]
   phenotype = phenotype[, ..indexP]
   cat("Done\n")
 

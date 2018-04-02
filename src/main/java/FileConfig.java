@@ -56,21 +56,6 @@ public class FileConfig extends JPanel implements ActionListener,MouseMotionList
     public FileConfig(int width, int height, int pheight) {
         // Instantiate
         iPatOB = new iPatList();
-        indexOBPress = -1;
-        indexOBHover = -1;
-        indexOBSelect = -1;
-        indexClosest = -1;
-        indexLinePress = -1;
-        indexLineHover = -1;
-        indexLineSelect = -1;
-        indexLineDrag = -1;
-        indexGrPress = -1;
-        indexGrHover = -1;
-        indexGrSelect = -1;
-        ptPress = new Point(0, 0);
-        ptHover = new Point(0, 0);
-        ptTempLineST = new Point(0, 0);
-        ptTempLineED = new Point(0, 0);
         timerRotate = new Timer(5, this);
         // rotate
         xRotate = iPat.IMGLIB.getImage("module").getWidth(this) / 2;
@@ -90,6 +75,10 @@ public class FileConfig extends JPanel implements ActionListener,MouseMotionList
         this.addMouseMotionListener(this);
         // keymep
         setupKeyMap();
+        // reset gui index
+        resetHoverStatus();
+        resetSelectStatus();
+        resetPressStatus();
     }
 
     void setupKeyMap() {
@@ -248,7 +237,6 @@ public class FileConfig extends JPanel implements ActionListener,MouseMotionList
             Point ptDragED = new Point(this.ptPress.x + 30, this.ptPress.y + 30);
             drawLine(g, ptDragST, ptDragED, iPat.IMGLIB.getStroke("dashed"));
         }
-
         // iPatObject
         for (iPatObject i : this.iPatOB.getObjects()) {
             if (i.isModule() && ((iPatModule) i).rotateSwitch) {
@@ -259,7 +247,10 @@ public class FileConfig extends JPanel implements ActionListener,MouseMotionList
                 this.timerRotate.start();
             } else
                 g.drawImage(i.getImage(), i.getX(), i.getY(), this);
+            g.setFont(iPat.TXTLIB.getFont("label"));
+            g.drawString(i.getName(), i.getX(), i.getY() + i.getHeight() + 15);
         }
+        g.dispose();
     }
 
     void drawLine(Graphics g, Point pt1, Point pt2, Stroke s){
@@ -381,7 +372,6 @@ public class FileConfig extends JPanel implements ActionListener,MouseMotionList
                     this.iPatOB.addiModule(
                             (int) this.ptPress.getX() - iPat.IMGLIB.getImage("module").getWidth(this) / 2,
                             (int) this.ptPress.getY() - iPat.IMGLIB.getImage("module").getHeight(this) / 2);
-                    this.add(this.iPatOB.getCurObject().getLabel());
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
@@ -448,6 +438,7 @@ public class FileConfig extends JPanel implements ActionListener,MouseMotionList
         this.indexOBHover = -1;
         this.indexLineHover = -1;
         this.indexGrHover = -1;
+        this.ptHover = new Point(0, 0);
     }
     void resetSelectStatus() {
         this.indexOBSelect = -1;
@@ -515,9 +506,6 @@ public class FileConfig extends JPanel implements ActionListener,MouseMotionList
                         int x = (int)pointer.getX() - iPat.IMGLIB.getImage("file").getWidth(this) / 2;
                         int y = (int)pointer.getY() - iPat.IMGLIB.getImage("file").getHeight(this) / 2;
                         this.iPatOB.addiFile(x + count*30, y + count*15, file.getAbsolutePath());
-                        // Add label into it
-                        this.add(this.iPatOB.getCurObject().getLabel());
-                        repaint();
                         count ++;
                         // Print out the file path
                         System.out.println("File path is '" + file.getPath() + "'.");

@@ -5,7 +5,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 
 class iPatFile extends iPatObject {
-    private FileType fileType = FileType.NA;
+    private FileType fileType;
 
     public iPatFile(int x, int y, String filename) throws IOException {
         super(x, y);
@@ -14,7 +14,8 @@ class iPatFile extends iPatObject {
         this.isModule = false;
         this.isContainMO = false;
         this.file = new iFile(filename);
-        this.setLabel(this.file.getName());
+        this.name = this.file.getName();
+        this.fileType = FileType.NA;
         setIcon("file");
     }
 
@@ -27,4 +28,18 @@ class iPatFile extends iPatObject {
         this.fileType = type;
     }
 
+    void setAsRegular() {
+        this.fileType = FileType.NA;
+        setIcon("file");
+    }
+
+    void setAsCov() {
+        this.fileType = FileType.Covariate;
+        setIcon("cov");
+    }
+
+    void setAsKin() {
+        this.fileType = FileType.Kinship;
+        setIcon("kin");
+    }
 }

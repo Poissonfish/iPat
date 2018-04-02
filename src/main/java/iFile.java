@@ -1,4 +1,7 @@
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class iFile extends File {
     boolean isEmpty;
@@ -41,21 +44,9 @@ public class iFile extends File {
 
     // Get number of lines in the file
     int getLineCount() throws IOException {
-        InputStream reader = new BufferedInputStream(new FileInputStream(this.getAbsolutePath()));
-        try{
-            byte[] c = new byte[1024];
-            int count = 0;
-            int readChars = 0;
-            boolean empty = true;
-            while ((readChars = reader.read(c)) != -1) {
-                empty = false;
-                for (int i = 0; i < readChars; ++i) {
-                    if (c[i] == '\n') ++count;
-                }}
-            return (count == 0 && !empty) ? 1 : count;
-        }finally{
-            reader.close();
-        }
+        Path path = Paths.get(this.getAbsolutePath());
+        long lineCount = Files.lines(path).count();
+        return (int) lineCount;
     }
 
     // Get separated string from the input [tab, space or comma]

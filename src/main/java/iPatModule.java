@@ -11,11 +11,13 @@ class iPatModule extends iPatObject implements ActionListener{
     static int countMO = 0;
     // Module define
     int indexMO;
+    // Phenotype
     ArrayList<String> traitNames;
+    String selectP;
     // Command
-    ArrayList<Command> commandGWAS;
-    ArrayList<Command> commandGS;
-    ArrayList<Command> commandBSA;
+    Command commandGWAS;
+    Command commandGS;
+    Command commandBSA;
     ToolType toolGWAS;
     ToolType toolGS;
     boolean callBSA;
@@ -37,23 +39,25 @@ class iPatModule extends iPatObject implements ActionListener{
         this.isModule = true;
         this.isContainMO = true;
         this.indexMO = countMO++;
-        this.setLabel("Module " + (this.indexMO + 1));
+        this.setName("Module " + (this.indexMO + 1));
         setIcon("module");
         // Define command
         this.format  = FileFormat.NA;
-        this.commandGWAS = new ArrayList<>();
-        this.commandGS = new ArrayList<>();
-        this.commandBSA = new ArrayList<>();
+        this.commandGWAS = new Command();
+        this.commandGS = new Command();
+        this.commandBSA = new Command();
         this.toolGWAS = ToolType.NA;
         this.toolGS = ToolType.NA;
         this.callBSA = false;
         // Panel
-        this.traitNames = new ArrayList<String>();
+        this.traitNames = new ArrayList<>();
         // During running (GUI)
         this.rotateSwitch = false;
         this.rotatePermit = false;
         // multirun
         this.timerThread = new Timer(500, this);
+        // phenotype
+        this.selectP = null;
     }
 
     // get
@@ -66,14 +70,23 @@ class iPatModule extends iPatObject implements ActionListener{
     FileFormat getFormat() {
         return this.format;
     }
-    ArrayList<Command> getCommandGWAS() {
+    Command getCommandGWAS() {
         return this.commandGWAS;
     }
-    ArrayList<Command> getCommandGS() {
+    Command getCommandGS() {
         return this.commandGS;
     }
-    ArrayList<Command> getCommandBSA() {
+    Command getCommandBSA() {
         return this.commandBSA;
+    }
+    String getPhenotype() {
+        return this.selectP;
+    }
+    String getCovGWAS() {
+        return this.commandGWAS.getCov();
+    }
+    String getCovGS() {
+        return this.commandGS.getCov();
     }
 
     // set
@@ -89,14 +102,17 @@ class iPatModule extends iPatObject implements ActionListener{
     void setFormat (FileFormat format) {
         this.format = format;
     }
-    void setCommandGWAS(ArrayList<Command> commandGWAS) {
+    void setCommandGWAS(Command commandGWAS) {
         this.commandGWAS = commandGWAS;
     }
-    void setCommandGS(ArrayList<Command> commandGS) {
+    void setCommandGS(Command commandGS) {
         this.commandGS = commandGS;
     }
-    void setcommandBSA(ArrayList<Command> commandBSA) {
+    void setCommandBSA(Command commandBSA) {
         this.commandBSA = commandBSA;
+    }
+    void setPhenotype(String selectP) {
+        this.selectP = selectP;
     }
 
     boolean isGWASDeployed() {
@@ -118,7 +134,7 @@ class iPatModule extends iPatObject implements ActionListener{
     void run (ArrayList<Command> command) {
         timerThread.start();
         this.rotateSwitch = true;
-        thread = new iPatThread();
+        thread = new iPatThread(this.getName());
         thread.setCommandAndRun(command);
     }
 
@@ -143,14 +159,17 @@ class iPatModule extends iPatObject implements ActionListener{
         JFrame areaFrame;
         ArrayList<Command> commands;
 
-        public iPatThread() {
+        public iPatThread(String title) {
             this.areaText = new JTextArea();
             this.areaText.setEditable(false);
             this.areaScroll = new JScrollPane(areaText,
                     JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                     JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
             this.areaFrame = new JFrame();
+            this.areaFrame.setTitle(title);
             this.areaFrame.setContentPane(areaScroll);
+            this.areaFrame.setBounds(300, 300, 500, 350);
+            this.areaFrame.setVisible(true);
             this.areaFrame.show();
             // During running (BG)
             this.success = true;

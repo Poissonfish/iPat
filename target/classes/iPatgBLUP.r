@@ -1,192 +1,231 @@
-# Input arguments
-  args = commandArgs(trailingOnly=TRUE)
-# Common args
-  project = args[1]
-  wd = args[2]
-  lib = args[3]
-  #format = args[4]
-  ms = as.numeric(args[5])
-  maf  = as.numeric(args[6])
-  Y.path = args[7]
-  Y.index = args[8]
-  GD.path = args[9]
-  GM.path  = args[10]
-  C.path = args[11]
-  C.index = args[12]
-  K.path  = args[13]
-  FAM.path  = args[14]
-  BIM.path  = args[15]
-# Method specific args
-  snp.fraction = as.numeric(args[16])
-  file.fragment = as.numeric(args[17])
-  model.s = as.logical(args[18])
-  gwas.assist = as.logical(args[19])
-  cutoff = as.numeric(args[20])
-
-# Load libraries
+tryCatch({
+# Library
   cat("=== GAPIT ===\n")
   cat("   Loading libraries ...")
-  setwd(lib)
-  list.of.packages <- c("MASS", "data.table", "magrittr", "gplots", "compiler", "scatterplot3d", "R.utils")
-  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-  if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
-  if(!'multtest'%in% installed.packages()[,"Package"]){
-    source("http://www.bioconductor.org/biocLite.R") 
-    biocLite("multtest")
-  }
+  library(magrittr)
+  library(data.table)
   library(MASS) # required for ginv
   library(multtest)
   library(gplots)
   library(compiler) #required for cmpfun
   library(scatterplot3d)
   library(R.utils)
-  library(data.table)
-  library(magrittr)
-  source("./Function_iPat.R")
-  source("./Function_FarmCPU.R")
-  source("./Function_GAPIT.R")
+  source("/Users/jameschen/IdeaProjects/iPat/target/classes/Function_iPat.R")
+  source("/Users/jameschen/IdeaProjects/iPat/target/classes/Function_GAPIT.R")
+  source("/Users/jameschen/IdeaProjects/iPat/target/classes/Function_FarmCPU.R")
   cat("Done\n")
 
-tryCatch({  
-  setwd(wd)
-  # Subset Phenotype
-  cat("   Loading phenotype ...")
-  Y.data = fread(Y.path) %>% as.data.frame
-  if(toupper(names(Y.data)[1]) == "FID") {Y.data = Y.data[,-1]}
-  subset = Y.index %>% strsplit(split = "sep") %>% do.call(c, .)
-  index.trait = which(subset == "Selected") 
-  if(length(index.trait) == 1){
-    Y = data.frame(y = Y.data[, index.trait + 1])
-    names(Y) = names(Y.data)[1 + index.trait] 
-  }else{
-    Y = Y.data[, index.trait + 1]
+# Input arguments
+  # arg = commandArgs(trailingOnly=TRUE)
+  for (i in 1 : length(arg)) {
+    switch (arg[i],
+      "-wd" = {
+        i = i + 1
+        wd = arg[i]
+        setwd(wd)
+      },
+      "-project" = {
+        i = i + 1
+        project = arg[i]
+      },
+      "-pSelect" = {
+        i = i + 1
+        selectP = arg[i]
+      },
+      "-maf" = {
+        i = i + 1
+        maf = as.numeric(arg[i])
+      },
+      "-ms" = {
+        i = i + 1
+        ms = as.numeric(arg[i])
+      },
+      "-format" = {
+        i = i + 1
+        format = arg[i]
+      },
+      "-cSelect" = {
+        i = i + 1
+        selectC = ifelse(grepl("NA", arg[i]),
+          NA, arg[i])
+      },
+      "-phenotype" = {
+        cat("   Loading phenotype ...")
+        i = i + 1
+        phenotype = fread(arg[i])
+        taxa = phenotype[ ,1]
+        cat("Done\n")
+      },
+      "-genotype" = {
+        cat("   Loading genotype ...")
+        i = i + 1
+        genotype = fread(arg[i])
+        if (is.character(genotype[[1]]))
+          genotype = genotype[ ,-1]
+        cat("Done\n")
+      },
+      "-map" = {
+        cat("   Loading map ...")
+        i = i + 1
+        if (grepl("/NA", arg[i]))
+          map = NULL
+        else
+          map = fread(arg[i])
+        cat("Done\n")
+      },
+      "-cov" = {
+        cat("   Checking covariates ...")
+        i = i + 1
+        if (grepl("/NA", arg[i]))
+          cov = NULL
+        else
+          cov = fread(arg[i])
+        if (is.character(cov[[1]]))
+          cov = cov[ ,-1]
+        cat("Done\n")
+      },
+      "-kin" = {
+        cat("   Checking kinship ...")
+        i = i + 1
+        if (grepl("/NA", arg[i]))
+          kin = NULL
+        else
+          kin = data.frame(fread(arg[i]))
+        cat("Done\n")
+      },
+      "-gwas" = {
+        i = i + 1
+        gwasAssist = as.logical(arg[i])
+        i = i + 1
+        cutoff = as.numeric(arg[i])
+      },
+      "-arg" = {
+        i = i + 1
+        snp.fraction = as.numeric(arg[i])
+        i = i + 1
+        model.s = as.logical(arg[i])
+      }
+    )
   }
-  # Assign Variables
-  taxa = Y.data[,1]
-  trait.names = names(Y) 
+
+# Subset Phenotype
+  cat("   Subsetting phenotype ...")
+  indexP = selectP %>%
+    strsplit(split = "sep") %>%
+    do.call(c, .) %>%
+    (function(x){which(x == "Selected") + 1})
+  # if it's PLINK's phenotype
+  if (toupper(names(phenotype)[1]) == "FID") {
+    indexP = indexP + 1
+    nameTraits = nameTraits[ ,-1]
+  }
+  nameTraits = names(phenotype)[indexP]
+  phenotype = phenotype[, ..indexP]
+  sizeN = nrow(phenotype)
   cat("Done\n")
-  # Genptype
-    cat("   Loading genotype ...")
-    GD = fread(GD.path) %>% as.data.frame()
-    GM = fread(GM.path) %>% as.data.frame()
-    if(is.character(GD[,1])) GD = GD[,-1]
-    cat("Done\n")
-  # QC
-    cat("   Quality control ...")
-    # Missing rate
-    if(!is.na(ms)){
-      MS = is.na(GD) %>% apply(2, function(x) sum(x)/length(x))
-      GD = GD[, MS <= ms]
-      GM = GM[MS <= ms, ]}
-    # MAF
-    if(!is.na(maf)){
-      GD_temp = GD
-      GD_temp[is.na(GD)] = 1
-      MAF = apply(GD_temp, 2, mean) %>% 
-            as.matrix() %>% 
-            apply(1, function(x) min(1 - x/2, x/2))
-      GD = GD[, MAF >= maf]
-      GM = GM[MAF >= maf, ]}
+
+# QC
+  cat("   Quality control ...")
+  # Missing rate
+    MS = is.na(genotype) %>%
+      apply(2, function(x) sum(x)/length(x))
+    genotype = genotype[, MS <= ms, with = FALSE]
+    map = map[MS <= ms]
+  # MAF
     # No NA allowed in GAPIT
-      GD[is.na(GD)] = 1
-    cat("Done\n")
-  # Covariate
-    if(C.path != "NA"){
-      cat("   Loading covariates ...")
-      C.data = fread(C.path) %>% as.data.frame()
-      if(is.character(C.data[,1])) C.data = C.data[,-1]
-      C.model.name = C.index %>% strsplit(split = "sep") %>% do.call(c, .)
-      index.C = which(C.model.name == "Selected")
-      # 0 c
-      if(length(index.C) == 0){
-        C = NULL
-      # 1 c
-      }else if(length(index.C) == 1){
-        name = names(C.data)[index.C]
-        C = data.frame(c = C.data[, index.C])
-        names(C) = name
-      # More than 1 c
-      }else{
-        C = C.data[, index.C]
+    genotype[is.na(genotype)] = 1
+    MAF = apply(genotype, 2, mean) %>%
+          as.matrix() %>%
+          apply(1, function(x) min(1 - x/2, x/2))
+    genotype = genotype[, MAF >= maf, with = FALSE]
+    map = data.frame(map[MAF >= maf])
+  cat("Done\n")
+
+# Subset Covariates
+  cat("   Subsetting covariates ...")
+  if (!is.null(cov)) {
+    indexC = selectC %>%
+      strsplit(split = "sep") %>%
+      do.call(c, .) %>%
+      (function(x){which(x == "Selected")})
+    cov = data.frame(cov[, ..indexC])
+    sizeCov = ncol(cov)
+  } else
+    sizeCov = 0
+  cat("Done\n")
+
+# Analysis trait iteratively
+  for (trait in nameTraits) {
+    # GWAS-Assisted
+      if (gwasAssist) {
+        cat("   Loading QTNs information ...")
+        ## Read GWAS result
+          gwas = fread(sprintf("%s_%s_GWAS.txt", project, trait))
+        ## Merge GM and p-value
+          names(map)[1] = "SNP"
+          mapGWAS = data.table(map)
+          mapGWAS[ ,P.value := gwas$P.value[match(map$SNP, gwas$SNP)]]
+          mapGWAS$P.value[is.na(mapGWAS$P.value)] = 1
+        ## Order p-value
+          snpOrder = order(mapGWAS$P.value)
+          mapGWAS = mapGWAS[snpOrder]
+          genotype = genotype[ ,..snpOrder]
+        ## Find QTNs
+          indexSig = which(mapGWAS$P.value < (cutoff/nrow(gwas)))
+        ## Generate a dataframe by number of QTNs
+        ### 0 QTNs
+          if (length(indexSig) == 0) {
+            cGWAS = NULL
+            sizeQTN = 0
+        ### 1 QTNs
+          } else if (length(indexSig) == 1) {
+            cGWAS = data.frame(m = genotype[ ,indexSig])
+            sizeQTN = 1
+        ### 1+ QTNs
+          } else {
+            cGWAS = genotype[ ,indexSig]
+            ## LD Remove
+            LD_remain = Blink.LDRemove(cGWAS, .7, indexSig, orientation = "col")
+            cGWAS = data.frame(cGWAS[ ,LD_remain])
+            sizeQTN = length(LD_remain)
+          }
+          cat("Done\n")
+      } else {
+        cGWAS = NULL
+        sizeQTN = 0
       }
-      cat("Done\n")
-    }else{
-      C = NULL
-    }
-  # Kinship
-  if(K.path == "NA"){
-    K = NULL
-  }else{
-    cat("   Loading Kinship ...")
-    K = fread(K.path) %>% as.data.frame()
-    cat("Done\n")
+    # Prevent c > n
+      ## if c + qtn > n
+        if (sizeN < sizeCov + sizeQTN) {
+          diff = sizeCov + sizeQTN - sizeN
+          cov = data.frame(cov, cGWAS[ ,1 : (sizeQTN - diff)])
+      ## neither cov nor qtn has size greater than 0
+        } else if (sizeCov == 0 && sizeQTN == 0) {
+          cov = NULL
+      ## if c + qtn <= n
+        } else {
+          cov = data.frame(cov, cGWAS)
+        }
+    # GAPIT
+    x = GAPIT(
+          Y = data.frame(taxa, phenotype[, trait, with = FALSE]),
+          GD = data.frame(taxa, genotype),
+          GM = map,
+          KI = kin,
+          CV = cov,
+          group.from = 10000,
+          group.to = 10000,
+          group.by = 10,
+          Model.selection = model.s,
+          SNP.fraction = snp.fraction,
+          SNP.test = FALSE,
+          memo = sprintf("%s_%s", project, trait))
+    write.table(x = data.frame(SNP = x$GWAS$SNP, P.value = x$GWAS$P.value),
+              file = sprintf("%s_%s_GWAS.txt", project, trait),
+              quote = F, row.names = F, sep = "\t")
   }
 
-  for (i in 1:length(trait.names)){   
-  # GWAS-assist
-    if(gwas.assist){
-      cat("   Loading QTNs information ...")
-      ## Read GWAS result
-      gwas = fread(sprintf("%s_%s_GWAS.txt", project, trait.names[i]))
-      ## Merge GM and p-value
-      names(GM)[1] = "SNP"
-      map_gwas = data.frame(GM, P.value = gwas$P.value[match(GM$SNP, gwas$SNP)])
-      map_gwas$P.value[is.na(map_gwas$P.value)] = 1
-      ## Order p-value
-      snp_order = order(map_gwas$P.value) 
-      map_gwas = map_gwas[snp_order, ]
-      GD = GD[ ,snp_order]
-      ## Find QTNs
-      index.sig = which(map_gwas$P.value < (cutoff/nrow(gwas)))
-      ## Generate a dataframe by number of QTNs
-      ### 1 QTNs
-      if(length(index.sig) == 1){
-        C.gwas = data.frame(m = GD[,index.sig])
-       ### 1+ QTNs
-      }else{
-        C.gwas = GD[,index.sig]
-        ## LD Remove
-        LD_remain = Blink.LDRemove(C.gwas, .7, index.sig, orientation = "col")
-        C.gwas = C.gwas[ ,LD_remain] 
-      }
-      cat("Done\n")}
-  ## Prevent c > n
-    if(is.null(C)) index.C = NULL
-    if(length(Y[ ,i]) < length(index.C) + ncol(C.gwas)){
-      diff = length(index.C) + ncol(C.gwas) - length(Y[,i])
-      if(is.null(C))
-        C = data.frame(C.gwas[ ,1 : (ncol(C.gwas) - diff)])
-      else
-        C = data.frame(C, C.gwas[ ,1 : (ncol(C.gwas) - diff)])
-    }else{
-      if(is.null(C))
-        C = data.frame(C.gwas)
-      else
-        C = data.frame(C, C.gwas)
-    } 
-  #if(is.na(C.inher)) C.inher = NULL else C.inher = C.inher
-  # GAPIT
-      x = GAPIT(
-        Y = data.frame(taxa, Y[,i]),
-        GM = GM,
-        GD = data.frame(taxa, GD),
-        KI = K,
-        CV = data.frame(taxa, C),
-        #CV.Inheritance = C.inher,
-        #PCA.total = PCA,
-        group.from = 10000,
-        group.to = 10000,
-        group.by = 10,
-        Model.selection = model.s,
-        SNP.fraction = snp.fraction,
-        SNP.test=FALSE,
-        memo = sprintf("%s_%s", project, trait.names[i]))
-    }
-  print(warnings())
-}, error = function(e){
-    stop(e)
+print(warnings())
+}, error = function(e) {
+  stop(e)
 })
-
-
-
-

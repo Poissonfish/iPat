@@ -13,7 +13,7 @@ abstract class iPatObject {
     Rectangle bound;
     Image icon;
     iFile file;
-    JLabel name;
+    String name;
     int indexOB;
 
     // Boolean
@@ -31,7 +31,7 @@ abstract class iPatObject {
 
     public iPatObject(int x, int y) {
         this.indexOB = this.countOB ++;
-        name = new JLabel();
+        this.name = "";
         this.setBound(new Rectangle(x, y, 0, 0));
         this.isDeleted = false;
         this.isGroup = false;
@@ -51,7 +51,6 @@ abstract class iPatObject {
     // Boundary/Position
     void setBound(Rectangle newBound) {
         this.bound = newBound;
-        updateLabel();
     }
     void setBoundXY(int newX, int newY) {
         int x = newX;
@@ -62,22 +61,15 @@ abstract class iPatObject {
         if (x + this.getWidth() <= xLimit && x >= 0 &&
             y + this.getHeight() <= yLimit && y >= 0)
             this.bound = new Rectangle(newX, newY, this.getWidth(), this.getHeight());
-        updateLabel();
     }
     void setBoundWH(int newW, int newH) {
         this.bound = new Rectangle(this.getX(), this.getY(), newW, newH);
-        updateLabel();
     }
     void setDeltaBound(int dx, int dy) {
         this.setBoundXY(this.getX() + dx, this.getY() + dy);
     }
     void setDeltaBound(double dx, double dy) {
         this.setBoundXY(this.getX() + (int)dx, this.getY() + (int)dy);
-    }
-
-    void updateLabel(){
-        this.name.setLocation(this.getX(), this.getY() + this.getHeight());
-        this.name.setSize(200, 15);
     }
 
     Rectangle getBound() {
@@ -118,7 +110,7 @@ abstract class iPatObject {
         return this.file.getPath();
     }
 
-    JLabel getLabel() {
+    String getName() {
         return this.name;
     }
 
@@ -126,13 +118,13 @@ abstract class iPatObject {
         return this.file;
     }
 
-    void setLabel(String text){
-        this.name.setText(text);
+    void setName(String text){
+        this.name = text;
     }
 
-    void setFile(String text) throws IOException {
+    void setFile(String text) {
         this.file = new iFile(text);
-        this.name.setText(this.file.getName());
+        this.name = text;
     }
 
     void remove() {
@@ -141,8 +133,7 @@ abstract class iPatObject {
         this.isContainMO = false;
         this.indexGr = -1;
         this.countOB --;
-        this.name.setText("");
-        this.setBound(new Rectangle(-1000, -1000, 1, 1));
+        this.setBound(new Rectangle(-999, -999, 0, 0));
     }
 
     // Group

@@ -34,7 +34,12 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
     // Button restore
     JButton buttonRestore;
 
-    public ModuleConfig(int index, String name, MethodType method, ToolType tool, FileFormat format, iFile fileP, iFile fileC, int indexConfig) {
+    public ModuleConfig(int index, String name, MethodType method,
+                        ToolType tool,
+                        FileFormat format,
+                        iFile fileP, String selectP,
+                        iFile fileC, String selectC,
+                        int indexConfig) {
         // initialize objects
         this.index = index;
         this.indexConfig = indexConfig;
@@ -42,7 +47,7 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
         this.format = format;
         this.paneWD = new PanelWD(name);
         this.paneWD.setPath(iPat.MODVAL.mapCommon.get("wd"));
-        this.panePhenotype = new PanelPhenotype(fileP, format);
+        this.panePhenotype = new PanelPhenotype(fileP, format, selectP);
         this.paneQC = new PanelQC();
         this.paneTop = new JTabbedPane();
         this.buttonRestore = new JButton("Restore Defaults");
@@ -75,16 +80,19 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
         this.paneTop.addTab("Working Directory", this.paneWD);
         this.paneTop.addTab("Phenotype", this.panePhenotype.getPane());
         this.paneTop.addTab("Quality Control", this.paneQC);
-        this.paneBottom = new PanelBottom(method, tool, fileC);
+        this.paneBottom = new PanelBottom(method, tool, fileC, selectC);
         this.paneBottom.setBorder("Tool Config.");
         // Layout
-        this.paneMain = new JPanel(new MigLayout("fillx", "[]", "[][]"));
-        this.paneMain.add(this.paneTop, "cell 0 0, grow");
+        this.paneMain = new JPanel(new MigLayout("fillx", "[]", "[300!][400::]"));
+        this.paneMain.add(this.paneTop, "cell 0 0, growx");
         this.paneMain.add(this.paneBottom.getPanel(), "cell 0 1, grow");
+        // Fill in modify value
+        this.load();
         // JFrame
         this.addWindowListener(this);
         this.setLocation(600, 500);
         this.setContentPane(this.paneMain);
+        this.setResizable(false);
         this.setVisible(true);
         this.pack();
     }
@@ -94,6 +102,24 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
         Object source = e.getSource();
         if(source == this.buttonRestore)
             restore();
+    }
+
+    void load() {
+        // load for top panel
+        this.paneWD.setPath(iPat.MODVAL.mapCommon.get("wd"));
+        this.paneQC.setMAF(iPat.MODVAL.mapCommon.get("maf"));
+        this.paneQC.setMS(iPat.MODVAL.mapCommon.get("ms"));
+
+        // load for bottom panel
+//        this.paneBottom.load();
+    }
+
+    void save() {
+        // common
+        iPat.MODVAL.mapCommon.put("wd", this.paneWD.getPath());
+        iPat.MODVAL.mapCommon.put("maf", this.paneQC.getMAF());
+        iPat.MODVAL.mapCommon.put("ms", this.paneQC.getMS());
+
     }
 
     void restore() {
@@ -108,7 +134,7 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
         return this.indexConfig;
     }
 
-    ArrayList<Command> getCommand() {
+    Command getCommand() {
         // If no command out there
         if (!this.isDeployed())
             return null;
@@ -149,16 +175,19 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
         }
         command1.addWD(this.paneWD.getPath());
         command1.addProject(this.paneWD.getProject());
+        command1.addCov(this.paneBottom.getCov());
         command1.addArg("-pSelect", this.panePhenotype.getSelected());
         command1.addArg("-maf", this.paneQC.getMAF());
         command1.addArg("-ms", this.paneQC.getMS());
         command1.addArg("-format", this.format.getName());
         // Specific command and cov
+
         command1.addAll(this.paneBottom.getCommand());
-        // add to arraylist
-        newCommand.add(command1);
-        // Return
-        return newCommand;
+        return command1;
+//        // add to arraylist
+//        newCommand.add(command1);
+//        // Return
+//        return newCommand;
     }
 
     ToolType getTool() {
@@ -180,6 +209,7 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
 
     @Override
     public void windowClosing(WindowEvent e) {
+        save();
         // so that the list will know which panel is closing
         System.out.println("Config closing (inter)");
         System.out.println("Token is : " + this.getIndexConfig());
@@ -222,8 +252,9 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
         // Trait
         iFile file;
         ArrayList<String> traitNames;
+        String selectP = null;
 
-        public PanelPhenotype (iFile file, FileFormat format) {
+        public PanelPhenotype (iFile file, FileFormat format, String selectP) {
             this.panelNA = new JPanel(new MigLayout("", "[grow]", "[grow]"));
             this.msgNA = new JLabel("<html><center> Phenotype Not Found </center></html>", SwingConstants.CENTER);
             this.msgNA.setFont(iPat.TXTLIB.plain);
@@ -231,6 +262,7 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
             this.scroll = new JScrollPane(this.panelNA, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                     JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
             this.file = file;
+            this.selectP = selectP;
             setupTraits(format);
         }
 
@@ -249,9 +281,9 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
             this.traitNames.remove(0);
             if (isContainFID || format == FileFormat.PLINK || format == FileFormat.PLINKBIN)
                 this.traitNames.remove(0);
-            this.panel = new SelectPanel(this.traitNames.toArray(new String[0]), new String[]{"Selected", "Excluded"});
+            this.panel = new SelectPanel(this.traitNames.toArray(new String[0]), new String[]{"Selected", "Excluded"}, this.selectP);
             this.scroll = new JScrollPane(this.panel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                    JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                    JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 //            return this.traitNames.toArray(new String[0]);
         }
 
@@ -271,14 +303,14 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
         GroupSlider sliderMAF;
 
         public PanelQC() {
-            super(new MigLayout("fillx", "[]", "[grow][grow]"));
+            super(new MigLayout("fillx", "[grow]", "[grow][grow]"));
 
-            this.sliderMS = new GroupSlider("By missing rate", 5, 4,
+            this.sliderMS = new GroupSlider("By missing rate", 4,
                     new String[]{"0", "0.05", "0.1", "0.2", "0.5"});
-            this.sliderMAF = new GroupSlider("By missing rate", 5, 3,
+            this.sliderMAF = new GroupSlider("By missing rate", 3,
                     new String[]{"0", "0.01", "0.05", "0.1", "0.2"});
-            this.add(this.sliderMS, "cell 0 0, grow");
-            this.add(this.sliderMAF, "cell 0 1, grow");
+            this.add(this.sliderMS, "cell 0 0, grow, align c");
+            this.add(this.sliderMAF, "cell 0 1, grow, align c");
         }
 
         String getMS() {
@@ -287,6 +319,14 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
 
         String getMAF() {
             return this.sliderMAF.getStrValue();
+        }
+
+        void setMS(String val) {
+            this.sliderMS.setStrValue(val);
+        }
+
+        void setMAF(String val) {
+            this.sliderMAF.setStrValue(val);
         }
     }
 
@@ -341,7 +381,7 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
         ILabel labelrrBLUP;
         ILabel labelBGLR;
 
-        public PanelBottom(MethodType method, ToolType tool, iFile fileC) {
+        public PanelBottom(MethodType method, ToolType tool, iFile fileC, String selectC) {
             this.method = method;
             switch (method) {
                 case GWAS:
@@ -370,7 +410,7 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
                     this.panel = new JPanel(new MigLayout("fill", "[grow]", "[grow]"));
                     break;
             }
-            this.config = new PanelConfig(method, tool, fileC);
+            this.config = new PanelConfig(method, tool, fileC, selectC);
             this.toolDrag = ToolType.NA;
             this.panel.add(this.config, "cell 0 0 1 3, grow, w 470:470:, h 270:270:");
             this.panel.addMouseListener(this);
@@ -389,6 +429,10 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
 
         ToolType getTool() {
             return this.config.getTool();
+        }
+
+        String getCov() {
+            return this.config.getCov();
         }
 
         Command getCommand() {
@@ -500,7 +544,7 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
         }
 
         @Override
-        public void mouseEntered(MouseEvent e) {
+            public void mouseEntered(MouseEvent e) {
 
         }
 
@@ -528,7 +572,7 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
             // text
             boolean isTapped;
 
-            PanelConfig(MethodType method, ToolType tool, iFile fileC) {
+            PanelConfig(MethodType method, ToolType tool, iFile fileC, String selectC) {
                 this.msg = new JLabel("", SwingConstants.CENTER);
                 this.msg.setFont(iPat.TXTLIB.plainBig);
                 this.isTapped = false;
@@ -543,7 +587,7 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
                     this.toolDeployed = ToolType.NA;
                     this.changeFontDrag();
                 }
-                this.paneCov = new PanelCov(method, fileC);
+                this.paneCov = new PanelCov(method, fileC, selectC);
                 // GUI
                 this.setOpaque(true);
                 this.setLayout(new MigLayout("", "[grow]", "[grow]"));
@@ -590,16 +634,18 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
                 return this.isDeployed;
             }
 
+            String getCov() {
+                return this.paneCov.getSelected();
+            }
+
             Command getCommand() {
                 Command command = new Command();
                 // get cov select
                 if (this.isTapped()) {
-                    command.addAll(this.paneCov.getCommand());
                     command.addAll(this.paneDeploy.getCommand());
                     return command;
                 // return default command
                 } else {
-                    command.addArg("-cSelect", "NA");
                     HashMap<String, String> map;
                     switch (this.toolDeployed) {
                         case GAPIT:
@@ -696,25 +742,24 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
         SelectPanel panel;
         JScrollPane scroll;
         // Blank panel;
-        JPanel panelNA;
         JLabel msgNA;
-        // Trait
+        // cov
         ArrayList<String> covNames;
+        String selectC = null;
         // GWAS_Assisted
         GroupSlider slideCutoff;
         GroupCheckBox checkGWAS;
         // file is Empty
         boolean isEmpty = false;
-        public PanelCov (MethodType method, iFile file) {
+        public PanelCov (MethodType method, iFile file, String selectC) {
+            this.selectC = selectC;
             this.isEmpty = file.isEmpty();
             // If no covariate file
             if (this.isEmpty) {
-                this.panelNA = new JPanel(new MigLayout("", "[grow]", "[grow]"));
+                this.panel = new SelectPanel(new MigLayout("", "[grow]", "[grow]"));
                 this.msgNA = new JLabel("<html><center> Covariates Not Found </center></html>", SwingConstants.CENTER);
                 this.msgNA.setFont(iPat.TXTLIB.plain);
-                this.panelNA.add(this.msgNA, "grow");
-                this.scroll = new JScrollPane(this.panelNA, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                        JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                this.panel.add(this.msgNA, "grow");
             // If has covariate file
             } else {
                 String tempStr = null;
@@ -725,29 +770,31 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
                     e.printStackTrace();
                 }
                 this.covNames = new ArrayList<>(Arrays.asList(new iFile().getSepStr(tempStr)));
-                this.panel = new SelectPanel(this.covNames.toArray(new String[0]), new String[]{"Selected", "Excluded"});
-                this.scroll = new JScrollPane(this.panel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                        JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                this.panel = new SelectPanel(this.covNames.toArray(new String[0]), new String[]{"Selected", "Excluded"}, selectC);
             }
             // Assemble : if is GS
             if (method == MethodType.GS) {
+                JPanel paneSub = new JPanel(new MigLayout("fillx", "[grow]", "[grow][grow][grow]"));
                 // Initialize components
                 this.checkGWAS = new GroupCheckBox("Includes seleted SNPs from GWAS");
                 this.checkGWAS.setCheck(false);
                 this.checkGWAS.check.addActionListener(this);
-                this.slideCutoff = new GroupSlider("Bonferroni cutoff (Power of 10)", 2, 10, 3, 1, 3);
+                this.slideCutoff = new GroupSlider("<html>Bonferroni Cutoff<br>(Negative Power of 10)</html>", 3, new String[]{"0.001", "0.0001", "0.00001", "0.000001", "0.0000001", "0.00000001", "0.000000001", "0.0000000001"}, new String[]{"3", "4", "5", "6", "7", "8", "9", "10"});
                 this.slideCutoff.slider.setEnabled(false);
                 // Assemble
-                this.paneMain = new JPanel(new MigLayout("fillx", "[grow]", "[grow][grow][grow]"));
-                this.paneMain.add(this.checkGWAS, "grow, cell 0 0");
-                this.paneMain.add(this.slideCutoff, "grow, cell 0 1");
-                this.paneMain.add(this.scroll, "grow, cell 0 2");
+                paneSub.add(this.checkGWAS, "grow, cell 0 0, align c");
+                paneSub.add(this.slideCutoff, "grow, cell 0 1, align c");
+                paneSub.add(this.panel, "grow, cell 0 2, align c");
+                this.scroll = new JScrollPane(paneSub, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                        JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             // Assemble : if is GWAS
             } else {
                 // Assemble
-                this.paneMain = new JPanel(new MigLayout("fillx", "[grow]", "[grow]"));
-                this.paneMain.add(this.scroll, "grow, cell 0 0");
+                this.scroll = new JScrollPane(this.panel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                        JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             }
+            this.paneMain = new JPanel(new MigLayout("fillx", "[grow]", "[grow]"));
+            this.paneMain.add(this.scroll, "grow");
         }
 
         boolean isEmpty() {
@@ -763,11 +810,11 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
         }
 
         void setAsBayes() {
-            this.panel = new SelectPanel(this.covNames.toArray(new String[0]), new String[]{"FIXED", "BRR", "BayesA", "BL", "BayesB", "BayesC", "OMIT IT"});
+            this.panel = new SelectPanel(this.covNames.toArray(new String[0]), new String[]{"FIXED", "BRR", "BayesA", "BL", "BayesB", "BayesC", "OMIT IT"}, this.selectC);
         }
 
         void setAsRegular() {
-            this.panel = new SelectPanel(this.covNames.toArray(new String[0]), new String[]{"Selected", "Excluded"});
+            this.panel = new SelectPanel(this.covNames.toArray(new String[0]), new String[]{"Selected", "Excluded"}, this.selectC);
         }
 
         JPanel getPane() {
@@ -777,6 +824,10 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
         Command getCommand() {
             Command command = new Command();
             command.addArg("-cSelect", this.getSelected());
+            if (method == MethodType.GS) {
+                command.addArg("-gwas", this.checkGWAS.isCheck() ? "TRUE" : "FALSE");
+                command.add(this.slideCutoff.getStrValue());
+            }
             return command;
         }
 
@@ -790,14 +841,32 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
 
     class SelectPanel extends JPanel {
         GroupCombo[] combo;
+        String[] select;
         int size;
+        boolean isReset = true;
 
-        public SelectPanel(String[] names, String[] items){
+        public SelectPanel(MigLayout layout) {
+            super(layout);
+        }
+
+        public SelectPanel(String[] names, String[] items, String select){
             this.size = names.length;
             this.setLayout(new MigLayout("fillx"));
-            combo = new GroupCombo[names.length];
-            for(int i = 0; i < this.size; i++){
+            this.combo = new GroupCombo[size];
+            // split select into array
+            // if not null
+            if (select != null) {
+                this.select = select.split("sep");
+                // if cov has not changed (same set and same tool
+                boolean isSame = Arrays.asList(items).contains(this.select[0]);
+                if (this.select.length == this.size && isSame)
+                    this.isReset = false;
+            }
+            // build combo list
+            for (int i = 0; i < this.size; i++) {
                 combo[i] = new GroupCombo(names[i], items);
+                if (!this.isReset)
+                    combo[i].setValue(Arrays.asList(items).indexOf(this.select[i]));
                 this.add(combo[i], "wrap, align c");
             }
         }
@@ -805,7 +874,7 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
         public String getSelected(){
             StringBuffer indexCov = new StringBuffer();
             for (int i = 0; i < this.size; i ++)
-                indexCov.append((String)combo[i].getValue() + "sep");
+                indexCov.append(combo[i].getValue() + "sep");
             return indexCov.toString();
         }
     }

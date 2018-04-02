@@ -3,6 +3,7 @@ import java.util.ArrayList;
 public class Command extends ArrayList<String> {
     String wd;
     String project;
+    String cov;
 
     public Command() {
         super();
@@ -25,6 +26,12 @@ public class Command extends ArrayList<String> {
         this.add(arg);
     }
 
+    void addCov(String selectC) {
+        this.cov = selectC;
+        this.add("-cSelect");
+        this.add(selectC);
+    }
+
     String[] getCommand() {
         return this.toArray(new String[0]);
     }
@@ -33,5 +40,8 @@ public class Command extends ArrayList<String> {
     }
     String getWD() {
         return this.wd;
+    }
+    String getCov() {
+        return this.cov;
     }
 }

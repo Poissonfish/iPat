@@ -37,10 +37,10 @@ class PanelGAPIT extends PanelTool {
         basic.add(comboKGrp, "cell 0 2, align c");
         // Adv features
         adv = new JPanel(new MigLayout("fillx", "[]", "[grow][grow]"));
-        slideSNPfrac = new GroupSlider("SNP.fraction", 5, 5, new String[]{"0.2", "0.4", "0.6", "0.8", "1"});
+        slideSNPfrac = new GroupSlider("SNP.fraction", 5, new String[]{"0.2", "0.4", "0.6", "0.8", "1"});
         slidefilefrag = new GroupSlider("File fragment", 1, 512, 1, 64, 128);
         checkModelSelect = new JCheckBox("Model selection");
-        adv.add(slideSNPfrac, "cell 0 0");
+        adv.add(slideSNPfrac, "cell 0 0, align c");
         adv.add(checkModelSelect, "cell 0 1 2 1, align c");
         // cov
         if (!cov.isEmpty())
@@ -74,7 +74,7 @@ class PanelFarmCPU extends PanelTool {
         basic = new JPanel(new MigLayout("fillx"));
         comboBin = new GroupCombo("Method bin",
                 new String[]{"static", "optimum"});
-        slideLoop = new GroupSlider("maxLoop", 10, 10, new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"});
+        slideLoop = new GroupSlider("maxLoop", 10, new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"});
         basic.add(comboBin, "cell 0 0");
         basic.add(slideLoop, "cell 0 1");
         // cov
@@ -103,7 +103,7 @@ class PanelPlink extends PanelTool {
     public PanelPlink(ModuleConfig.PanelCov cov) {
         // Basic features
         basic = new JPanel(new MigLayout("fillx"));
-        slideCI = new GroupSlider("C.I.", 3, 3, new String[]{"0.5", "0.68", "0.95"});
+        slideCI = new GroupSlider("C.I.", 3, new String[]{"0.5", "0.68", "0.95"});
         comboModel = new GroupCombo("Method",
                 new String[]{"GLM", "Logistic Regression"});
         basic.add(slideCI, "cell 0 0");
@@ -134,10 +134,10 @@ class PanelgBLUP extends PanelTool {
     public PanelgBLUP(ModuleConfig.PanelCov cov) {
         // Adv features
         adv = new JPanel(new MigLayout("fillx"));
-        slideSNPfrac = new GroupSlider("SNP.fraction", 5, 5, new String[]{"0.2", "0.4", "0.6", "0.8", "1"});
+        slideSNPfrac = new GroupSlider("SNP.fraction", 5, new String[]{"0.2", "0.4", "0.6", "0.8", "1"});
         checkModelSelect = new JCheckBox("Model selection");
-        adv.add(slideSNPfrac, "cell 0 0");
-        adv.add(checkModelSelect, "cell 0 1 2 1");
+        adv.add(slideSNPfrac, "cell 0 0, align c");
+        adv.add(checkModelSelect, "cell 0 1 2 1, align c");
         // cov
         if (!cov.isEmpty())
             cov.setAsRegular();
@@ -151,7 +151,7 @@ class PanelgBLUP extends PanelTool {
         ArrayList<String> command = new ArrayList<String>();
         command.add("-arg");
         command.add(slideSNPfrac.getStrValue());
-        command.add(checkModelSelect.isSelected() ? "True" : "False");
+        command.add(checkModelSelect.isSelected() ? "TRUE" : "FALSE");
         return command;
     }
 }
@@ -166,7 +166,7 @@ class PanelrrBLUP extends PanelTool {
         basic = new JPanel(new MigLayout("fillx", "[]", "[grow]"));
         comboImpute = new GroupCombo("impute.method", new String[]{"mean", "EM"});
         checkShrink = new JCheckBox("Shrinkage estimation");
-        basic.add(comboImpute, "cell 0 0");
+        basic.add(comboImpute, "cell 0 0, align c");
         basic.add(checkShrink, "cell 0 1 2 1, align c");
         // cov
         if (!cov.isEmpty())
@@ -187,6 +187,7 @@ class PanelrrBLUP extends PanelTool {
 }
 
 class PanelBGLR extends PanelTool  {
+    JScrollPane scroll;
     JPanel basic;
     GroupCombo comboModel;
     GroupCombo comboResponse;
@@ -196,24 +197,26 @@ class PanelBGLR extends PanelTool  {
 
     public PanelBGLR(ModuleConfig.PanelCov cov) {
         // Basic features
-        basic = new JPanel(new MigLayout("fillx", "[]", "[grow][grow][grow][grow][grow]"));
+        basic = new JPanel(new MigLayout("fillx", "[grow]", "[grow][grow][grow][grow][grow]"));
         comboModel = new GroupCombo("Model of the Predictor (markers)",
                 new String[]{"BRR", "BayesA", "BL", "BayesB", "BayesC", "FIXED"});
         comboResponse = new GroupCombo("response_type",
                 new String[]{"gaussian", "ordinal"});
-        slideNIter = new GroupSlider("nIter", 1000, 50000, 5000, 2000, 10000);
-        slideBurnIn = new GroupSlider("burnIn", 200, 2000, 500, 100, 500);
-        slideThin = new GroupSlider("thin", 1, 10, 5, 1, 5);
-        basic.add(comboModel, "cell 0 0");
-        basic.add(comboResponse, "cell 0 1");
-        basic.add(slideNIter, "cell 0 2");
-        basic.add(slideBurnIn, "cell 0 3");
-        basic.add(slideThin, "cell 0 4");
+        slideNIter = new GroupSlider("nIter", 2, new String[]{"1000", "5000", "10000", "30000", "50000", "100000"}, new String[]{"1K", "5K", "10K", "30k", "50k", "100k"});
+        slideBurnIn = new GroupSlider("burnIn", 2, new String[]{"200", "500", "1000", "3000", "5000", "10000"});
+        slideThin = new GroupSlider("thin", 5, new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"});
+        basic.add(comboModel, "cell 0 0, grow");
+        basic.add(comboResponse, "cell 0 1, grow");
+        basic.add(slideNIter, "cell 0 2, grow");
+        basic.add(slideBurnIn, "cell 0 3, grow");
+        basic.add(slideThin, "cell 0 4, grow");
         // cov
         if (!cov.isEmpty())
             cov.setAsBayes();
+        // scroll
+        scroll = new JScrollPane(this.basic, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         // Build tab pane
-        this.addTab("BGLR Input", basic);
+        this.addTab("BGLR Input", scroll);
         this.addTab("Covariates", cov.getPane());
     }
 
