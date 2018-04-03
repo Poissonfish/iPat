@@ -30,7 +30,7 @@ public class MapValue {
         mapGAPIT.put("checkS", "FALSE");
         // FarmCPU
         mapFarmCPU = new HashMap<>();
-        mapFarmCPU.put("combo", "static");
+        mapFarmCPU.put("bin", "optimum");
         mapFarmCPU.put("loop", "10");
         // PLINK
         mapPLINK = new HashMap<>();
@@ -47,7 +47,7 @@ public class MapValue {
         // BGLR
         mapBGLR = new HashMap<>();
         mapBGLR.put("model", "BRR");
-        mapBGLR.put("response", "gausssian");
+        mapBGLR.put("response", "gaussian");
         mapBGLR.put("niter", "5000");
         mapBGLR.put("burn", "500");
         mapBGLR.put("thin", "5");

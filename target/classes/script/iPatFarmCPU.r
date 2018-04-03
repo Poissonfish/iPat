@@ -1,18 +1,23 @@
 tryCatch({
 # Library
-  cat("=== GAPIT ===\n")
+  cat("=== FarmCPU ===\n")
   cat("   Loading libraries ...")
-  library(magrittr)
+  library(bigmemory)
+  library(biganalytics)
+  library(compiler)
   library(data.table)
+  library(magrittr)
   library(MASS) # required for ginv
   library(multtest)
   library(gplots)
-  library(compiler) #required for cmpfun
   library(scatterplot3d)
   library(R.utils)
-  source("/Users/jameschen/IdeaProjects/iPat/target/classes/Function_iPat.R")
-  source("/Users/jameschen/IdeaProjects/iPat/target/classes/Function_GAPIT.R")
-  source("/Users/jameschen/IdeaProjects/iPat/target/classes/Function_FarmCPU.R")
+  library(ape)
+  library(magrittr)
+  library(data.table)
+  source("http://zzlab.net/iPat/Function_iPat.R")
+  source("http://zzlab.net/GAPIT/gapit_functions.txt")
+  source("http://zzlab.net/FarmCPU/FarmCPU_functions.txt")
   cat("Done\n")
 
 # Input arguments
@@ -90,20 +95,14 @@ tryCatch({
         if (grepl("/NA", arg[i]))
           kin = NULL
         else
-          kin = data.frame(fread(arg[i]))
+          kin = fread(arg[i])
         cat("Done\n")
       },
       "-arg" = {
         i = i + 1
-        model = arg[i]
+        method.bin = arg[i]
         i = i + 1
-        ki.c = arg[i]
-        i = i + 1
-        ki.g = arg[i]
-        i = i + 1
-        snp.fraction = as.numeric(arg[i])
-        i = i + 1
-        model.s = as.logical(arg[i])
+        maxLoop = as.numeric(arg[i])
       }
     )
   }
@@ -123,16 +122,10 @@ tryCatch({
   # Missing rate
     MS = is.na(genotype) %>%
       apply(2, function(x) sum(x)/length(x))
-    genotype = genotype[, MS <= ms, with = FALSE]
-    map = map[MS <= ms]
-  # MAF
-    # No NA allowed in GAPIT
+    genotype = data.frame(taxa, genotype[, MS <= ms, with = FALSE])
+    map = data.frame(map[MS <= ms])
+    # impute?
     genotype[is.na(genotype)] = 1
-    MAF = apply(genotype, 2, mean) %>%
-          as.matrix() %>%
-          apply(1, function(x) min(1 - x/2, x/2))
-    genotype = data.frame(taxa, genotype[, MAF >= maf, with = FALSE])
-    map = data.frame(map[MAF >= maf])
   cat("Done\n")
 
 # Subset Covariates
@@ -146,44 +139,23 @@ tryCatch({
   }
   cat("Done\n")
 
-# Model
-  cat("   Model setup ...")
-  switch(model,
-    "GLM" = {
-      g.from = 1
-      g.to = 1
-      g.by = 10},
-    "MLM" = {
-      g.from = 10000000
-      g.to = 10000000
-      g.by = 10},
-    "CMLM" = {
-      g.from = 1
-      g.to = 10000000
-      g.by = 10}
-  )
-  cat("Done\n")
-
-# GAPIT
+# FarmCPU
   for (trait in nameTraits) {
-    x = GAPIT(
+    x = FarmCPU(
           Y = data.frame(taxa, phenotype[, trait, with = FALSE]),
           GM = map,
           GD = genotype,
-          KI = kin,
           CV = cov,
-          PCA.total = 3,
-          kinship.cluster = ki.c,
-          kinship.group = ki.g,
-          group.from = g.from,
-          group.to = g.to,
-          group.by = g.by,
-          Model.selection = model.s,
-          SNP.fraction = snp.fraction,
+          method.bin = method.bin,
+          bin.size = c(5e5, 5e6, 5e7), # Default set of bin.size
+          bin.selection = seq(10, 100, 10), # Default set of bin.selection
+          maxLoop = maxLoop,
+          MAF.calculate = TRUE,
+          maf.threshold = maf,
           memo = sprintf("%s_%s", project, trait))
     write.table(x = data.frame(SNP = x$GWAS$SNP, P.value = x$GWAS$P.value),
-              file = sprintf("%s_%s_GWAS.txt", project, trait),
-              quote = F, row.names = F, sep = "\t")
+                file = sprintf("%s_%s_GWAS.txt", project, trait),
+                quote = F, row.names = F, sep = "\t")
   }
 
 print(warnings())

@@ -181,7 +181,6 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
         command1.addArg("-ms", this.paneQC.getMS());
         command1.addArg("-format", this.format.getName());
         // Specific command and cov
-
         command1.addAll(this.paneBottom.getCommand());
         return command1;
 //        // add to arraylist
@@ -571,11 +570,14 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
             PanelCov paneCov;
             // text
             boolean isTapped;
+            // method
+            MethodType method;
 
             PanelConfig(MethodType method, ToolType tool, iFile fileC, String selectC) {
                 this.msg = new JLabel("", SwingConstants.CENTER);
                 this.msg.setFont(iPat.TXTLIB.plainBig);
                 this.isTapped = false;
+                this.method = method;
                 // If is deployed
                 if (tool.isDeployed()) {
                     this.isDeployed = true;
@@ -640,7 +642,8 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
 
             Command getCommand() {
                 Command command = new Command();
-                // get cov select
+                if (this.method == MethodType.GS)
+                    command.addAll(this.paneCov.getGWAS());
                 if (this.isTapped()) {
                     command.addAll(this.paneDeploy.getCommand());
                     return command;
@@ -660,11 +663,16 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
                         case FarmCPU:
                             map = iPat.MODVAL.mapFarmCPU;
                             command.add("-arg");
-                            command.add(map.get("combo"));
+                            command.add(map.get("bin"));
                             command.add(map.get("loop"));
                             return command;
                         case PLINK:
-
+                            map = iPat.MODVAL.mapPLINK;
+                            command.add("-arg");
+                            command.add(map.get("ci"));
+                            command.add(map.get("model"));
+                            command.add(iPat.FILELIB.getAbsolutePath("plink"));
+                            return command;
                         case gBLUP:
                             map = iPat.MODVAL.mapgBLUP;
                             command.add("-arg");
@@ -737,6 +745,7 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
     }
 
     class PanelCov implements ActionListener{
+        MethodType method;
         // Structure
         JPanel paneMain;
         SelectPanel panel;
@@ -752,6 +761,7 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
         // file is Empty
         boolean isEmpty = false;
         public PanelCov (MethodType method, iFile file, String selectC) {
+            this.method = method;
             this.selectC = selectC;
             this.isEmpty = file.isEmpty();
             // If no covariate file
@@ -821,13 +831,10 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
             return this.paneMain;
         }
 
-        Command getCommand() {
+        Command getGWAS() {
             Command command = new Command();
-            command.addArg("-cSelect", this.getSelected());
-            if (method == MethodType.GS) {
-                command.addArg("-gwas", this.checkGWAS.isCheck() ? "TRUE" : "FALSE");
-                command.add(this.slideCutoff.getStrValue());
-            }
+            command.addArg("-gwas", this.checkGWAS.isCheck() ? "TRUE" : "FALSE");
+            command.add(this.slideCutoff.getStrValue());
             return command;
         }
 

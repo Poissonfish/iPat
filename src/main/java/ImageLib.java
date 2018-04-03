@@ -54,18 +54,18 @@ public class ImageLib {
         colorHintTap = Color.decode("#D0E4ED");
         // Image
         try {
-            iPat = ImageIO.read(this.getClass().getResource("iPat.png"));
-            file = ImageIO.read(this.getClass().getResource("File.png"));
-            cov = ImageIO.read(this.getClass().getResource("File_c.png"));
-            kin = ImageIO.read(this.getClass().getResource("File_k.png"));
-            module = ImageIO.read(this.getClass().getResource("Model.png"));
-            moduleSuc = ImageIO.read(this.getClass().getResource("Model_suc.png"));
-            moduleFal = ImageIO.read(this.getClass().getResource("Model_fal.png"));
-            hintProject = ImageIO.read(this.getClass().getResource("hint_project.png"));
-            hintTrash = ImageIO.read(this.getClass().getResource("hint_trash.png"));
-            hintModule = ImageIO.read(this.getClass().getResource("hint_model.png"));
-            hintDrag = ImageIO.read(this.getClass().getResource("hint_drag.png"));
-            hintDrop = ImageIO.read(this.getClass().getResource("hint_drop.png"));
+            iPat = ImageIO.read(this.getClass().getResource("img/iPat.png"));
+            file = ImageIO.read(this.getClass().getResource("img/File.png"));
+            cov = ImageIO.read(this.getClass().getResource("img/File_c.png"));
+            kin = ImageIO.read(this.getClass().getResource("img/File_k.png"));
+            module = ImageIO.read(this.getClass().getResource("img/Model.png"));
+            moduleSuc = ImageIO.read(this.getClass().getResource("img/Model_suc.png"));
+            moduleFal = ImageIO.read(this.getClass().getResource("img/Model_fal.png"));
+            hintProject = ImageIO.read(this.getClass().getResource("img/hint_project.png"));
+            hintTrash = ImageIO.read(this.getClass().getResource("img/hint_trash.png"));
+            hintModule = ImageIO.read(this.getClass().getResource("img/hint_model.png"));
+            hintDrag = ImageIO.read(this.getClass().getResource("img/hint_drag.png"));
+            hintDrop = ImageIO.read(this.getClass().getResource("img/hint_drop.png"));
         } catch (IOException e) {
             System.out.println("Failed to load images!");
         }

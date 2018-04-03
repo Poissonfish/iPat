@@ -431,7 +431,7 @@ class iPatList implements ActionListener, WindowListener {
                     if (files.get(i).getPath().toUpperCase().endsWith("PED")) {
                         this.getFileN(i1).setFileType(FileType.Genotype);
                         PED = i;
-                    } else if (files.get(1).getPath().toUpperCase().endsWith("MAP") && countCol.get(i) == 4) {
+                    } else if (files.get(i).getPath().toUpperCase().endsWith("MAP") && countCol.get(i) == 4) {
                         this.getFileN(i1).setFileType(FileType.Map);
                         MAP = i;
                     }
@@ -748,11 +748,10 @@ class iPatList implements ActionListener, WindowListener {
         } else if (source == this.menuRun) {
             iPatModule mo = this.getModuleN(this.indexSelected);
             FileFormat format = mo.getFormat();
-            // Add command for launching app
-            Command commandGWAS = mo.getCommandGWAS();
-            Command commandGS = mo.getCommandGS();
-            Command commandBSA = mo.getCommandBSA();
-            ArrayList<Command> commandRun = new ArrayList<>();
+            // Add command for launching app (deep copy)
+            Command commandGWAS = mo.getCommandGWAS().getCopy();
+            Command commandGS = mo.getCommandGS().getCopy();
+            Command commandBSA  = mo.getCommandBSA().getCopy();
             // do conversion if needed, add filepaths to the command
             try {
                 String pathGD = this.getFile(this.indexSelected, FileType.Genotype).getAbsolutePath();
@@ -764,13 +763,19 @@ class iPatList implements ActionListener, WindowListener {
                     new iPatConverter(format,
                             isPLINK ? FileFormat.PLINK : FileFormat.Numeric,
                             pathGD, pathGM);
-                    if (isPLINK) {
+                    if (isPLINK && format != FileFormat.PLINK) {
                         pathGD = filename + "_recode.ped";
                         pathGM = filename + "_recode.map";
-                    } else if (format != FileFormat.Numeric) {
+                        format = FileFormat.PLINK;
+                    } else if (!isPLINK && format != FileFormat.Numeric) {
                         pathGD = filename + "_recode.dat";
                         pathGM = filename + "_recode.nmap";
                         format = FileFormat.Numeric;
+                    } else if (format == FileFormat.PLINKBIN) {
+                        commandGWAS.addArg("-fam",
+                                this.getFile(this.indexSelected, FileType.FAM).getAbsolutePath());
+                        commandGWAS.addArg("-bim",
+                                this.getFile(this.indexSelected, FileType.BIM).getAbsolutePath());
                     }
                     commandGWAS.addArg("-phenotype",
                             this.getFile(this.indexSelected, FileType.Phenotype).getAbsolutePath());
@@ -808,6 +813,7 @@ class iPatList implements ActionListener, WindowListener {
 
                 }
                 // assemble command
+                ArrayList<Command> commandRun = new ArrayList<>();
                 commandRun.add(commandGWAS);
                 commandRun.add(commandGS);
                 commandRun.add(commandBSA);

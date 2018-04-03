@@ -10,13 +10,13 @@ tryCatch({
   library(compiler) #required for cmpfun
   library(scatterplot3d)
   library(R.utils)
-  source("/Users/jameschen/IdeaProjects/iPat/target/classes/Function_iPat.R")
-  source("/Users/jameschen/IdeaProjects/iPat/target/classes/Function_GAPIT.R")
-  source("/Users/jameschen/IdeaProjects/iPat/target/classes/Function_FarmCPU.R")
+  source("http://zzlab.net/iPat/Function_iPat.R")
+  source("http://zzlab.net/GAPIT/gapit_functions.txt")
+  source("http://zzlab.net/FarmCPU/FarmCPU_functions.txt")
   cat("Done\n")
 
 # Input arguments
-  # arg = commandArgs(trailingOnly=TRUE)
+  arg = commandArgs(trailingOnly=TRUE)
   for (i in 1 : length(arg)) {
     switch (arg[i],
       "-wd" = {
@@ -179,14 +179,14 @@ tryCatch({
             sizeQTN = 0
         ### 1 QTNs
           } else if (length(indexSig) == 1) {
-            cGWAS = data.frame(m = genotype[ ,indexSig])
+            cGWAS = data.frame(m = genotype[ ,..indexSig])
             sizeQTN = 1
         ### 1+ QTNs
           } else {
-            cGWAS = genotype[ ,indexSig]
+            cGWAS = genotype[ ,..indexSig]
             ## LD Remove
             LD_remain = Blink.LDRemove(cGWAS, .7, indexSig, orientation = "col")
-            cGWAS = data.frame(cGWAS[ ,LD_remain])
+            cGWAS = data.frame(cGWAS[ ,..LD_remain])
             sizeQTN = length(LD_remain)
           }
           cat("Done\n")
@@ -206,26 +206,36 @@ tryCatch({
         } else {
           cov = data.frame(cov, cGWAS)
         }
-    # GAPIT
+  # GAPIT
     x = GAPIT(
-          Y = data.frame(taxa, phenotype[, trait, with = FALSE]),
-          GD = data.frame(taxa, genotype),
-          GM = map,
-          KI = kin,
-          CV = cov,
-          group.from = 10000,
-          group.to = 10000,
-          group.by = 10,
-          Model.selection = model.s,
-          SNP.fraction = snp.fraction,
-          SNP.test = FALSE,
-          memo = sprintf("%s_%s", project, trait))
-    write.table(x = data.frame(SNP = x$GWAS$SNP, P.value = x$GWAS$P.value),
-              file = sprintf("%s_%s_GWAS.txt", project, trait),
-              quote = F, row.names = F, sep = "\t")
+      Y = data.frame(taxa, phenotype[[trait]]),
+      GD = data.frame(taxa, genotype),
+      GM = map,
+      KI = kin,
+      CV = cov,
+      group.from = 10000,
+      group.to = 10000,
+      group.by = 10,
+      Model.selection = model.s,
+      SNP.fraction = snp.fraction,
+      SNP.test = FALSE,
+      memo = sprintf("%s_%s", project, trait)
+    )
+    iPat.Phenotype.View(myY = data.frame(taxa, phenotype[[trait]]), filename = sprintf("iPat_%s_%s", project, trait))
+    write.table(x = data.frame(taxa = x$Pred$Taxa, Pred = x$Pred$Prediction, PEV = x$Pred$PEV),
+          file = sprintf("iPat_%s_%s_EBV.txt", project, trait),
+          quote = F, row.names = F, sep = "\t")
+    pdf(sprintf("iPat_%s_%s_GEBV_value.pdf", project, trait), width = 5, height = 5)
+    plot(phenotype[[trait]], x$Pred$Prediction, main = "Phenotype v.s. GEBV")
+    dev.off()
+    pdf(sprintf("iPat_%s_%s_GEBV_PEV.pdf", project, trait), width = 5, height = 5)
+    plot(phenotype[[trait]], x$Pred$PEV, main = "Phenotype v.s. PEV")
+    dev.off()
+    pdf(sprintf("iPat_%s_%s_GEBV_hist.pdf", project, trait), width = 5, height = 5)
+    hist(x$Pred$Prediction, main = "Distribution of GEBV")
+    dev.off()
   }
-
-print(warnings())
+  print(warnings())
 }, error = function(e) {
   stop(e)
 })

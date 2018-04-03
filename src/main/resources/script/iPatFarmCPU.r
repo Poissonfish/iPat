@@ -15,9 +15,9 @@ tryCatch({
   library(ape)
   library(magrittr)
   library(data.table)
-  source("/Users/jameschen/IdeaProjects/iPat/target/classes/Function_iPat.R")
-  source("/Users/jameschen/IdeaProjects/iPat/target/classes/Function_GAPIT.R")
-  source("/Users/jameschen/IdeaProjects/iPat/target/classes/Function_FarmCPU.R")
+  source("http://zzlab.net/iPat/Function_iPat.R")
+  source("http://zzlab.net/GAPIT/gapit_functions.txt")
+  source("http://zzlab.net/FarmCPU/FarmCPU_functions.txt")
   cat("Done\n")
 
 # Input arguments
@@ -124,6 +124,8 @@ tryCatch({
       apply(2, function(x) sum(x)/length(x))
     genotype = data.frame(taxa, genotype[, MS <= ms, with = FALSE])
     map = data.frame(map[MS <= ms])
+    # impute?
+    genotype[is.na(genotype)] = 1
   cat("Done\n")
 
 # Subset Covariates

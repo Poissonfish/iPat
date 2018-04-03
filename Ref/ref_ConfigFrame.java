@@ -502,8 +502,7 @@ public class ConfigFrame extends JFrame implements ActionListener{
 				case BGLR:
 					command_exe = new String[]{
 							iPat.R_exe,
-							Paths.get(iPatPanel.jar.getParent(), "res", "iPat_BGLR.R").toString()};
-					command_specific = new String[]{
+j;lk  					command_specific = new String[]{
 							(String) model_b.combo.getSelectedItem(),  // 17
 							(String) response_b.combo.getSelectedItem(),
 							(String) niter_b.combo.getSelectedItem(),

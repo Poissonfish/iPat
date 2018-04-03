@@ -39,7 +39,7 @@ class iPatModule extends iPatObject implements ActionListener{
         this.isModule = true;
         this.isContainMO = true;
         this.indexMO = countMO++;
-        this.setName("Module " + (this.indexMO + 1));
+        this.setName("Module_" + (this.indexMO + 1));
         setIcon("module");
         // Define command
         this.format  = FileFormat.NA;
@@ -140,7 +140,6 @@ class iPatModule extends iPatObject implements ActionListener{
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println("alive : " + thread.isAlive());
         if (!thread.isRunning()) {
             this.rotateSwitch = false;
             timerThread.stop();

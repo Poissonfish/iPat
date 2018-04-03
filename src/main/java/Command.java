@@ -32,6 +32,17 @@ public class Command extends ArrayList<String> {
         this.add(selectC);
     }
 
+    Command getCopy() {
+        Command command = new Command();
+        if (!this.isEmpty()) {
+            command.addAll(this);
+            command.addWD(this.getWD());
+            command.addProject(this.getProject());
+            command.addCov(this.getCov());
+        }
+        return command;
+    }
+
     String[] getCommand() {
         return this.toArray(new String[0]);
     }

@@ -73,10 +73,10 @@ class PanelFarmCPU extends PanelTool {
         // Basic features
         basic = new JPanel(new MigLayout("fillx"));
         comboBin = new GroupCombo("Method bin",
-                new String[]{"static", "optimum"});
+                new String[]{"optimum", "static"});
         slideLoop = new GroupSlider("maxLoop", 10, new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"});
-        basic.add(comboBin, "cell 0 0");
-        basic.add(slideLoop, "cell 0 1");
+        basic.add(comboBin, "cell 0 0, align c");
+        basic.add(slideLoop, "cell 0 1, align c");
         // cov
         if (!cov.isEmpty())
             cov.setAsRegular();
@@ -122,6 +122,7 @@ class PanelPlink extends PanelTool {
         command.add("-arg");
         command.add(slideCI.getStrValue());
         command.add(comboModel.getValue());
+        command.add(iPat.FILELIB.getAbsolutePath("plink"));
         return command;
     }
 }
@@ -181,7 +182,7 @@ class PanelrrBLUP extends PanelTool {
         ArrayList<String> command = new ArrayList<String>();
         command.add("-arg");
         command.add(comboImpute.getValue());
-        command.add(checkShrink.isSelected() ? "True" : "False");
+        command.add(checkShrink.isSelected() ? "TRUE" : "FALSE");
         return command;
     }
 }

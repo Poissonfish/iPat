@@ -13,9 +13,7 @@ public class iFile extends File {
 
     public iFile() {
         super("NA");
-
         isEmpty = true;
-        System.out.println("the file path is : " + this.getAbsolutePath());
     }
 
     void setFile(iFile file) {
