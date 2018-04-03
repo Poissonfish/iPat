@@ -1,3 +1,6 @@
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -49,6 +52,11 @@ class iPatConverter {
     // temp read
     String[] headerline = null;
     String tempread = null;
+    // progress
+    JFrame frameProgress;
+    Container content;
+    Border border;
+    JProgressBar progressBar;
 
     //        args = new String[]{"-in", "hmp", "-out", "num", "-GD", "/Users/jameschen/sam.hmp"};
     public iPatConverter (FileFormat formatIn, FileFormat formatOut, String pathGD, String pathGM) throws IOException {
@@ -57,36 +65,46 @@ class iPatConverter {
         this.OutputFormat = formatOut;
         this.pathGD = pathGD;
         this.pathGM = pathGM;
-        if (this.InputFormat != this.OutputFormat) {
-            switch (InputFormat) {
-                case Numeric:
-                    NumToPlink(pathGD, pathGM);
-                    break;
-                case Hapmap:
-                    switch (OutputFormat) {
-                        case Numeric:
-                            HapToNum(pathGD);
-                            break;
-                        case PLINK:
-                            HapToPlink(pathGD);
-                            break;
+        Runnable runner = new Runnable() {
+            public void run() {
+                try {
+                    if (InputFormat != OutputFormat) {
+                        switch (InputFormat) {
+                            case Numeric:
+                                NumToPlink(pathGD, pathGM);
+                                break;
+                            case Hapmap:
+                                switch (OutputFormat) {
+                                    case Numeric:
+                                        HapToNum(pathGD);
+                                        break;
+                                    case PLINK:
+                                        HapToPlink(pathGD);
+                                        break;
+                                }
+                                break;
+                            case VCF:
+                                switch (OutputFormat) {
+                                    case Numeric:
+                                        VCFToNum(pathGD);
+                                        break;
+                                    case PLINK:
+                                        VCFToPlink(pathGD);
+                                        break;
+                                }
+                                break;
+                            case PLINK:
+                                PlinkToNum(pathGD, pathGM);
+                                break;
+                        }
                     }
-                    break;
-                case VCF:
-                    switch (OutputFormat) {
-                        case Numeric:
-                            VCFToNum(pathGD);
-                            break;
-                        case PLINK:
-                            VCFToPlink(pathGD);
-                            break;
-                    }
-                    break;
-                case PLINK:
-                    PlinkToNum(pathGD, pathGM);
-                    break;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        }
+        };
+        Thread t = new Thread(runner);
+        t.start();
         System.out.println("Conversion Done!\n");
     }
     //==============================================================================//
@@ -102,20 +120,21 @@ class iPatConverter {
         // Map
         boolean header_GM = false;
         try {
-            System.out.println("Converting Map file");
             setReader(GM_path);
             setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.map");
+            iniProgress("Converting Map File",
+                    String.format("Marker %d ~ %d : ", 1, mCount));
             while (count_GM < size_GM) {
+                updateProgress(count_GM, size_GM);
                 table_GM = readNumPLINKMap();
                 header_GM = !(table_GM[0][1].length() == 1);
                 currentCount = table_GM.length;
                 for (int row = header_GM ? 1 : 0; row < currentCount; row ++) {
-                    progressbar(String.format("Marker %d ~ %d : ", count_GM + 1, count_GM + currentCount), row, currentCount);
                     out.write(table_GM[row][1] + "\t" + table_GM[row][0] + "\t0\t" + table_GM[row][2] + "\n");
                 }
-                System.out.println(String.format("Marker %d ~ %d : ", count_GM + 1, count_GM + currentCount) + "Done                    ");
                 count_GM += currentCount;
             }
+            this.frameProgress.dispose();
             out.flush();
             out.close();
         }
@@ -124,7 +143,6 @@ class iPatConverter {
         }
         // Ped
         try {
-            System.out.println("Converting Genotype file");
             setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.ped");
             if (nBym) {
                 setReader(GD_path);
@@ -141,7 +159,10 @@ class iPatConverter {
     private void NumToPlinkNByM () throws IOException {
         boolean header_GD = false, contain_taxa = false;
         // While haven't reach the end of the files
+        iniProgress("Converting Genotype File",
+                String.format("Sample %d ~ %d : ", 1, nCount));
         while (count_GD < size_GD) {
+            updateProgress(count_GD, size_GD);
             // Read part of the file
             table_GD = readNumGD();
             // Get number of lines in this read
@@ -153,7 +174,6 @@ class iPatConverter {
                 contain_taxa = !(table_GD[1][0].length() == 1);
             }
             for (int row = 0; row < currentCount; row ++) {
-                progressbar(String.format("Sample %d ~ %d : ", count_GD + 1, count_GD + currentCount), row, currentCount);
                 // If is the first read of the file, not necessarily starts from the first line
                 if (count_GD == 0 && header_GD && row == 0)
                     continue;
@@ -182,9 +202,9 @@ class iPatConverter {
                 // For each row, end it with newline
                 out.write("\n");
             }
-            System.out.println(String.format("Sample %d ~ %d : ", count_GD + 1, count_GD + currentCount) + "Done                    ");
             count_GD += currentCount;
         }
+        this.frameProgress.dispose();
     }
     private void NumToPlinkMByN (String path) throws IOException {
         RandomAccessFile rdmr = new RandomAccessFile (new File(path), "rw");
@@ -220,12 +240,13 @@ class iPatConverter {
             else
                 lineLength += readSize;
         }
+        iniProgress("Converting Genotype File",
+                String.format("Sample %d ~ %d : ", 1, nCount));
         // Search until reach the end of the row (marker)
         while (lastPosition < lineLength) {
+            updateProgress((int)lastPosition, (int)lineLength);
             // Go through the part of each row (marker)
             while (countLine < size_GD) {
-                progressbar(String.format("Read Sample %d ~ %d : ", (lastPosition / 2)  + 1, Math.min((lastPosition / 2)  + 1 + (sub_n - 1), lineLength / 2)),
-                        (int) countLine, size_GD);
                 // Move the pointer to the specific position (sample) of each rows and read it
                 rdmr.seek(countLine * lineLength + lastPosition);
                 readChar = rdmr.read(bytes);
@@ -242,11 +263,9 @@ class iPatConverter {
                 }
                 countLine++;
             }
-            System.out.println(String.format("Read Sample %d ~ %d : ", (lastPosition / 2)  + 1, Math.min((lastPosition / 2)  + 1 + (sub_n - 1), lineLength / 2)) + "Done                         ");
+            this.frameProgress.dispose();
             // Write the temp into the output file (tempIndex is the index of last letter, so plus one)
             for (int n = 0; n < tempIndex + 1; n ++) {
-                progressbar(String.format("Write Sample %d ~ %d : ", (lastPosition / 2)  + 1, Math.min((lastPosition / 2)  + 1 + (sub_n - 1), lineLength / 2)),
-                        n, tempIndex);
                 out.write("Family_" + ((lastPosition / 2)  + 1 + n) + "\t" + "Sample_" + ((lastPosition / 2)  + 1 + n)  + "\t0\t0\t0\t0\t");
                 for (int m = 0; m < size_GD; m ++) {
                     switch (temp[n][m]) {
@@ -267,10 +286,10 @@ class iPatConverter {
                 // For each row, end it with newline
                 out.write("\n");
             }
-            System.out.println(String.format("Write Sample %d ~ %d : ", (lastPosition / 2)  + 1, Math.min((lastPosition / 2)  + 1 + (sub_n - 1), lineLength / 2)) + "Done                          ");
             countLine = 0;
             lastPosition += readSize;
         }
+        this.frameProgress.dispose();
     }
     //==============================================================================//
     //==============================================================================//
@@ -297,24 +316,24 @@ class iPatConverter {
         // Initial first allele
         RefAllele = new char[mCount];
         // GM starts
-        System.out.println("Converting Map file");
+        iniProgress("Converting Map File",
+                String.format("Marker %d ~ %d : ", 1, mCount));
         setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.nmap");
         out.write("SNP\tChromosome\tPosition\n");
         while (count_GD < mCount) {
+            updateProgress(count_GD, mCount);
             table_GD = readHmpVcfMap();
             currentCount = table_GD.length;
             for (int i = 0; i < currentCount; i ++) {
-                progressbar(String.format("Marker %d ~ %d : ", count_GD + 1, count_GD + currentCount), i, currentCount);
                 out.write(table_GD[i][0] + "\t" + table_GD[i][2] + "\t" + table_GD[i][3] + "\n");
                 marker.add(table_GD[i][0]);
             }
-            System.out.println(String.format("Marker %d ~ %d : ", count_GD + 1, count_GD + currentCount) + "Done                    ");
             count_GD += currentCount;
         }
+        this.frameProgress.dispose();
         out.flush();
         out.close();
         // GD starts
-        System.out.println("Converting Genotype file");
         setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.dat");
         // output marker names as 1st line
         out.write("taxa");
@@ -322,7 +341,10 @@ class iPatConverter {
             out.write("\t" + marker.get(i));
         out.write("\n");
         int lastPosition = 11;
+        iniProgress("Converting Genotype File",
+                String.format("Sample %d ~ %d : ", 1, nCount));
         while (lastPosition < lineLength) {
+            updateProgress(lastPosition, lineLength);
             // Reset reader
             setReader(GD_path);
             // Skip the first line if contains header
@@ -333,7 +355,6 @@ class iPatConverter {
             boolean isOneChar = table_GD[0][0].length() == 1;
             currentCount = table_GD.length;
             for (int i = 0; i < currentCount; i ++) {
-                progressbar(String.format("Sample %d ~ %d : ", (lastPosition - 11) + 1, (lastPosition - 11) + currentCount), i, currentCount);
                 out.write(taxa.get(lastPosition - 11 + i));
                 if (isOneChar) {
                     for (int j = 0; j < mCount; j ++) {
@@ -373,9 +394,9 @@ class iPatConverter {
                 }
                 out.write("\n");
             }
-            System.out.println(String.format("Sample %d ~ %d : ",  (lastPosition - 11) + 1, (lastPosition - 11) + currentCount) + "Done                    ");
             lastPosition += currentCount;
         }
+        this.frameProgress.dispose();
         out.flush();
         out.close();
     }
@@ -406,24 +427,29 @@ class iPatConverter {
         // GM starts
         System.out.println("Converting Map file");
         setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.map");
+        iniProgress("Converting Map File",
+                String.format("Marker %d ~ %d : ", 1, mCount));
         while (count_GD < mCount) {
+            updateProgress(count_GD, mCount);
             table_GD = readHmpVcfMap();
             currentCount = table_GD.length;
             for (int i = 0; i < currentCount; i ++) {
-                progressbar(String.format("Marker %d ~ %d : ", count_GD + 1, count_GD + currentCount), i, currentCount);
                 out.write(table_GD[i][2] + "\t" + table_GD[i][0] + "\t0\t" + table_GD[i][3] + "\n");
                 //marker.add(table_GD[i][2]); no need in ped file
             }
-            System.out.println(String.format("Marker %d ~ %d : ", count_GD + 1, count_GD + currentCount) + "Done                    ");
             count_GD += currentCount;
         }
+        this.frameProgress.dispose();
         out.flush();
         out.close();
         // GD starts
         System.out.println("Converting Genotype file");
         setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.ped");
         int lastPosition = 11;
+        iniProgress("Converting Genotype File",
+                String.format("Sample %d ~ %d : ", 1, nCount));
         while (lastPosition < lineLength) {
+            updateProgress(lastPosition, lineLength);
             // Reset reader
             setReader(GD_path);
             // Skip the first line if contains header
@@ -434,7 +460,6 @@ class iPatConverter {
             boolean isOneChar = table_GD[0][0].length() == 1;
             currentCount = table_GD.length;
             for (int i = 0; i < currentCount; i ++) {
-                progressbar(String.format("Sample %d ~ %d : ", (lastPosition - 11) + 1, (lastPosition - 11) + currentCount), i, currentCount);
                 out.write(taxa.get(lastPosition - 11 + i) + "\t" + taxa.get(lastPosition - 11 + i) + "\t0\t0\t0\t-9\t");
                 if (isOneChar) {
                     for (int j = 0; j < mCount; j ++) {
@@ -463,9 +488,9 @@ class iPatConverter {
 
                 out.write("\n");
             }
-            System.out.println(String.format("Sample %d ~ %d : ",  (lastPosition - 11) + 1, (lastPosition - 11) + currentCount) + "Done                    ");
             lastPosition += currentCount;
         }
+        this.frameProgress.dispose();
         out.flush();
         out.close();
     }
@@ -503,18 +528,20 @@ class iPatConverter {
         System.out.println("Converting Map file");
         setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.nmap");
         out.write("SNP\tChromosome\tPosition\n");
+        iniProgress("Converting Map File",
+                String.format("Marker %d ~ %d : ", 1, mCount));
         while (count_GD < mCount) {
+            updateProgress(count_GD, mCount);
             table_GD = readHmpVcfMap();
             currentCount = table_GD.length;
             for (int i = 0; i < currentCount; i ++) {
-                progressbar(String.format("Marker %d ~ %d : ", count_GD + 1, count_GD + currentCount), i, currentCount);
                 out.write(table_GD[i][2] + "\t" + table_GD[i][0] + "\t" + table_GD[i][1] + "\n");
                 marker.add(table_GD[i][2]);
                 hasTwoAlt[i] = table_GD[i][4].contains(",") ? true : false;
             }
-            System.out.println(String.format("Marker %d ~ %d : ", count_GD + 1, count_GD + currentCount) + "Done                    ");
             count_GD += currentCount;
         }
+        this.frameProgress.dispose();
         out.flush();
         out.close();
         // GD starts
@@ -526,14 +553,16 @@ class iPatConverter {
             out.write("\t" + marker.get(i));
         out.write("\n");
         int lastPosition = 9;
+        iniProgress("Converting Genotype File",
+                String.format("Sample %d ~ %d : ", 1, mCount));
         while (lastPosition < lineLength) {
+            updateProgress(lastPosition, lineLength);
             // Reset reader
             resetToMarkerLine(GD_path, vcfAnnotation);
             // subN by M matrix
             table_GD = readVcfGD(lastPosition);
             currentCount = table_GD.length;
             for (int i = 0; i < currentCount; i ++) {
-                progressbar(String.format("Sample %d ~ %d : ", (lastPosition - 9) + 1, (lastPosition - 9) + currentCount), i, currentCount);
                 out.write(taxa.get(lastPosition - 9 + i));
                 for (int j = 0; j < mCount; j ++) {
                     tempread = table_GD[i][j].split(":")[GTindex];
@@ -577,9 +606,9 @@ class iPatConverter {
                 }
                 out.write("\n");
             }
-            System.out.println(String.format("Sample %d ~ %d : ",  (lastPosition - 9) + 1, (lastPosition - 9) + currentCount) + "Done                    ");
             lastPosition += currentCount;
         }
+        this.frameProgress.dispose();
         out.flush();
         out.close();
     }
@@ -616,18 +645,20 @@ class iPatConverter {
         resetToMarkerLine(GD_path, vcfAnnotation);
         System.out.println("Converting Map file");
         setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.map");
+        iniProgress("Converting Map File",
+                String.format("Marker %d ~ %d : ", 1, mCount));
         while (count_GD < mCount) {
+            updateProgress(count_GD, mCount);
             table_GD = readHmpVcfMap();
             currentCount = table_GD.length;
             for (int i = 0; i < currentCount; i ++) {
-                progressbar(String.format("Marker %d ~ %d : ", count_GD + 1, count_GD + currentCount), i, currentCount);
                 out.write(table_GD[i][0] + "\t" + table_GD[i][2] + "\t0\t" + table_GD[i][1] + "\n");
                 marker.add(table_GD[i][2]);
                 hasTwoAlt[i] = table_GD[i][4].contains(",") ? true : false;
             }
-            System.out.println(String.format("Marker %d ~ %d : ", count_GD + 1, count_GD + currentCount) + "Done                    ");
             count_GD += currentCount;
         }
+        this.frameProgress.dispose();
         out.flush();
         out.close();
         // GD starts
@@ -639,14 +670,16 @@ class iPatConverter {
             out.write("\t" + marker.get(i));
         out.write("\n");
         int lastPosition = 9;
+        iniProgress("Converting Genotype File",
+                String.format("Sample %d ~ %d : ", 1, nCount));
         while (lastPosition < lineLength) {
+            updateProgress(lastPosition, lineLength);
             // Reset reader
             resetToMarkerLine(GD_path, vcfAnnotation);
             // subN by M matrix
             table_GD = readVcfGD(lastPosition);
             currentCount = table_GD.length;
             for (int i = 0; i < currentCount; i ++) {
-                progressbar(String.format("Sample %d ~ %d : ", (lastPosition - 9) + 1, (lastPosition - 9) + currentCount), i, currentCount);
                 out.write(taxa.get(lastPosition - 9 + i));
                 for (int j = 0; j < mCount; j ++) {
                     tempread = table_GD[i][j].split(":")[GTindex];
@@ -720,9 +753,9 @@ class iPatConverter {
                 }
                 out.write("\n");
             }
-            System.out.println(String.format("Sample %d ~ %d : ",  (lastPosition - 9) + 1, (lastPosition - 9) + currentCount) + "Done                    ");
             lastPosition += currentCount;
         }
+        this.frameProgress.dispose();
         out.flush();
         out.close();
     }
@@ -742,13 +775,15 @@ class iPatConverter {
             System.out.println("Converting Genotype file");
             setReader(GD_path);
             setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.dat");
+            iniProgress("Converting Genotype File",
+                    String.format("Sample %d ~ %d : ", 1, nCount));
             while (count_GD < size_GD) {
+                updateProgress(count_GD, size_GD);
                 table_GD = readPED();
                 currentCount = table_GD.length;
                 mCount = (int) ((table_GD[0].length - 6) / (double) 2);
                 RefAllele = new char[mCount];
                 for (int row = 0; row < currentCount; row++) {
-                    progressbar(String.format("Sample %d ~ %d : ", count_GD + 1, count_GD + currentCount), row, currentCount);
                     // Add taxa name
                     out.write(table_GD[row][1] + "\t");
                     for (int col = 6; col < table_GD[row].length; col += 2) {
@@ -789,9 +824,9 @@ class iPatConverter {
                             out.write("\n");
                     }
                 }
-                System.out.println(String.format("Sample %d ~ %d : ", count_GD + 1, count_GD + currentCount) + "Done                    ");
                 count_GD += currentCount;
             }
+            this.frameProgress.dispose();
             out.flush();
             out.close();
         }
@@ -804,16 +839,19 @@ class iPatConverter {
             setReader(GM_path);
             setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.nmap");
             out.write("SNP\tChromosome\tPosition\n");
+            iniProgress("Converting Map File",
+                    String.format("Marker %d ~ %d : ", 1, mCount));
             while (count_GM < size_GM) {
+                updateProgress(count_GM, size_GM);
                 table_GM = readNumPLINKMap();
                 currentCount = table_GM.length;
                 for (int row = 0; row < currentCount; row++) {
-                    progressbar(String.format("Marker %d ~ %d : ", count_GM + 1, count_GM + currentCount), row, currentCount);
                     out.write(table_GM[row][1] + "\t" + table_GM[row][0] + "\t" + table_GM[row][3] + "\n");
                 }
                 System.out.println(String.format("Marker %d ~ %d : ", count_GM + 1, count_GM + currentCount) + "Done                    ");
                 count_GM += currentCount;
             }
+            this.frameProgress.dispose();
             out.flush();
             out.close();
         }
@@ -834,6 +872,32 @@ class iPatConverter {
     private void setReader (String file) throws IOException {
         reader = new BufferedReader(new FileReader(file));
     }
+
+    private void iniProgress(String title, String name) {
+        frameProgress = new JFrame(title);
+        frameProgress.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        border = BorderFactory.createTitledBorder(name);
+        progressBar = new JProgressBar(0, 100);
+        progressBar.setValue(0);
+        progressBar.setStringPainted(true);
+        progressBar.setBorder(border);
+        content = frameProgress.getContentPane();
+        content.add(progressBar, BorderLayout.CENTER);
+        GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        Point centerPoint = local_env.getCenterPoint();
+        int dx = centerPoint.x - 400 / 2;
+        int dy = centerPoint.y - 100 / 2;
+        frameProgress.setLocation(dx, dy);
+        frameProgress.setSize(400, 100);
+        frameProgress.setVisible(true);
+    }
+
+    private void updateProgress(int current, int all) {
+        int progress = (int) ((current / (double) all) * 100);
+        System.out.println("progress " + progress);
+        progressBar.setValue(progress);
+    }
+
     private void progressbar (String prefix, int current, int all) {
         double progress = (current / (double) all) / 0.05;
         int barCount = (int)Math.floor(progress);
@@ -842,6 +906,7 @@ class iPatConverter {
                 String.join("", Collections.nCopies(barCount, "=")),
                 String.join("", Collections.nCopies(20 - barCount, " "))) + "||\r");
     }
+
     private String[][] readPED () throws IOException {
         int index = 0;
         String readline = null;

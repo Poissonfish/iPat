@@ -17,7 +17,7 @@ tryCatch({
   cat("Done\n")
 
 # Input arguments
-  args = commandArgs(trailingOnly=TRUE)
+  arg = commandArgs(trailingOnly=TRUE)
   for (i in 1 : length(arg)) {
     switch (arg[i],
       "-wd" = {
@@ -58,7 +58,7 @@ tryCatch({
         cat("   Loading phenotype ...")
         i = i + 1
         if (grepl("/NA", arg[i]))
-          Y.path = NA
+          Y.path = "NA"
         else
           Y.path = arg[i]
         cat("Done\n")
@@ -79,7 +79,7 @@ tryCatch({
         cat("   Checking covariates ...")
         i = i + 1
         if (grepl("/NA", arg[i]))
-          C.path = NA
+          C.path = "NA"
         else
           C.path = arg[i]
         cat("Done\n")

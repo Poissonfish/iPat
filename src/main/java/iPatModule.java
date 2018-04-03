@@ -204,14 +204,20 @@ class iPatModule extends iPatObject implements ActionListener{
                         }
                     } catch (IOException e) {
                         this.success = false;
-                        e.printStackTrace();
+                        areaFrame.dispose();
+                        StringWriter errors = new StringWriter();
+                        e.printStackTrace(new PrintWriter(errors));
+                        popErrorMsg(errors.toString());
                     }
 
                     try {
                         process.waitFor();
                     } catch (InterruptedException e) {
                         this.success = false;
-                        e.printStackTrace();
+                        areaFrame.dispose();
+                        StringWriter errors = new StringWriter();
+                        e.printStackTrace(new PrintWriter(errors));
+                        popErrorMsg(errors.toString());
                     }
 
                     // Output error message
@@ -221,8 +227,11 @@ class iPatModule extends iPatObject implements ActionListener{
                         while((tempString = streamError.readLine()) != null) {
                             errorClose = true;
                             writerError.println(tempString);
-                            if (tempString.toUpperCase().contains("ERROR"))
+                            if (tempString.toUpperCase().contains("ERROR")) {
                                 this.success = false;
+                                popErrorMsg(tempString);
+                                areaFrame.dispose();
+                            }
                         }
                         if (errorClose)
                             writerError.close();
@@ -231,7 +240,11 @@ class iPatModule extends iPatObject implements ActionListener{
                         FileWriter writerOut = new FileWriter(fileOutput.getAbsoluteFile(), false);
                         areaText.write(writerOut);
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        this.success = false;
+                        areaFrame.dispose();
+                        StringWriter errors = new StringWriter();
+                        e.printStackTrace(new PrintWriter(errors));
+                        popErrorMsg(errors.toString());
                     }
                 }
             }
@@ -243,5 +256,13 @@ class iPatModule extends iPatObject implements ActionListener{
             process.destroy();
             this.stop();
         }
+    }
+
+    void popErrorMsg(String msg) {
+        JOptionPane optionPane = new JOptionPane();
+        optionPane.setMessage(msg);
+        optionPane.setMessageType(JOptionPane.ERROR_MESSAGE);
+        JDialog dialog = optionPane.createDialog(null, "Error");
+        dialog.setVisible(true);
     }
 }
