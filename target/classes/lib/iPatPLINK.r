@@ -100,7 +100,6 @@ tryCatch({
       "-bim" = {
         i = i + 1
         BIM.path = arg[i]
-        cat("Done\n")
       },
       "-arg" = {
         i = i + 1
@@ -112,48 +111,6 @@ tryCatch({
       }
     )
   }
-# Common args
-  project = args[1]
-  wd = args[2]
-  lib = args[3]
-  #format = args[4]
-  ms = as.numeric(args[5])
-  maf  = as.numeric(args[6])
-  Y.path = args[7]
-  Y.index = args[8]
-  GD.path = args[9]
-  GM.path  = args[10]
-  C.path = args[11]
-  C.index = args[12]
-  K.path  = args[13]
-  FAM.path  = args[14]
-  BIM.path  = args[15]
-# Method specific args
-  ci = as.numeric(args[16])
-  binary = as.logical(args[17])
-
-# Load libraries
-  cat("=== PLINK ===\n")
-  cat("   Loading libraries ...")
-  setwd(lib)
-  list.of.packages <- c("magrittr", "bigmemory", "biganalytics", "data.table","MASS", "gplots", "compiler", "scatterplot3d", "R.utils", "snpMatrix")
-  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-  if(length(new.packages)) install.packages(new.packages, repos="http://cran.rstudio.com/")
-  library(magrittr)
-  library(bigmemory)
-  library(biganalytics)
-  library(compiler) #this library is already installed in R
-  library(data.table)
-  library(MASS) # required for ginv
-  library(multtest)
-  library(gplots)
-  library(scatterplot3d)
-  library(R.utils)
-  source("./Function_iPat.R")
-  source("./Function_GAPIT.R")
-  cat("Done\n")
-
-  setwd(lib)
   # Subset Phenotype
     cat("   Loading phenotype ...")
     if(Y.path == "NA"){
@@ -210,10 +167,10 @@ tryCatch({
   }
   if(binary){
     basic = sprintf("%s --bed %s --bim %s --fam %s %s --allow-no-sex --adjust -ci %s --pheno %s --all-pheno -out %s",
-                    file.path(lib, "plink"), GD.path, BIM.path, FAM.path, method, ci, Y.path, file.path(wd, project))
+                    pathPLINK, GD.path, BIM.path, FAM.path, method, ci, Y.path, file.path(wd, project))
   }else{
     basic = sprintf("%s --ped %s --map %s %s --allow-no-sex --adjust -ci %s --pheno %s --all-pheno -out %s",
-                    file.path(lib, "plink"), GD.path, GM.path, method, ci, Y.path, file.path(wd, project))
+                    pathPLINK, GD.path, GM.path, method, ci, Y.path, file.path(wd, project))
   }
   ## QC
   if(!is.na(ms)) MS = sprintf("--geno %s", ms) else MS = character()
