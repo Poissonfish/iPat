@@ -81,7 +81,7 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
         this.paneTop.addTab("Phenotype", this.panePhenotype.getPane());
         this.paneTop.addTab("Quality Control", this.paneQC);
         this.paneBottom = new PanelBottom(method, tool, fileC, selectC);
-        this.paneBottom.setBorder("Tool Config.");
+        this.paneBottom.setBorder("Tool Configuration");
         // Layout
         this.paneMain = new JPanel(new MigLayout("fillx", "[]", "[300!][400::]"));
         this.paneMain.add(this.paneTop, "cell 0 0, growx");
@@ -90,11 +90,11 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
         this.load();
         // JFrame
         this.addWindowListener(this);
-        this.setLocation(600, 500);
         this.setContentPane(this.paneMain);
         this.setResizable(false);
         this.setVisible(true);
         this.pack();
+        this.setLocation(iPat.WINDOWSIZE.getAppLocation(this.getWidth(), this.getHeight()));
     }
 
     @Override
@@ -306,7 +306,7 @@ public class ModuleConfig extends JFrame implements ActionListener, WindowListen
 
             this.sliderMS = new GroupSlider("By missing rate", 4,
                     new String[]{"0", "0.05", "0.1", "0.2", "0.5"});
-            this.sliderMAF = new GroupSlider("By missing rate", 3,
+            this.sliderMAF = new GroupSlider("By MAF ", 3,
                     new String[]{"0", "0.01", "0.05", "0.1", "0.2"});
             this.add(this.sliderMS, "cell 0 0, grow, align c");
             this.add(this.sliderMAF, "cell 0 1, grow, align c");

@@ -131,10 +131,10 @@ class iPatModule extends iPatObject implements ActionListener{
         return this.format.isNA();
     }
 
-    void run (ArrayList<Command> command) {
-        timerThread.start();
+    void run (ArrayList<Command> command, FileFormat format, String pathGD, String pathGM, boolean isPLINK) throws IOException {
+        this.timerThread.start();
         this.rotateSwitch = true;
-        thread = new iPatThread(this.getName());
+        thread = new iPatThread(this.getName(), format, pathGD, pathGM, isPLINK);
         thread.setCommandAndRun(command);
     }
 
@@ -148,7 +148,7 @@ class iPatModule extends iPatObject implements ActionListener{
 
     class iPatThread extends Thread {
         Runtime runtime;
-        Process process = null;
+        Process process;
         BufferedReader streamInput, streamError;
         String tempString;
         PrintWriter writerInput, writerError;
@@ -157,8 +157,14 @@ class iPatModule extends iPatObject implements ActionListener{
         JScrollPane areaScroll;
         JFrame areaFrame;
         ArrayList<Command> commands;
+        // converter
+        String pathGD, pathGM;
+        boolean isPLINK;
+        FileFormat format;
+        // running
+        boolean isRunning;
 
-        public iPatThread(String title) {
+        public iPatThread(String title, FileFormat format, String pathGD, String pathGM, boolean isPLINK) throws IOException {
             this.areaText = new JTextArea();
             this.areaText.setEditable(false);
             this.areaScroll = new JScrollPane(areaText,
@@ -167,11 +173,21 @@ class iPatModule extends iPatObject implements ActionListener{
             this.areaFrame = new JFrame();
             this.areaFrame.setTitle(title);
             this.areaFrame.setContentPane(areaScroll);
-            this.areaFrame.setBounds(300, 300, 500, 350);
+            int width = 500;
+            int height = 350;
+            this.areaFrame.setSize(width, height);
+            this.areaFrame.setLocation(iPat.WINDOWSIZE.getAppLocation(width, height));
             this.areaFrame.setVisible(true);
             this.areaFrame.show();
             // During running (BG)
             this.success = true;
+            // converter
+            this.pathGD = pathGD;
+            this.pathGM = pathGM;
+            this.isPLINK = isPLINK;
+            this.format = format;
+            // running
+            this.isRunning = false;
         }
 
         void setCommandAndRun(ArrayList<Command> command) {
@@ -180,15 +196,51 @@ class iPatModule extends iPatObject implements ActionListener{
         }
 
         boolean isRunning() {
-            return this.process.isAlive();
+            return this.isRunning;
         }
 
         @Override
         public void run() {
+            this.isRunning = true;
+            String filename;
             for (Command command : commands) {
                 if (command.isEmpty())
                     continue;
                 else {
+                    // format convertsion
+                    switch (command.getType()) {
+                        case GWAS:
+                            new iPatConverter(this.format,
+                                    this.isPLINK ? FileFormat.PLINK : FileFormat.Numeric,
+                                    this.pathGD, this.pathGM);
+                            // rename
+                            filename = pathGD.replaceFirst("[.][^.]+$", "");
+                            if (isPLINK && format != FileFormat.PLINK) {
+                                pathGD = filename + "_recode.ped";
+                                pathGM = filename + "_recode.map";
+                                format = FileFormat.PLINK;
+                            } else if (!isPLINK && format != FileFormat.Numeric) {
+                                pathGD = filename + "_recode.dat";
+                                pathGM = filename + "_recode.nmap";
+                                format = FileFormat.Numeric;
+                            }
+                            command.addArg("-genotype", pathGD);
+                            command.addArg("-map", pathGM);
+                            break;
+                        case GS:
+                            new iPatConverter(format, FileFormat.Numeric,
+                                    pathGD, pathGM);
+                            if (format != FileFormat.Numeric) {
+                                filename = pathGD.replaceFirst("[.][^.]+$", "");
+                                pathGD = filename + "_recode.dat";
+                                pathGM = filename + "_recode.nmap";
+                                this.format = FileFormat.Numeric;
+                            }
+                            command.addArg("-genotype", pathGD);
+                            command.addArg("-map", pathGM);
+                            break;
+                    }
+
                     System.out.println("Command : " + command);
                     setIcon("module");
                     runtime = Runtime.getRuntime();
@@ -253,6 +305,7 @@ class iPatModule extends iPatObject implements ActionListener{
                 setIcon("moduleSuc");
             else
                 setIcon("moduleFal");
+            this.isRunning = false;
             process.destroy();
             this.stop();
         }

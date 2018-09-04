@@ -26,7 +26,7 @@ tryCatch({
   library(magrittr)
   library(bigmemory)
   library(biganalytics)
-  library(compiler) #this library is already installed in R 
+  library(compiler) #this library is already installed in R
   library(MASS) # required for ginv
   library(multtest)
   library(gplots)
@@ -43,7 +43,7 @@ tryCatch({
   data = data[order(Chromosome, Position)]
   m = nrow(data)
   adjust = 1e-10
-  # Compute G 
+  # Compute G
   print("Computing G Statistics")
   data[, sum := LowA + LowB + HighA + HighB]
   data[, LA.hat := ((LowA+LowB)*(LowA+HighA)/sum)+adjust]
@@ -56,7 +56,7 @@ tryCatch({
                       HighB*log((HighB/HB.hat)+adjust))]
   # Compute G'
   print("Computing G-Prime Statistics")
-  gp = vector(mode = "numeric", length = m) 
+  gp = vector(mode = "numeric", length = m)
   for (i in 1:m){
     focal = data[i, Position]
     chr = data[i, Chromosome]
@@ -65,12 +65,12 @@ tryCatch({
     Sw = sum(subset$D)
     subset[,k := D/Sw]
     gp[i] = t(matrix(subset$k)) %*% matrix(subset$G_Stat)
-  }  
+  }
   data[, G_Prime:= gp]
   data[, P:= pchisq(G_Prime, df = 3, lower.tail = F)]
   print("Plotting")
-  GAPIT.Manhattan(GI.MP= data.frame(Chromosom = data$Chromosome, 
-                                    Position = data$Position, 
+  GAPIT.Manhattan(GI.MP= data.frame(Chromosom = data$Chromosome,
+                                    Position = data$Position,
                                     P = data$P), name.of.trait = project)
   GAPIT.QQ(data$P, name.of.trait = project)
   write.table(x = data[,c("SNP", "Chromosome", "Position", "G_Stat", "G_Prime", "P")], file = sprintf("BSA_%s.txt", project), sep = "\t", quote = F, row.names = F)

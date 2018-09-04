@@ -53,7 +53,7 @@ public class FileConfig extends JPanel implements ActionListener,MouseMotionList
     // repaint timer
     Timer timerRepaint;
 
-    public FileConfig(int width, int height, int pheight) {
+    public FileConfig(int width, int height) {
         // Instantiate
         iPatOB = new iPatList();
         timerRotate = new Timer(5, this);

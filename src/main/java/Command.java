@@ -4,6 +4,7 @@ public class Command extends ArrayList<String> {
     String wd;
     String project;
     String cov;
+    MethodType type;
 
     public Command() {
         super();
@@ -32,6 +33,10 @@ public class Command extends ArrayList<String> {
         this.add(selectC);
     }
 
+    void setMethod(MethodType type) {
+        this.type = type;
+    }
+
     Command getCopy() {
         Command command = new Command();
         if (!this.isEmpty()) {
@@ -41,6 +46,10 @@ public class Command extends ArrayList<String> {
             command.addCov(this.getCov());
         }
         return command;
+    }
+
+    MethodType getType() {
+        return this.type;
     }
 
     String[] getCommand() {

@@ -42,4 +42,12 @@ class iPatFile extends iPatObject {
         this.fileType = FileType.Kinship;
         setIcon("kin");
     }
+
+    boolean isCov() {
+        return this.fileType == FileType.Covariate;
+    }
+
+    boolean isKin() {
+        return this.fileType == FileType.Kinship;
+    }
 }

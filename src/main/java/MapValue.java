@@ -16,9 +16,9 @@ public class MapValue {
         // Common
         mapCommon = new HashMap<>();
         if (iPat.USEROS == UserOS.Windows)
-            mapCommon.put("wd", "C:\\");
+            mapCommon.put("wd", System.getProperty("user.home"));
         else
-            mapCommon.put("wd", "~/");
+            mapCommon.put("wd", System.getProperty("user.home"));
         mapCommon.put("maf", "0.05");
         mapCommon.put("ms", "0.2");
         // GAPIT

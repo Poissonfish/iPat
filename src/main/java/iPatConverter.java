@@ -59,53 +59,46 @@ class iPatConverter {
     JProgressBar progressBar;
 
     //        args = new String[]{"-in", "hmp", "-out", "num", "-GD", "/Users/jameschen/sam.hmp"};
-    public iPatConverter (FileFormat formatIn, FileFormat formatOut, String pathGD, String pathGM) throws IOException {
+    public iPatConverter (FileFormat formatIn, FileFormat formatOut, String pathGD, String pathGM) {
         System.out.println("File Converter for iPAT");
         this.InputFormat = formatIn;
         this.OutputFormat = formatOut;
         this.pathGD = pathGD;
         this.pathGM = pathGM;
-        Runnable runner = new Runnable() {
-            public void run() {
-                try {
-                    if (InputFormat != OutputFormat) {
-                        switch (InputFormat) {
+        try {
+            if (InputFormat != OutputFormat) {
+                switch (InputFormat) {
+                    case Numeric:
+                        NumToPlink(pathGD, pathGM);
+                        break;
+                    case Hapmap:
+                        switch (OutputFormat) {
                             case Numeric:
-                                NumToPlink(pathGD, pathGM);
-                                break;
-                            case Hapmap:
-                                switch (OutputFormat) {
-                                    case Numeric:
-                                        HapToNum(pathGD);
-                                        break;
-                                    case PLINK:
-                                        HapToPlink(pathGD);
-                                        break;
-                                }
-                                break;
-                            case VCF:
-                                switch (OutputFormat) {
-                                    case Numeric:
-                                        VCFToNum(pathGD);
-                                        break;
-                                    case PLINK:
-                                        VCFToPlink(pathGD);
-                                        break;
-                                }
+                                HapToNum(pathGD);
                                 break;
                             case PLINK:
-                                PlinkToNum(pathGD, pathGM);
+                                HapToPlink(pathGD);
                                 break;
                         }
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                        break;
+                    case VCF:
+                        switch (OutputFormat) {
+                            case Numeric:
+                                VCFToNum(pathGD);
+                                break;
+                            case PLINK:
+                                VCFToPlink(pathGD);
+                                break;
+                        }
+                        break;
+                    case PLINK:
+                        PlinkToNum(pathGD, pathGM);
+                        break;
                 }
             }
-        };
-        Thread t = new Thread(runner);
-        t.start();
-        System.out.println("Conversion Done!\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     //==============================================================================//
     //==============================================================================//
@@ -127,7 +120,7 @@ class iPatConverter {
             while (count_GM < size_GM) {
                 updateProgress(count_GM, size_GM);
                 table_GM = readNumPLINKMap();
-                header_GM = !(table_GM[0][1].length() == 1);
+                header_GM = table_GM[0][1].toUpperCase().equals("CHROMOSOME");
                 currentCount = table_GM.length;
                 for (int row = header_GM ? 1 : 0; row < currentCount; row ++) {
                     out.write(table_GM[row][1] + "\t" + table_GM[row][0] + "\t0\t" + table_GM[row][2] + "\n");
@@ -193,6 +186,9 @@ class iPatConverter {
                             break;
                         case "2" :
                             out.write("T T");
+                            break;
+                        default :
+                            out.write("0 0");
                             break;
                     }
                     // If haven't reached the end of the row, seperate with tab
@@ -873,40 +869,6 @@ class iPatConverter {
         reader = new BufferedReader(new FileReader(file));
     }
 
-    private void iniProgress(String title, String name) {
-        frameProgress = new JFrame(title);
-        frameProgress.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        border = BorderFactory.createTitledBorder(name);
-        progressBar = new JProgressBar(0, 100);
-        progressBar.setValue(0);
-        progressBar.setStringPainted(true);
-        progressBar.setBorder(border);
-        content = frameProgress.getContentPane();
-        content.add(progressBar, BorderLayout.CENTER);
-        GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        Point centerPoint = local_env.getCenterPoint();
-        int dx = centerPoint.x - 400 / 2;
-        int dy = centerPoint.y - 100 / 2;
-        frameProgress.setLocation(dx, dy);
-        frameProgress.setSize(400, 100);
-        frameProgress.setVisible(true);
-    }
-
-    private void updateProgress(int current, int all) {
-        int progress = (int) ((current / (double) all) * 100);
-        System.out.println("progress " + progress);
-        progressBar.setValue(progress);
-    }
-
-    private void progressbar (String prefix, int current, int all) {
-        double progress = (current / (double) all) / 0.05;
-        int barCount = (int)Math.floor(progress);
-        System.out.print(prefix);
-        System.out.print("||" + String.format("%s%s",
-                String.join("", Collections.nCopies(barCount, "=")),
-                String.join("", Collections.nCopies(20 - barCount, " "))) + "||\r");
-    }
-
     private String[][] readPED () throws IOException {
         int index = 0;
         String readline = null;
@@ -1091,6 +1053,30 @@ class iPatConverter {
                 taxa.add("Sample " + (i + 1));
         }
     }
+
+    private void iniProgress(String title, String name) {
+        frameProgress = new JFrame(title);
+        frameProgress.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        border = BorderFactory.createTitledBorder(name);
+        progressBar = new JProgressBar(0, 100);
+        progressBar.setValue(0);
+        progressBar.setStringPainted(true);
+        progressBar.setBorder(border);
+        content = frameProgress.getContentPane();
+        content.add(progressBar, BorderLayout.CENTER);
+        int width = 400;
+        int height = 100;
+        frameProgress.setLocation(iPat.WINDOWSIZE.getAppLocation(width, height));
+        frameProgress.setSize(width, height);
+        frameProgress.setVisible(true);
+    }
+
+    private void updateProgress(int current, int all) {
+        int progress = (int) ((current / (double) all) * 100);
+        System.out.println("progress " + progress);
+        progressBar.setValue(progress);
+    }
+
     private enum format {
         NA("NA"), Numerical("Numerical"), Hapmap("Hapmap"), VCF("VCF"), PLINK("PLINK");
         String name;

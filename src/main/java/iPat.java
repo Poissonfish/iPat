@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class iPat {
     static UserOS USEROS;
@@ -20,7 +22,7 @@ public class iPat {
     public iPat() throws URISyntaxException {
         USEROS = getOS();
         WINDOWSIZE = new WindowSize();
-        WINDOWSIZE = setWindowSize(1200, 700, 190);
+        WINDOWSIZE = setWindowSize(1200, 700);
         REXC = getREXC();
         FILELIB = new FileLib();
         IMGLIB = new ImageLib();
@@ -35,17 +37,16 @@ public class iPat {
         String osName = System.getProperty("os.name");
         if (osName.toUpperCase().contains("WINDOWS"))
             return UserOS.Windows;
-        else if(osName.toUpperCase().contains("MAC"))
+        else if (osName.toUpperCase().contains("MAC"))
             return UserOS.MacOS;
         else
             return UserOS.Linux;
     }
 
-    private WindowSize setWindowSize(int W, int H, int pH) {
+    private WindowSize setWindowSize(int W, int H) {
         WindowSize window = new WindowSize();
         window.setWidth(W);
         window.setHeight(H);
-        window.setPHeight(pH);
         return window;
     }
 
@@ -68,11 +69,11 @@ public class iPat {
                 int indexLatest = -1;
                 String nameFolder;
                 // Find the max number of version
+                Pattern p = Pattern.compile("\\D*");
                 for (int i = 0; i < versionNamesArray.length; i ++) {
                     nameFolder = versionNamesArray[i];
-                    // Remove prefix of the folder
-                    nameFolder = nameFolder.replaceAll("\\.", "");
-                    nameFolder = nameFolder.replaceAll("R-", "");
+                    Matcher match = p.matcher(nameFolder);
+                    nameFolder = match.replaceAll("");
                     verTemp = Integer.parseInt(nameFolder);
                     // Compare and find the max
                     if (verTemp > verMax) {
@@ -118,7 +119,7 @@ public class iPat {
             }
         });
         // Initialize a functional panel for iPat
-        FileConfig iPat = new FileConfig(WINDOWSIZE.getWidth(), WINDOWSIZE.getHeight(), WINDOWSIZE.getPHeight());
+        FileConfig iPat = new FileConfig(WINDOWSIZE.getWidth(), WINDOWSIZE.getHeight());
         iPat.setFocusable(true); // Keylistener
         iPat.requestFocusInWindow(); // Keylistener
         // Add the panel into JFrame
@@ -130,11 +131,13 @@ public class iPat {
 class WindowSize {
     private int width;
     private int height;
-    private int pHeight;
     private Dimension dim;
+    private Point ptCenter;
 
     public WindowSize() {
         dim = new Dimension();
+        GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        ptCenter = local_env.getCenterPoint();
     }
 
     void setWidth(int width) {
@@ -147,10 +150,6 @@ class WindowSize {
         this.dim.height = height;
     }
 
-    void setPHeight(int pHeight) {
-        this.pHeight = pHeight;
-    }
-
     int getWidth() {
         return this.width;
     }
@@ -159,8 +158,8 @@ class WindowSize {
         return this.height;
     }
 
-    int getPHeight() {
-        return this.pHeight;
+    Point getAppLocation(int w, int h) {
+        return new Point(this.ptCenter.x - w / 2, this.ptCenter.y - h / 2);
     }
 
     Dimension getDimension() {

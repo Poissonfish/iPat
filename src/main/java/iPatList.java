@@ -1,8 +1,11 @@
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -312,9 +315,13 @@ class iPatList implements ActionListener, WindowListener {
         indexInGr.removeIf(Predicate.isEqual(indexMO));
         // get file from OBs
         ArrayList<iFile> files = new ArrayList<>();
-        for (int i : indexInGr)
-            files.add(this.getObjectN(i).getFile());
-        int countFile = files.size();
+        int countFile = 0;
+        for (int i : indexInGr) {
+            iPatObject obj = this.getObjectN(i);
+            files.add(obj.getFile());
+            if (!((iPatFile)obj).isKin() && !((iPatFile)obj).isCov())
+                countFile++;
+        }
         // file by two string
         ArrayList<String[]> head2Lines = new ArrayList<>();
         // file by separated elements
@@ -405,8 +412,9 @@ class iPatList implements ActionListener, WindowListener {
                     i1 = indexInGr.get(i);
                     i2 = indexInGr.get((i + 1) % 3);
                     i3 = indexInGr.get((i + 2) % 3);
-                    System.out.println("i1 = " + i1 + ", i2 = " + i2 + ", i3 = " + i3);
-                    if (Arrays.asList(row2.get(i)).containsAll(Arrays.asList("0", "1", "2")) && diffValues(row2.get(i)) < 6) {
+                    if ((Arrays.asList(row2.get(i)).containsAll(Arrays.asList("0", "1")) ||
+                            Arrays.asList(row2.get(i)).containsAll(Arrays.asList("0", "2"))) &&
+                            diffValues(row2.get(i)) < 6) {
                         this.getFileN(i1).setFileType(FileType.Genotype);
                         // m or m+1 - m or m+1 = -1, 0 1
                         this.getFileN(i2).setFileType((countCol.get((i + 1) % 3) == 3 &&
@@ -750,74 +758,54 @@ class iPatList implements ActionListener, WindowListener {
             FileFormat format = mo.getFormat();
             // Add command for launching app (deep copy)
             Command commandGWAS = mo.getCommandGWAS().getCopy();
+            commandGWAS.setMethod(MethodType.GWAS);
             Command commandGS = mo.getCommandGS().getCopy();
+            commandGS.setMethod(MethodType.GS);
             Command commandBSA  = mo.getCommandBSA().getCopy();
+            commandBSA.setMethod(MethodType.BSA);
             // do conversion if needed, add filepaths to the command
+            String pathGD = this.getFile(this.indexSelected, FileType.Genotype).getAbsolutePath();
+            String pathGM = this.getFile(this.indexSelected, FileType.Map).getAbsolutePath();
+            // GWAS
+            boolean isPLINK = false;
+            if (mo.isGWASDeployed()) {
+                isPLINK = mo.getDeployedGWASTool() == ToolType.PLINK;
+                if (format == FileFormat.PLINKBIN) {
+                    commandGWAS.addArg("-fam",
+                            this.getFile(this.indexSelected, FileType.FAM).getAbsolutePath());
+                    commandGWAS.addArg("-bim",
+                            this.getFile(this.indexSelected, FileType.BIM).getAbsolutePath());
+                }
+                commandGWAS.addArg("-phenotype",
+                        this.getFile(this.indexSelected, FileType.Phenotype).getAbsolutePath());
+                commandGWAS.addArg("-cov",
+                        this.getFile(this.indexSelected, FileType.Covariate).getAbsolutePath());
+                commandGWAS.addArg("-kin",
+                        this.getFile(this.indexSelected, FileType.Kinship).getAbsolutePath());
+            }
+            // GS
+            if (mo.isGSDeployed()) {
+                commandGS.addArg("-phenotype",
+                        this.getFile(this.indexSelected, FileType.Phenotype).getAbsolutePath());
+                commandGS.addArg("-cov",
+                        this.getFile(this.indexSelected, FileType.Covariate).getAbsolutePath());
+                commandGS.addArg("-kin",
+                        this.getFile(this.indexSelected, FileType.Kinship).getAbsolutePath());
+            }
+            // BSA
+            if (mo.isBSADeployed()) {
+                commandBSA.addArg("-phenotype",
+                        this.getFile(this.indexSelected, FileType.Phenotype).getAbsolutePath());
+                commandBSA.addArg("-genotype", pathGD);
+                commandBSA.addArg("-map", pathGM);
+            }
+            // assemble command
+            ArrayList<Command> commandRun = new ArrayList<>();
+            commandRun.add(commandGWAS);
+            commandRun.add(commandGS);
+            commandRun.add(commandBSA);
             try {
-                String pathGD = this.getFile(this.indexSelected, FileType.Genotype).getAbsolutePath();
-                String pathGM = this.getFile(this.indexSelected, FileType.Map).getAbsolutePath();
-                String filename = pathGD.replaceFirst("[.][^.]+$", "");
-                // GWAS
-                if (mo.isGWASDeployed()) {
-                    boolean isPLINK = mo.getDeployedGWASTool() == ToolType.PLINK;
-                    new iPatConverter(format,
-                            isPLINK ? FileFormat.PLINK : FileFormat.Numeric,
-                            pathGD, pathGM);
-                    if (isPLINK && format != FileFormat.PLINK) {
-                        pathGD = filename + "_recode.ped";
-                        pathGM = filename + "_recode.map";
-                        format = FileFormat.PLINK;
-                    } else if (!isPLINK && format != FileFormat.Numeric) {
-                        pathGD = filename + "_recode.dat";
-                        pathGM = filename + "_recode.nmap";
-                        format = FileFormat.Numeric;
-                    } else if (format == FileFormat.PLINKBIN) {
-                        commandGWAS.addArg("-fam",
-                                this.getFile(this.indexSelected, FileType.FAM).getAbsolutePath());
-                        commandGWAS.addArg("-bim",
-                                this.getFile(this.indexSelected, FileType.BIM).getAbsolutePath());
-                    }
-                    commandGWAS.addArg("-phenotype",
-                            this.getFile(this.indexSelected, FileType.Phenotype).getAbsolutePath());
-                    commandGWAS.addArg("-genotype", pathGD);
-                    commandGWAS.addArg("-map", pathGM);
-                    commandGWAS.addArg("-cov",
-                            this.getFile(this.indexSelected, FileType.Covariate).getAbsolutePath());
-                    commandGWAS.addArg("-kin",
-                            this.getFile(this.indexSelected, FileType.Kinship).getAbsolutePath());
-                }
-                // GS
-                if (mo.isGSDeployed()) {
-                    new iPatConverter(format, FileFormat.Numeric,
-                            pathGD, pathGM);
-                    if (format != FileFormat.Numeric) {
-                        filename = pathGD.replaceFirst("[.][^.]+$", "");
-                        pathGD = filename + "_recode.dat";
-                        pathGM = filename + "_recode.nmap";
-                    }
-                    commandGS.addArg("-phenotype",
-                            this.getFile(this.indexSelected, FileType.Phenotype).getAbsolutePath());
-                    commandGS.addArg("-genotype", pathGD);
-                    commandGS.addArg("-map", pathGM);
-                    commandGS.addArg("-cov",
-                            this.getFile(this.indexSelected, FileType.Covariate).getAbsolutePath());
-                    commandGS.addArg("-kin",
-                            this.getFile(this.indexSelected, FileType.Kinship).getAbsolutePath());
-                }
-                // BSA
-                if (mo.isBSADeployed()) {
-                    commandGS.addArg("-phenotype",
-                            this.getFile(this.indexSelected, FileType.Phenotype).getAbsolutePath());
-                    commandGS.addArg("-genotype", pathGD);
-                    commandGS.addArg("-map", pathGM);
-
-                }
-                // assemble command
-                ArrayList<Command> commandRun = new ArrayList<>();
-                commandRun.add(commandGWAS);
-                commandRun.add(commandGS);
-                commandRun.add(commandBSA);
-                mo.run(commandRun);
+                mo.run(commandRun, format, pathGD, pathGM, isPLINK);
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
@@ -831,6 +819,7 @@ class iPatList implements ActionListener, WindowListener {
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
+            checkFormat(ob);
             ModuleConfig newConfig = new ModuleConfig(this.indexSelected, ob.getName(), method,
                     method == MethodType.GWAS ? ob.getDeployedGWASTool() : ob.getDeployedGSTool(),
                     ob.getFormat(),
@@ -844,11 +833,46 @@ class iPatList implements ActionListener, WindowListener {
         }
     }
 
+    void checkFormat(iPatModule mo) {
+        if (mo.getFormat().isNA()) {
+            String msg = "No match format found. \nPlease see section 2.3 from <a href=\"http://zzlab.net/iPat/iPat_manual.pdf\">iPat User Manaul</a> for details.<br>";
+            int indexGr = mo.getGrIndex();
+            for (int i : this.getGrN(indexGr)) {
+                iPatObject ob = this.getObjectN(i);
+                if(ob.isModule()) {
+                    continue;
+                }
+                msg = msg + "   " + ob.getName() + ":\t" + ((iPatFile)ob).getFileType() + "<br>";
+            }
+            JEditorPane ep = new JEditorPane();
+            ep.setEditable(false);
+            ep.setBackground(new Color(237, 237, 237, 100));
+            ep.setEditorKit(JEditorPane.createEditorKitForContentType("text/html"));
+            ep.setText(msg);
+            // handle link events
+            ep.addHyperlinkListener(new HyperlinkListener() {
+                @Override
+                public void hyperlinkUpdate(HyperlinkEvent e) {
+                    if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+                        if (Desktop.isDesktopSupported()) {
+                            try {
+                                Desktop.getDesktop().browse(e.getURL().toURI());
+                            } catch (IOException | URISyntaxException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            });
+            JOptionPane.showMessageDialog(new JFrame(), ep,
+                    "Incorrect format", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     @Override
     public void windowOpened(WindowEvent e) {
 
     }
-
     @Override
     public void windowClosing(WindowEvent e) {
         System.out.println("Config closing (outer)");

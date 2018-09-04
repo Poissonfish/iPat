@@ -60,7 +60,7 @@ tryCatch({
       "-map" = {
         cat("   Loading map ...")
         i = i + 1
-        if (grepl("/NA", arg[i]))
+        if (grepl("NA", arg[i]))
           map = NULL
         else
           map = fread(arg[i])
@@ -69,7 +69,7 @@ tryCatch({
       "-cov" = {
         cat("   Checking covariates ...")
         i = i + 1
-        if (grepl("/NA", arg[i]))
+        if (grepl("NA", arg[i]))
           cov = NULL
         else
           cov = fread(arg[i])
@@ -80,7 +80,7 @@ tryCatch({
       "-kin" = {
         cat("   Checking kinship ...")
         i = i + 1
-        if (grepl("/NA", arg[i]))
+        if (grepl("NA", arg[i]))
           kin = NULL
         else
           kin = data.frame(fread(arg[i]))

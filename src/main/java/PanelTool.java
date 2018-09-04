@@ -106,8 +106,8 @@ class PanelPlink extends PanelTool {
         slideCI = new GroupSlider("C.I.", 3, new String[]{"0.5", "0.68", "0.95"});
         comboModel = new GroupCombo("Method",
                 new String[]{"GLM", "Logistic Regression"});
-        basic.add(slideCI, "cell 0 0");
-        basic.add(comboModel, "cell 0 1");
+        basic.add(slideCI, "cell 0 0, align c");
+        basic.add(comboModel, "cell 0 1, align c");
         // cov
         if (!cov.isEmpty())
             cov.setAsRegular();
@@ -227,7 +227,7 @@ class PanelBGLR extends PanelTool  {
         command.add("-arg");
         command.add(comboModel.getValue());
         command.add(comboResponse.getValue());
-        command.add(slideBurnIn.getStrValue());
+        command.add(slideNIter.getStrValue());
         command.add(slideBurnIn.getStrValue());
         command.add(slideThin.getStrValue());
         return command;

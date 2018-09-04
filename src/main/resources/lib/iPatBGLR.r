@@ -17,6 +17,37 @@ tryCatch({
 	cat("Done\n")
 
 # Input arguments
+# arg = c(
+#   "-wd", "~/Desktop/jay",
+#   "-project", "bglr",
+#   "-pSelect", "Selected",
+#   "-maf", "0.05",
+#   "-ms", "0.20",
+#   "-format", "numeric",
+#   "-cSelect", "NA",
+#   "-phenotype", "~/Desktop/jay/data.txt",
+#   "-genotype", "~/Desktop/jay/data.dat",
+#   "-map", "NA",
+#   "-cov", "NA",
+#   "-kin", "NA",
+#   "-gwas", "FALSE", "0.0001",
+#   "-arg", "BL", "gaussian", "500", "500", "3"
+# )
+#
+# -project, bglr,
+# -cSelect, NA,
+# -pSelect, Selectedsep,
+# -maf, 0.05, -ms, 0.2,
+# -format, Numeric,
+# -gwas, FALSE, 0.00001,
+# -arg, BL, gaussian, 500, 500, 5, -wd, /Users/jameschen, -project, bglr,
+# -cSelect, NA,
+# -phenotype, /Users/jameschen/Desktop/jay/data.txt,
+# -cov, /Applications/iPat.app/Contents/MacOS/NA,
+#  -kin, /Applications/iPat.app/Contents/MacOS/NA,
+#  -genotype, /Users/jameschen/Desktop/jay/data.dat,
+#  -map, /Applications/iPat.app/Contents/MacOS/NA
+
   arg = commandArgs(trailingOnly=TRUE)
   for (i in 1 : length(arg)) {
     switch (arg[i],
@@ -68,7 +99,7 @@ tryCatch({
       "-map" = {
         cat("   Loading map ...")
         i = i + 1
-        if (grepl("/NA", arg[i]))
+        if (grepl("NA", arg[i]))
           map = NULL
         else
           map = fread(arg[i])
@@ -77,7 +108,7 @@ tryCatch({
       "-cov" = {
         cat("   Checking covariates ...")
         i = i + 1
-        if (grepl("/NA", arg[i]))
+        if (grepl("NA", arg[i]))
           cov = NULL
         else
           cov = fread(arg[i])
@@ -88,7 +119,7 @@ tryCatch({
       "-kin" = {
         cat("   Checking kinship ...")
         i = i + 1
-        if (grepl("/NA", arg[i]))
+        if (grepl("NA", arg[i]))
           kin = NULL
         else
           kin = data.frame(fread(arg[i]))
@@ -114,6 +145,11 @@ tryCatch({
       }
     )
   }
+#
+# set.seed(99163)
+# idx.test = sample(nrow(phenotype), round(nrow(phenotype) * 0.2))
+# y = phenotype[idx.test, 2] %>% as.matrix() %>% c()
+# phenotype[idx.test, 2] = NA
 
 # Subset Phenotype
   cat("   Subsetting phenotype ...")
@@ -247,9 +283,5 @@ print(warnings())
   stop(e)
 })
 
-# ETA<-list(list(K=KI,model='RKHS'))
-# fm<-BGLR(y= Y.train, ETA=ETA,nIter=12000, burnIn=2000,saveAt='RKHS_h=0.5_', verbose = F)
-# cor(fm$yHat[sam], Y.valid)
-# ETA = list(list(K = KI, model = 'RKHS'), list(X=G, model='BL'))
-# fm2<-BGLR(y= Y.train, ETA=ETA,nIter=12000, burnIn=2000,saveAt='RKHS_h=0.5_', verbose = F)
-# cor(fm2$yHat[sam], Y.valid)
+
+# cor(blr$yHat[idx.test], y)

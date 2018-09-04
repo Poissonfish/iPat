@@ -57,7 +57,7 @@ tryCatch({
       "-phenotype" = {
         cat("   Loading phenotype ...")
         i = i + 1
-        if (grepl("/NA", arg[i]))
+        if (grepl("NA", arg[i]))
           Y.path = "NA"
         else
           Y.path = arg[i]
@@ -78,7 +78,7 @@ tryCatch({
       "-cov" = {
         cat("   Checking covariates ...")
         i = i + 1
-        if (grepl("/NA", arg[i]))
+        if (grepl("NA", arg[i]))
           C.path = "NA"
         else
           C.path = arg[i]
@@ -87,7 +87,7 @@ tryCatch({
       "-kin" = {
         cat("   Checking kinship ...")
         i = i + 1
-        if (grepl("/NA", arg[i]))
+        if (grepl("NA", arg[i]))
           kin = NULL
         else
           kin = fread(arg[i])
@@ -167,10 +167,14 @@ tryCatch({
   }
   if(binary){
     basic = sprintf("%s --bed %s --bim %s --fam %s %s --allow-no-sex --adjust -ci %s --pheno %s --all-pheno -out %s",
-                    pathPLINK, GD.path, BIM.path, FAM.path, method, ci, Y.path, file.path(wd, project))
+                    paste0('"', pathPLINK, '"'), paste0('"', GD.path, '"'),
+                    paste0('"', BIM.path, '"'), paste0('"', FAM.path, '"'),
+                    method, ci, paste0('"', Y.path, '"'), paste0('"', file.path(wd, project), '"'))
   }else{
     basic = sprintf("%s --ped %s --map %s %s --allow-no-sex --adjust -ci %s --pheno %s --all-pheno -out %s",
-                    pathPLINK, GD.path, GM.path, method, ci, Y.path, file.path(wd, project))
+                    paste0('"', pathPLINK, '"'), paste0('"', GD.path, '"'),
+                    paste0('"', GM.path, '"'),
+                    method, ci, paste0('"', Y.path, '"'), paste0('"', file.path(wd, project), '"'))
   }
   ## QC
   if(!is.na(ms)) MS = sprintf("--geno %s", ms) else MS = character()
@@ -178,9 +182,9 @@ tryCatch({
   ## COV and running BLINK
   if(length(C.name) > 0){
     cov = sprintf("--covar %s --covar-name %s", C.path, paste(C.name, collapse = ", "))
-    paste(basic, MS, MAF, cov) %>% system()
+    paste(basic, MS, MAF, paste0('"', cov, '"')) %>% system(input = "notepad")
   }else{
-    paste(basic, MS, MAF) %>% system()
+    paste(basic, MS, MAF) %>% system(input = "notepad")
   }
   #Plotting
   setwd(wd)
