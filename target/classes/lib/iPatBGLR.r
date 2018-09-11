@@ -17,22 +17,22 @@ tryCatch({
 	cat("Done\n")
 
 # Input arguments
-arg = c(
-  "-wd", "~/Desktop/jay",
-  "-project", "bglr",
-  "-pSelect", "Selected",
-  "-maf", "0.05",
-  "-ms", "0.20",
-  "-format", "numeric",
-  "-cSelect", "NA",
-  "-phenotype", "~/Desktop/jay/data.txt",
-  "-genotype", "~/Desktop/jay/data.dat",
-  "-map", "NA",
-  "-cov", "NA",
-  "-kin", "NA",
-  "-gwas", "FALSE", "0.0001",
-  "-arg", "BL", "gaussian", "500", "500", "3"
-)
+# arg = c(
+#   "-wd", "~/Desktop/jay",
+#   "-project", "bglr",
+#   "-pSelect", "Selected",
+#   "-maf", "0.05",
+#   "-ms", "0.20",
+#   "-format", "numeric",
+#   "-cSelect", "NA",
+#   "-phenotype", "~/Desktop/jay/data.txt",
+#   "-genotype", "~/Desktop/jay/data.dat",
+#   "-map", "NA",
+#   "-cov", "NA",
+#   "-kin", "NA",
+#   "-gwas", "FALSE", "0.0001",
+#   "-arg", "BL", "gaussian", "500", "500", "3"
+# )
 #
 # -project, bglr,
 # -cSelect, NA,

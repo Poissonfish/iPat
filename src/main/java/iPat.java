@@ -74,7 +74,12 @@ public class iPat {
                     nameFolder = versionNamesArray[i];
                     Matcher match = p.matcher(nameFolder);
                     nameFolder = match.replaceAll("");
-                    verTemp = Integer.parseInt(nameFolder);
+                    try {
+                        verTemp = Integer.parseInt(nameFolder);
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                        continue;
+                    }
                     // Compare and find the max
                     if (verTemp > verMax) {
                         verMax = verTemp;
