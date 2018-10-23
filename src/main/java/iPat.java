@@ -10,37 +10,37 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class iPat {
-    static UserOS USEROS;
+    static Enum_UserOS USEROS;
     static WindowSize WINDOWSIZE;
     static String REXC;
-    static FileLib FILELIB;
-    static ImageLib IMGLIB;
-    static TextLib TXTLIB;
-    static MapValue DEFAULTVAL;
-    static MapValue MODVAL;
+    static Lib_File FILELIB;
+    static Lib_Image IMGLIB;
+    static Lib_Text TXTLIB;
+    static Lib_Ref DEFAULTVAL;
+    static Lib_Ref MODVAL;
 
     public iPat() throws URISyntaxException {
         USEROS = getOS();
         WINDOWSIZE = new WindowSize();
         WINDOWSIZE = setWindowSize(1200, 700);
         REXC = getREXC();
-        FILELIB = new FileLib();
-        IMGLIB = new ImageLib();
-        TXTLIB = new TextLib();
-        DEFAULTVAL = new MapValue();
-        MODVAL = new MapValue();
+        FILELIB = new Lib_File();
+        IMGLIB = new Lib_Image();
+        TXTLIB = new Lib_Text();
+        DEFAULTVAL = new Lib_Ref();
+        MODVAL = new Lib_Ref();
         printWelcomeMsg();
         launchIPat();
     }
 
-    private UserOS getOS() {
+    private Enum_UserOS getOS() {
         String osName = System.getProperty("os.name");
         if (osName.toUpperCase().contains("WINDOWS"))
-            return UserOS.Windows;
+            return Enum_UserOS.Windows;
         else if (osName.toUpperCase().contains("MAC"))
-            return UserOS.MacOS;
+            return Enum_UserOS.MacOS;
         else
-            return UserOS.Linux;
+            return Enum_UserOS.Linux;
     }
 
     private WindowSize setWindowSize(int W, int H) {
@@ -124,7 +124,7 @@ public class iPat {
             }
         });
         // Initialize a functional panel for iPat
-        FileConfig iPat = new FileConfig(WINDOWSIZE.getWidth(), WINDOWSIZE.getHeight());
+        GUI_Objs iPat = new GUI_Objs(WINDOWSIZE.getWidth(), WINDOWSIZE.getHeight());
         iPat.setFocusable(true); // Keylistener
         iPat.requestFocusInWindow(); // Keylistener
         // Add the panel into JFrame
