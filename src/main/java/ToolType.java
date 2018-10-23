@@ -17,4 +17,8 @@ public enum ToolType {
     int getIndex() {
         return this.index;
     }
+
+    boolean isDeployed() {
+        return this != NA;
+    }
 }

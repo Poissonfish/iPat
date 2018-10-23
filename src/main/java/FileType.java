@@ -7,8 +7,4 @@ public enum FileType {
     FileType(String name) {
         this.name = name;
     }
-
-    String getName() {
-        return this.name;
-    }
 }
