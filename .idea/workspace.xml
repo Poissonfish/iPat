@@ -1,7 +1,91 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="410acb04-9b59-4ff5-984f-22dc119a6f59" name="Default" comment="" />
+    <list default="true" id="410acb04-9b59-4ff5-984f-22dc119a6f59" name="Default" comment="">
+      <change beforePath="" afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" />
+      <change beforePath="" afterPath="$PROJECT_DIR$/src/main/java/Cpu_SuperConverter.java" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" afterPath="$PROJECT_DIR$/.idea/compiler.xml" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/iPat.iml" afterPath="$PROJECT_DIR$/iPat.iml" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" afterPath="$PROJECT_DIR$/pom.xml" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/Command.java" afterPath="$PROJECT_DIR$/src/main/java/iCommand.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/FileCluster.java" afterPath="$PROJECT_DIR$/src/main/java/Obj_FileCluster.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/FileConfig.java" afterPath="$PROJECT_DIR$/src/main/java/GUI_Objs.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/FileFormat.java" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/FileLib.java" afterPath="$PROJECT_DIR$/src/main/java/Lib_File.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/FileType.java" afterPath="$PROJECT_DIR$/src/main/java/Enum_FileType.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/GUI.java" afterPath="$PROJECT_DIR$/src/main/java/GUI_Components.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ImageLib.java" afterPath="$PROJECT_DIR$/src/main/java/Lib_Image.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/MapValue.java" afterPath="$PROJECT_DIR$/src/main/java/Lib_Ref.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/MethodType.java" afterPath="$PROJECT_DIR$/src/main/java/Enum_Analysis.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ModuleConfig.java" afterPath="$PROJECT_DIR$/src/main/java/GUI_Models.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/PanelTool.java" afterPath="$PROJECT_DIR$/src/main/java/GUI_Panels.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/TextLib.java" afterPath="$PROJECT_DIR$/src/main/java/Lib_Text.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ToolType.java" afterPath="$PROJECT_DIR$/src/main/java/Enum_Tool.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/UserOS.java" afterPath="$PROJECT_DIR$/src/main/java/Enum_UserOS.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iPat.java" afterPath="$PROJECT_DIR$/src/main/java/iPat.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iPatConverter.java" afterPath="$PROJECT_DIR$/src/main/java/Cpu_Converter.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iPatFile.java" afterPath="$PROJECT_DIR$/src/main/java/Obj_File.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iPatList.java" afterPath="$PROJECT_DIR$/src/main/java/Obj_Manager.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iPatModule.java" afterPath="$PROJECT_DIR$/src/main/java/Obj_Module.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iPatObject.java" afterPath="$PROJECT_DIR$/src/main/java/Obj_Super.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/Excel.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/File.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/File_c.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/File_k.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/File_p.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/Function_FarmCPU.R" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/Function_GAPIT.R" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/Function_iPat.R" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/Model.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/Model_fal.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/Model_suc.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/Module.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/Music.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/Powerpoint.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/Table.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/Text.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/Unknown.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/Video.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/Word.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/add_Model.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/add_Table.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/hint_drag.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/hint_drop.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/hint_model.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/hint_project.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/hint_trash.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/iPat.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/iPat_BGLR.R" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/iPat_BSA.R" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/iPat_FarmCPU.R" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/iPat_Gapit.R" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/iPat_PLINK.R" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/iPat_gBLUP.R" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/iPat_icon.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/iPat_rrBLUP.R" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/plink" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/trash0.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/trash1.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/trash2.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/trash3.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/trash4.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/trash5.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/trash6.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/trash7.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/trash8.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/trash9.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/white0.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/white1.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/white2.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/white3.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/white4.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/white5.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/white6.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/white7.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/white8.png" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/white9.png" afterPath="" />
+    </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -12,88 +96,121 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.35793564">
+    <splitter split-orientation="horizontal" split-proportion="0.7091779">
       <split-first>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="main.java" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/main/java/main.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="0">
-                  <caret line="0" column="13" lean-forward="false" selection-start-line="0" selection-start-column="13" selection-end-line="0" selection-end-column="13" />
-                  <folding>
-                    <marker date="1540270767696" expanded="true" signature="64:109" ph="{...}" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="iPat.java" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/main/java/iPat.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="2668">
-                  <caret line="125" column="26" lean-forward="false" selection-start-line="125" selection-start-column="26" selection-end-line="125" selection-end-column="26" />
-                  <folding>
-                    <element signature="imports" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="iPatObject.java" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/src/main/java/iPatObject.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1352">
-                  <caret line="560" column="1" lean-forward="false" selection-start-line="560" selection-start-column="1" selection-end-line="560" selection-end-column="1" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="ToolType.java" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/main/java/ToolType.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="322">
-                  <caret line="16" column="20" lean-forward="false" selection-start-line="16" selection-start-column="20" selection-end-line="16" selection-end-column="20" />
-                  <folding>
-                    <element signature="e#334#335#0" expanded="true" />
-                    <element signature="e#366#367#0" expanded="true" />
-                    <element signature="e#421#422#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="ModuleConfig.java" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/main/java/ModuleConfig.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="23">
-                  <caret line="1" column="0" lean-forward="false" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
-      </split-first>
-      <split-second>
-        <splitter split-orientation="horizontal" split-proportion="0.5">
+        <splitter split-orientation="horizontal" split-proportion="0.33673468">
           <split-first>
             <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-              <file leaf-file-name="iPatObject.java" pinned="false" current-in-tab="true">
-                <entry file="file://$PROJECT_DIR$/src/main/java/iPatObject.java">
+              <file leaf-file-name="Enum_UserOS.java" pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/src/main/java/Enum_UserOS.java">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="469">
-                      <caret line="35" column="24" lean-forward="false" selection-start-line="35" selection-start-column="24" selection-end-line="35" selection-end-column="24" />
+                    <state relative-caret-position="0">
+                      <caret line="0" column="12" lean-forward="false" selection-start-line="0" selection-start-column="12" selection-end-line="0" selection-end-column="12" />
                       <folding />
                     </state>
                   </provider>
                 </entry>
               </file>
-              <file leaf-file-name="FileConfig.java" pinned="false" current-in-tab="false">
-                <entry file="file://$PROJECT_DIR$/src/main/java/FileConfig.java">
+              <file leaf-file-name="Lib_Ref.java" pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/src/main/java/Lib_Ref.java">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="23">
-                      <caret line="1" column="6" lean-forward="true" selection-start-line="1" selection-start-column="6" selection-end-line="1" selection-end-column="6" />
+                    <state relative-caret-position="1058">
+                      <caret line="46" column="33" lean-forward="false" selection-start-line="46" selection-start-column="33" selection-end-line="46" selection-end-column="33" />
+                      <folding />
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file leaf-file-name="GUI_Models.java" pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/src/main/java/GUI_Models.java">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="200">
+                      <caret line="831" column="46" lean-forward="true" selection-start-line="831" selection-start-column="46" selection-end-line="831" selection-end-column="46" />
+                      <folding />
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file leaf-file-name="Lib_Text.java" pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/src/main/java/Lib_Text.java">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="46">
+                      <caret line="2" column="13" lean-forward="false" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
+                      <folding />
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file leaf-file-name="Lib_Image.java" pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/src/main/java/Lib_Image.java">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="868">
+                      <caret line="92" column="23" lean-forward="false" selection-start-line="92" selection-start-column="23" selection-end-line="92" selection-end-column="23" />
+                      <folding />
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file leaf-file-name="Cpu_SuperConverter.java" pinned="false" current-in-tab="true">
+                <entry file="file://$PROJECT_DIR$/src/main/java/Cpu_SuperConverter.java">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="2573">
+                      <caret line="1103" column="23" lean-forward="true" selection-start-line="1103" selection-start-column="23" selection-end-line="1103" selection-end-column="23" />
+                      <folding>
+                        <element signature="imports" expanded="true" />
+                        <element signature="e#1176#1184#0" expanded="true" />
+                        <element signature="e#1232#1240#0" expanded="true" />
+                        <element signature="e#2142#2143#0" expanded="true" />
+                        <element signature="e#2182#2183#0" expanded="true" />
+                        <element signature="e#2217#2218#0" expanded="true" />
+                        <element signature="e#2259#2260#0" expanded="true" />
+                      </folding>
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file leaf-file-name="Obj_Manager.java" pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/src/main/java/Obj_Manager.java">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="152">
+                      <caret line="854" column="63" lean-forward="true" selection-start-line="854" selection-start-column="63" selection-end-line="854" selection-end-column="63" />
+                      <folding>
+                        <element signature="e#4923#4934#0" expanded="true" />
+                        <element signature="e#5134#5145#0" expanded="true" />
+                        <element signature="e#5341#5350#0" expanded="true" />
+                        <element signature="e#5868#5877#0" expanded="true" />
+                        <element signature="e#6178#6187#0" expanded="true" />
+                        <element signature="e#6644#6653#0" expanded="true" />
+                      </folding>
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file leaf-file-name="Lib_File.java" pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/src/main/java/Lib_File.java">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="46">
+                      <caret line="5" column="13" lean-forward="false" selection-start-line="5" selection-start-column="13" selection-end-line="5" selection-end-column="13" />
+                      <folding />
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file leaf-file-name="Enum_Analysis.java" pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/src/main/java/Enum_Analysis.java">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="0">
+                      <caret line="0" column="12" lean-forward="false" selection-start-line="0" selection-start-column="12" selection-end-line="0" selection-end-column="12" />
+                      <folding />
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file leaf-file-name="iCommand.java" pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/src/main/java/iCommand.java">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="46">
+                      <caret line="2" column="13" lean-forward="false" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
                       <folding />
                     </state>
                   </provider>
@@ -102,33 +219,190 @@
             </leaf>
           </split-first>
           <split-second>
-            <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-              <file leaf-file-name="GUI.java" pinned="false" current-in-tab="false">
-                <entry file="file://$PROJECT_DIR$/src/main/java/GUI.java">
-                  <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="1150">
-                      <caret line="50" column="5" lean-forward="false" selection-start-line="50" selection-start-column="5" selection-end-line="50" selection-end-column="5" />
-                      <folding>
-                        <marker date="1540270767695" expanded="true" signature="4049:4056" ph="{...}" />
-                        <marker date="1540270767695" expanded="true" signature="4049:4058" ph="{...}" />
-                      </folding>
-                    </state>
-                  </provider>
-                </entry>
-              </file>
-              <file leaf-file-name="iPatObject.java" pinned="false" current-in-tab="true">
-                <entry file="file://$PROJECT_DIR$/src/main/java/iPatObject.java">
-                  <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="1352">
-                      <caret line="560" column="0" lean-forward="false" selection-start-line="560" selection-start-column="0" selection-end-line="560" selection-end-column="0" />
-                      <folding />
-                    </state>
-                  </provider>
-                </entry>
-              </file>
-            </leaf>
+            <splitter split-orientation="horizontal" split-proportion="0.5">
+              <split-first>
+                <leaf>
+                  <file leaf-file-name="Cpu_Converter.java" pinned="false" current-in-tab="false">
+                    <entry file="file://$PROJECT_DIR$/src/main/java/Cpu_Converter.java">
+                      <provider selected="true" editor-type-id="text-editor">
+                        <state relative-caret-position="318">
+                          <caret line="14" column="39" lean-forward="false" selection-start-line="14" selection-start-column="32" selection-end-line="14" selection-end-column="39" />
+                          <folding>
+                            <element signature="imports" expanded="true" />
+                          </folding>
+                        </state>
+                      </provider>
+                    </entry>
+                  </file>
+                  <file leaf-file-name="Cpu_SuperConverter.java" pinned="false" current-in-tab="true">
+                    <entry file="file://$PROJECT_DIR$/src/main/java/Cpu_SuperConverter.java">
+                      <provider selected="true" editor-type-id="text-editor">
+                        <state relative-caret-position="-684">
+                          <caret line="83" column="48" lean-forward="false" selection-start-line="83" selection-start-column="48" selection-end-line="83" selection-end-column="48" />
+                          <folding>
+                            <element signature="imports" expanded="true" />
+                            <element signature="e#1176#1184#0" expanded="true" />
+                            <element signature="e#1232#1240#0" expanded="true" />
+                            <element signature="e#2142#2143#0" expanded="true" />
+                            <element signature="e#2182#2183#0" expanded="true" />
+                            <element signature="e#2217#2218#0" expanded="true" />
+                            <element signature="e#2259#2260#0" expanded="true" />
+                          </folding>
+                        </state>
+                      </provider>
+                    </entry>
+                  </file>
+                </leaf>
+              </split-first>
+              <split-second>
+                <leaf>
+                  <file leaf-file-name="Cpu_SuperConverter.java" pinned="false" current-in-tab="true">
+                    <entry file="file://$PROJECT_DIR$/src/main/java/Cpu_SuperConverter.java">
+                      <provider selected="true" editor-type-id="text-editor">
+                        <state relative-caret-position="577">
+                          <caret line="123" column="53" lean-forward="true" selection-start-line="123" selection-start-column="53" selection-end-line="123" selection-end-column="53" />
+                          <folding>
+                            <element signature="imports" expanded="true" />
+                            <element signature="e#1176#1184#0" expanded="true" />
+                            <element signature="e#1232#1240#0" expanded="true" />
+                            <element signature="e#2142#2143#0" expanded="true" />
+                            <element signature="e#2182#2183#0" expanded="true" />
+                            <element signature="e#2217#2218#0" expanded="true" />
+                            <element signature="e#2259#2260#0" expanded="true" />
+                          </folding>
+                        </state>
+                      </provider>
+                    </entry>
+                  </file>
+                </leaf>
+              </split-second>
+            </splitter>
           </split-second>
         </splitter>
+      </split-first>
+      <split-second>
+        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+          <file leaf-file-name="Cpu_SuperConverter.java" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/src/main/java/Cpu_SuperConverter.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="221">
+                  <caret line="956" column="0" lean-forward="true" selection-start-line="956" selection-start-column="0" selection-end-line="956" selection-end-column="0" />
+                  <folding>
+                    <element signature="imports" expanded="true" />
+                    <element signature="e#1176#1184#0" expanded="true" />
+                    <element signature="e#1232#1240#0" expanded="true" />
+                    <element signature="e#2142#2143#0" expanded="true" />
+                    <element signature="e#2182#2183#0" expanded="true" />
+                    <element signature="e#2217#2218#0" expanded="true" />
+                    <element signature="e#2259#2260#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="Obj_Super.java" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/main/java/Obj_Super.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="3034">
+                  <caret line="154" column="27" lean-forward="false" selection-start-line="154" selection-start-column="27" selection-end-line="154" selection-end-column="27" />
+                  <folding>
+                    <element signature="imports" expanded="true" />
+                    <element signature="e#887#888#0" expanded="true" />
+                    <element signature="e#922#923#0" expanded="true" />
+                    <element signature="e#953#954#0" expanded="true" />
+                    <element signature="e#989#990#0" expanded="true" />
+                    <element signature="e#1055#1056#0" expanded="true" />
+                    <element signature="e#1092#1093#0" expanded="true" />
+                    <element signature="e#1572#1573#0" expanded="true" />
+                    <element signature="e#1652#1653#0" expanded="true" />
+                    <element signature="e#1693#1694#0" expanded="true" />
+                    <element signature="e#1760#1761#0" expanded="true" />
+                    <element signature="e#1807#1808#0" expanded="true" />
+                    <element signature="e#1884#1885#0" expanded="true" />
+                    <element signature="e#1912#1913#0" expanded="true" />
+                    <element signature="e#1945#1946#0" expanded="true" />
+                    <element signature="e#1975#1976#0" expanded="true" />
+                    <element signature="e#2020#2021#0" expanded="true" />
+                    <element signature="e#2037#2038#0" expanded="true" />
+                    <element signature="e#2082#2083#0" expanded="true" />
+                    <element signature="e#2104#2105#0" expanded="true" />
+                    <element signature="e#2154#2155#0" expanded="true" />
+                    <element signature="e#2175#2176#0" expanded="true" />
+                    <element signature="e#2224#2225#0" expanded="true" />
+                    <element signature="e#2673#2674#0" expanded="true" />
+                    <element signature="e#2705#2706#0" expanded="true" />
+                    <element signature="e#2728#2729#0" expanded="true" />
+                    <element signature="e#2770#2771#0" expanded="true" />
+                    <element signature="e#2794#2795#0" expanded="true" />
+                    <element signature="e#2826#2827#0" expanded="true" />
+                    <element signature="e#2849#2850#0" expanded="true" />
+                    <element signature="e#2881#2882#0" expanded="true" />
+                    <element signature="e#2913#2914#0" expanded="true" />
+                    <element signature="e#2945#2946#0" expanded="true" />
+                    <element signature="e#3313#3314#0" expanded="true" />
+                    <element signature="e#3348#3349#0" expanded="true" />
+                    <element signature="e#3490#3491#0" expanded="true" />
+                    <element signature="e#3534#3535#0" expanded="true" />
+                    <element signature="e#3559#3560#0" expanded="true" />
+                    <element signature="e#3594#3595#0" expanded="true" />
+                    <element signature="e#3622#3623#0" expanded="true" />
+                    <element signature="e#3661#3662#0" expanded="true" />
+                    <element signature="e#3700#3701#0" expanded="true" />
+                    <element signature="e#3729#3730#0" expanded="true" />
+                    <element signature="e#3754#3755#0" expanded="true" />
+                    <element signature="e#3785#3786#0" expanded="true" />
+                    <element signature="e#3811#3812#0" expanded="true" />
+                    <element signature="e#3839#3840#0" expanded="true" />
+                    <element signature="e#3897#3898#0" expanded="true" />
+                    <element signature="e#3958#3959#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="Obj_Module.java" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/main/java/Obj_Module.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="230">
+                  <caret line="14" column="15" lean-forward="false" selection-start-line="14" selection-start-column="15" selection-end-line="14" selection-end-column="15" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="iFile.java" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/main/java/iFile.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-5">
+                  <caret line="5" column="13" lean-forward="false" selection-start-line="5" selection-start-column="13" selection-end-line="5" selection-end-column="13" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="Obj_FileCluster.java" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/main/java/Obj_FileCluster.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="552">
+                  <caret line="38" column="5" lean-forward="false" selection-start-line="38" selection-start-column="5" selection-end-line="38" selection-end-column="5" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="GUI_Objs.java" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/main/java/GUI_Objs.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-5783">
+                  <caret line="18" column="13" lean-forward="false" selection-start-line="18" selection-start-column="13" selection-end-line="18" selection-end-column="13" />
+                  <folding>
+                    <element signature="imports" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
       </split-second>
     </splitter>
   </component>
@@ -147,6 +421,9 @@
       <find>open</find>
       <find>updateLabel</find>
       <find>getBound</find>
+      <find>Predicate</find>
+      <find>input</find>
+      <find>rateMAF</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -174,14 +451,28 @@
         <option value="$PROJECT_DIR$/src/main/java/iPat.java" />
         <option value="$PROJECT_DIR$/src/main/java/FileConfig.java" />
         <option value="$PROJECT_DIR$/src/main/java/GUI.java" />
+        <option value="$PROJECT_DIR$/src/main/java/iPatModule.java" />
         <option value="$PROJECT_DIR$/src/main/java/iPatObject.java" />
+        <option value="$PROJECT_DIR$/src/main/java/SuperConverter.java" />
+        <option value="$PROJECT_DIR$/src/main/java/Lib_Image.java" />
+        <option value="$PROJECT_DIR$/src/main/java/Obj_Module.java" />
+        <option value="$PROJECT_DIR$/src/main/java/iPatList.java" />
+        <option value="$PROJECT_DIR$/src/main/java/GUI_Objs.java" />
+        <option value="$PROJECT_DIR$/src/main/java/Enum_Analysis.java" />
+        <option value="$PROJECT_DIR$/src/main/java/Enum_UserOS.java" />
+        <option value="$PROJECT_DIR$/src/main/java/Obj_FileCluster.java" />
+        <option value="$PROJECT_DIR$/src/main/java/Lib_Ref.java" />
+        <option value="$PROJECT_DIR$/src/main/java/GUI_Models.java" />
+        <option value="$PROJECT_DIR$/src/main/java/Enum_FileFormat.java" />
+        <option value="$PROJECT_DIR$/src/main/java/Cpu_Converter.java" />
+        <option value="$PROJECT_DIR$/src/main/java/Cpu_SuperConverter.java" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="y" value="25" />
-    <option name="width" value="3744" />
-    <option name="height" value="1564" />
+    <option name="y" value="23" />
+    <option name="width" value="3840" />
+    <option name="height" value="1577" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
@@ -201,7 +492,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -233,7 +523,23 @@
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="main" type="462c0819:PsiDirectoryNode" />
               <item name="java" type="462c0819:PsiDirectoryNode" />
-              <item name="GUI.java" type="529ef68f:ClassesTreeStructureProvider$PsiClassOwnerTreeNode" />
+              <item name="GUI_Components.java" type="529ef68f:ClassesTreeStructureProvider$PsiClassOwnerTreeNode" />
+            </path>
+            <path>
+              <item name="iPat" type="b2602c69:ProjectViewProjectNode" />
+              <item name="iPat" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="GUI_Panels.java" type="529ef68f:ClassesTreeStructureProvider$PsiClassOwnerTreeNode" />
+            </path>
+            <path>
+              <item name="iPat" type="b2602c69:ProjectViewProjectNode" />
+              <item name="iPat" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="iPat.java" type="529ef68f:ClassesTreeStructureProvider$PsiClassOwnerTreeNode" />
             </path>
             <path>
               <item name="iPat" type="b2602c69:ProjectViewProjectNode" />
@@ -243,8 +549,9 @@
           <select />
         </subPane>
       </pane>
-      <pane id="PackagesPane" />
       <pane id="Scratches" />
+      <pane id="Scope" />
+      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -288,6 +595,20 @@
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
       <module name="" />
+      <envs />
+    </configuration>
+    <configuration name="main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <option name="MAIN_CLASS_NAME" value="main" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="iPat" />
       <envs />
     </configuration>
     <configuration default="true" type="JUnit" factoryName="JUnit">
@@ -350,6 +671,11 @@
       <option name="PROGRAM_PARAMETERS" />
       <predefined_log_file id="idea.log" enabled="true" />
     </configuration>
+    <recent_temporary>
+      <list size="1">
+        <item index="0" class="java.lang.String" itemvalue="Application.main" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="ShelveChangesManager" show_recycled="false">
     <option name="remove_strategy" value="false" />
@@ -373,26 +699,26 @@
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32861736" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32990354" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.090885416" sideWeight="0.6250804" order="0" side_tool="true" content_ui="combo" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.090885416" sideWeight="0.37491962" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.075" sideWeight="0.62700963" order="0" side_tool="true" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32861736" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.075" sideWeight="0.37299034" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3295129" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3293371" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
     </layout>
     <layout-to-restore>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -429,144 +755,7 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/main/java/main.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <marker date="1540270767696" expanded="true" signature="64:109" ph="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/iPat.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3174">
-          <caret line="149" column="26" lean-forward="false" selection-start-line="149" selection-start-column="26" selection-end-line="149" selection-end-column="26" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/iPatObject.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2875">
-          <caret line="178" column="1" lean-forward="true" selection-start-line="178" selection-start-column="1" selection-end-line="178" selection-end-column="1" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ToolType.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="322">
-          <caret line="16" column="20" lean-forward="false" selection-start-line="16" selection-start-column="20" selection-end-line="16" selection-end-column="20" />
-          <folding>
-            <element signature="e#334#335#0" expanded="true" />
-            <element signature="e#366#367#0" expanded="true" />
-            <element signature="e#421#422#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ModuleConfig.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="69">
-          <caret line="3" column="0" lean-forward="false" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/main.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <marker date="1540270767696" expanded="true" signature="64:109" ph="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/FileConfig.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="46">
-          <caret line="6" column="13" lean-forward="false" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ToolType.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="276">
-          <caret line="12" column="11" lean-forward="false" selection-start-line="12" selection-start-column="11" selection-end-line="12" selection-end-column="11" />
-          <folding>
-            <element signature="e#334#335#0" expanded="true" />
-            <element signature="e#366#367#0" expanded="true" />
-            <element signature="e#421#422#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ModuleConfig.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="69">
-          <caret line="3" column="0" lean-forward="false" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/GUI.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="23">
-          <caret line="5" column="0" lean-forward="false" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
-          <folding>
-            <marker date="1540270767695" expanded="true" signature="4049:4056" ph="{...}" />
-            <marker date="1540270767695" expanded="true" signature="4049:4058" ph="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/main.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <marker date="1540270767696" expanded="true" signature="64:109" ph="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/iPat.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="161">
-          <caret line="7" column="0" lean-forward="false" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/FileConfig.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="46">
-          <caret line="6" column="13" lean-forward="false" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ToolType.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="276">
-          <caret line="12" column="11" lean-forward="false" selection-start-line="12" selection-start-column="11" selection-end-line="12" selection-end-column="11" />
-          <folding>
-            <element signature="e#334#335#0" expanded="true" />
-            <element signature="e#366#367#0" expanded="true" />
-            <element signature="e#421#422#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ModuleConfig.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/GUI_Models.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="69">
           <caret line="3" column="0" lean-forward="true" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
@@ -574,13 +763,13 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/GUI.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/GUI_Components.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="23">
           <caret line="5" column="0" lean-forward="false" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
           <folding>
-            <marker date="1540270767695" expanded="true" signature="4049:4056" ph="{...}" />
-            <marker date="1540270767695" expanded="true" signature="4049:4058" ph="{...}" />
+            <element signature="e#2252#2253#0" expanded="false" />
+            <element signature="e#2302#2303#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -589,36 +778,34 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="13" lean-forward="false" selection-start-line="0" selection-start-column="13" selection-end-line="0" selection-end-column="13" />
-          <folding>
-            <marker date="1540270767696" expanded="true" signature="64:109" ph="{...}" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ToolType.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/Enum_Tool.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="276">
           <caret line="12" column="11" lean-forward="false" selection-start-line="12" selection-start-column="11" selection-end-line="12" selection-end-column="11" />
           <folding>
-            <element signature="e#334#335#0" expanded="true" />
-            <element signature="e#366#367#0" expanded="true" />
-            <element signature="e#421#422#0" expanded="true" />
+            <element signature="e#336#337#0" expanded="true" />
+            <element signature="e#368#369#0" expanded="true" />
+            <element signature="e#423#424#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/GUI.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/GUI_Components.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="23">
           <caret line="5" column="0" lean-forward="false" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
           <folding>
-            <marker date="1540270767695" expanded="true" signature="4049:4056" ph="{...}" />
-            <marker date="1540270767695" expanded="true" signature="4049:4058" ph="{...}" />
+            <element signature="e#2252#2253#0" expanded="false" />
+            <element signature="e#2302#2303#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ModuleConfig.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/GUI_Models.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="69">
           <caret line="3" column="0" lean-forward="true" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
@@ -630,17 +817,17 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="161">
           <caret line="7" column="0" lean-forward="false" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/FileConfig.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/GUI_Objs.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="46">
           <caret line="6" column="13" lean-forward="false" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
-          <folding />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -648,9 +835,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <marker date="1540270767696" expanded="true" signature="64:109" ph="{...}" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -658,33 +843,33 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="23">
           <caret line="7" column="0" lean-forward="true" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/GUI_Objs.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="46">
+          <caret line="6" column="13" lean-forward="false" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/FileConfig.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="46">
-          <caret line="6" column="13" lean-forward="false" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ToolType.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/Enum_Tool.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="276">
           <caret line="12" column="11" lean-forward="false" selection-start-line="12" selection-start-column="11" selection-end-line="12" selection-end-column="11" />
           <folding>
-            <element signature="e#334#335#0" expanded="true" />
-            <element signature="e#366#367#0" expanded="true" />
-            <element signature="e#421#422#0" expanded="true" />
+            <element signature="e#336#337#0" expanded="true" />
+            <element signature="e#368#369#0" expanded="true" />
+            <element signature="e#423#424#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ModuleConfig.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/GUI_Models.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="46">
           <caret line="2" column="0" lean-forward="true" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
@@ -692,13 +877,13 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/GUI.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/GUI_Components.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="23">
           <caret line="5" column="0" lean-forward="true" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
           <folding>
-            <marker date="1540270767695" expanded="true" signature="4049:4056" ph="{...}" />
-            <marker date="1540270767695" expanded="true" signature="4049:4058" ph="{...}" />
+            <element signature="e#2252#2253#0" expanded="false" />
+            <element signature="e#2302#2303#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -707,13 +892,11 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <marker date="1540270767696" expanded="true" signature="64:109" ph="{...}" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/FileType.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/Enum_FileType.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="115">
           <caret line="9" column="1" lean-forward="false" selection-start-line="9" selection-start-column="1" selection-end-line="9" selection-end-column="1" />
@@ -739,13 +922,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/FileFormat.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="24" lean-forward="false" selection-start-line="0" selection-start-column="24" selection-end-line="0" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar:///Library/Java/JavaVirtualMachines/jdk-9.0.4.jdk/Contents/Home/lib/src.zip!/java.desktop/java/awt/event/ActionListener.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="621">
@@ -755,91 +931,280 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/OS.java" />
     <entry file="file://$PROJECT_DIR$/src/main/java/Tool.java" />
-    <entry file="file://$PROJECT_DIR$/src/main/java/UserOS.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/ObjectType.java" />
+    <entry file="file://$PROJECT_DIR$/src/main/java/iPat.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="69">
-          <caret line="3" column="0" lean-forward="true" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
+        <state relative-caret-position="46">
+          <caret line="11" column="13" lean-forward="false" selection-start-line="11" selection-start-column="13" selection-end-line="11" selection-end-column="13" />
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ObjectType.java" />
-    <entry file="file://$PROJECT_DIR$/src/main/java/main.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/Converter.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="13" lean-forward="false" selection-start-line="0" selection-start-column="13" selection-end-line="0" selection-end-column="13" />
+        <state relative-caret-position="46">
+          <caret line="2" column="0" lean-forward="true" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/GUI_Components.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1150">
+          <caret line="89" column="5" lean-forward="false" selection-start-line="89" selection-start-column="5" selection-end-line="89" selection-end-column="5" />
           <folding>
-            <marker date="1540270767696" expanded="true" signature="64:109" ph="{...}" />
+            <element signature="e#2252#2253#0" expanded="false" />
+            <element signature="e#2302#2303#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/iPat.java">
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk-9.0.4.jdk/Contents/Home/lib/src.zip!/java.base/java/util/function/Predicate.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2668">
-          <caret line="125" column="26" lean-forward="false" selection-start-line="125" selection-start-column="26" selection-end-line="125" selection-end-column="26" />
+        <state relative-caret-position="504">
+          <caret line="48" column="12" lean-forward="false" selection-start-line="48" selection-start-column="12" selection-end-line="48" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/Obj_Super.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3034">
+          <caret line="154" column="27" lean-forward="false" selection-start-line="154" selection-start-column="27" selection-end-line="154" selection-end-column="27" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#887#888#0" expanded="true" />
+            <element signature="e#922#923#0" expanded="true" />
+            <element signature="e#953#954#0" expanded="true" />
+            <element signature="e#989#990#0" expanded="true" />
+            <element signature="e#1055#1056#0" expanded="true" />
+            <element signature="e#1092#1093#0" expanded="true" />
+            <element signature="e#1572#1573#0" expanded="true" />
+            <element signature="e#1652#1653#0" expanded="true" />
+            <element signature="e#1693#1694#0" expanded="true" />
+            <element signature="e#1760#1761#0" expanded="true" />
+            <element signature="e#1807#1808#0" expanded="true" />
+            <element signature="e#1884#1885#0" expanded="true" />
+            <element signature="e#1912#1913#0" expanded="true" />
+            <element signature="e#1945#1946#0" expanded="true" />
+            <element signature="e#1975#1976#0" expanded="true" />
+            <element signature="e#2020#2021#0" expanded="true" />
+            <element signature="e#2037#2038#0" expanded="true" />
+            <element signature="e#2082#2083#0" expanded="true" />
+            <element signature="e#2104#2105#0" expanded="true" />
+            <element signature="e#2154#2155#0" expanded="true" />
+            <element signature="e#2175#2176#0" expanded="true" />
+            <element signature="e#2224#2225#0" expanded="true" />
+            <element signature="e#2673#2674#0" expanded="true" />
+            <element signature="e#2705#2706#0" expanded="true" />
+            <element signature="e#2728#2729#0" expanded="true" />
+            <element signature="e#2770#2771#0" expanded="true" />
+            <element signature="e#2794#2795#0" expanded="true" />
+            <element signature="e#2826#2827#0" expanded="true" />
+            <element signature="e#2849#2850#0" expanded="true" />
+            <element signature="e#2881#2882#0" expanded="true" />
+            <element signature="e#2913#2914#0" expanded="true" />
+            <element signature="e#2945#2946#0" expanded="true" />
+            <element signature="e#3313#3314#0" expanded="true" />
+            <element signature="e#3348#3349#0" expanded="true" />
+            <element signature="e#3490#3491#0" expanded="true" />
+            <element signature="e#3534#3535#0" expanded="true" />
+            <element signature="e#3559#3560#0" expanded="true" />
+            <element signature="e#3594#3595#0" expanded="true" />
+            <element signature="e#3622#3623#0" expanded="true" />
+            <element signature="e#3661#3662#0" expanded="true" />
+            <element signature="e#3700#3701#0" expanded="true" />
+            <element signature="e#3729#3730#0" expanded="true" />
+            <element signature="e#3754#3755#0" expanded="true" />
+            <element signature="e#3785#3786#0" expanded="true" />
+            <element signature="e#3811#3812#0" expanded="true" />
+            <element signature="e#3839#3840#0" expanded="true" />
+            <element signature="e#3897#3898#0" expanded="true" />
+            <element signature="e#3958#3959#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/Obj_Module.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="230">
+          <caret line="14" column="15" lean-forward="false" selection-start-line="14" selection-start-column="15" selection-end-line="14" selection-end-column="15" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/main.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="161">
+          <caret line="7" column="0" lean-forward="false" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/GUI_Panels.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2528">
+          <caret line="66" column="6" lean-forward="false" selection-start-line="66" selection-start-column="6" selection-end-line="66" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/Enum_FileType.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="12" lean-forward="false" selection-start-line="0" selection-start-column="12" selection-end-line="0" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/Enum_Tool.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="368">
+          <caret line="16" column="20" lean-forward="false" selection-start-line="16" selection-start-column="20" selection-end-line="16" selection-end-column="20" />
+          <folding>
+            <element signature="e#336#337#0" expanded="true" />
+            <element signature="e#368#369#0" expanded="true" />
+            <element signature="e#423#424#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/Enum_Analysis.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="12" lean-forward="false" selection-start-line="0" selection-start-column="12" selection-end-line="0" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/Enum_UserOS.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="12" lean-forward="false" selection-start-line="0" selection-start-column="12" selection-end-line="0" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/Lib_Text.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="46">
+          <caret line="2" column="13" lean-forward="false" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/Lib_Image.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="868">
+          <caret line="92" column="23" lean-forward="false" selection-start-line="92" selection-start-column="23" selection-end-line="92" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/Lib_File.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="46">
+          <caret line="5" column="13" lean-forward="false" selection-start-line="5" selection-start-column="13" selection-end-line="5" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/GUI_Objs.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-5783">
+          <caret line="18" column="13" lean-forward="false" selection-start-line="18" selection-start-column="13" selection-end-line="18" selection-end-column="13" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ToolType.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/Obj_FileCluster.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="322">
-          <caret line="16" column="20" lean-forward="false" selection-start-line="16" selection-start-column="20" selection-end-line="16" selection-end-column="20" />
-          <folding>
-            <element signature="e#334#335#0" expanded="true" />
-            <element signature="e#366#367#0" expanded="true" />
-            <element signature="e#421#422#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ModuleConfig.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="23">
-          <caret line="1" column="0" lean-forward="false" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
+        <state relative-caret-position="552">
+          <caret line="38" column="5" lean-forward="false" selection-start-line="38" selection-start-column="5" selection-end-line="38" selection-end-column="5" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/FileType.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/Lib_Ref.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="230">
-          <caret line="10" column="18" lean-forward="false" selection-start-line="10" selection-start-column="18" selection-end-line="10" selection-end-column="18" />
-          <folding>
-            <element signature="e#212#213#0" expanded="false" />
-            <element signature="e#244#245#0" expanded="false" />
-            <element signature="e#268#269#0" expanded="false" />
-            <element signature="e#300#301#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/GUI.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1150">
-          <caret line="50" column="5" lean-forward="false" selection-start-line="50" selection-start-column="5" selection-end-line="50" selection-end-column="5" />
-          <folding>
-            <marker date="1540270767695" expanded="true" signature="4049:4056" ph="{...}" />
-            <marker date="1540270767695" expanded="true" signature="4049:4058" ph="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/FileConfig.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="23">
-          <caret line="1" column="6" lean-forward="true" selection-start-line="1" selection-start-column="6" selection-end-line="1" selection-end-column="6" />
+        <state relative-caret-position="1058">
+          <caret line="46" column="33" lean-forward="false" selection-start-line="46" selection-start-column="33" selection-end-line="46" selection-end-column="33" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/iPatObject.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/iFile.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="469">
-          <caret line="35" column="24" lean-forward="false" selection-start-line="35" selection-start-column="24" selection-end-line="35" selection-end-column="24" />
+        <state relative-caret-position="-5">
+          <caret line="5" column="13" lean-forward="false" selection-start-line="5" selection-start-column="13" selection-end-line="5" selection-end-column="13" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/iCommand.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="46">
+          <caret line="2" column="13" lean-forward="false" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/GUI_Models.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="200">
+          <caret line="831" column="46" lean-forward="true" selection-start-line="831" selection-start-column="46" selection-end-line="831" selection-end-column="46" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/Cpu_Converter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="318">
+          <caret line="14" column="39" lean-forward="false" selection-start-line="14" selection-start-column="32" selection-end-line="14" selection-end-column="39" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/Enum_FileFormat.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="276">
+          <caret line="18" column="0" lean-forward="true" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/Obj_Manager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="152">
+          <caret line="854" column="63" lean-forward="true" selection-start-line="854" selection-start-column="63" selection-end-line="854" selection-end-column="63" />
+          <folding>
+            <element signature="e#4923#4934#0" expanded="true" />
+            <element signature="e#5134#5145#0" expanded="true" />
+            <element signature="e#5341#5350#0" expanded="true" />
+            <element signature="e#5868#5877#0" expanded="true" />
+            <element signature="e#6178#6187#0" expanded="true" />
+            <element signature="e#6644#6653#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/Cpu_SuperConverter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="956" column="0" lean-forward="true" selection-start-line="956" selection-start-column="0" selection-end-line="956" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#1176#1184#0" expanded="true" />
+            <element signature="e#1232#1240#0" expanded="true" />
+            <element signature="e#2142#2143#0" expanded="true" />
+            <element signature="e#2182#2183#0" expanded="true" />
+            <element signature="e#2217#2218#0" expanded="true" />
+            <element signature="e#2259#2260#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -900,7 +1265,6 @@
             <option name="proportions">
               <list>
                 <option value="0.2" />
-                <option value="0.6" />
               </list>
             </option>
           </splitter-proportions>
