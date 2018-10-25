@@ -3,20 +3,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class iFile extends File {
+public class IPatFile extends File {
     boolean isEmpty;
 
-    public iFile(String name) {
+    public IPatFile(String name) {
         super(name);
         isEmpty = false;
     }
 
-    public iFile() {
+    public IPatFile() {
         super("NA");
         isEmpty = true;
     }
 
-    void setFile(iFile file) {
+    void setFile(IPatFile file) {
         this.renameTo(file);
         isEmpty = false;
     }

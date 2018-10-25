@@ -2,9 +2,11 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.BufferedReader;
@@ -18,25 +20,21 @@ import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
+import java.io.IOException;
 
 abstract class Cpu_SuperConverter {
     int sub_n = 32, sub_m = 8192;
     String sep = "\t";
     // Buffer read and write
     BufferedReader reader;
-    FileWriter fr, mfr;
-    BufferedWriter br, mbr;
-    PrintWriter out, mout;
+    PrintWriter out;
     // Counter
-    int mCount, nCount, lineLength;
-    int size_GD, count_GD = 0,
-            size_GM, count_GM = 0,
-            currentCount = 0;
+    int mCountQC = 0, mCount, nCount, lineLength;
+    int size_GD, size_GM,
+            lastPosition = 0, currentWindow = 0;
     int vcfAnnotation = -1;
     // Sample information
     ArrayList<String> taxa = new ArrayList<String>();
@@ -46,27 +44,28 @@ abstract class Cpu_SuperConverter {
     boolean[] hasTwoAlt;
     char m1, m2;
     boolean homo, isRefAllele, m1isNA, m2isNA;
-    // Space for matrix of gd and gm, headerline
+    // Space for matrix of gd and gm
     String[][] table_GD,
             table_GM;
-    // temp read
-    String[] headerline = null;
-    String tempread = null;
+    String[] headerLine = null;
+    // temp
+    String tempRead = null;
+    int idxTemp = 0;
     // Misc
     boolean isNAFill = false;
+    boolean hasHeaderGM = false;
+    boolean hasHeaderGD = false;
     // Quality control
-    double rateMAF = 0.05;
-    double rateNA = 0.05;
-
+    double rateMAF = 0;
+    double rateNA = 0;
+    boolean[] isKeep;
     // Constructor
     public Cpu_SuperConverter() {}
-
     // Abstract functions
     abstract void printHelp();
     abstract void iniProgress(String title, String name);
     abstract void updateProgress(int current, int all);
     abstract void doneProgress();
-
     // Enum
     enum iPatFormat {
         NA("NA"), Numerical("Numeric"), Hapmap("Hapmap"),
@@ -80,13 +79,7 @@ abstract class Cpu_SuperConverter {
         }
     }
     // Main converter functions
-    protected void run (iPatFormat InputFormat, iPatFormat OutputFormat, String pathGD, String pathGM,
-                      double rateMAF, double rateNA,
-                      boolean isNAFill, int batchSize) throws IOException {
-        this.rateMAF = rateMAF;
-        this.rateNA = rateNA;
-        this.sub_n = batchSize;
-        this.isNAFill = isNAFill;
+    protected void run (iPatFormat InputFormat, iPatFormat OutputFormat, String pathGD, String pathGM) throws IOException {
         switch (InputFormat) {
             case Numerical:
                 NumToPlink(pathGD, pathGM);
@@ -125,93 +118,110 @@ abstract class Cpu_SuperConverter {
     }
 
     private void GenStdioToNum(String GD_path) throws IOException {
-//        Frac A	Frac C	Frac T	Frac G	GenTrain Score
-//        0.1862745	0.2352941	0.2254902	0.3529412	0.8215838
+        // Front 2 and last 5 columns are for meta inforamtion (Frac A	Frac C	Frac T	Frac G	GenTrain Score)
         System.out.println("GS -> N" + " GD: " + GD_path);
-        size_GD = getCountofLines(GD_path);
-        // Setup reader
-        setReader(GD_path);
-        // Read first line, catch sep, linelength and nCount
-        setHmpGenStoSep(2 + 5);
+        this.size_GD = getCountOfLines(GD_path);
+        // Read the first line, catch sep, linelength and nCount
+        this.sep = getSep(GD_path, 0);
+        this.headerLine = getNthLine(GD_path, 0, this.sep);
         // the last five columns are ATCG and score
-        lineLength -= 5;
+        this.lineLength = this.headerLine.length - 5;
+        // Get n and m count (the first two columns are meta information)
+        this.nCount = this.lineLength - 2;
+        this.mCount = this.size_GD - 1;
+        this.isKeep = new boolean[this.mCount];
         // Get taxa name and store them into 'taxa'
-        getTaxa(true, 2);
-        // Set marker number
-        mCount = size_GD - 1;
+        this.taxa = getTaxa(true, 2, this.nCount, this.headerLine);
+        // ========= ========= ========= ========= Marker ========= ========= ========= =========
         // Get marker name and check if only two clusters from the second line
-        char[] codeAB = new char[mCount];
-        int idxTemp = 0;
+        char[] codeAB = new char[this.mCount];
+        this.idxTemp = 0;
         boolean hasAA = false;
         boolean hasAB = false;
         boolean hasBB = false;
-        String[] strTemp = null;
-        while ((tempread = reader.readLine()) != null) {
-            strTemp = tempread.replaceAll("\"", "").split(sep);
-            marker.add(strTemp[1]);
-            hasAA = Arrays.stream(strTemp).anyMatch("AA"::equals);
-            hasAB = Arrays.stream(strTemp).anyMatch("AB"::equals);
-            hasBB = Arrays.stream(strTemp).anyMatch("BB"::equals);
+        String[] tempStr = null;
+        String tempRead = null;
+        resetToNthLine(GD_path, 1);
+        iniProgress("Scanning Markers",
+                String.format("Marker %d ~ %d : ", 1, this.mCount));
+        while ((tempRead = this.reader.readLine()) != null) {
+            updateProgress(this.idxTemp + 1, this.mCount);
+            tempStr = tempRead.replaceAll("\"", "").split(this.sep);
+            // marker name is in the second column
+            this.marker.add(tempStr[1]);
+            hasAA = Arrays.stream(tempStr).anyMatch("AA"::equals);
+            hasAB = Arrays.stream(tempStr).anyMatch("AB"::equals);
+            hasBB = Arrays.stream(tempStr).anyMatch("BB"::equals);
             // AA, AB
             if (hasAA && hasAB && !hasBB)
-                codeAB[idxTemp++] = '2';
+                codeAB[this.idxTemp++] = '2';
                 // BB, AB
             else if (hasBB && hasAB && !hasAA)
-                codeAB[idxTemp++] = '0';
+                codeAB[this.idxTemp++] = '0';
                 // AB
             else if (!hasAA && !hasBB && hasAB)
-                codeAB[idxTemp++] = '0';
+                codeAB[this.idxTemp++] = '0';
             else
-                codeAB[idxTemp++] = '1';
-        }
-        // Set writer
-        setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.dat");
-        // Write first line in numeric file (taxa and marker names
-        out.write("taxa");
-        for (int i = 0; i < mCount; i ++)
-            out.write("\t" + marker.get(i));
-        out.write("\n");
-        int lastPosition = 2;
-        iniProgress("Converting Genotype File",
-                String.format("Sample %d ~ %d : ", 1, nCount));
-        while (lastPosition < lineLength) {
-            updateProgress(lastPosition, lineLength - 2);
-            // Reset reader to the first line and skip the header line
-            setReader(GD_path);
-            reader.readLine();
-            // subN by M matrix
-            table_GD = readHmpGD(lastPosition);
-            currentCount = table_GD.length;
-            // loop over individuals
-            for (int i = 0; i < currentCount; i ++) {
-                out.write(taxa.get(lastPosition - 2 + i));
-                // loop over markers
-                for (int j = 0; j < mCount; j ++) {
-                    m1 = table_GD[i][j].charAt(0);
-                    m2 = table_GD[i][j].charAt(1);
-                    if (m1 == 'N' || m2 == 'C') {
-                        // missing data
-                        out.write(isNAFill? "\t1" : "\tNA");
-                    } else if (m1 == m2 && m1 == 'A') {
-                        // 2 alleles are the same, and equal to the first allele
-                        out.write("\t0");
-                    } else if (m1 == m2 && m1 == 'B') {
-                        // 2 alleles are the same, and equal to the second allele
-                        out.write("\t2");
-                    } else if (m1 != m2) {
-                        // 2 alleles are not the same
-                        out.write("\t" + codeAB[j]);
-                    }
-                }
-                out.write("\n");
-            }
-            lastPosition += currentCount;
+                codeAB[this.idxTemp++] = '1';
         }
         doneProgress();
-        out.flush();
-        out.close();
+        // ========= ========= ========= ========= QC ========= ========= ========= =========
+        if (this.rateMAF > 0 || this.rateNA > 0) {
+            this.isKeep = doQCGenStdio(GD_path, codeAB);
+            for(boolean b : this.isKeep)
+                this.mCountQC += b ? 1 : 0;
+        }
+        // ========= ========= ========= ========= GD ========= ========= ========= =========
+        // Set writer
+        setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.dat");
+        // Write first line in numeric file ('taxa' and marker names)
+        this.out.write("taxa");
+        for (int i = 0; i < this.mCount; i ++) {
+            if (this.isKeep[i])
+                this.out.write("\t" + this.marker.get(i));
+        }
+        this.out.write("\n");
+        this.lastPosition = 2;
+        iniProgress("Converting Genotype File",
+                String.format("Sample %d ~ %d : ", 1, this.nCount));
+        while (this.lastPosition < this.lineLength) {
+            updateProgress(this.lastPosition, this.lineLength - 2);
+            // Reset reader to the first line and skip the header line
+            resetToNthLine(GD_path, 1);
+            // subN by M matrix
+            this.table_GD = getSubTransposedGD(this.lastPosition, this.sub_n, this.mCount, this.lineLength, this.sep);
+            this.currentWindow = this.table_GD.length;
+            // loop over individuals
+            for (int i = 0; i < this.currentWindow; i ++) {
+                this.out.write(this.taxa.get(this.lastPosition - 2 + i));
+                // loop over markers
+                for (int j = 0; j < this.mCount; j ++) {
+                    if (!this.isKeep[i])
+                        continue;
+                    this.m1 = this.table_GD[i][j].charAt(0);
+                    this.m2 = this.table_GD[i][j].charAt(1);
+                    if (this.m1 == 'N' || this.m2 == 'C') {
+                        // missing data
+                        this.out.write(this.isNAFill? "\t1" : "\tNA");
+                    } else if (this.m1 == this.m2 && this.m1 == 'A') {
+                        // 2 alleles are the same, and equal to the first allele
+                        this.out.write("\t0");
+                    } else if (this.m1 == this.m2 && this.m1 == 'B') {
+                        // 2 alleles are the same, and equal to the second allele
+                        this.out.write("\t2");
+                    } else if (this.m1 != this.m2) {
+                        // 2 alleles are not the same
+                        this.out.write("\t" + codeAB[j]);
+                    }
+                }
+                this.out.write("\n");
+            }
+            this.lastPosition += this.currentWindow;
+        }
+        doneProgress();
+        this.out.flush();
+        this.out.close();
     }
-
     //==============================================================================//
     //==============================================================================//
     //==============================================================================//
@@ -219,40 +229,42 @@ abstract class Cpu_SuperConverter {
     //==============================================================================//
     private void NumToPlink (String GD_path, String GM_path) throws IOException {
         System.out.println("N -> P" + " GD: " + GD_path + " GM: " + GM_path);
-        size_GD = getCountofLines(GD_path);
-        size_GM = getCountofLines(GM_path);
-        boolean nBym = Math.abs(size_GD - size_GM) > 1;
-        // Map
-        boolean header_GM = false;
+        // Determine the direction and assume both files have similar lines if GD is m by n
+        this.size_GD = getCountOfLines(GD_path);
+        this.size_GM = getCountOfLines(GM_path);
+        boolean nBym = Math.abs(this.size_GD - this.size_GM) > 1;
+        // ========= ========= ========= ========= Map ========= ========= ========= =========
+        // Read the first line, catch sep
+        this.sep = getSep(GM_path, 0);
+        this.lastPosition = 0;
         try {
             setReader(GM_path);
             setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.map");
             iniProgress("Converting Map File",
-                    String.format("Marker %d ~ %d : ", 1, mCount));
-            while (count_GM < size_GM) {
-                updateProgress(count_GM, size_GM);
-                table_GM = readNumPLINKMap();
-                header_GM = !(table_GM[0][1].length() == 1);
-                currentCount = table_GM.length;
-                for (int row = header_GM ? 1 : 0; row < currentCount; row ++) {
-                    out.write(table_GM[row][1] + "\t" + table_GM[row][0] + "\t0\t" + table_GM[row][2] + "\n");
-                }
-                count_GM += currentCount;
+                    String.format("Marker %d ~ %d : ", 1, this.mCount));
+            while (this.lastPosition < this.size_GM) {
+                updateProgress(this.lastPosition, this.size_GM);
+                this.table_GM = getNLines(this.sub_m, this.sep);
+                // It shouldn't be a chromosome number if w/o header
+                this.hasHeaderGM = !(this.table_GM[0][1].length() == 1);
+                this.currentWindow = this.table_GM.length;
+                for (int row = this.hasHeaderGM ? 1 : 0; row < this.currentWindow; row ++)
+                    out.write(this.table_GM[row][1] + "\t" + this.table_GM[row][0] + "\t0\t" + this.table_GM[row][2] + "\n");
+                this.lastPosition += this.currentWindow;
             }
-
-            out.flush();
-            out.close();
+            doneProgress();
+            this.out.flush();
+            this.out.close();
         }
         catch (IOException e) {
             System.out.println(e);
         }
-        // Ped
+        // ========= ========= ========= ========= Ped ========= ========= ========= =========
         try {
             setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.ped");
-            if (nBym) {
-                setReader(GD_path);
-                NumToPlinkNByM();
-            } else
+            if (nBym)
+                NumToPlinkNByM(GD_path);
+            else
                 NumToPlinkMByN(GD_path);
             out.flush();
             out.close();
@@ -261,56 +273,60 @@ abstract class Cpu_SuperConverter {
             System.out.println(e);
         }
     }
-    private void NumToPlinkNByM () throws IOException {
-        boolean header_GD = false, contain_taxa = false;
+    private void NumToPlinkNByM (String GD_path) throws IOException {
+        boolean hasHeader = false, hasTaxa = false;
+        this.lastPosition = 0;
+        setReader(GD_path);
         // While haven't reach the end of the files
         iniProgress("Converting Genotype File",
-                String.format("Sample %d ~ %d : ", 1, nCount));
-        while (count_GD < size_GD) {
-            updateProgress(count_GD, size_GD);
+                String.format("Sample %d ~ %d : ", 1, this.nCount));
+        while (this.lastPosition < this.size_GD) {
+            updateProgress(this.lastPosition, this.size_GD);
             // Read part of the file
-            table_GD = readNumGD();
+            this.table_GD = getNLines(this.sub_n, this.sep);
             // Get number of lines in this read
-            currentCount = table_GD.length;
+            this.currentWindow = this.table_GD.length;
             // If is the first read of the file
-            if (count_GD == 0) {
+            if (this.lastPosition == 0) {
                 // See is singular number or a string
-                header_GD = !(table_GD[0][1].length() == 1);
-                contain_taxa = !(table_GD[1][0].length() == 1);
+                hasHeader = !(this.table_GD[0][1].length() == 1);
+                hasTaxa = !(this.table_GD[1][0].length() == 1);
             }
-            for (int row = 0; row < currentCount; row ++) {
+            for (int row = 0; row < this.currentWindow; row ++) {
                 // If is the first read of the file, not necessarily starts from the first line
-                if (count_GD == 0 && header_GD && row == 0)
+                if (this.lastPosition == 0 && hasHeader && row == 0)
                     continue;
                 // If contain taxa, give the taxa name. Otherwise, name it initail as "Sample_"
-                if (contain_taxa)
-                    out.write(table_GD[row][0] + "\t" + table_GD[row][0] + "\t0\t0\t0\t0\t");
+                if (hasTaxa)
+                    this.out.write(this.table_GD[row][0] + "\t" + this.table_GD[row][0] + "\t0\t0\t0\t0\t");
                 else
-                    out.write("Family_" + row + "\t" + "Sample_" + row + "\t0\t0\t0\t0\t");
+                    this.out.write("Family_" + row + "\t" + "Sample_" + row + "\t0\t0\t0\t0\t");
                 // If contain taxa, starts from the second column
-                for (int col = contain_taxa ? 1 : 0; col < table_GD[row].length; col ++) {
-                    switch (table_GD[row][col]) {
+                for (int col = hasTaxa ? 1 : 0; col < this.table_GD[row].length; col ++) {
+                    switch (this.table_GD[row][col]) {
                         case "0" :
-                            out.write("A A");
+                            this.out.write("A A");
                             break;
                         case "1" :
-                            out.write("A T");
+                            this.out.write("A T");
                             break;
                         case "2" :
-                            out.write("T T");
+                            this.out.write("T T");
                             break;
+                        case "NA" :
+                            this.out.write(this.isNAFill? "A T" : "0 0");
                     }
                     // If haven't reached the end of the row, seperate with tab
-                    if (col != table_GD[row].length - 1)
-                        out.write("\t");
+                    if (col != this.table_GD[row].length - 1)
+                        this.out.write("\t");
                 }
                 // For each row, end it with newline
-                out.write("\n");
+                this.out.write("\n");
             }
-            count_GD += currentCount;
+            this.lastPosition += this.currentWindow;
         }
-
     }
+
     private void NumToPlinkMByN (String path) throws IOException {
         RandomAccessFile rdmr = new RandomAccessFile (new File(path), "rw");
         // parameter
@@ -403,105 +419,115 @@ abstract class Cpu_SuperConverter {
     //==============================================================================//
     private void HmpToNum (String GD_path) throws IOException {
         System.out.println("H -> N" + " GD: " + GD_path );
-        size_GD = getCountofLines(GD_path);
-        // Setup reader
-        setReader(GD_path);
-        // Read first line, catch sep and nCount
-        setHmpGenStoSep(11);
-        // It's col chrom, check if is a chromosome number (digit)
-        boolean header = !headerline[2].matches("^\\d+$");
+        this.size_GD = getCountOfLines(GD_path);
+        // Read first line, catch sep, linelength and nCount
+        this.sep = getSep(GD_path, 0);
+        this.headerLine = getNthLine(GD_path, 0, this.sep);
+        this.lineLength = this.headerLine.length;
+        // See the if the first marker show only one character
+        boolean isOneChar = this.reader.readLine().replaceAll("\"", "").split(sep)[11].length() == 1;
+        String valueNA = (isOneChar) ? "N" : "NA";
+        // Get n and m count (the first 11 columns are meta information)
+        this.nCount = this.lineLength - 11;
+        this.mCount = this.size_GD - 1;
+        this.isKeep = new boolean[this.mCount];
         // Get taxa
-        getTaxa(header, 11);
-        // Reset reader if without header
-        if (!header) {
-            setReader(GD_path);
-            mCount = size_GD;
-        } else
-            mCount = size_GD - 1;
+        this.taxa = getTaxa(true, 11, this.nCount, this.headerLine);
         // Initial first allele
-        RefAllele = new char[mCount];
-        // GM starts
-        iniProgress("Converting Map File",
-                String.format("Marker %d ~ %d : ", 1, mCount));
-        setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.nmap");
-        out.write("SNP\tChromosome\tPosition\n");
-        while (count_GD < mCount) {
-            updateProgress(count_GD, mCount);
-            table_GD = readHmpVcfMap();
-            currentCount = table_GD.length;
-            for (int i = 0; i < currentCount; i++) {
-                out.write(table_GD[i][0] + "\t" + table_GD[i][2] + "\t" + table_GD[i][3] + "\n");
-                marker.add(table_GD[i][0]);
-            }
-            count_GD += currentCount;
+        this.RefAllele = new char[this.mCount];
+        // ========= ========= ========= ========= QC ========= ========= ========= =========
+        if (this.rateMAF > 0 || this.rateNA > 0) {
+            this.isKeep = doQCHapmap(GD_path, valueNA, isOneChar);
+            for(boolean b : this.isKeep)
+                this.mCountQC += b ? 1 : 0;
         }
-        out.flush();
-        out.close();
-        // GD starts
-        setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.dat");
+        // ========= ========= ========= ========= Map ========= ========= ========= =========
+        iniProgress("Converting Map File",
+                String.format("Marker %d ~ %d : ", 1, this.mCount));
+        setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.nmap");
+        this.out.write("SNP\tChromosome\tPosition\n");
+        this.lastPosition = 0;
+        while (this.lastPosition < mCount) {
+            updateProgress(this.lastPosition, this.mCount);
+            this.table_GD = getNLines(this.sub_m, this.sep);
+            this.currentWindow = this.table_GD.length;
+            for (int i = 0; i < this.currentWindow; i++) {
+                if (!this.isKeep[this.lastPosition + i])
+                    continue;
+                this.out.write(this.table_GD[i][0] + "\t" + this.table_GD[i][2] + "\t" + this.table_GD[i][3] + "\n");
+                this.marker.add(this.table_GD[i][0]);
+            }
+            this.lastPosition += this.currentWindow;
+        }
+        doneProgress();
+        this.out.flush();
+        this.out.close();
+        // ========= ========= ========= ========= GD ========= ========= ========= =========
         // output marker names as 1st line
-        out.write("taxa");
-        for (int i = 0; i < mCount; i ++)
-            out.write("\t" + marker.get(i));
-        out.write("\n");
-        int lastPosition = 11;
+        this.out.write("taxa");
+        for (int i = 0; i < this.mCountQC; i ++)
+            this.out.write("\t" + this.marker.get(i));
+        this.out.write("\n");
         iniProgress("Converting Genotype File",
-                String.format("Sample %d ~ %d : ", 1, nCount));
-        while (lastPosition < lineLength) {
-            updateProgress(lastPosition, lineLength);
-            // Reset reader
-            setReader(GD_path);
+                String.format("Sample %d ~ %d : ", 1, this.nCount));
+        setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.dat");
+        this.lastPosition = 11;
+        while (this.lastPosition < this.lineLength) {
+            updateProgress(this.lastPosition, this.lineLength);
             // Skip the first line if contains header
-            if (header)
-                reader.readLine();
+            resetToNthLine(GD_path, 1);
             // subN by M matrix
-            table_GD = readHmpGD(lastPosition);
-            boolean isOneChar = table_GD[0][0].length() == 1;
-            currentCount = table_GD.length;
-            for (int i = 0; i < currentCount; i ++) {
-                out.write(taxa.get(lastPosition - 11 + i));
+            this.table_GD = getSubTransposedGD(this.lastPosition, this.sub_n, this.mCount, this.lineLength, this.sep);
+            this.currentWindow = this.table_GD.length;
+            for (int i = 0; i < this.currentWindow; i ++) {
+                this.out.write(this.taxa.get(this.lastPosition - 11 + i));
                 if (isOneChar) {
-                    for (int j = 0; j < mCount; j ++) {
-                        m1 = table_GD[i][j].charAt(0);
-                        if (m1 == 'N' || m1 == 'n') {
+                    for (int j = 0; j < this.mCount; j ++) {
+                        if (!this.isKeep[j])
+                            continue;
+                        this.m1 = this.table_GD[i][j].charAt(0);
+                        if (this.m1 == 'N' || this.m1 == 'n') {
                             // missing data
-                            out.write("\tNA");
-                        } else if (m1 == RefAllele[j]) {
+                            this.out.write(this.isNAFill? "\t1" : "\tNA");
+                        } else if (this.m1 == this.RefAllele[j]) {
                             // 2 alleles are the same, and equal to the first allele
-                            out.write("\t0");
-                        } else if (m1 != RefAllele[j]) {
+                            this.out.write("\t0");
+                        } else if (this.m1 != this.RefAllele[j]) {
                             // 2 alleles are the same, and equal to the second allele
-                            out.write("\t2");
+                            this.out.write("\t2");
                         } else {
                             // 2 alleles are not the same
-                            out.write("\t1");
+                            this.out.write("\t1");
                         }
                     }
                 } else {
-                    for (int j = 0; j < mCount; j ++) {
-                        m1 = table_GD[i][j].charAt(0);
-                        m2 = table_GD[i][j].charAt(1);
-                        if (m1 == 'N' || m2 == 'N' || m1 == 'n' || m2 == 'n') {
+                    for (int j = 0; j < this.mCount; j ++) {
+                        if (!this.isKeep[j])
+                            continue;
+                        this.m1 = this.table_GD[i][j].charAt(0);
+                        this.m2 = this.table_GD[i][j].charAt(1);
+                        if (this.m1 == 'N' || this.m2 == 'N' || this.m1 == 'n' || this.m2 == 'n') {
                             // missing data
-                            out.write("\tNA");
-                        } else if (m1 == m2 && m1 == RefAllele[j]) {
+                            this.out.write(this.isNAFill? "\t1" : "\tNA");
+                        } else if (m1 == this.m2 && this.m1 == this.RefAllele[j]) {
                             // 2 alleles are the same, and equal to the first allele
-                            out.write("\t0");
-                        } else if (m1 == m2 && m1 != RefAllele[j]) {
+                            this.out.write("\t0");
+                        } else if (m1 == this.m2 && this.m1 != this.RefAllele[j]) {
                             // 2 alleles are the same, and equal to the second allele
-                            out.write("\t2");
-                        } else if (m1 != m2) {
+                            this.out.write("\t2");
+                        } else if (this.m1 != this.m2) {
                             // 2 alleles are not the same
-                            out.write("\t1");
+                            this.out.write("\t1");
                         }
                     }
                 }
-                out.write("\n");
+                this.out.write("\n");
             }
-            lastPosition += currentCount;
+            this.lastPosition += this.currentWindow;
         }
-        out.flush();
-        out.close();
+        doneProgress();
+        this.out.flush();
+        this.out.close();
     }
     //==============================================================================//
     //==============================================================================//
@@ -510,91 +536,100 @@ abstract class Cpu_SuperConverter {
     //==============================================================================//
     private void HmpToPlink (String GD_path) throws IOException{
         System.out.println("H -> P" + " GD: " + GD_path);
-        size_GD = getCountofLines(GD_path);
+        this.size_GD = getCountOfLines(GD_path);
         // Setup reader
         setReader(GD_path);
-        // Read first line, catch sep and nCount
-        setHmpGenStoSep(11);
-        // It's col chrom, check if is a chromosome number (digit)
-        boolean header = !headerline[2].matches("^\\d+$");
+        // Read first line, catch sep, linelength and nCount
+        this.sep = getSep(GD_path, 0);
+        this.headerLine = getNthLine(GD_path, 0, this.sep);
+        this.lineLength = this.headerLine.length;
+        // See the if the first marker show only one character
+        boolean isOneChar = this.reader.readLine().replaceAll("\"", "").split(sep)[11].length() == 1;
+        String valueNA = (isOneChar) ? "N" : "NA";
+        // Get n and m count (the first 11 columns are meta information)
+        this.nCount = this.lineLength - 11;
+        this.mCount = this.size_GD - 1;
+        this.isKeep = new boolean[this.mCount];
         // Get taxa
-        getTaxa(header, 11);
-        // Reset reader if without header
-        if (!header) {
-            setReader(GD_path);
-            mCount = size_GD;
-        } else
-            mCount = size_GD - 1;
+        this.taxa = getTaxa(true, 11, this.nCount, this.headerLine);
         // Initial first allele
-        RefAllele = new char[mCount];
-        // GM starts
+        this.RefAllele = new char[this.mCount];
+        // ========= ========= ========= ========= QC ========= ========= ========= =========
+        if (this.rateMAF > 0 || this.rateNA > 0) {
+            this.isKeep = doQCHapmap(GD_path, valueNA, isOneChar);
+            for(boolean b : this.isKeep)
+                this.mCountQC += b ? 1 : 0;
+        }
+        // ========= ========= ========= ========= Map ========= ========= ========= =========
         System.out.println("Converting Map file");
         setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.map");
         iniProgress("Converting Map File",
                 String.format("Marker %d ~ %d : ", 1, mCount));
-        while (count_GD < mCount) {
-            updateProgress(count_GD, mCount);
-            table_GD = readHmpVcfMap();
-            currentCount = table_GD.length;
-            for (int i = 0; i < currentCount; i ++) {
+        this.lastPosition = 0;
+        while (this.lastPosition < mCount) {
+            updateProgress(this.lastPosition, mCount);
+            this.table_GD = getNLines(this.sub_m, this.sep);
+            this.currentWindow = table_GD.length;
+            for (int i = 0; i < this.currentWindow; i ++) {
+                if (!this.isKeep[this.lastPosition + i])
+                    continue;
                 out.write(table_GD[i][2] + "\t" + table_GD[i][0] + "\t0\t" + table_GD[i][3] + "\n");
                 //marker.add(table_GD[i][2]); no need in ped file
             }
-            count_GD += currentCount;
+            this.lastPosition += this.currentWindow;
         }
+        doneProgress();
         out.flush();
         out.close();
-        // GD starts
-        System.out.println("Converting Genotype file");
-        setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.ped");
-        int lastPosition = 11;
+        // ========= ========= ========= ========= GD ========= ========= ========= =========
         iniProgress("Converting Genotype File",
                 String.format("Sample %d ~ %d : ", 1, nCount));
+        setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.ped");
+        this.lastPosition = 11;
         while (lastPosition < lineLength) {
             updateProgress(lastPosition, lineLength);
-            // Reset reader
-            setReader(GD_path);
             // Skip the first line if contains header
-            if (header)
-                reader.readLine();
+            resetToNthLine(GD_path, 1);
             // subN by M matrix
-            table_GD = readHmpGD(lastPosition);
-            boolean isOneChar = table_GD[0][0].length() == 1;
-            currentCount = table_GD.length;
-            for (int i = 0; i < currentCount; i ++) {
+            this.table_GD = getSubTransposedGD(this.lastPosition, this.sub_n, this.mCount, this.lineLength, this.sep);
+            this.currentWindow = this.table_GD.length;
+            for (int i = 0; i < this.currentWindow; i ++) {
                 out.write(taxa.get(lastPosition - 11 + i) + "\t" + taxa.get(lastPosition - 11 + i) + "\t0\t0\t0\t-9\t");
                 if (isOneChar) {
-                    for (int j = 0; j < mCount; j ++) {
-                        m1 = table_GD[i][j].charAt(0);
-                        if (m1 == 'N' || m1 == 'n') {
+                    for (int j = 0; j < this.mCount; j ++) {
+                        if (!this.isKeep[j])
+                            continue;
+                        this.m1 = this.table_GD[i][j].charAt(0);
+                        if (this.m1 == 'N' || this.m1 == 'n') {
                             // missing data, coded as 0 0
-                            out.write("\t0 0");
+                            this.out.write("\t0 0");
                         } else {
                             // record the exact value
-                            out.write("\t" + m1 + " " + m1);
+                            this.out.write("\t" + this.m1 + " " + this.m1);
                         }
                     }
                 } else {
-                    for (int j = 0; j < mCount; j ++) {
-                        m1 = table_GD[i][j].charAt(0);
-                        m2 = table_GD[i][j].charAt(1);
-                        if (m1 == 'N' || m2 == 'N' || m1 == 'n' || m2 == 'n') {
+                    for (int j = 0; j < this.mCount; j ++) {
+                        if (!this.isKeep[j])
+                            continue;
+                        this.m1 = this.table_GD[i][j].charAt(0);
+                        this.m2 = this.table_GD[i][j].charAt(1);
+                        if (this.m1 == 'N' || this.m2 == 'N' || this.m1 == 'n' || this.m2 == 'n') {
                             // missing data, coded as 0 0
-                            out.write("\t0 0");
+                            this.out.write("\t0 0");
                         } else {
                             // record the exact value
-                            out.write("\t" + m1 + " " + m2);
+                            this.out.write("\t" + this.m1 + " " + this.m2);
                         }
                     }
                 }
-
-                out.write("\n");
+                this.out.write("\n");
             }
-            lastPosition += currentCount;
+            this.lastPosition += this.currentWindow;
         }
-
-        out.flush();
-        out.close();
+        doneProgress();
+        this.out.flush();
+        this.out.close();
     }
     //==============================================================================//
     //==============================================================================//
@@ -604,114 +639,117 @@ abstract class Cpu_SuperConverter {
     private void VCFToNum(String GD_path) throws IOException{
         int GTindex = -1;
         System.out.println("V -> N" + " GD: " + GD_path);
-        size_GD = getCountofLines(GD_path);
+        this.size_GD = getCountOfLines(GD_path);
         // Setup reader
         setReader(GD_path);
         // Find redundant, store headerline as "tempread" and push pointer to the first marker line
         // vcfAnnotation is 4 if 3## and 1 header
-        vcfAnnotation = getAnnotationLine();
+        this.vcfAnnotation = getCountOfAnnotation();
         // Get header as "headerline" from "tempred" and find sep and linelength
-        setVcfSep();
+        this.sep = getSep(GD_path, this.vcfAnnotation - 1);
+        this.headerLine = getNthLine(GD_path, this.vcfAnnotation - 1, this.sep);
+        this.lineLength = this.headerLine.length;
+        // Get n and m count (the first 9 columns are meta information)
+        this.nCount = this.lineLength - 9;
+        this.mCount = this.size_GD - this.vcfAnnotation;
+        this.taxa = getTaxa(true, 9, this.nCount, this.headerLine);
+        // Initialize alt
+        this.hasTwoAlt = new boolean[this.mCount];
         // Get GT position
-        String[] FORMAT = reader.readLine().split(sep)[8].split(":");
+        String[] FORMAT = this.reader.readLine().split(this.sep)[8].split(":");
         for (int i = 0; i < FORMAT.length; i ++) {
             if (FORMAT[i].equals("GT")) {
                 GTindex = i;
                 break;
             }
         }
-        // Get taxa
-        getTaxa(true, 9);
-        // Set mCount
-        mCount = size_GD - vcfAnnotation;
-        hasTwoAlt = new boolean[mCount];
-        // GM starts
-        resetToMarkerLine(GD_path, vcfAnnotation);
-        System.out.println("Converting Map file");
-        setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.nmap");
-        out.write("SNP\tChromosome\tPosition\n");
+        // ========= ========= ========= ========= Map ========= ========= ========= =========
+        resetToNthLine(GD_path, this.vcfAnnotation);
         iniProgress("Converting Map File",
-                String.format("Marker %d ~ %d : ", 1, mCount));
-        while (count_GD < mCount) {
-            updateProgress(count_GD, mCount);
-            table_GD = readHmpVcfMap();
-            currentCount = table_GD.length;
-            for (int i = 0; i < currentCount; i++) {
-                out.write(table_GD[i][2] + "\t" + table_GD[i][0] + "\t" + table_GD[i][1] + "\n");
-                marker.add(table_GD[i][2]);
-                hasTwoAlt[i] = table_GD[i][4].contains(",") ? true : false;
+                String.format("Marker %d ~ %d : ", 1, this.mCount));
+        setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.nmap");
+        this.out.write("SNP\tChromosome\tPosition\n");
+        this.lastPosition = 0;
+        while (this.lastPosition < this.mCount) {
+            updateProgress(this.lastPosition, this.mCount);
+            this.table_GD = getNLines(this.sub_m, this.sep);
+            this.currentWindow = this.table_GD.length;
+            for (int i = 0; i < this.currentWindow; i++) {
+                this.out.write(this.table_GD[i][2] + "\t" + this.table_GD[i][0] + "\t" + this.table_GD[i][1] + "\n");
+                this.marker.add(this.table_GD[i][2]);
+                this.hasTwoAlt[i] = this.table_GD[i][4].contains(",");
             }
-            count_GD += currentCount;
+            this.lastPosition += this.currentWindow;
         }
-        out.flush();
-        out.close();
-        // GD starts
-        System.out.println("Converting Genotype file");
-        setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.dat");
+        doneProgress();
+        this.out.flush();
+        this.out.close();
+        // ========= ========= ========= ========= GD ========= ========= ========= =========
         // output marker names as 1st line
-        out.write("taxa");
-        for (int i = 0; i < mCount; i ++)
-            out.write("\t" + marker.get(i));
-        out.write("\n");
-        int lastPosition = 9;
+        this.out.write("taxa");
+        for (int i = 0; i < this.mCount; i ++)
+            this.out.write("\t" + this.marker.get(i));
+        this.out.write("\n");
         iniProgress("Converting Genotype File",
-                String.format("Sample %d ~ %d : ", 1, mCount));
-        while (lastPosition < lineLength) {
-            updateProgress(lastPosition, lineLength);
+                String.format("Sample %d ~ %d : ", 1, this.mCount));
+        setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.dat");
+        this.lastPosition = 9;
+        while (this.lastPosition < this.lineLength) {
+            updateProgress(this.lastPosition, this.lineLength);
             // Reset reader
-            resetToMarkerLine(GD_path, vcfAnnotation);
+            resetToNthLine(GD_path, this.vcfAnnotation);
             // subN by M matrix
-            table_GD = readVcfGD(lastPosition);
-            currentCount = table_GD.length;
-            for (int i = 0; i < currentCount; i ++) {
-                out.write(taxa.get(lastPosition - 9 + i));
-                for (int j = 0; j < mCount; j ++) {
-                    tempread = table_GD[i][j].split(":")[GTindex];
-                    m1 = tempread.charAt(0);
-                    m2 = tempread.charAt(2);
+            this.table_GD = getSubTransposedGD(this.lastPosition, this.sub_n, this.mCount, this.lineLength, this.sep);
+            this.currentWindow = this.table_GD.length;
+            for (int i = 0; i < this.currentWindow; i ++) {
+                this.out.write(this.taxa.get(this.lastPosition - 9 + i));
+                for (int j = 0; j < this.mCount; j ++) {
+                    this.tempRead = this.table_GD[i][j].split(":")[GTindex];
+                    this.m1 = this.tempRead.charAt(0);
+                    this.m2 = this.tempRead.charAt(2);
                     // missing data
-                    if (m1 == '.' || m2 == '.') {
-                        out.write("\tNA");
+                    if (this.m1 == '.' || this.m2 == '.') {
+                        this.out.write(this.isNAFill? "\t1" : "\tNA");
                         // Heterozygous
-                    } else if (m1 != m2) {
-                        out.write("\t1");
+                    } else if (this.m1 != this.m2) {
+                        this.out.write("\t1");
                         // If has two alts
-                    } else if (hasTwoAlt[j]) {
-                        switch (m1) {
+                    } else if (this.hasTwoAlt[j]) {
+                        switch (this.m1) {
                             case '0':
                                 // Homozygous, and are ref allele
-                                out.write("\t0");
+                                this.out.write("\t0");
                                 break;
                             case '1':
                                 // Homozygous, and are 1st alt allele
-                                out.write("\t1");
+                                this.out.write("\t1");
                                 break;
                             case '2':
                                 // Homozygous, and are 2nd alt allele
-                                out.write("\t2");
+                                this.out.write("\t2");
                                 break;
                         }
                         // If has one alt
                     } else {
-                        switch (m1) {
+                        switch (this.m1) {
                             case '0' :
                                 // Homozygous, and are ref allele
-                                out.write("\t0");
+                                this.out.write("\t0");
                                 break;
                             case '1' :
                                 // Homozygous, and are alt allele
-                                out.write("\t2");
+                                this.out.write("\t2");
                                 break;
                         }
                     }
                 }
-                out.write("\n");
+                this.out.write("\n");
             }
-            lastPosition += currentCount;
+            this.lastPosition += this.currentWindow;
         }
-
-        out.flush();
-        out.close();
+        doneProgress();
+        this.out.flush();
+        this.out.close();
     }
     //==============================================================================//
     //==============================================================================//
@@ -721,143 +759,146 @@ abstract class Cpu_SuperConverter {
     private void VCFToPlink(String GD_path) throws IOException{
         int GTindex = -1;
         System.out.println("V -> N" + " GD: " + GD_path);
-        size_GD = getCountofLines(GD_path);
+        this.size_GD = getCountOfLines(GD_path);
         // Setup reader
         setReader(GD_path);
         // Find redundant, store headerline as "tempread" and push pointer to the first marker line
         // vcfAnnotation is 4 if 3## and 1 header
-        vcfAnnotation = getAnnotationLine();
+        this.vcfAnnotation = getCountOfAnnotation();
         // Get header as "headerline" from "tempred" and find sep and linelength
-        setVcfSep();
+        this.sep = getSep(GD_path, this.vcfAnnotation - 1);
+        this.headerLine = getNthLine(GD_path, this.vcfAnnotation - 1, this.sep);
+        this.lineLength = this.headerLine.length;
+        // Get n and m count (the first 9 columns are meta information)
+        this.nCount = this.lineLength - 9;
+        this.mCount = this.size_GD - this.vcfAnnotation;
+        this.taxa = getTaxa(true, 9, this.nCount, this.headerLine);
+        // Initialize alt
+        this.hasTwoAlt = new boolean[this.mCount];
         // Get GT position
-        String[] FORMAT = reader.readLine().split(sep)[8].split(":");
+        String[] FORMAT = this.reader.readLine().split(this.sep)[8].split(":");
         for (int i = 0; i < FORMAT.length; i ++) {
             if (FORMAT[i].equals("GT")) {
                 GTindex = i;
                 break;
             }
         }
-        // Get taxa
-        getTaxa(true, 9);
-        // Set mCount
-        mCount = size_GD - vcfAnnotation;
-        hasTwoAlt = new boolean[mCount];
-        // GM starts
-        resetToMarkerLine(GD_path, vcfAnnotation);
-        System.out.println("Converting Map file");
-        setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.map");
+        // ========= ========= ========= ========= Map ========= ========= ========= =========
+        resetToNthLine(GD_path, this.vcfAnnotation);
         iniProgress("Converting Map File",
-                String.format("Marker %d ~ %d : ", 1, mCount));
-        while (count_GD < mCount) {
-            updateProgress(count_GD, mCount);
-            table_GD = readHmpVcfMap();
-            currentCount = table_GD.length;
-            for (int i = 0; i < currentCount; i ++) {
-                out.write(table_GD[i][0] + "\t" + table_GD[i][2] + "\t0\t" + table_GD[i][1] + "\n");
-                marker.add(table_GD[i][2]);
-                hasTwoAlt[i] = table_GD[i][4].contains(",") ? true : false;
+                String.format("Marker %d ~ %d : ", 1, this.mCount));
+        setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.map");
+        this.lastPosition = 0;
+        while (this.lastPosition < this.mCount) {
+            updateProgress(this.lastPosition, this.mCount);
+            this.table_GD = getNLines(this.sub_m, this.sep);
+            this.currentWindow = this.table_GD.length;
+            for (int i = 0; i < this.currentWindow; i ++) {
+                this.out.write(this.table_GD[i][0] + "\t" + this.table_GD[i][2] + "\t0\t" + this.table_GD[i][1] + "\n");
+                this.marker.add(this.table_GD[i][2]);
+                this.hasTwoAlt[i] = this.table_GD[i][4].contains(",");
             }
-            count_GD += currentCount;
+            this.lastPosition += this.currentWindow;
         }
-
-        out.flush();
-        out.close();
-        // GD starts
-        System.out.println("Converting Genotype file");
-        setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.dat");
+        doneProgress();
+        this.out.flush();
+        this.out.close();
+        // ========= ========= ========= ========= GD ========= ========= ========= =========
         // output marker names as 1st line
-        out.write("taxa");
-        for (int i = 0; i < mCount; i ++)
-            out.write("\t" + marker.get(i));
-        out.write("\n");
-        int lastPosition = 9;
+        this.out.write("taxa");
+        for (int i = 0; i < this.mCount; i ++)
+            this.out.write("\t" + this.marker.get(i));
+        this.out.write("\n");
         iniProgress("Converting Genotype File",
-                String.format("Sample %d ~ %d : ", 1, nCount));
-        while (lastPosition < lineLength) {
-            updateProgress(lastPosition, lineLength);
+                String.format("Sample %d ~ %d : ", 1, this.nCount));
+        setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.dat");
+        this.lastPosition = 9;
+        while (this.lastPosition < this.lineLength) {
+            updateProgress(this.lastPosition, this.lineLength);
             // Reset reader
-            resetToMarkerLine(GD_path, vcfAnnotation);
+            resetToNthLine(GD_path, this.vcfAnnotation);
             // subN by M matrix
-            table_GD = readVcfGD(lastPosition);
-            currentCount = table_GD.length;
-            for (int i = 0; i < currentCount; i ++) {
-                out.write(taxa.get(lastPosition - 9 + i));
-                for (int j = 0; j < mCount; j ++) {
-                    tempread = table_GD[i][j].split(":")[GTindex];
-                    m1 = tempread.charAt(0);
-                    m2 = tempread.charAt(2);
+            this.table_GD = getSubTransposedGD(this.lastPosition, this.sub_n, this.mCount, this.lineLength, this.sep);
+            this.currentWindow = this.table_GD.length;
+            for (int i = 0; i < this.currentWindow; i ++) {
+                this.out.write(this.taxa.get(this.lastPosition - 9 + i));
+                for (int j = 0; j < this.mCount; j ++) {
+                    this.tempRead = this.table_GD[i][j].split(":")[GTindex];
+                    this.m1 = this.tempRead.charAt(0);
+                    this.m2 = this.tempRead.charAt(2);
                     // missing data, imputed as 1
-                    if (m1 == '.' || m2 == '.') {
-                        out.write("\t0 0");
+                    if (this.m1 == '.' || this.m2 == '.') {
+                        this.out.write(this.isNAFill? "\tA T" : "\t0 0");
                         // If has two alts
-                    } else if (hasTwoAlt[j]) {
+                    } else if (this.hasTwoAlt[j]) {
                         // Heterozygous
-                        if (m1 != m2) {
-                            switch (m1) {
+                        if (this.m1 != this.m2) {
+                            switch (this.m1) {
                                 case '0':
-                                    out.write("\tA ");
+                                    this.out.write("\tA ");
                                     break;
                                 case '1':
-                                    out.write("\tT ");
+                                    this.out.write("\tT ");
                                     break;
                                 case '2':
-                                    out.write("\tG ");
+                                    this.out.write("\tG ");
                                     break;
                             }
-                            switch (m2) {
+                            switch (this.m2) {
                                 case '0':
-                                    out.write("A");
+                                    this.out.write("A");
                                     break;
                                 case '1':
-                                    out.write("T");
+                                    this.out.write("T");
                                     break;
                                 case '2':
-                                    out.write("G");
+                                    this.out.write("G");
                                     break;
                             }
                             // Homozygous
                         } else {
-                            switch (m1) {
+                            switch (this.m1) {
                                 case '0':
                                     // Homozygous, and are ref allele
-                                    out.write("\tA A");
+                                    this.out.write("\tA A");
                                     break;
                                 case '1':
                                     // Homozygous, and are 1st alt allele
-                                    out.write("\tT T");
+                                    this.out.write("\tT T");
                                     break;
                                 case '2':
                                     // Homozygous, and are 2nd alt allele
-                                    out.write("\tG G");
+                                    this.out.write("\tG G");
                                     break;
                             }
                         }
                         // If has one alt
                     } else {
                         // Heterozygous
-                        if (m1 != m2) {
-                            out.write("\tA T");
+                        if (this.m1 != this.m2) {
+                            this.out.write("\tA T");
                             // Homozygous
                         } else {
-                            switch (m1) {
+                            switch (this.m1) {
                                 case '0' :
                                     // Homozygous, and are ref allele
-                                    out.write("\tA A");
+                                    this.out.write("\tA A");
                                     break;
                                 case '1' :
                                     // Homozygous, and are alt allele
-                                    out.write("\tT T");
+                                    this.out.write("\tT T");
                                     break;
                             }
                         }
                     }
                 }
-                out.write("\n");
+                this.out.write("\n");
             }
-            lastPosition += currentCount;
+            this.lastPosition += this.currentWindow;
         }
-        out.flush();
-        out.close();
+        doneProgress();
+        this.out.flush();
+        this.out.close();
     }
     //==============================================================================//
     //==============================================================================//
@@ -866,13 +907,11 @@ abstract class Cpu_SuperConverter {
     //==============================================================================//
     private void PlinkToNum(String GD_path, String GM_path) throws IOException{
         System.out.println("P -> N" + " GD: " + GD_path + " GM: " + GM_path);
-        size_GD = getCountofLines(GD_path);
-        nCount = size_GD;
-        size_GM = getCountofLines(GM_path);
-        mCount = size_GM;
-        RefAllele = new char[mCount];
-        int index_first = 0;
-        String readline = null;
+        this.size_GD = getCountOfLines(GD_path);
+        this.size_GM = getCountOfLines(GM_path);
+        this.nCount = this.size_GD;
+        this.mCount = this.size_GM;
+        this.RefAllele = new char[this.mCount];
         // GD
         try {
             // Setup reader as 'reader', and writer as 'out'
@@ -880,81 +919,80 @@ abstract class Cpu_SuperConverter {
             setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.dat");
             // Progress message
             iniProgress("Converting Genotype File",
-                    String.format("Sample %d ~ %d : ", 1, nCount));
+                    String.format("Sample %d ~ %d : ", 1, this.nCount));
             // Start conversion
-            while (count_GD < size_GD && (readline = reader.readLine()) != null) {
-                updateProgress(count_GD, size_GD);
+            this.lastPosition = 0;
+            while ((this.tempRead = this.reader.readLine()) != null) {
+                updateProgress(this.lastPosition++, size_GD);
                 // Get rid of first 6 columns and all space (\s)
-                String rowTaxa = readline.replaceAll("^(\\S*)", "");
+                String rowTaxa = this.tempRead.replaceAll("^(\\S*)", "");
                 Matcher mtchr = Pattern.compile("\\s(\\S+)\\s").matcher(rowTaxa);
                 mtchr.find();
                 rowTaxa = mtchr.group().replaceAll("\\s*", "");
-                readline = readline.replaceAll("^(\\S*\\s){6}", "").replaceAll("\\s*", "");
+                this.tempRead = this.tempRead.replaceAll("^(\\S*\\s){6}", "").replaceAll("\\s*", "");
                 // Write taxa
-                out.write(rowTaxa + "\t");
+                this.out.write(rowTaxa + "\t");
                 // Convert this line (individual)
-                for (int i = 0; i < mCount; i++) {
+                for (int i = 0; i < this.mCount; i++) {
                     // Read alleles
-                    m1 = readline.charAt(2 * i);
-                    m2 = readline.charAt(2 * i + 1);
-                    homo = m1 == m2;
-                    m1isNA = m1 == '0';
-                    m2isNA = m2 == '0';
+                    this.m1 = this.tempRead.charAt(2 * i);
+                    this.m2 = this.tempRead.charAt(2 * i + 1);
+                    this.homo = this.m1 == this.m2;
+                    this.m1isNA = this.m1 == '0';
+                    this.m2isNA = this.m2 == '0';
                     // Assign reference allele
-                    if (RefAllele[i] == '\u0000') {
-                        if (m1 != '0')
-                            RefAllele[i] = m1;
+                    if (this.RefAllele[i] == '\u0000') {
+                        if (this.m1 != '0')
+                            this.RefAllele[i] = this.m1;
                         else if (m2 != '0')
-                            RefAllele[i] = m2;
+                            this.RefAllele[i] = this.m2;
                     }
-                    isRefAllele = m1 == RefAllele[i];
+                    this.isRefAllele = this.m1 == this.RefAllele[i];
                     // Write genotype
-                    if (homo && isRefAllele) {
+                    if (this.homo && this.isRefAllele) {
                         // 2 alleles are the same, and equal to the reference allele
-                        out.write("0");
-                    } else if (homo && !isRefAllele && !m1isNA) {
+                        this.out.write("0");
+                    } else if (this.homo && !this.isRefAllele && !this.m1isNA) {
                         // 2 alleles are the same, but not equal to the first allele and are not a missing value
-                        out.write("2");
-                    } else if (m1isNA || m2isNA) {
+                        this.out.write("2");
+                    } else if (this.m1isNA || this.m2isNA) {
                         // missing data, imputed as 1
-                        out.write("NA");
-                    } else if (!homo) {
+                        this.out.write(this.isNAFill? "1" : "NA");
+                    } else if (!this.homo) {
                         // 2 alleles are not the same
-                        out.write("1");
+                        this.out.write("1");
                     }
-                    if (i + 1 == mCount)
-                        out.write("\n");
+                    if (i + 1 == this.mCount)
+                        this.out.write("\n");
                     else
-                        out.write("\t");
+                        this.out.write("\t");
 
                 }
-                count_GD++;
             }
-            out.flush();
-            out.close();
-        }
-        catch (IOException e) {
+            doneProgress();
+            this.out.flush();
+            this.out.close();
+        } catch (IOException e) {
             System.out.println(e);
         }
-        // GM
+        // ========= ========= ========= ========= Map ========= ========= ========= =========
         try{
-            System.out.println("Converting Map file");
-            setReader(GM_path);
+            this.sep = getSep(GM_path, 0);
             setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.nmap");
-            out.write("SNP\tChromosome\tPosition\n");
+            this.out.write("SNP\tChromosome\tPosition\n");
             iniProgress("Converting Map File",
-                    String.format("Marker %d ~ %d : ", 1, mCount));
-            while (count_GM < size_GM) {
-                updateProgress(count_GM, size_GM);
-                table_GM = readNumPLINKMap();
-                currentCount = table_GM.length;
-                for (int row = 0; row < currentCount; row++) {
+                    String.format("Marker %d ~ %d : ", 1, this.mCount));
+            this.lastPosition = 0;
+            while (this.lastPosition < this.size_GM) {
+                updateProgress(this.lastPosition, this.size_GM);
+                this.table_GM = getNLines(this.sub_m, this.sep);
+                this.currentWindow = table_GM.length;
+                for (int row = 0; row < this.currentWindow; row++) {
                     out.write(table_GM[row][1] + "\t" + table_GM[row][0] + "\t" + table_GM[row][3] + "\n");
                 }
-                System.out.println(String.format("Marker %d ~ %d : ", count_GM + 1, count_GM + currentCount) + "Done                    ");
-                count_GM += currentCount;
+                this.lastPosition += this.currentWindow;
             }
-
+            doneProgress();
             out.flush();
             out.close();
         }
@@ -962,181 +1000,237 @@ abstract class Cpu_SuperConverter {
             System.out.println(e);
         }
     }
+    // ================================== Setup writer and reader ==================================
     private void setWriter (String file) throws IOException {
-        fr = new FileWriter(file);
-        br = new BufferedWriter(fr);
-        out = new PrintWriter(br);
-    }
-    private void setMapWriter (String file) throws IOException {
-        mfr = new FileWriter(file);
-        mbr = new BufferedWriter(mfr);
-        mout = new PrintWriter(mbr);
+        out = new PrintWriter(new BufferedWriter(new FileWriter(file)));
     }
     private void setReader (String file) throws IOException {
         reader = new BufferedReader(new FileReader(file));
     }
-
-    private String[][] readPED () throws IOException {
+    // ======================================= Read file =======================================
+    // Extract 'nLines' of lines from the reader
+    private String[][] getNLines (int nLines, String sep) throws IOException {
         int index = 0;
         String readline = null;
-        String[][] lines = new String[sub_n][];
-        while (index < sub_n && (readline = reader.readLine()) != null)
-            // Seperated by space and tab
-            lines[index++] = readline.split("\t| +");
-        if (index < sub_n - 1)
-            lines = Arrays.copyOf(lines,  index);
+        String[][] lines = new String[nLines][];
+        while (index < nLines && (readline = reader.readLine()) != null)
+            lines[index++] = readline.replaceAll("\"", "").split(sep);
+        // In case more space is created than lines needed
+        if (index < nLines - 1)
+            lines = Arrays.copyOf(lines, index);
         return lines;
     }
-    private String[][] readVcfGD (int lastPosition) throws IOException {
-        int index = 0, upperBound = Math.min(lastPosition + sub_n, lineLength);
+    // Extract genotype table from m x n to n x m
+    private String[][] getSubTransposedGD (int lastPosition, int sizeN, int sizeM, int lineLen, String sep) throws IOException {
+        int index = 0, upperBound = Math.min(lastPosition + sizeN, lineLen);
         String readline = null;
-        // Transposed dimension
-        String[][] lines = new String[upperBound - lastPosition][mCount];
-        // temp
-        String[] temp = null;
+        // Transposed dimension (sub_n x m)
+        String[][] tableGD = new String[upperBound - lastPosition][sizeM];
         while ((readline = reader.readLine()) != null) {
-            temp = readline.replaceAll("\"", "").split(sep);
+            String[] tempLines = readline.replaceAll("\"", "").split(sep);
+            // Hapmap Specific. If is the first round, catch the RefAllele if necessary
+            if (lastPosition == 11)
+                RefAllele[index] = tempLines[11].charAt(0);
             for (int i = lastPosition; i < upperBound; i ++)
-                lines[i - lastPosition][index] = temp[i];
+                tableGD[i - lastPosition][index] = tempLines[i];
             index ++;
         }
-        return lines;
+        return tableGD;
     }
-    private int getAnnotationLine () throws IOException {
+    // ======================================= Set separator =======================================
+    private String getSep (String path, int whichLine) throws IOException {
+        resetToNthLine(path, whichLine);
+        String tempLine = reader.readLine();
+        // by tab
+        String[] tempLines = tempLine.replaceAll("\"", "").split("\t");
+        // by space
+        if (tempLines.length <= 1)
+            tempLines = tempLine.replaceAll("\"", "").split(" +");
+        else
+            return "\t";
+        // csv
+        if (tempLines.length <= 1)
+            return ",";
+        else
+            return " +";
+    }
+    // ======================================= VCF functions =======================================
+    private int getCountOfAnnotation () throws IOException {
         int index = 0;
-        String readline = null;
-        while ((readline = reader.readLine()) != null) {
+        String readline;
+        while ((readline = this.reader.readLine()) != null) {
             // Skip the line initial with ## and count the number
-            if (readline.startsWith("##")) {
+            if (readline.startsWith("##"))
                 index ++;
-                continue;
-            } else {
-                // Store the header read
-                tempread = readline;
+            else
                 // Found the header and add 1 to the marker line
-                return(index + 1);
-            }
+                return (index + 1);
         }
         return -1;
     }
-    private void resetToMarkerLine (String path, int annotation) throws IOException {
-        setReader(path);
-        for (int i = 0; i < annotation; i ++)
-            reader.readLine();
-    }
-    private String[][] readHmpGD (int lastPosition) throws IOException {
-        int index = 0, upperBound = Math.min(lastPosition + sub_n, lineLength);
-        String readline = null;
-        // Transposed dimension
-        String[][] lines = new String[upperBound - lastPosition][mCount];
-        // temp
-        String[] temp = null;
-        while ((readline = reader.readLine()) != null) {
-            temp = readline.replaceAll("\"", "").split(sep);
-            // If is the first round, catch the RefAllele
-            if (lastPosition == 11)
-                RefAllele[index] = temp[11].charAt(0);
-            for (int i = lastPosition; i < upperBound; i ++)
-                lines[i - lastPosition][index] = temp[i];
-            index ++;
-        }
-        return lines;
-    }
-    private String[][] readHmpVcfMap () throws IOException {
-        int index = 0;
-        String readline = null;
-        String[][] lines = new String[sub_m][];
-        while (index < sub_m && (readline = reader.readLine()) != null)
-            lines[index++] = readline.replaceAll("\"", "").split(sep);
-        if (index < sub_m - 1)
-            lines = Arrays.copyOf(lines, index);
-        return lines;
-    }
-    private String[][] readNumGD () throws IOException {
-        int index = 0;
-        String readline = null, sep = "\t";
-        String[][] lines = new String[sub_n][];
-        while (index < sub_n && (readline = reader.readLine()) != null) {
-            if (index == 0) {
-                lines[index] = readline.replaceAll("\"", "").split(sep);
-                if(lines[index].length <= 1){
-                    sep = " +";
-                    lines[index] = readline.replaceAll("\"", "").split(sep);
-                }
-                if(lines[index].length <= 1){
-                    sep = ",";
-                    lines[index] = readline.replaceAll("\"", "").split(sep);
-                }
-            }
-            lines[index++] = readline.replaceAll("\"", "").split(sep);
-        }
-        if (index < sub_n - 1)
-            lines = Arrays.copyOf(lines, index);
-        return lines;
-    }
-    private String[][] readNumPLINKMap () throws IOException {
-        int index = 0;
-        String readline = null, sep = "\t";
-        String[][] lines = new String[sub_m][];
-        while (index < sub_m && (readline = reader.readLine()) != null) {
-            if (index == 0) {
-                lines[index] = readline.replaceAll("\"", "").split(sep);
-                if (lines[index].length <= 1) {
-                    sep = " +";
-                    lines[index] = readline.replaceAll("\"", "").split(sep);
-                }
-                if (lines[index].length <= 1) {
-                    sep = ",";
-                    lines[index] = readline.replaceAll("\"", "").split(sep);
-                }
-            }
-            lines[index++] = readline.replaceAll("\"", "").split(sep);
-        }
-        if (index < sub_m - 1)
-            lines = Arrays.copyOf(lines, index);
-        return lines;
-    }
-    private void setVcfSep () throws IOException {
-        // Find seperator (default is by tab)
-        headerline = tempread.replaceAll("\"", "").split(sep);
-        // by space
-        if (headerline.length <= 1) {
-            sep = " +";
-            headerline = tempread.replaceAll("\"", "").split(sep);
-        }
-        lineLength = headerline.length;
-        nCount = lineLength - 9;
-    }
-    private void setHmpGenStoSep (int nMetaCol) throws IOException {
-        String tempLine = reader.readLine();
-        // Find seperator (default is by tab)
-        headerline = tempLine.replaceAll("\"", "").split(sep);
-        // by space
-        if (headerline.length <= 1) {
-            sep = " +";
-            headerline = tempLine.replaceAll("\"", "").split(sep);
-        }
-        // csv
-        if (headerline.length <= 1) {
-            sep = ",";
-            headerline = tempLine.replaceAll("\"", "").split(sep);
-        }
-        lineLength = headerline.length;
-        nCount = lineLength - nMetaCol;
-    }
-    private int getCountofLines(String filename) throws IOException {
+    // ======================================= Misc functions =======================================
+    // Get how many lines exited in the file named 'filename'
+    private int getCountOfLines(String filename) throws IOException {
         Path path = Paths.get(filename);
         long lineCount = Files.lines(path).count();
         return (int) lineCount;
     }
-    private void getTaxa (boolean header, int nMetaCol) {
-        // if hapmap, skip first 11 items, otherwise it's vcf and skip first 9 items.
-        if (header) {
+    // Reset the reader and skip 'nLine' line
+    private void resetToNthLine (String path, int nLine) throws IOException {
+        setReader(path);
+        for (int i = 0; i < nLine; i ++)
+            this.reader.readLine();
+    }
+    // Get specific line(string array) from the file
+    private String[] getNthLine (String path, int nLine, String sep) throws IOException {
+        resetToNthLine(path, nLine);
+        return this.reader.readLine().replaceAll("\"", "").split(sep);
+    }
+    // Skip the first nMetaCol items from headerline, and return taxa names to 'taxaTemp'
+    private ArrayList<String> getTaxa (boolean hasHeader, int nMetaCol, int nCount, String[] headerlines) {
+        ArrayList<String> taxaTemp = new ArrayList<>();
+        if (hasHeader) {
             for (int i = 0; i < nCount; i ++)
-                taxa.add(headerline[i + nMetaCol]);
+                taxaTemp.add(headerlines[i + nMetaCol]);
         } else {
             for (int i = 0; i < nCount; i ++)
-                taxa.add("Sample " + (i + 1));
+                taxaTemp.add("Sample " + (i + 1));
         }
+        return taxaTemp;
+    }
+
+    // ======================================= Quality Control =======================================
+    private boolean[] doQCGenStdio (String GD_path, char[] codeAB) throws IOException {
+        boolean[] iskeep = new boolean[this.mCount];
+        this.idxTemp = 0;
+        resetToNthLine(GD_path, 1);
+        iniProgress("Quality Control",
+                String.format("Marker %d ~ %d : ", 1, this.mCount));
+        while ((this.tempRead = this.reader.readLine()) != null) {
+            updateProgress(this.idxTemp, this.mCount);
+            String[] arrayLine = this.tempRead.replaceAll("\"", "").split(this.sep);
+            arrayLine = Arrays.copyOfRange(arrayLine, 2, this.mCount + 2);
+            // Count all the elements
+            Map<String, Long> tableMap = Arrays.asList(arrayLine).stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+            // Fill NC if no missin gvalues
+            if (!tableMap.containsKey("NC"))
+                tableMap.put("NC", 0L);
+            double maf = 0;
+            double na = 0;
+            switch (codeAB[this.idxTemp]) {
+                // AB, BB or AB only
+                case '0':
+                    // AB
+                    if (tableMap.size() == 2)
+                        maf = 0;
+                        // AB, BB
+                    else
+                        maf = (tableMap.get("BB"))/(double)(this.nCount - tableMap.get("NC"));
+                    break;
+                // AA, AB, BB
+                case '1':
+                    maf = (tableMap.get("AA")*2 + tableMap.get("AB"))/((double)((this.nCount - tableMap.get("NC")) * 2));
+                    break;
+                // AA, AB
+                case '2':
+                    maf = (tableMap.get("AA"))/(double)(this.nCount - tableMap.get("NC"));
+                    break;
+            }
+            maf = Math.min(maf, 1 - maf);
+            na = tableMap.get("NC")/((double)(this.nCount));
+            this.isKeep[this.idxTemp++] = (maf > this.rateMAF) && (na < this.rateNA);
+        }
+        doneProgress();
+        return iskeep;
+    }
+
+    private boolean[] doQCHapmap (String GD_path, String valueNA, boolean isOneChar) throws IOException {
+        boolean[] iskeep = new boolean[this.mCount];
+        this.idxTemp = 0;
+        resetToNthLine(GD_path, 1);
+        iniProgress("Quality Control",
+                String.format("Marker %d ~ %d : ", 1, this.mCount));
+        while ((this.tempRead = this.reader.readLine()) != null) {
+            updateProgress(this.idxTemp, this.mCount);
+            String a1 = "nan";
+            String a2 = "nan";
+            String[] arrayLine = this.tempRead.replaceAll("\"", "").split(this.sep);
+            arrayLine = Arrays.copyOfRange(arrayLine, 11, this.lineLength);
+            // Count all the elements
+            Map<String, Long> tableMap = Arrays.asList(arrayLine).stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+            // Fill NC if no missin gvalues
+            if (!tableMap.containsKey(valueNA))
+                tableMap.put(valueNA, 0L);
+            // QC
+            double maf = 0;
+            double na = 0;
+            if (isOneChar) {
+                // Found the ref allele
+                for (Map.Entry<String, Long> entry : tableMap.entrySet()) {
+                    if (entry.getKey().equals(valueNA))
+                        continue;
+                    a1 = entry.getKey().substring(0, 1);
+                    break;
+                }
+                // calculate maf
+                switch (tableMap.size()) {
+                    // N, A
+                    case 2:
+                        maf = 0;
+                        break;
+                    // N, A, B
+                    case 3:
+                        maf = (tableMap.get(a1))/(double)(this.nCount - tableMap.get(valueNA));
+                        break;
+                }
+            } else {
+                // Found the ref allele
+                for (Map.Entry<String, Long> entry : tableMap.entrySet()) {
+                    if (entry.getKey().equals(valueNA))
+                        continue;
+                    if (a1.equals("nan")) {
+                        a1 = entry.getKey().substring(0, 1);
+                        a2 = entry.getKey().substring(1, 2);
+                    } else if (a1.equals(a2)) {
+                        if (entry.getKey().substring(0, 1).equals(a1))
+                            a2 = entry.getKey().substring(1, 2);
+                        else
+                            a2 = entry.getKey().substring(0, 1);
+                    }
+                    else
+                        break;
+                }
+                // calculate maf
+                switch (tableMap.size()) {
+                    // NA, {AA, BB, AB}
+                    case 2:
+                        // homozygous
+                        if (a1.equals(a2))
+                            maf = 1;
+                            // heterozygous
+                        else
+                            maf = 0.5;
+                        break;
+                    // AA AB, AA BB, AB BB
+                    case 3:
+                        if (tableMap.containsKey(a1 + a1) && tableMap.containsKey(a1 + a2))
+                            maf = (tableMap.get(a1 + a1)*2 + tableMap.get(a1 + a2))/((double)((this.nCount - tableMap.get(valueNA)) * 2));
+                        else if (tableMap.containsKey(a1 + a1) && tableMap.containsKey(a2 + a2))
+                            maf = (tableMap.get(a1 + a1))/((double)(this.nCount - tableMap.get(valueNA)));
+                        else if (tableMap.containsKey(a2 + a2) && tableMap.containsKey(a1 + a2))
+                            maf = (tableMap.get(a2 + a2)*2 + tableMap.get(a1 + a2))/((double)((this.nCount - tableMap.get(valueNA)) * 2));
+                        break;
+                    // AA AB BB
+                    case 4:
+                        maf = (tableMap.get(a1 + a1)*2 + tableMap.get(a1 + a2))/((double)((this.nCount - tableMap.get(valueNA)) * 2));
+                        break;
+                }
+            }
+            maf = Math.min(maf, 1 - maf);
+            na = tableMap.get(valueNA)/((double)(this.nCount));
+            iskeep[this.idxTemp++] = (maf > this.rateMAF) && (na < this.rateNA);
+        }
+        doneProgress();
+        return iskeep;
     }
 }

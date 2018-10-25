@@ -1,10 +1,7 @@
-import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.ArrayList;
 
 abstract class Obj_Super {
     // Global
@@ -12,7 +9,7 @@ abstract class Obj_Super {
     // Object
     Rectangle bound;
     Image icon;
-    iFile file;
+    IPatFile file;
     String name;
     int indexOB;
 
@@ -113,7 +110,7 @@ abstract class Obj_Super {
         return this.name;
     }
 
-    iFile getFile() {
+    IPatFile getFile() {
         return this.file;
     }
 
@@ -122,7 +119,7 @@ abstract class Obj_Super {
     }
 
     void setFile(String text) {
-        this.file = new iFile(text);
+        this.file = new IPatFile(text);
         this.name = text;
     }
 

@@ -12,10 +12,10 @@ class Obj_Module extends Obj_Super implements ActionListener{
     // Phenotype
     ArrayList<String> traitNames;
     String selectP;
-    // iCommand
-    iCommand commandGWAS;
-    iCommand commandGS;
-    iCommand commandBSA;
+    // IPatCommand
+    IPatCommand commandGWAS;
+    IPatCommand commandGS;
+    IPatCommand commandBSA;
     Enum_Tool toolGWAS;
     Enum_Tool toolGS;
     boolean callBSA;
@@ -41,9 +41,9 @@ class Obj_Module extends Obj_Super implements ActionListener{
         setIcon("module");
         // Define command
         this.format  = Enum_FileFormat.NA;
-        this.commandGWAS = new iCommand();
-        this.commandGS = new iCommand();
-        this.commandBSA = new iCommand();
+        this.commandGWAS = new IPatCommand();
+        this.commandGS = new IPatCommand();
+        this.commandBSA = new IPatCommand();
         this.toolGWAS = Enum_Tool.NA;
         this.toolGS = Enum_Tool.NA;
         this.callBSA = false;
@@ -68,13 +68,13 @@ class Obj_Module extends Obj_Super implements ActionListener{
     Enum_FileFormat getFormat() {
         return this.format;
     }
-    iCommand getCommandGWAS() {
+    IPatCommand getCommandGWAS() {
         return this.commandGWAS;
     }
-    iCommand getCommandGS() {
+    IPatCommand getCommandGS() {
         return this.commandGS;
     }
-    iCommand getCommandBSA() {
+    IPatCommand getCommandBSA() {
         return this.commandBSA;
     }
     String getPhenotype() {
@@ -100,13 +100,13 @@ class Obj_Module extends Obj_Super implements ActionListener{
     void setFormat (Enum_FileFormat format) {
         this.format = format;
     }
-    void setCommandGWAS(iCommand commandGWAS) {
+    void setCommandGWAS(IPatCommand commandGWAS) {
         this.commandGWAS = commandGWAS;
     }
-    void setCommandGS(iCommand commandGS) {
+    void setCommandGS(IPatCommand commandGS) {
         this.commandGS = commandGS;
     }
-    void setCommandBSA(iCommand commandBSA) {
+    void setCommandBSA(IPatCommand commandBSA) {
         this.commandBSA = commandBSA;
     }
     void setPhenotype(String selectP) {
@@ -129,7 +129,7 @@ class Obj_Module extends Obj_Super implements ActionListener{
         return this.format.isNA();
     }
 
-    void run (ArrayList<iCommand> command, Enum_FileFormat format, String pathGD, String pathGM, boolean isPLINK) throws IOException {
+    void run (ArrayList<IPatCommand> command, Enum_FileFormat format, String pathGD, String pathGM, boolean isPLINK) throws IOException {
         this.timerThread.start();
         this.rotateSwitch = true;
         thread = new iPatThread(this.getName(), format, pathGD, pathGM, isPLINK);
@@ -154,7 +154,7 @@ class Obj_Module extends Obj_Super implements ActionListener{
         JTextArea areaText;
         JScrollPane areaScroll;
         JFrame areaFrame;
-        ArrayList<iCommand> commands;
+        ArrayList<IPatCommand> commands;
         // converter
         String pathGD, pathGM;
         boolean isPLINK;
@@ -188,7 +188,7 @@ class Obj_Module extends Obj_Super implements ActionListener{
             this.isRunning = false;
         }
 
-        void setCommandAndRun(ArrayList<iCommand> command) {
+        void setCommandAndRun(ArrayList<IPatCommand> command) {
             this.commands = command;
             this.start();
         }
@@ -201,7 +201,7 @@ class Obj_Module extends Obj_Super implements ActionListener{
         public void run() {
             this.isRunning = true;
             String filename;
-            for (iCommand command : commands) {
+            for (IPatCommand command : commands) {
                 if (command.isEmpty())
                     continue;
                 else {
@@ -239,7 +239,7 @@ class Obj_Module extends Obj_Super implements ActionListener{
                             break;
                     }
 
-                    System.out.println("iCommand : " + command);
+                    System.out.println("IPatCommand : " + command);
                     setIcon("module");
                     runtime = Runtime.getRuntime();
                     try {

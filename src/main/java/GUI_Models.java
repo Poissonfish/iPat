@@ -34,8 +34,8 @@ public class GUI_Models extends JFrame implements ActionListener, WindowListener
     public GUI_Models(int index, String name, Enum_Analysis method,
                       Enum_Tool tool,
                       Enum_FileFormat format,
-                      iFile fileP, String selectP,
-                      iFile fileC, String selectC,
+                      IPatFile fileP, String selectP,
+                      IPatFile fileC, String selectC,
                       int indexConfig) {
         // initialize objects
         this.index = index;
@@ -131,14 +131,14 @@ public class GUI_Models extends JFrame implements ActionListener, WindowListener
         return this.indexConfig;
     }
 
-    iCommand getCommand() {
+    IPatCommand getCommand() {
         // If no command out there
         if (!this.isDeployed())
             return null;
         // Instantiate command object
-        ArrayList<iCommand> newCommand = new ArrayList<>();
-        iCommand command1 = new iCommand();
-        iCommand command2 = new iCommand();
+        ArrayList<IPatCommand> newCommand = new ArrayList<>();
+        IPatCommand command1 = new IPatCommand();
+        IPatCommand command2 = new IPatCommand();
         // Common command
         switch (this.getTool()) {
             case GAPIT:
@@ -246,11 +246,11 @@ public class GUI_Models extends JFrame implements ActionListener, WindowListener
         JPanel panelNA;
         JLabel msgNA;
         // Trait
-        iFile file;
+        IPatFile file;
         ArrayList<String> traitNames;
         String selectP = null;
 
-        public PanelPhenotype (iFile file, Enum_FileFormat format, String selectP) {
+        public PanelPhenotype (IPatFile file, Enum_FileFormat format, String selectP) {
             this.panelNA = new JPanel(new MigLayout("", "[grow]", "[grow]"));
             this.msgNA = new JLabel("<html><center> Phenotype Not Found </center></html>", SwingConstants.CENTER);
             this.msgNA.setFont(iPat.TXTLIB.plain);
@@ -271,7 +271,7 @@ public class GUI_Models extends JFrame implements ActionListener, WindowListener
                 System.out.println("Can't find the file!");
                 e.printStackTrace();
             }
-            this.traitNames = new ArrayList<>(Arrays.asList(new iFile().getSepStr(tempStr)));
+            this.traitNames = new ArrayList<>(Arrays.asList(new IPatFile().getSepStr(tempStr)));
             // In case user use plink format phenotype but other format of genotype
             isContainFID = this.traitNames.get(0).toUpperCase().contains("FID");
             this.traitNames.remove(0);
@@ -377,7 +377,7 @@ public class GUI_Models extends JFrame implements ActionListener, WindowListener
         ILabel labelrrBLUP;
         ILabel labelBGLR;
 
-        public PanelBottom(Enum_Analysis method, Enum_Tool tool, iFile fileC, String selectC) {
+        public PanelBottom(Enum_Analysis method, Enum_Tool tool, IPatFile fileC, String selectC) {
             this.method = method;
             switch (method) {
                 case GWAS:
@@ -431,7 +431,7 @@ public class GUI_Models extends JFrame implements ActionListener, WindowListener
             return this.config.getCov();
         }
 
-        iCommand getCommand() {
+        IPatCommand getCommand() {
             return this.config.getCommand();
         }
 
@@ -570,7 +570,7 @@ public class GUI_Models extends JFrame implements ActionListener, WindowListener
             // method
             Enum_Analysis method;
 
-            PanelConfig(Enum_Analysis method, Enum_Tool tool, iFile fileC, String selectC) {
+            PanelConfig(Enum_Analysis method, Enum_Tool tool, IPatFile fileC, String selectC) {
                 this.msg = new JLabel("", SwingConstants.CENTER);
                 this.msg.setFont(iPat.TXTLIB.plainBig);
                 this.isTapped = false;
@@ -637,8 +637,8 @@ public class GUI_Models extends JFrame implements ActionListener, WindowListener
                 return this.paneCov.getSelected();
             }
 
-            iCommand getCommand() {
-                iCommand command = new iCommand();
+            IPatCommand getCommand() {
+                IPatCommand command = new IPatCommand();
                 if (this.method == Enum_Analysis.GS)
                     command.addAll(this.paneCov.getGWAS());
                 if (this.isTapped()) {
@@ -757,7 +757,7 @@ public class GUI_Models extends JFrame implements ActionListener, WindowListener
         GroupCheckBox checkGWAS;
         // file is Empty
         boolean isEmpty = false;
-        public PanelCov (Enum_Analysis method, iFile file, String selectC) {
+        public PanelCov (Enum_Analysis method, IPatFile file, String selectC) {
             this.method = method;
             this.selectC = selectC;
             this.isEmpty = file.isEmpty();
@@ -776,7 +776,7 @@ public class GUI_Models extends JFrame implements ActionListener, WindowListener
                     System.out.println("Can't find the file!");
                     e.printStackTrace();
                 }
-                this.covNames = new ArrayList<>(Arrays.asList(new iFile().getSepStr(tempStr)));
+                this.covNames = new ArrayList<>(Arrays.asList(new IPatFile().getSepStr(tempStr)));
                 this.panel = new SelectPanel(this.covNames.toArray(new String[0]), new String[]{"Selected", "Excluded"}, selectC);
             }
             // Assemble : if is GS
@@ -828,8 +828,8 @@ public class GUI_Models extends JFrame implements ActionListener, WindowListener
             return this.paneMain;
         }
 
-        iCommand getGWAS() {
-            iCommand command = new iCommand();
+        IPatCommand getGWAS() {
+            IPatCommand command = new IPatCommand();
             command.addArg("-gwas", this.checkGWAS.isCheck() ? "TRUE" : "FALSE");
             command.add(this.slideCutoff.getStrValue());
             return command;
