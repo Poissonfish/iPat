@@ -1,12 +1,12 @@
 import java.util.ArrayList;
 
-public class iCommand extends ArrayList<String> {
+public class IPatCommand extends ArrayList<String> {
     String wd;
     String project;
     String cov;
     Enum_Analysis type;
 
-    public iCommand() {
+    public IPatCommand() {
         super();
     }
 
@@ -37,8 +37,8 @@ public class iCommand extends ArrayList<String> {
         this.type = type;
     }
 
-    iCommand getCopy() {
-        iCommand command = new iCommand();
+    IPatCommand getCopy() {
+        IPatCommand command = new IPatCommand();
         if (!this.isEmpty()) {
             command.addAll(this);
             command.addWD(this.getWD());

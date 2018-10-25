@@ -1,67 +1,67 @@
 public class Obj_FileCluster {
-    iFile filePhenotype;
-    iFile fileGenotype;
-    iFile fileMap;
-    iFile fileFAM;
-    iFile fileBIM;
-    iFile fileCov;
-    iFile fileKin;
+    IPatFile filePhenotype;
+    IPatFile fileGenotype;
+    IPatFile fileMap;
+    IPatFile fileFAM;
+    IPatFile fileBIM;
+    IPatFile fileCov;
+    IPatFile fileKin;
     public Obj_FileCluster() {
-        this.filePhenotype = new iFile();
-        this.fileGenotype = new iFile();
-        this.fileMap = new iFile();
-        this.fileFAM = new iFile();
-        this.fileBIM = new iFile();
-        this.fileCov = new iFile();
-        this.fileKin = new iFile();
+        this.filePhenotype = new IPatFile();
+        this.fileGenotype = new IPatFile();
+        this.fileMap = new IPatFile();
+        this.fileFAM = new IPatFile();
+        this.fileBIM = new IPatFile();
+        this.fileCov = new IPatFile();
+        this.fileKin = new IPatFile();
     }
 
-    iFile getPhenotype() {
+    IPatFile getPhenotype() {
         return this.filePhenotype;
     }
-    iFile getGenotype() {
+    IPatFile getGenotype() {
         return this.fileGenotype;
     }
-    iFile getMap() {
+    IPatFile getMap() {
         return this.fileMap;
     }
-    iFile getFAM() {
+    IPatFile getFAM() {
         return this.fileFAM;
     }
-    iFile getBIM() {
+    IPatFile getBIM() {
         return this.fileBIM;
     }
-    iFile getCov() {
+    IPatFile getCov() {
         return this.fileCov;
     }
-    iFile getKin() {
+    IPatFile getKin() {
         return this.fileKin;
     }
-    void setPhenotype(iFile file) {
+    void setPhenotype(IPatFile file) {
         this.filePhenotype.setFile(file);
     }
 
-    void setGenotype(iFile file) {
+    void setGenotype(IPatFile file) {
         this.fileGenotype.setFile(file);
     }
 
-    void setMap(iFile file) {
+    void setMap(IPatFile file) {
         this.fileMap.setFile(file);
     }
 
-    void setFAM(iFile file) {
+    void setFAM(IPatFile file) {
         this.fileFAM.setFile(file);
     }
 
-    void setBIM(iFile file) {
+    void setBIM(IPatFile file) {
         this.fileBIM.setFile(file);
     }
 
-    void setCov(iFile file) {
+    void setCov(IPatFile file) {
         this.fileCov.setFile(file);
     }
 
-    void setKin(iFile file) {
+    void setKin(IPatFile file) {
         this.fileKin.setFile(file);
     }
 }

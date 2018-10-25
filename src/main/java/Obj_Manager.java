@@ -211,14 +211,14 @@ class Obj_Manager implements ActionListener, WindowListener {
         return list;
     }
     // get value
-    iFile getFile(int index, Enum_FileType file) {
+    IPatFile getFile(int index, Enum_FileType file) {
         int indexGr = this.getGrIndex(index);
         ArrayList<Integer> indexInGr = this.getGrN(indexGr);
         indexInGr.removeIf(Predicate.isEqual(index));
         for (int i : indexInGr)
             if (this.getFileN(i).getFileType() == file)
                 return this.getFileN(i).getFile();
-        return new iFile();
+        return new IPatFile();
     }
     // get mid point of the 'index' line
     Point getMidPointOfLine(int index) {
@@ -314,7 +314,7 @@ class Obj_Manager implements ActionListener, WindowListener {
         ArrayList<Integer> indexInGr = this.getGrN(this.getGrIndex(indexMO));
         indexInGr.removeIf(Predicate.isEqual(indexMO));
         // get file from OBs
-        ArrayList<iFile> files = new ArrayList<>();
+        ArrayList<IPatFile> files = new ArrayList<>();
         int countFile = 0;
         for (int i : indexInGr) {
             Obj_Super obj = this.getObjectN(i);
@@ -331,7 +331,7 @@ class Obj_Manager implements ActionListener, WindowListener {
         ArrayList<Integer> countRow = new ArrayList<>();
         ArrayList<Integer> countCol = new ArrayList<>();
         // fetch information from files
-        for (iFile file : files) {
+        for (IPatFile file : files) {
             String[] lines = file.getLines(2);
             String[] row1Temp = file.getSepStr(lines[0]);
             String[] row2Temp = file.getSepStr(lines[1]);
@@ -757,11 +757,11 @@ class Obj_Manager implements ActionListener, WindowListener {
             Obj_Module mo = this.getModuleN(this.indexSelected);
             Enum_FileFormat format = mo.getFormat();
             // Add command for launching app (deep copy)
-            iCommand commandGWAS = mo.getCommandGWAS().getCopy();
+            IPatCommand commandGWAS = mo.getCommandGWAS().getCopy();
             commandGWAS.setMethod(Enum_Analysis.GWAS);
-            iCommand commandGS = mo.getCommandGS().getCopy();
+            IPatCommand commandGS = mo.getCommandGS().getCopy();
             commandGS.setMethod(Enum_Analysis.GS);
-            iCommand commandBSA  = mo.getCommandBSA().getCopy();
+            IPatCommand commandBSA  = mo.getCommandBSA().getCopy();
             commandBSA.setMethod(Enum_Analysis.BSA);
             // do conversion if needed, add filepaths to the command
             String pathGD = this.getFile(this.indexSelected, Enum_FileType.Genotype).getAbsolutePath();
@@ -800,7 +800,7 @@ class Obj_Manager implements ActionListener, WindowListener {
                 commandBSA.addArg("-map", pathGM);
             }
             // assemble command
-            ArrayList<iCommand> commandRun = new ArrayList<>();
+            ArrayList<IPatCommand> commandRun = new ArrayList<>();
             commandRun.add(commandGWAS);
             commandRun.add(commandGS);
             commandRun.add(commandBSA);

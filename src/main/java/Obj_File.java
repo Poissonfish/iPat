@@ -9,7 +9,7 @@ class Obj_File extends Obj_Super {
         this.isFile = true;
         this.isModule = false;
         this.isContainMO = false;
-        this.file = new iFile(filename);
+        this.file = new IPatFile(filename);
         this.name = this.file.getName();
         this.fileType = Enum_FileType.NA;
         setIcon("file");
