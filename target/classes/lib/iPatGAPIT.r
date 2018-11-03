@@ -32,14 +32,6 @@ tryCatch({
         i = i + 1
         selectP = arg[i]
       },
-      "-maf" = {
-        i = i + 1
-        maf = as.numeric(arg[i])
-      },
-      "-ms" = {
-        i = i + 1
-        ms = as.numeric(arg[i])
-      },
       "-format" = {
         i = i + 1
         format = arg[i]
@@ -96,14 +88,6 @@ tryCatch({
       "-arg" = {
         i = i + 1
         model = arg[i]
-        i = i + 1
-        ki.c = arg[i]
-        i = i + 1
-        ki.g = arg[i]
-        i = i + 1
-        snp.fraction = as.numeric(arg[i])
-        i = i + 1
-        model.s = as.logical(arg[i])
       }
     )
   }
@@ -116,23 +100,6 @@ tryCatch({
     (function(x){which(x == "Selected") + 1})
   nameTraits = names(phenotype)[indexP]
   phenotype = phenotype[, ..indexP]
-  cat("Done\n")
-
-# QC
-  cat("   Quality control ...")
-  # Missing rate
-    MS = is.na(genotype) %>%
-      apply(2, function(x) sum(x)/length(x))
-    genotype = genotype[, MS <= ms, with = FALSE]
-    map = map[MS <= ms]
-  # MAF
-    # No NA allowed in GAPIT
-    genotype[is.na(genotype)] = 1
-    MAF = apply(genotype, 2, mean) %>%
-          as.matrix() %>%
-          apply(1, function(x) min(1 - x/2, x/2))
-    genotype = data.frame(taxa, genotype[, MAF >= maf, with = FALSE])
-    map = data.frame(map[MAF >= maf])
   cat("Done\n")
 
 # Subset Covariates
@@ -173,13 +140,9 @@ tryCatch({
           KI = kin,
           CV = cov,
           PCA.total = 3,
-          kinship.cluster = ki.c,
-          kinship.group = ki.g,
           group.from = g.from,
           group.to = g.to,
           group.by = g.by,
-          Model.selection = model.s,
-          SNP.fraction = snp.fraction,
           memo = sprintf("%s_%s", project, trait))
     write.table(x = data.frame(SNP = x$GWAS$SNP, P.value = x$GWAS$P.value),
               file = sprintf("%s_%s_GWAS.txt", project, trait),

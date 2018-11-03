@@ -12,41 +12,9 @@ tryCatch({
   library(R.utils)
 	library(BGLR)
   source("http://zzlab.net/iPat/Function_iPat.R")
-  source("http://zzlab.net/GAPIT/gapit_functions.txt")
+  source("http://zzlab.net/iPat/Function_GAPIT.R")
   source("http://zzlab.net/FarmCPU/FarmCPU_functions.txt")
 	cat("Done\n")
-
-# Input arguments
-# arg = c(
-#   "-wd", "~/Desktop/jay",
-#   "-project", "bglr",
-#   "-pSelect", "Selected",
-#   "-maf", "0.05",
-#   "-ms", "0.20",
-#   "-format", "numeric",
-#   "-cSelect", "NA",
-#   "-phenotype", "~/Desktop/jay/data.txt",
-#   "-genotype", "~/Desktop/jay/data.dat",
-#   "-map", "NA",
-#   "-cov", "NA",
-#   "-kin", "NA",
-#   "-gwas", "FALSE", "0.0001",
-#   "-arg", "BL", "gaussian", "500", "500", "3"
-# )
-#
-# -project, bglr,
-# -cSelect, NA,
-# -pSelect, Selectedsep,
-# -maf, 0.05, -ms, 0.2,
-# -format, Numeric,
-# -gwas, FALSE, 0.00001,
-# -arg, BL, gaussian, 500, 500, 5, -wd, /Users/jameschen, -project, bglr,
-# -cSelect, NA,
-# -phenotype, /Users/jameschen/Desktop/jay/data.txt,
-# -cov, /Applications/iPat.app/Contents/MacOS/NA,
-#  -kin, /Applications/iPat.app/Contents/MacOS/NA,
-#  -genotype, /Users/jameschen/Desktop/jay/data.dat,
-#  -map, /Applications/iPat.app/Contents/MacOS/NA
 
   arg = commandArgs(trailingOnly=TRUE)
   for (i in 1 : length(arg)) {
@@ -63,14 +31,6 @@ tryCatch({
       "-pSelect" = {
         i = i + 1
         selectP = arg[i]
-      },
-      "-maf" = {
-        i = i + 1
-        maf = as.numeric(arg[i])
-      },
-      "-ms" = {
-        i = i + 1
-        ms = as.numeric(arg[i])
       },
       "-format" = {
         i = i + 1
@@ -145,11 +105,6 @@ tryCatch({
       }
     )
   }
-#
-# set.seed(99163)
-# idx.test = sample(nrow(phenotype), round(nrow(phenotype) * 0.2))
-# y = phenotype[idx.test, 2] %>% as.matrix() %>% c()
-# phenotype[idx.test, 2] = NA
 
 # Subset Phenotype
   cat("   Subsetting phenotype ...")
@@ -165,23 +120,6 @@ tryCatch({
   nameTraits = names(phenotype)[indexP]
   phenotype = phenotype[, ..indexP]
   sizeN = nrow(phenotype)
-  cat("Done\n")
-
-# QC
-  cat("   Quality control ...")
-  # Missing rate
-    MS = is.na(genotype) %>%
-      apply(2, function(x) sum(x)/length(x))
-    genotype = genotype[, MS <= ms, with = FALSE]
-    map = map[MS <= ms]
-  # MAF
-    # No NA allowed in GAPIT
-    genotype[is.na(genotype)] = 1
-    MAF = apply(genotype, 2, mean) %>%
-          as.matrix() %>%
-          apply(1, function(x) min(1 - x/2, x/2))
-    genotype = genotype[, MAF >= maf, with = FALSE]
-    map = data.frame(map[MAF >= maf])
   cat("Done\n")
 
 # Define ETA in BGLR
@@ -282,6 +220,45 @@ print(warnings())
 }, error = function(e) {
   stop(e)
 })
+
+
+#
+# set.seed(99163)
+# idx.test = sample(nrow(phenotype), round(nrow(phenotype) * 0.2))
+# y = phenotype[idx.test, 2] %>% as.matrix() %>% c()
+# phenotype[idx.test, 2] = NA
+
+# Input arguments
+# arg = c(
+#   "-wd", "~/Desktop/jay",
+#   "-project", "bglr",
+#   "-pSelect", "Selected",
+#   "-maf", "0.05",
+#   "-ms", "0.20",
+#   "-format", "numeric",
+#   "-cSelect", "NA",
+#   "-phenotype", "~/Desktop/jay/data.txt",
+#   "-genotype", "~/Desktop/jay/data.dat",
+#   "-map", "NA",
+#   "-cov", "NA",
+#   "-kin", "NA",
+#   "-gwas", "FALSE", "0.0001",
+#   "-arg", "BL", "gaussian", "500", "500", "3"
+# )
+#
+# -project, bglr,
+# -cSelect, NA,
+# -pSelect, Selectedsep,
+# -maf, 0.05, -ms, 0.2,
+# -format, Numeric,
+# -gwas, FALSE, 0.00001,
+# -arg, BL, gaussian, 500, 500, 5, -wd, /Users/jameschen, -project, bglr,
+# -cSelect, NA,
+# -phenotype, /Users/jameschen/Desktop/jay/data.txt,
+# -cov, /Applications/iPat.app/Contents/MacOS/NA,
+#  -kin, /Applications/iPat.app/Contents/MacOS/NA,
+#  -genotype, /Users/jameschen/Desktop/jay/data.dat,
+#  -map, /Applications/iPat.app/Contents/MacOS/NA
 
 
 # cor(blr$yHat[idx.test], y)

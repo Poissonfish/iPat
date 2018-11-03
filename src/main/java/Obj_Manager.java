@@ -38,7 +38,7 @@ class Obj_Manager implements ActionListener, WindowListener {
     int countGr;
     int countConfig;
     // config frame
-    ArrayList <GUI_Models> config;
+//    ArrayList <GUI_Models_arc> config;
     ArrayList <Integer> deletedConfig;
     static int token = -1;
 
@@ -59,7 +59,7 @@ class Obj_Manager implements ActionListener, WindowListener {
         this.iniMenu();
         this.indexSelected = -1;
         // config
-        config = new ArrayList<>();
+//        config = new ArrayList<>();
         deletedConfig = new ArrayList<>();
     }
 
@@ -804,11 +804,7 @@ class Obj_Manager implements ActionListener, WindowListener {
             commandRun.add(commandGWAS);
             commandRun.add(commandGS);
             commandRun.add(commandBSA);
-            try {
-                mo.run(commandRun, format, pathGD, pathGM, isPLINK);
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
+            mo.run(commandRun, format, isPLINK, pathGD, pathGM);
         }
         // Open config panel
         if (method != Enum_Analysis.NA && source != this.menuRun) {
@@ -820,15 +816,15 @@ class Obj_Manager implements ActionListener, WindowListener {
                 e1.printStackTrace();
             }
             checkFormat(ob);
-            GUI_Models newConfig = new GUI_Models(this.indexSelected, ob.getName(), method,
-                    method == Enum_Analysis.GWAS ? ob.getDeployedGWASTool() : ob.getDeployedGSTool(),
-                    ob.getFormat(),
-                    this.getFile(this.indexSelected, Enum_FileType.Phenotype), ob.getPhenotype(),
-                    this.getFile(this.indexSelected, Enum_FileType.Covariate),
-                    method == Enum_Analysis.GWAS ? ob.getCovGWAS() : ob.getCovGS(),
-                    this.countConfig ++);
-            newConfig.addWindowListener(this);
-            this.config.add(newConfig);
+//            GUI_Models_arc newConfig = new GUI_Models_arc(this.indexSelected, ob.getName(), method,
+//                    method == Enum_Analysis.GWAS ? ob.getDeployedGWASTool() : ob.getDeployedGSTool(),
+//                    ob.getFormat(),
+//                    this.getFile(this.indexSelected, Enum_FileType.Phenotype), ob.getPhenotype(),
+//                    this.getFile(this.indexSelected, Enum_FileType.Covariate),
+//                    method == Enum_Analysis.GWAS ? ob.getCovGWAS() : ob.getCovGS(),
+//                    this.countConfig ++);
+//            newConfig.addWindowListener(this);
+//            this.config.add(newConfig);
             this.indexSelected = -1;
         }
     }
@@ -875,43 +871,45 @@ class Obj_Manager implements ActionListener, WindowListener {
     }
     @Override
     public void windowClosing(WindowEvent e) {
-        System.out.println("Config closing (outer)");
-        System.out.println("Token is : " + this.token);
-        int indexTarget = this.token;
-        int cumulate = 0;
-        for (int i : this.deletedConfig) {
-            if (indexTarget > i)
-                cumulate++;
-        }
-        indexTarget -= cumulate;
-        System.out.println("Add " + this.token + " to delete array");
-        this.deletedConfig.add(this.token);
-        // get command from closing panel
-        System.out.println("get " + indexTarget);
-        GUI_Models configTemp = this.config.get(indexTarget);
-        Obj_Module moTemp = this.getModuleN(configTemp.getIndex());
-        moTemp.setPhenotype(configTemp.panePhenotype.getSelected());
-        moTemp.setFile(configTemp.paneWD.getPath());
-        moTemp.setName(configTemp.paneWD.getProject());
-        if (configTemp.isDeployed()) {
-            switch (configTemp.getMethod()) {
-                case GWAS:
-                    moTemp.setDeployedGWASTool(configTemp.getTool());
-                    moTemp.setCommandGWAS(configTemp.getCommand());
-                    break;
-                case GS:
-                    moTemp.setDeployedGSTool(configTemp.getTool());
-                    moTemp.setCommandGS(configTemp.getCommand());
-                    break;
-                case BSA:
-                    moTemp.setCommandBSA(configTemp.getCommand());
-                    moTemp.setBSA(true);
-                    break;
-            }
-        }
-        System.out.println("Remove " + indexTarget);
-        this.config.remove(indexTarget);
-        System.out.println("Now the length is " + this.config.size());
+//        System.out.println("Config closing (outer)");
+//        System.out.println("Token is : " + this.token);
+//        int indexTarget = this.token;
+//        int cumulate = 0;
+//        for (int i : this.deletedConfig) {
+//            if (indexTarget > i)
+//                cumulate++;
+//        }
+//        indexTarget -= cumulate;
+//        System.out.println("Add " + this.token + " to delete array");
+//        this.deletedConfig.add(this.token);
+//        // get command from closing panel
+//        System.out.println("get " + indexTarget);
+//        GUI_Models_arc configTemp = this.config.get(indexTarget);
+//        Obj_Module moTemp = this.getModuleN(configTemp.getIndex());
+//        moTemp.setPhenotype(configTemp.panePhenotype.getSelected());
+//        moTemp.setFile(configTemp.paneWD.getPath());
+//        moTemp.setName(configTemp.paneWD.getProject());
+//        moTemp.setMAF(Double.parseDouble(configTemp.paneQC.getMAF()));
+//        moTemp.setMS(Double.parseDouble(configTemp.paneQC.getMS()));
+//        if (configTemp.isDeployed()) {
+//            switch (configTemp.getMethod()) {
+//                case GWAS:
+//                    moTemp.setDeployedGWASTool(configTemp.getTool());
+//                    moTemp.setCommandGWAS(configTemp.getCommand());
+//                    break;
+//                case GS:
+//                    moTemp.setDeployedGSTool(configTemp.getTool());
+//                    moTemp.setCommandGS(configTemp.getCommand());
+//                    break;
+//                case BSA:
+//                    moTemp.setCommandBSA(configTemp.getCommand());
+//                    moTemp.setBSA(true);
+//                    break;
+//            }
+//        }
+//        System.out.println("Remove " + indexTarget);
+//        this.config.remove(indexTarget);
+//        System.out.println("Now the length is " + this.config.size());
     }
 
     @Override

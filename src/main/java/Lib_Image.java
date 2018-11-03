@@ -47,11 +47,11 @@ public class Lib_Image {
         red = new Color(231, 57, 131, 100);
         lightred = new Color(231, 57, 131, 80);
         dlightred = new Color(255, 0, 0, 10);
-        ovalcolor = new Color(0, 0, 0, 80);
+        ovalcolor = new Color(0, 0, 0, 10);
         themecolor = new Color(54, 164, 239, 150);
-        colorHintDrop = Color.decode("#D0EDDA");
-        colorHintDrag = Color.decode("#D0EDE8");
-        colorHintTap = Color.decode("#D0E4ED");
+        colorHintDrop = new Color(208,237,218, 255);
+        colorHintDrag = new Color(208,237,232, 255);
+        colorHintTap = new Color(208,228,237, 255);
         // Image
         try {
             iPat = ImageIO.read(this.getClass().getResource("img/iPat.png"));

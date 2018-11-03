@@ -1,3 +1,4 @@
+import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,13 +17,25 @@ public class IPatFile extends File {
         isEmpty = true;
     }
 
+    void open() {
+        try {
+            Desktop.getDesktop().open(this);
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+    }
+    void setFile (String newName) {
+        this.renameTo(new IPatFile(newName));
+        isEmpty = false;
+    }
+
     void setFile(IPatFile file) {
         this.renameTo(file);
         isEmpty = false;
     }
 
     boolean isEmpty() {
-        return this.getName().contains("NA");
+        return this.isEmpty;
     }
 
     // Read n line from the file

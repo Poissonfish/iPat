@@ -4,6 +4,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.regex.Matcher;
@@ -18,8 +19,9 @@ public class iPat {
     static Lib_Text TXTLIB;
     static Lib_Ref DEFAULTVAL;
     static Lib_Ref MODVAL;
+    static double SUM_EXP = 0;
 
-    public iPat() throws URISyntaxException {
+    public iPat() throws URISyntaxException, IOException, InterruptedException {
         USEROS = getOS();
         WINDOWSIZE = new WindowSize();
         WINDOWSIZE = setWindowSize(1200, 700);
@@ -30,7 +32,22 @@ public class iPat {
         DEFAULTVAL = new Lib_Ref();
         MODVAL = new Lib_Ref();
         printWelcomeMsg();
-        launchIPat();
+        // Calculate sum of exponential (fewer number for rounding problem)
+        for (int i = 1; i < 35; i++)
+            SUM_EXP += Math.pow(0.9, i);
+        // Run iPat
+//        String test = "doublcment/ij.ldjk/b.nioeh.ej.txt";
+//        int len = 10;
+//        String pattern = String.format("(.{%d}\\.)", len);
+//        String nameTrim = test.replaceAll(pattern,"...");
+//        System.out.println(nameTrim);
+//        Pattern pattern = Pattern.compile("[01.,]{1}[|/]{1}[01.,]{1}");
+//        Matcher matcher = pattern.matcher(test);
+//        matcher.find();
+//        System.out.println(matcher.group());
+        new GUI_Config(1100, 800, new Obj_Module(1, 1));
+
+//        launchIPat();
     }
 
     private Enum_UserOS getOS() {
