@@ -7,4 +7,9 @@ public enum Enum_FileType {
     Enum_FileType(String name) {
         this.name = name;
     }
+
+
+    boolean isNA () {
+        return this == NA;
+    }
 }

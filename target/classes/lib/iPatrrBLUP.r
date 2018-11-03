@@ -25,14 +25,6 @@ tryCatch({
         i = i + 1
         selectP = arg[i]
       },
-      "-maf" = {
-        i = i + 1
-        maf = as.numeric(arg[i])
-      },
-      "-ms" = {
-        i = i + 1
-        ms = as.numeric(arg[i])
-      },
       "-format" = {
         i = i + 1
         format = arg[i]
@@ -101,7 +93,6 @@ tryCatch({
     )
   }
 
-
 # Subset Phenotype
   cat("   Subsetting phenotype ...")
   indexP = selectP %>%
@@ -116,23 +107,6 @@ tryCatch({
   nameTraits = names(phenotype)[indexP]
   phenotype = phenotype[, ..indexP]
   sizeN = nrow(phenotype)
-  cat("Done\n")
-
-# QC
-  cat("   Quality control ...")
-  # Missing rate
-    MS = is.na(genotype) %>%
-      apply(2, function(x) sum(x)/length(x))
-    genotype = genotype[, MS <= ms, with = FALSE]
-    map = map[MS <= ms]
-  # MAF
-    # No NA allowed in GAPIT
-    genotype[is.na(genotype)] = 1
-    MAF = apply(genotype, 2, mean) %>%
-          as.matrix() %>%
-          apply(1, function(x) min(1 - x/2, x/2))
-    genotype = genotype[, MAF >= maf, with = FALSE]
-    map = data.frame(map[MAF >= maf])
   cat("Done\n")
 
 # Subset Covariates
@@ -249,34 +223,3 @@ for (trait in nameTraits) {
 }, error = function(e){
   stop(e)
 })
-
-
-# A.mat(M,shrink=TRUE) -> for low density markers Vanraden
-# Vu = estimator for
-# output add Project name
-#  EM imputation algorithm for GBS data (Poland et al. 2012)
-# Shrinkage estimation can improve the accuracy of genome-wide marker-assisted selection, partic- ularly at low marker density (Endelman and Jannink 2012).
-# GM = read.table("/Users/Poissonfish/Dropbox/MeetingSlides/iPat/demo_data/numeric/data.map", head = T)
-# # validation rrBLUP
-# sam = sample(nrow(Y), round(nrow(Y)*.2))
-# Y.train = Y
-# Y.train[sam,] = NA
-# Y.valid = Y[sam,]
-# pca = prcomp(G)
-# CO = pca$x[,1:3]
-# KI= GAPIT.kinship.VanRaden(snps=as.matrix(G))
-# A = A.mat(G)
-# B = tcrossprod(G)
-# G.impute =  A.mat(G, shrink = TRUE, impute.method = "EM", return.imputed = TRUE, max.missing = ms)$imputed
-# ans1 <- mixed.solve(Y.train[,1], K =, return.Hinv = TRUE, SE = TRUE)
-# ans2 <- mixed.solve(Y.train[,1], K = A.mat(cbind(G, CO)), return.Hinv = TRUE, SE = TRUE)
-# ans3 <- mixed.solve(Y.train[,1], X = CO, K = A.mat(G), return.Hinv = TRUE, SE = TRUE)
-# ans4 <- mixed.solve(Y.train[,1], K = KI, return.Hinv = TRUE, SE = TRUE)
-# ans5 <- mixed.solve(Y.train[,1], K = tcrossprod(G.impute), return.Hinv = TRUE, SE = TRUE)
-# ans6 <- mixed.solve(Y.train[,1], X = CO, K = tcrossprod(G.impute), return.Hinv = TRUE, SE = TRUE)
-# cor(ans1$u[sam], Y.valid)
-# cor(ans2$u[sam], Y.valid)
-# cor(ans3$u[sam], Y.valid)
-# cor(ans4$u[sam], Y.valid)
-# cor(ans5$u[sam], Y.valid)
-# cor(ans6$u[sam], Y.valid)

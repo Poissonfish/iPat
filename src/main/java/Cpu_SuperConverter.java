@@ -1,10 +1,8 @@
-import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.Arrays;
-import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.regex.Matcher;
@@ -17,16 +15,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import javax.swing.*;
-import javax.swing.border.Border;
-import java.awt.*;
-import java.io.IOException;
 
 abstract class Cpu_SuperConverter {
-    int sub_n = 32, sub_m = 8192;
+    int sub_n = 128, sub_m = 8192;
     String sep = "\t";
     // Buffer read and write
     BufferedReader reader;
@@ -57,7 +48,7 @@ abstract class Cpu_SuperConverter {
     boolean hasHeaderGD = false;
     // Quality control
     double rateMAF = 0;
-    double rateNA = 0;
+    double rateNA = 1;
     boolean[] isKeep;
     // Constructor
     public Cpu_SuperConverter() {}
@@ -117,6 +108,11 @@ abstract class Cpu_SuperConverter {
             System.out.println("Conversion Done!\n");
     }
 
+    //==============================================================================//
+    //==============================================================================//
+    //==============================================================================//
+    //==============================================================================//
+    //==============================================================================//
     private void GenStdioToNum(String GD_path) throws IOException {
         // Front 2 and last 5 columns are for meta inforamtion (Frac A	Frac C	Frac T	Frac G	GenTrain Score)
         System.out.println("GS -> N" + " GD: " + GD_path);
@@ -130,6 +126,7 @@ abstract class Cpu_SuperConverter {
         this.nCount = this.lineLength - 2;
         this.mCount = this.size_GD - 1;
         this.isKeep = new boolean[this.mCount];
+        Arrays.fill(this.isKeep, true);
         // Get taxa name and store them into 'taxa'
         this.taxa = getTaxa(true, 2, this.nCount, this.headerLine);
         // ========= ========= ========= ========= Marker ========= ========= ========= =========
@@ -161,12 +158,13 @@ abstract class Cpu_SuperConverter {
                 // AB
             else if (!hasAA && !hasBB && hasAB)
                 codeAB[this.idxTemp++] = '0';
+                // {AA, AB, BB} or {AA} or {BB}
             else
                 codeAB[this.idxTemp++] = '1';
         }
         doneProgress();
         // ========= ========= ========= ========= QC ========= ========= ========= =========
-        if (this.rateMAF > 0 || this.rateNA > 0) {
+        if (this.rateMAF != 0 || this.rateNA != 1) {
             this.isKeep = doQCGenStdio(GD_path, codeAB);
             for(boolean b : this.isKeep)
                 this.mCountQC += b ? 1 : 0;
@@ -196,7 +194,7 @@ abstract class Cpu_SuperConverter {
                 this.out.write(this.taxa.get(this.lastPosition - 2 + i));
                 // loop over markers
                 for (int j = 0; j < this.mCount; j ++) {
-                    if (!this.isKeep[i])
+                    if (!this.isKeep[j])
                         continue;
                     this.m1 = this.table_GD[i][j].charAt(0);
                     this.m2 = this.table_GD[i][j].charAt(1);
@@ -431,12 +429,13 @@ abstract class Cpu_SuperConverter {
         this.nCount = this.lineLength - 11;
         this.mCount = this.size_GD - 1;
         this.isKeep = new boolean[this.mCount];
+        Arrays.fill(this.isKeep, true);
         // Get taxa
         this.taxa = getTaxa(true, 11, this.nCount, this.headerLine);
         // Initial first allele
         this.RefAllele = new char[this.mCount];
         // ========= ========= ========= ========= QC ========= ========= ========= =========
-        if (this.rateMAF > 0 || this.rateNA > 0) {
+        if (this.rateMAF != 0 || this.rateNA != 1) {
             this.isKeep = doQCHapmap(GD_path, valueNA, isOneChar);
             for(boolean b : this.isKeep)
                 this.mCountQC += b ? 1 : 0;
@@ -463,14 +462,15 @@ abstract class Cpu_SuperConverter {
         this.out.flush();
         this.out.close();
         // ========= ========= ========= ========= GD ========= ========= ========= =========
+        iniProgress("Converting Genotype File",
+                String.format("Sample %d ~ %d : ", 1, this.nCount));
+        setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.dat");
         // output marker names as 1st line
         this.out.write("taxa");
         for (int i = 0; i < this.mCountQC; i ++)
             this.out.write("\t" + this.marker.get(i));
         this.out.write("\n");
-        iniProgress("Converting Genotype File",
-                String.format("Sample %d ~ %d : ", 1, this.nCount));
-        setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.dat");
+        // Convert genotype
         this.lastPosition = 11;
         while (this.lastPosition < this.lineLength) {
             updateProgress(this.lastPosition, this.lineLength);
@@ -550,12 +550,13 @@ abstract class Cpu_SuperConverter {
         this.nCount = this.lineLength - 11;
         this.mCount = this.size_GD - 1;
         this.isKeep = new boolean[this.mCount];
+        Arrays.fill(this.isKeep, true);
         // Get taxa
         this.taxa = getTaxa(true, 11, this.nCount, this.headerLine);
         // Initial first allele
         this.RefAllele = new char[this.mCount];
         // ========= ========= ========= ========= QC ========= ========= ========= =========
-        if (this.rateMAF > 0 || this.rateNA > 0) {
+        if (this.rateMAF != 0 || this.rateNA != 1) {
             this.isKeep = doQCHapmap(GD_path, valueNA, isOneChar);
             for(boolean b : this.isKeep)
                 this.mCountQC += b ? 1 : 0;
@@ -663,6 +664,12 @@ abstract class Cpu_SuperConverter {
                 break;
             }
         }
+        // ========= ========= ========= ========= QC ========= ========= ========= =========
+        if (this.rateMAF != 0 || this.rateNA != 1) {
+            this.isKeep = doQCVCF(GD_path);
+            for(boolean b : this.isKeep)
+                this.mCountQC += b ? 1 : 0;
+        }
         // ========= ========= ========= ========= Map ========= ========= ========= =========
         resetToNthLine(GD_path, this.vcfAnnotation);
         iniProgress("Converting Map File",
@@ -675,6 +682,8 @@ abstract class Cpu_SuperConverter {
             this.table_GD = getNLines(this.sub_m, this.sep);
             this.currentWindow = this.table_GD.length;
             for (int i = 0; i < this.currentWindow; i++) {
+                if (!this.isKeep[this.lastPosition + i])
+                    continue;
                 this.out.write(this.table_GD[i][2] + "\t" + this.table_GD[i][0] + "\t" + this.table_GD[i][1] + "\n");
                 this.marker.add(this.table_GD[i][2]);
                 this.hasTwoAlt[i] = this.table_GD[i][4].contains(",");
@@ -685,14 +694,15 @@ abstract class Cpu_SuperConverter {
         this.out.flush();
         this.out.close();
         // ========= ========= ========= ========= GD ========= ========= ========= =========
-        // output marker names as 1st line
-        this.out.write("taxa");
-        for (int i = 0; i < this.mCount; i ++)
-            this.out.write("\t" + this.marker.get(i));
-        this.out.write("\n");
         iniProgress("Converting Genotype File",
                 String.format("Sample %d ~ %d : ", 1, this.mCount));
         setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.dat");
+        // output marker names as 1st line
+        this.out.write("taxa");
+        for (int i = 0; i < this.mCountQC; i ++)
+            this.out.write("\t" + this.marker.get(i));
+        this.out.write("\n");
+        // Convert genotype
         this.lastPosition = 9;
         while (this.lastPosition < this.lineLength) {
             updateProgress(this.lastPosition, this.lineLength);
@@ -704,6 +714,8 @@ abstract class Cpu_SuperConverter {
             for (int i = 0; i < this.currentWindow; i ++) {
                 this.out.write(this.taxa.get(this.lastPosition - 9 + i));
                 for (int j = 0; j < this.mCount; j ++) {
+                    if (!this.isKeep[j])
+                        continue;
                     this.tempRead = this.table_GD[i][j].split(":")[GTindex];
                     this.m1 = this.tempRead.charAt(0);
                     this.m2 = this.tempRead.charAt(2);
@@ -722,7 +734,7 @@ abstract class Cpu_SuperConverter {
                                 break;
                             case '1':
                                 // Homozygous, and are 1st alt allele
-                                this.out.write("\t1");
+                                this.out.write("\t2");
                                 break;
                             case '2':
                                 // Homozygous, and are 2nd alt allele
@@ -783,6 +795,12 @@ abstract class Cpu_SuperConverter {
                 break;
             }
         }
+        // ========= ========= ========= ========= QC ========= ========= ========= =========
+        if (this.rateMAF != 0 || this.rateNA != 1) {
+            this.isKeep = doQCVCF(GD_path);
+            for(boolean b : this.isKeep)
+                this.mCountQC += b ? 1 : 0;
+        }
         // ========= ========= ========= ========= Map ========= ========= ========= =========
         resetToNthLine(GD_path, this.vcfAnnotation);
         iniProgress("Converting Map File",
@@ -794,6 +812,8 @@ abstract class Cpu_SuperConverter {
             this.table_GD = getNLines(this.sub_m, this.sep);
             this.currentWindow = this.table_GD.length;
             for (int i = 0; i < this.currentWindow; i ++) {
+                if (!this.isKeep[this.lastPosition + i])
+                    continue;
                 this.out.write(this.table_GD[i][0] + "\t" + this.table_GD[i][2] + "\t0\t" + this.table_GD[i][1] + "\n");
                 this.marker.add(this.table_GD[i][2]);
                 this.hasTwoAlt[i] = this.table_GD[i][4].contains(",");
@@ -804,11 +824,6 @@ abstract class Cpu_SuperConverter {
         this.out.flush();
         this.out.close();
         // ========= ========= ========= ========= GD ========= ========= ========= =========
-        // output marker names as 1st line
-        this.out.write("taxa");
-        for (int i = 0; i < this.mCount; i ++)
-            this.out.write("\t" + this.marker.get(i));
-        this.out.write("\n");
         iniProgress("Converting Genotype File",
                 String.format("Sample %d ~ %d : ", 1, this.nCount));
         setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.dat");
@@ -1109,36 +1124,46 @@ abstract class Cpu_SuperConverter {
         while ((this.tempRead = this.reader.readLine()) != null) {
             updateProgress(this.idxTemp, this.mCount);
             String[] arrayLine = this.tempRead.replaceAll("\"", "").split(this.sep);
-            arrayLine = Arrays.copyOfRange(arrayLine, 2, this.mCount + 2);
+            arrayLine = Arrays.copyOfRange(arrayLine, 2, this.nCount + 2);
+//            for (int i = 0; i < arrayLine.length; i ++)
+//                System.out.print(arrayLine[i] + " ");
             // Count all the elements
             Map<String, Long> tableMap = Arrays.asList(arrayLine).stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
             // Fill NC if no missin gvalues
+            long countNA = 0;
             if (!tableMap.containsKey("NC"))
                 tableMap.put("NC", 0L);
+            countNA = tableMap.get("NC");
+            // calculate maf
             double maf = 0;
             double na = 0;
             switch (codeAB[this.idxTemp]) {
                 // AB, BB or AB only
                 case '0':
-                    // AB
+                    // AB (consider as one homozygote
                     if (tableMap.size() == 2)
-                        maf = 0;
+                        maf = 1;
                         // AB, BB
                     else
-                        maf = (tableMap.get("BB"))/(double)(this.nCount - tableMap.get("NC"));
+                        maf = (tableMap.get("BB"))/(double)(this.nCount - countNA);
                     break;
-                // AA, AB, BB
+                // {AA, AB, BB} or {AA} or {BB}
                 case '1':
-                    maf = (tableMap.get("AA")*2 + tableMap.get("AB"))/((double)((this.nCount - tableMap.get("NC")) * 2));
+                    // AA, AB, BB
+                    if (tableMap.size() == 4)
+                        maf = (tableMap.get("AA")*2 + tableMap.get("AB"))/((double)((this.nCount - countNA) * 2));
+                        // AA or BB
+                    else
+                        maf = 0;
                     break;
                 // AA, AB
                 case '2':
-                    maf = (tableMap.get("AA"))/(double)(this.nCount - tableMap.get("NC"));
+                    maf = (tableMap.get("AA"))/(double)(this.nCount - countNA);
                     break;
             }
             maf = Math.min(maf, 1 - maf);
-            na = tableMap.get("NC")/((double)(this.nCount));
-            this.isKeep[this.idxTemp++] = (maf > this.rateMAF) && (na < this.rateNA);
+            na = countNA/((double)(this.nCount));
+            iskeep[this.idxTemp++] = (maf > this.rateMAF) && (na < this.rateNA);
         }
         doneProgress();
         return iskeep;
@@ -1159,8 +1184,10 @@ abstract class Cpu_SuperConverter {
             // Count all the elements
             Map<String, Long> tableMap = Arrays.asList(arrayLine).stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
             // Fill NC if no missin gvalues
+            long countNA = 0;
             if (!tableMap.containsKey(valueNA))
                 tableMap.put(valueNA, 0L);
+            countNA = tableMap.get(valueNA);
             // QC
             double maf = 0;
             double na = 0;
@@ -1180,7 +1207,7 @@ abstract class Cpu_SuperConverter {
                         break;
                     // N, A, B
                     case 3:
-                        maf = (tableMap.get(a1))/(double)(this.nCount - tableMap.get(valueNA));
+                        maf = (tableMap.get(a1))/(double)(this.nCount - countNA);
                         break;
                 }
             } else {
@@ -1214,23 +1241,71 @@ abstract class Cpu_SuperConverter {
                     // AA AB, AA BB, AB BB
                     case 3:
                         if (tableMap.containsKey(a1 + a1) && tableMap.containsKey(a1 + a2))
-                            maf = (tableMap.get(a1 + a1)*2 + tableMap.get(a1 + a2))/((double)((this.nCount - tableMap.get(valueNA)) * 2));
+                            maf = (tableMap.get(a1 + a1)*2 + tableMap.get(a1 + a2))/((double)((this.nCount - countNA) * 2));
                         else if (tableMap.containsKey(a1 + a1) && tableMap.containsKey(a2 + a2))
-                            maf = (tableMap.get(a1 + a1))/((double)(this.nCount - tableMap.get(valueNA)));
+                            maf = (tableMap.get(a1 + a1))/((double)(this.nCount - countNA));
                         else if (tableMap.containsKey(a2 + a2) && tableMap.containsKey(a1 + a2))
-                            maf = (tableMap.get(a2 + a2)*2 + tableMap.get(a1 + a2))/((double)((this.nCount - tableMap.get(valueNA)) * 2));
+                            maf = (tableMap.get(a2 + a2)*2 + tableMap.get(a1 + a2))/((double)((this.nCount - countNA) * 2));
                         break;
                     // AA AB BB
                     case 4:
-                        maf = (tableMap.get(a1 + a1)*2 + tableMap.get(a1 + a2))/((double)((this.nCount - tableMap.get(valueNA)) * 2));
+                        maf = (tableMap.get(a1 + a1)*2 + tableMap.get(a1 + a2))/((double)((this.nCount - countNA) * 2));
                         break;
                 }
             }
             maf = Math.min(maf, 1 - maf);
-            na = tableMap.get(valueNA)/((double)(this.nCount));
+            na = countNA/((double)(this.nCount));
             iskeep[this.idxTemp++] = (maf > this.rateMAF) && (na < this.rateNA);
         }
         doneProgress();
         return iskeep;
     }
+
+    private boolean[] doQCVCF (String GD_path) throws IOException {
+        boolean[] iskeep = new boolean[this.mCount];
+        this.idxTemp = 0;
+        resetToNthLine(GD_path, this.vcfAnnotation);
+        iniProgress("Quality Control",
+                String.format("Marker %d ~ %d : ", 1, this.mCount));
+        while ((this.tempRead = this.reader.readLine()) != null) {
+            updateProgress(this.idxTemp, this.mCount);
+            String[] arrayLine = this.tempRead.replaceAll("\"", "").split(this.sep);
+            arrayLine = Arrays.copyOfRange(arrayLine, 9, this.lineLength);
+            // Extract all alleles: 001000.0.0,12; Length = 2n; and convert ',' to '.'
+            Pattern pattern = Pattern.compile("[01.,]{1}[|/]{1}[01.,]{1}");
+            for (int i = 0; i < arrayLine.length; i ++) {
+                Matcher matcher = pattern.matcher(arrayLine[i]);
+                matcher.find();
+                arrayLine[i] = matcher.group().replaceAll("[|/]", "").replaceAll(",", ".");
+            }
+            // Count all the element
+            Map<String, Long> tableMap = Arrays.asList(arrayLine).stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+            // Fill NA if no missin gvalues
+            if (!tableMap.containsKey("."))
+                tableMap.put(".", 0L);
+            long countNA = tableMap.get(".");
+            // Calculate maf
+            double maf = 0;
+            double ma = 0;
+            switch (tableMap.size()) {
+                case 2:
+                    maf = 0;
+                    break;
+                case 3: case 4:
+                    maf = (tableMap.get("0")) / ((double)(this.nCount * 2 - countNA));
+                    break;
+            }
+            maf = Math.min(maf, 1 - maf);
+            ma = countNA/((double)(this.nCount * 2));
+            iskeep[this.idxTemp++] = (maf > this.rateMAF) && (ma < this.rateNA);
+        }
+        doneProgress();
+        return iskeep;
+//        20     14370   rs6054257 G      A       29   PASS   NS=3;DP=14;AF=0.5;DB;H2           GT:GQ:DP:HQ 0|0:48:1:51,51 1|0:48:8:51,51 1/1:43:5:.,.
+//        20     17330   .         T      A       3    q10    NS=3;DP=11;AF=0.017               GT:GQ:DP:HQ 0|0:49:3:58,50 0|1:3:5:65,3   0/0:41:3
+//        20     1110696 rs6040355 A      G,T     67   PASS   NS=2;DP=10;AF=0.333,0.667;AA=T;DB GT:GQ:DP:HQ 1|2:21:6:23,27 2|1:2:0:18,2   2/2:35:4
+//        20     1230237 .         T      .       47   PASS   NS=3;DP=13;AA=T                   GT:GQ:DP:HQ 0|0:54:7:56,60 0|0:48:4:51,51 0/0:61:2
+//        20     1234567 microsat1 GTCT   G,GTACT 50   PASS   NS=3;DP=9;AA=G                    GT:GQ:DP    0/1:35:4       0/2:17:2       1/1:40:3
+    }
 }
+

@@ -31,9 +31,12 @@ class Cpu_Converter extends Cpu_SuperConverter {
             case "PLINK": output = iPatFormat.PLINK; break;
             case "GenomeStudio": output = iPatFormat.genStudio; break;
         }
+        this.rateMAF = rateMAF;
+        this.rateNA = rateNA;
+        this.isNAFill = isNAFill;
+        this.sub_n = batchSize;
         // Do conversion
-        run(input, output, pathGD, pathGM,
-                rateMAF, rateNA, isNAFill, batchSize);
+        run(input, output, pathGD, pathGM);
     }
 
     @Override

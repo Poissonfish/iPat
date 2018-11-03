@@ -11,7 +11,7 @@ tryCatch({
   library(scatterplot3d)
   library(R.utils)
   source("http://zzlab.net/iPat/Function_iPat.R")
-  source("http://zzlab.net/GAPIT/gapit_functions.txt")
+  source("http://zzlab.net/iPat/Function_GAPIT.R")
   source("http://zzlab.net/FarmCPU/FarmCPU_functions.txt")
   cat("Done\n")
 
@@ -31,14 +31,6 @@ tryCatch({
       "-pSelect" = {
         i = i + 1
         selectP = arg[i]
-      },
-      "-maf" = {
-        i = i + 1
-        maf = as.numeric(arg[i])
-      },
-      "-ms" = {
-        i = i + 1
-        ms = as.numeric(arg[i])
       },
       "-format" = {
         i = i + 1
@@ -124,23 +116,6 @@ tryCatch({
   sizeN = nrow(phenotype)
   cat("Done\n")
 
-# QC
-  cat("   Quality control ...")
-  # Missing rate
-    MS = is.na(genotype) %>%
-      apply(2, function(x) sum(x)/length(x))
-    genotype = genotype[, MS <= ms, with = FALSE]
-    map = map[MS <= ms]
-  # MAF
-    # No NA allowed in GAPIT
-    genotype[is.na(genotype)] = 1
-    MAF = apply(genotype, 2, mean) %>%
-          as.matrix() %>%
-          apply(1, function(x) min(1 - x/2, x/2))
-    genotype = genotype[, MAF >= maf, with = FALSE]
-    map = data.frame(map[MAF >= maf])
-  cat("Done\n")
-
 # Subset Covariates
   cat("   Subsetting covariates ...")
   if (!is.null(cov)) {
@@ -214,10 +189,8 @@ tryCatch({
       KI = kin,
       CV = cov,
       group.from = 10000,
-      group.to = 10000,
+      group.to = 10000, 
       group.by = 10,
-      Model.selection = model.s,
-      SNP.fraction = snp.fraction,
       SNP.test = FALSE,
       memo = sprintf("%s_%s", project, trait)
     )

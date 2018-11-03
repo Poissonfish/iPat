@@ -26,9 +26,10 @@ class Obj_Module extends Obj_Super implements ActionListener{
     // multi run
     iPatThread thread;
     Timer timerThread;
-
-    // Obj_FileCluster
-//    Obj_FileCluster fileCluster = new Obj_FileCluster();
+    // QC
+    double maf, ms;
+    // File Cluster
+    Obj_FileCluster files;
 
     public Obj_Module(int x, int y) throws IOException {
         super(x, y);
@@ -56,6 +57,16 @@ class Obj_Module extends Obj_Super implements ActionListener{
         this.timerThread = new Timer(500, this);
         // phenotype
         this.selectP = null;
+        // file cluster
+        files = new Obj_FileCluster();
+    }
+
+    // Files Cluster
+    IPatFile getFile(Enum_FileType filetype) {
+        return this.files.getFile(filetype);
+    }
+    void setFile(String filepath, Enum_FileType filetype) {
+        this.files.setFile(new IPatFile(filepath), filetype);
     }
 
     // get
@@ -86,6 +97,12 @@ class Obj_Module extends Obj_Super implements ActionListener{
     String getCovGS() {
         return this.commandGS.getCov();
     }
+    double getMAF() {
+        return this.maf;
+    }
+    double getMS() {
+        return this.ms;
+    }
 
     // set
     void setDeployedGWASTool (Enum_Tool tool) {
@@ -112,6 +129,12 @@ class Obj_Module extends Obj_Super implements ActionListener{
     void setPhenotype(String selectP) {
         this.selectP = selectP;
     }
+    void setMAF(double maf) {
+        this.maf = maf;
+    }
+    void setMS(double ms) {
+        this.ms = ms;
+    }
 
     boolean isGWASDeployed() {
         return !this.commandGWAS.isEmpty();
@@ -129,10 +152,11 @@ class Obj_Module extends Obj_Super implements ActionListener{
         return this.format.isNA();
     }
 
-    void run (ArrayList<IPatCommand> command, Enum_FileFormat format, String pathGD, String pathGM, boolean isPLINK) throws IOException {
+    void run (ArrayList<IPatCommand> command, Enum_FileFormat format, boolean isPLINK, String pathGD, String pathGM) {
         this.timerThread.start();
         this.rotateSwitch = true;
-        thread = new iPatThread(this.getName(), format, pathGD, pathGM, isPLINK);
+        thread = new iPatThread(this.getName(), format, isPLINK, pathGD, pathGM,
+                this.maf, this.ms, true, 64);
         thread.setCommandAndRun(command);
     }
 
@@ -159,10 +183,14 @@ class Obj_Module extends Obj_Super implements ActionListener{
         String pathGD, pathGM;
         boolean isPLINK;
         Enum_FileFormat format;
+        double maf, ms;
+        int batchSize;
+        boolean nafill;
         // running
         boolean isRunning;
 
-        public iPatThread(String title, Enum_FileFormat format, String pathGD, String pathGM, boolean isPLINK) throws IOException {
+        public iPatThread(String title, Enum_FileFormat format, boolean isPLINK, String pathGD, String pathGM,
+                          double rateMAF, double rateNA, boolean isNAFill, int batchSize) {
             this.areaText = new JTextArea();
             this.areaText.setEditable(false);
             this.areaScroll = new JScrollPane(areaText,
@@ -184,6 +212,10 @@ class Obj_Module extends Obj_Super implements ActionListener{
             this.pathGM = pathGM;
             this.isPLINK = isPLINK;
             this.format = format;
+            this.maf = rateMAF;
+            this.ms = rateNA;
+            this.batchSize = batchSize;
+            this.nafill = isNAFill;
             // running
             this.isRunning = false;
         }
@@ -208,9 +240,13 @@ class Obj_Module extends Obj_Super implements ActionListener{
                     // format convertsion
                     switch (command.getType()) {
                         case GWAS:
-                            new Cpu_Converter(this.format,
-                                    this.isPLINK ? Enum_FileFormat.PLINK : Enum_FileFormat.Numeric,
-                                    this.pathGD, this.pathGM);
+                            try {
+                                new Cpu_Converter(this.format,
+                                        this.isPLINK ? Enum_FileFormat.PLINK : Enum_FileFormat.Numeric,
+                                        this.pathGD, this.pathGM, this.maf, this.ms, this.nafill, this.batchSize);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                             // rename
                             filename = pathGD.replaceFirst("[.][^.]+$", "");
                             if (isPLINK && format != Enum_FileFormat.PLINK) {
@@ -226,8 +262,12 @@ class Obj_Module extends Obj_Super implements ActionListener{
                             command.addArg("-map", pathGM);
                             break;
                         case GS:
-                            new Cpu_Converter(format, Enum_FileFormat.Numeric,
-                                    pathGD, pathGM);
+                            try {
+                                new Cpu_Converter(this.format, Enum_FileFormat.Numeric,
+                                        this.pathGD, this.pathGM, this.maf, this.ms, this.nafill, this.batchSize);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                             if (format != Enum_FileFormat.Numeric) {
                                 filename = pathGD.replaceFirst("[.][^.]+$", "");
                                 pathGD = filename + "_recode.dat";

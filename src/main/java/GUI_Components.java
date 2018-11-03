@@ -35,7 +35,7 @@ class GroupValue extends JPanel{
     private JTextField field;
 
     public GroupValue (int length, String text) {
-        super(new MigLayout("fillx", "[120::][grow]", "[]"));
+        super(new MigLayout("fillx, ins 3", "[120::][grow]", "[]"));
         this.name = new JLabel(text);
         this.field = new JTextField(length);
         this.add(this.name, "cell 0 0, align r");
@@ -55,7 +55,7 @@ class GroupCheckBox extends JPanel{
     JCheckBox check;
 
     public GroupCheckBox (String text) {
-        super(new MigLayout("fillx", "[grow]", "[]"));
+        super(new MigLayout("fillx, ins 3", "[grow]", "[]"));
         this.check = new JCheckBox();
         this.check.setText(text);
         this.check.setSelected(false);
@@ -70,11 +70,11 @@ class GroupCheckBox extends JPanel{
 }
 
 class GroupCombo extends JPanel {
-    private JComboBox combo;
-    private JLabel name;
+    JComboBox combo;
+    JLabel name;
 
     public GroupCombo (String text, String[] list) {
-        super(new MigLayout("fillx", "[grow][grow]", "[]"));
+        super(new MigLayout("fillx, ins 3", "[grow][grow]", "[]"));
         this.name = new JLabel(text);
         this.combo = new JComboBox(list);
         this.add(this.name, "cell 0 0, align r");
@@ -100,7 +100,7 @@ class GroupSlider extends JPanel implements ChangeListener {
     private Hashtable<Integer, JLabel> tableVal, tableLabel;
 
     GroupSlider(String name, int min, int max, int defaultVal, int minTick, int majTick) {
-        super(new MigLayout("fillx", "[grow][grow]", "[]"));
+        super(new MigLayout("fillx, ins 3", "[grow][grow]", "[]"));
         this.name = new JLabel(name + " :");
         this.value = new JLabel(Integer.toString(defaultVal));
         this.slider = new JSlider(JSlider.HORIZONTAL, min, max, defaultVal);
@@ -116,7 +116,7 @@ class GroupSlider extends JPanel implements ChangeListener {
     }
 
     GroupSlider(String name, int defaultVal, String[] tableVal, String[] tableLabel) {
-        super(new MigLayout("fillx", "[grow][grow]", "[]"));
+        super(new MigLayout("fillx, ins 3", "[grow][grow]", "[]"));
         int size = tableVal.length;
         this.name = new JLabel(name + " :");
         this.slider = new JSlider (JSlider.HORIZONTAL, 1, size, defaultVal);
@@ -139,7 +139,7 @@ class GroupSlider extends JPanel implements ChangeListener {
     }
 
     GroupSlider(String name, int defaultVal, String[] tableVal) {
-        super(new MigLayout("fillx", "[grow][grow]", "[]"));
+        super(new MigLayout("fillx, ins 3", "[grow][grow]", "[]"));
         int size = tableVal.length;
         this.name = new JLabel(name + " :");
         this.slider = new JSlider (JSlider.HORIZONTAL, 1, size, defaultVal);
@@ -197,7 +197,7 @@ class GroupPath extends JPanel implements ActionListener {
     JTextField field;
 
     public GroupPath (String text) {
-        super(new MigLayout("fillx", "[120::][grow][grow]", "[]"));
+        super(new MigLayout("fillx, ins 3", "[120::][grow][grow]", "[]"));
         name = new JLabel();
         browse = new JButton("Browse");
         field = new JTextField(20);

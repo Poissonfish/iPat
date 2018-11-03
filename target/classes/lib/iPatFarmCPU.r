@@ -5,8 +5,6 @@ tryCatch({
   library(bigmemory)
   library(biganalytics)
   library(compiler)
-  library(data.table)
-  library(magrittr)
   library(MASS) # required for ginv
   library(multtest)
   library(gplots)
@@ -16,7 +14,7 @@ tryCatch({
   library(magrittr)
   library(data.table)
   source("http://zzlab.net/iPat/Function_iPat.R")
-  source("http://zzlab.net/GAPIT/gapit_functions.txt")
+  source("http://zzlab.net/iPat/Function_GAPIT.R")
   source("http://zzlab.net/FarmCPU/FarmCPU_functions.txt")
   cat("Done\n")
 
@@ -36,14 +34,6 @@ tryCatch({
       "-pSelect" = {
         i = i + 1
         selectP = arg[i]
-      },
-      "-maf" = {
-        i = i + 1
-        maf = as.numeric(arg[i])
-      },
-      "-ms" = {
-        i = i + 1
-        ms = as.numeric(arg[i])
       },
       "-format" = {
         i = i + 1
@@ -117,17 +107,6 @@ tryCatch({
   phenotype = phenotype[, ..indexP]
   cat("Done\n")
 
-# QC
-  cat("   Quality control ...")
-  # Missing rate
-    MS = is.na(genotype) %>%
-      apply(2, function(x) sum(x)/length(x))
-    genotype = data.frame(taxa, genotype[, MS <= ms, with = FALSE])
-    map = data.frame(map[MS <= ms])
-    # impute?
-    genotype[is.na(genotype)] = 1
-  cat("Done\n")
-
 # Subset Covariates
   cat("   Subsetting covariates ...")
   if (!is.null(cov)) {
@@ -151,7 +130,6 @@ tryCatch({
           bin.selection = seq(10, 100, 10), # Default set of bin.selection
           maxLoop = maxLoop,
           MAF.calculate = TRUE,
-          maf.threshold = maf,
           memo = sprintf("%s_%s", project, trait))
     write.table(x = data.frame(SNP = x$GWAS$SNP, P.value = x$GWAS$P.value),
                 file = sprintf("%s_%s_GWAS.txt", project, trait),

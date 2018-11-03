@@ -13,7 +13,7 @@ tryCatch({
   library(scatterplot3d)
   library(R.utils)
   source("http://zzlab.net/iPat/Function_iPat.R")
-  source("http://zzlab.net/GAPIT/gapit_functions.txt")
+  source("http://zzlab.net/iPat/Function_GAPIT.R")
   cat("Done\n")
 
 # Input arguments
