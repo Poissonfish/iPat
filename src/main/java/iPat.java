@@ -19,6 +19,7 @@ public class iPat {
     static Lib_Text TXTLIB;
     static Lib_Ref DEFAULTVAL;
     static Lib_Ref MODVAL;
+    static JFrame IPATFRAME;
     static double SUM_EXP = 0;
 
     public iPat() throws URISyntaxException, IOException, InterruptedException {
@@ -45,9 +46,7 @@ public class iPat {
 //        Matcher matcher = pattern.matcher(test);
 //        matcher.find();
 //        System.out.println(matcher.group());
-        new GUI_Config(1100, 800, new Obj_Module(1, 1));
-
-//        launchIPat();
+        launchIPat();
     }
 
     private Enum_UserOS getOS() {
@@ -118,22 +117,22 @@ public class iPat {
         System.out.println("You're running iPat on "+ USEROS);
     }
 
-    private void launchIPat() {
+    private void launchIPat() throws IOException, InterruptedException {
         // Get the center coordinate for the given window size
         GraphicsEnvironment local_env = GraphicsEnvironment.getLocalGraphicsEnvironment();
         Point centerPoint = local_env.getCenterPoint();
         int dx = centerPoint.x - WINDOWSIZE.getWidth() / 2;
         int dy = centerPoint.y - WINDOWSIZE.getHeight() / 2;
         // Initialize a frame for iPat
-        JFrame iPatFrame = new JFrame();
-        iPatFrame.setSize(WINDOWSIZE.getDimension());
-        iPatFrame.setResizable(false);
-        iPatFrame.setLocation(dx, dy);
-        iPatFrame.setLayout(new BorderLayout());
-        iPatFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        IPATFRAME = new JFrame();
+        IPATFRAME.setSize(WINDOWSIZE.getDimension());
+        IPATFRAME.setResizable(false);
+        IPATFRAME.setLocation(dx, dy);
+        IPATFRAME.setLayout(new BorderLayout());
+        IPATFRAME.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         // Implement resize feature
-        iPatFrame.setVisible(true);
-        iPatFrame.addComponentListener(new ComponentAdapter () {
+        IPATFRAME.setVisible(true);
+        IPATFRAME.addComponentListener(new ComponentAdapter () {
             @Override
             public void componentResized(ComponentEvent evt) {
                 Component c = (Component)evt.getSource();
@@ -145,8 +144,12 @@ public class iPat {
         iPat.setFocusable(true); // Keylistener
         iPat.requestFocusInWindow(); // Keylistener
         // Add the panel into JFrame
-        iPatFrame.setContentPane(iPat);
-        iPatFrame.show();
+        IPATFRAME.setContentPane(iPat);
+        IPATFRAME.show();
+        new Cpu_Converter(Enum_FileFormat.Numeric, Enum_FileFormat.PLINK,
+                "/Users/jameschen/Desktop/Test/iPatDEMO/demo.dat", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.map",
+                0.05,  0.2,
+                true, 64);
     }
 }
 
@@ -182,6 +185,10 @@ class WindowSize {
 
     Point getAppLocation(int w, int h) {
         return new Point(this.ptCenter.x - w / 2, this.ptCenter.y - h / 2);
+    }
+
+    Point getCenterPoint() {
+        return new Point((int)(this.width/(double)2), (int)(this.height/(double)2));
     }
 
     Dimension getDimension() {

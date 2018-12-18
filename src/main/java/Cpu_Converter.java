@@ -71,6 +71,6 @@ class Cpu_Converter extends Cpu_SuperConverter {
 
     @Override
     void doneProgress() {
-
+        frameProgress.dispose();
     }
 }

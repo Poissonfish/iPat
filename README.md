@@ -11,7 +11,7 @@
 
 # Why iPat?
  Intelligent Prediction and Association Tool (iPat) is a software with a user-friendly graphical user interface (GUI). With iPat, GWAS or GS can be performed using a pointing device to simply drag and/or click on graphical elements to specify input data files, choose input parameters, and select analytical models. It not only makes users who feel more confortable with GUI more flexible to do functional genomic studies in different statistical methods, but make the learning curve gradual for the first-time users.
- 
+
 # Table of Contents
 #### 1. [Getting start](#get_start)
 > 1-1 [Operation environment](#env)
@@ -83,7 +83,7 @@
 ### 1.1 Operation environment* The operation environment need to meet the following requirement:
 	* Operation System: Windows or Mac OS X .
 	* [Java Runtime Environment (JRE)](http://www.oracle.com/technetwork/java/javase/downloads/index.html): Version 8 or later.
-	* [R](https://www.r-project.org): Version 3.4.1 or later. 
+	* [R](https://www.r-project.org): Version 3.4.1 or later.
 
 <a name="setR"></a>
 ### 1.2 Set up R environment
@@ -109,7 +109,7 @@ this command will install all the required r packges automatically
 
 <a name="mac"></a>
 ### 1.4 Mac OS users
-* Download [iPat_Installer.dmg](http://zzlab.net/iPat/iPat_Installer.dmg) and mount it on Mac. 
+* Download [iPat_Installer.dmg](http://zzlab.net/iPat/iPat_Installer.dmg) and mount it on Mac.
 
 * Follow the instruction to install iPat.
 <p align="center"><p align="center"><img src = "./md/install_mac.png" width = 450></p>
@@ -120,7 +120,7 @@ this command will install all the required r packges automatically
 ## 2. Interface
 
 <a name="import_files"></a>
-### 2.1 *Import files** At beginning, iPat will show nothing but an icon "iPat" at the top of screen. 
+### 2.1 *Import files** At beginning, iPat will show nothing but an icon "iPat" at the top of screen.
 * Users can import files simply by dragging and dropping.
 
 <p align="center"><img src = "./md/dnd.png" width = 700></p>
@@ -128,7 +128,7 @@ this command will install all the required r packges automatically
 <a name="create_projects"></a>
 ### 2.2 *Create a project*
 * After importing the files, double clicking on anywhere in iPat to create a new project (a gear icon).
-* Build a project by dragging a files over the project icon. A dashline will be shown between the file and project, which mean this file has been already included in this project. The below two are examples for a valid project. <p align="center"><img src = "./md/linkages.png" width = 400></p>
+* Build a project by dragging a files over the project icon. A dashline will be shown between the file and project, which mean this file has been already included in this project. The below two are examples for a valid project.<p align="center"><img src = "./md/linkages.png" width = 400></p>
 * **[IMPORTANT]** A valid project must include a certain number of required files, **no less, no more.** Otherwise iPat won't work and will return an error message. Valid datasets for each format can be found from the table below:
 
 <center>
@@ -148,17 +148,17 @@ this command will install all the required r packges automatically
 * iPat mainly work with files in numerical format, but it can also work fine with Hapmap, VCF and PLINK format. iPat will recognize the format of input files and do a format conversion automatically if needed.
 
 <p align="center"><img src = "./md/conversion.png" width = 600></p>
- 
+
 
 <a name="phenotype"></a>
 #### 2.3.1 Phenotype
-* Phenotype data for every formats except PLINK must contain **sample names** in the first column and **traits names** as the header: 
+* Phenotype data for every formats except PLINK must contain **sample names** in the first column and **traits names** as the header:
 
 <center>
 
 |taxa|trait 1|trait 2|
 |:-:|:-:|:-:|
-|sample1| 
+|sample1|
 |sample2|
 |sample3|
 
@@ -170,7 +170,7 @@ this command will install all the required r packges automatically
 
 |FID|SID|trait 1|trait 2|
 |:-:|:-:|:-:|:-:|
-|family 1|sample1| 
+|family 1|sample1|
 |family 2|sample2|
 |family 3|sample3|
 
@@ -228,7 +228,7 @@ this command will install all the required r packges automatically
 
 </center>
 
-<a name="plink"></a> 
+<a name="plink"></a>
 #### 2.3.5 PLINK (the header should be removed)
 * Genotype data (.ped). Missing value can be filled as "0":
 
@@ -254,10 +254,10 @@ this command will install all the required r packges automatically
 
 </center>
 
-<a name="plinkb"></a> 
+<a name="plinkb"></a>
 #### 2.3.6 Binary PLINK (the header should be removed)
-* Genotype data (.bed): 
-	
+* Genotype data (.bed):
+
 	Please follow the instruction from [here](http://www.cog-genomics.org/plink2/formats#bed)
 
 * FAM file:
@@ -283,7 +283,7 @@ this command will install all the required r packges automatically
 </center><a name="C_K"></a>### 2.4 *Covariates and kinship*
 
 <a name="add_ck"></a>
-#### 2.4.1 Add additional information to iPat* Covariates provided by users will be treated as **fixed effect** in the selected model except in BGLR. 
+#### 2.4.1 Add additional information to iPat* Covariates provided by users will be treated as **fixed effect** in the selected model except in BGLR.
 * It's **optional** that users can add **user-define** covariates or kinship into the project. Right clicking on the file to tell iPat what type of file it is. (i.e. covariates, kinship or a basic required file)
 <p align="center"><img src = "./md/ck.png" width = 400></p>
 
@@ -340,10 +340,10 @@ this command will install all the required r packges automatically
 
 <p align="center"><img src = "./md/pop_model.png" width = 220></p>
 * The panel consist of two sections. The upper one presents a set of input arguments shared by all methods, while users can define method-specific arguments from the lower section.
- 
+
 <p align="center"><img src = "./md/configpane.png" width = 800></p>
 
-* Available parameters in the upper section : 
+* Available parameters in the upper section :
 
 <center>
 
@@ -354,9 +354,9 @@ this command will install all the required r packges automatically
 |Phenotype|Trait names|Subsetting traits data|All traits are selected|
 |Quality Control|By missing rate|Filtering out markers where certain rate of value is missing|No threshold|
 |Quality Control|By MAF|Filtering out markers based on minor allele frequency|0.05|
- </center>
+</center>
 
-* To select a method, simply drag a "method block" to the left-side area. And tap on this area for further defining 
+* To select a method, simply drag a "method block" to the left-side area. And tap on this area for further defining
 (see [section 3](#gwas) for details)
 <p align="center"><img src = "./md/dragmethod.png" width = 1200></p>
 
@@ -364,7 +364,7 @@ this command will install all the required r packges automatically
 
 <p align="center"><img src = "./md/pop_run.png" width = 220></p>
 
- <a name="run"></a>### 2.6 *Run an analysis*
+<a name="run"></a>### 2.6 *Run an analysis*
 * In iPat, users are allowed to do genomic studies such as GWAS, GS and GWAS-Assisted GS (Associated SNPs reported by GWAS will be treated as fixed effect in GS). iPat will detect the project configuration and decide which analysis should be implemented afterward.
 
 <p align="center"><img src = "./md/analysis_type.png" width = 550></p>
@@ -401,7 +401,7 @@ Tools implemented in iPat allow users to do genome-wide associate study (GWAS) a
 ### 3.1 GAPIT
 |Tab|Parameters|	Definitions| Default|
 |:--|:---|:---|:--:|
-|Covariates|Covaraite names|Subsetting covaraites data|All covariates are selected| 
+|Covariates|Covaraite names|Subsetting covaraites data|All covariates are selected|
 |GAPIT input|Model|Which linear model to be used in GWAS |GLM|GAPIT input|kinship.cluster|Clustering algorithm to group individuals based on their kinship|average|GAPIT input|kinship.group|Method to derive kinship among groups|Mean|Advance|SNP.fraction|Fraction of SNPs Sampled to Estimate Kinship and PCs|1|Advance|File.fragment|The Fragment Size to Read Each Time within a File|512
 |Advance|Model selection|Conduct Bayesian information criterion (BIC)-based model selection to find the optimal number of PCs for inclusion in the GWAS models|FALSE|
 
@@ -447,11 +447,11 @@ Tools implemented in iPat allow users to do genome-wide associate study (GWAS) a
 
 <p align="center"><img src = "./md/tutor1.png" width = 700></p>
 
-* Double click at anywhare in iPat to create a new project (gear shape icon). 
+* Double click at anywhare in iPat to create a new project (gear shape icon).
 
 <p align="center"><img src = "./md/tutor2.png" width = 700></p>
 
-* Drag both files and hover them over the project to build a linkage. For every files that have a linkage built with the same project would be treated as a group in iPat. 
+* Drag both files and hover them over the project to build a linkage. For every files that have a linkage built with the same project would be treated as a group in iPat.
 
 <p align="center"><img src = "./md/tutor3.png" width = 700></p>
 
@@ -463,8 +463,8 @@ Tools implemented in iPat allow users to do genome-wide associate study (GWAS) a
 
 <p align="center"><img src = "./md/tutor5.png" width = 700></p>
 
-* Drag the label "FarmCPU" to the left-side area, and release to deploy FarmCPU in GWAS. 
-  
+* Drag the label "FarmCPU" to the left-side area, and release to deploy FarmCPU in GWAS.
+
 <p align="center"><img src = "./md/tutor6.png" width = 700></p>
 
 * Users may continue to set output directory, quality control and other input arguments, or close the window to have the configuration stored.
@@ -491,10 +491,11 @@ Tools implemented in iPat allow users to do genome-wide associate study (GWAS) a
 
 <p align="center"><img src = "./md/tutor12.png" width = 700></p>
 
-<a name="support"></a>## 5. Support
+<a name="support"></a>
+## 5. Support
 * If there is any difficulty on iPat, please leave your questions in the page of [issue report](https://github.com/Poissonfish/iPat/issues).
 * Or you can directly send an email to the author [James Chen](mailto:chun-peng.chen@wsu.edu)
 
 <a name="cite"></a>
 ## 6. Citation
-* Bradbury,P.J. et al. (2007) TASSEL: software for association mapping of complex traits in diverse samples. Bioinformatics, 23, 2633–2635.* Endelman,J. (2011) Ridge regression and other kernels for genomic selection in the R package rrBLUP. Plant Genome, 4, 250–255.* Kang,H.M. et al. (2008) Efficient control of population structure in model organism association mapping. Genetics, 178, 1709–1723.* Liu,X. et al. (2016) Iterative Usage of Fixed and Random Effect Models for Powerful and Efficient Genome-Wide Association Studies. PLoS Genet., 12, e1005767.* Purcell,S. et al. (2007) PLINK: A Tool Set for Whole-Genome Association and Population-Based Linkage Analyses. Am J Hum Genet, 81, 559–575.* Tang,Y. et al. (2016) GAPIT Version 2: An Enhanced Integrated Tool for Genomic Association and Prediction. Plant J., 9.
+* Bradbury,P.J. et al. (2007) TASSEL: software for association mapping of complex traits in diverse samples. Bioinformatics, 23, 2633–2635.* Endelman,J. (2011) Ridge regression and other kernels for genomic selection in the R package rrBLUP. Plant Genome, 4, 250–255.* Kang,H.M. et al. (2008) Efficient control of population structure in model organism association mapping. Genetics, 178, 1709–1723.* Liu,X. et al. (2016) Iterative Usage of Fixed and Random Effect Models for Powerful and Efficient Genome-Wide Association Studies. PLoS Genet., 12, e1005767.* Purcell,S. et al. (2007) PLINK: A Tool Set for Whole-Genome Association and Population-Based Linkage Analyses. Am J Hum Genet, 81, 559–575.* Tang,Y. et al. (2016) GAPIT Version 2: An Enhanced Integrated Tool for Genomic Association and Prediction. Plant J., 9.

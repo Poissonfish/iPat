@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 
+// 2018/12/17
 abstract class Cpu_SuperConverter {
     int sub_n = 128, sub_m = 8192;
     String sep = "\t";
@@ -73,7 +74,10 @@ abstract class Cpu_SuperConverter {
     protected void run (iPatFormat InputFormat, iPatFormat OutputFormat, String pathGD, String pathGM) throws IOException {
         switch (InputFormat) {
             case Numerical:
-                NumToPlink(pathGD, pathGM);
+                if (OutputFormat.equals(iPatFormat.Numerical))
+                    NumToNum(pathGD, pathGM);
+                else
+                    NumToPlink(pathGD, pathGM);
                 break;
             case Hapmap:
                 switch (OutputFormat) {
@@ -225,12 +229,125 @@ abstract class Cpu_SuperConverter {
     //==============================================================================//
     //==============================================================================//
     //==============================================================================//
+
+    private void NumToNum(String GD_path, String GM_path) throws IOException {
+        System.out.println("N -> N" + " GD: " + GD_path + " GM: " + GM_path);
+        // Get seperater
+        this.sep = getSep(GD_path, 0);
+        // Get first 2 lines and get if contains header or taxa
+        setReader(GD_path);
+        this.table_GD = getNLines(2, this.sep);
+        boolean hasHeader = !(this.table_GD[0][1].length() == 1);
+        boolean hasTaxa = !(this.table_GD[1][0].length() == 1);
+        // Get nCount and mCount
+        this.headerLine = getNthLine(GD_path, 1, this.sep);
+        this.lineLength = this.headerLine.length;
+        this.size_GD = getCountOfLines(GD_path);
+        this.nCount = (hasHeader) ? this.size_GD - 1 : this.size_GD;
+        this.mCount = (hasTaxa) ? this.lineLength - 1 : this.lineLength;
+        this.mCountQC = 0;
+        this.isKeep = new boolean[this.mCount];
+        Arrays.fill(this.isKeep, true);
+        // ========= ========= ========= ========= QC ========= ========= ========= =========
+        if (this.rateMAF != 0 || this.rateNA != 1) {
+            this.isKeep = doQCNUM(GD_path, hasHeader, hasTaxa);
+            for(boolean b : this.isKeep)
+                this.mCountQC += b ? 1 : 0;
+        }
+        // ========= ========= ========= ========= Map ========= ========= ========= =========
+        if (!GM_path.equals("NA")) {
+            setReader(GM_path);
+            setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.nmap");
+            this.tempRead = this.reader.readLine();
+            this.out.write(this.tempRead + "\n");
+            // Progress message
+            this.lastPosition = 0;
+            iniProgress("Converting Map File",
+                    String.format("Marker %d ~ %d : ", 1, this.mCount));
+            while ((this.tempRead = this.reader.readLine()) != null) {
+                updateProgress(this.lastPosition + 1, this.mCount + 1);
+                if (this.isKeep[this.lastPosition])
+                    this.out.write(this.tempRead + "\n");
+                this.lastPosition++;
+            }
+            doneProgress();
+            this.out.flush();
+            this.out.close();
+        }
+        // ========= ========= ========= ========= GD ========= ========= ========= =========
+        setReader(GD_path);
+        setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.dat");
+        // Create header
+        if (hasHeader) {
+            // Read the first line if has header
+            String[] temp = this.reader.readLine().replaceAll("\"", "").split(this.sep);
+            // Write taxa in the first element
+            if (hasTaxa)
+                this.out.write(temp[0]);
+            else
+                this.out.write("taxa");
+            // Write marker
+            this.idxTemp = 0;
+            for (int i = (hasTaxa) ? 1:0; i < temp.length; i ++)
+                if (this.isKeep[this.idxTemp++])
+                    this.out.write("\t" + temp[i]);
+        } else {
+            this.out.write("taxa");
+            for (int i = 0; i < this.mCountQC; i ++)
+                this.out.write("\tM_" + (i+1));
+        }
+        this.out.write("\n");
+        // Progress message
+        iniProgress("Converting Genotype File",
+                String.format("Sample %d ~ %d : ", 1, this.nCount));
+        // Write following samples (loop over samples)
+        while ((this.tempRead = this.reader.readLine()) != null) {
+            updateProgress(this.idxTemp, this.size_GD);
+            this.idxTemp = 0;
+            String[] sepStr = this.tempRead.replaceAll("\"", "").split(this.sep);
+            if (!hasTaxa)
+                this.out.write("ID_" + (this.idxTemp + 1));
+            else
+                this.out.write(sepStr[0]);
+            for (int i = hasTaxa? 1:0; i < sepStr.length; i ++) {
+                if (this.isKeep[idxTemp++])
+                    this.out.write("\t" + sepStr[i]);
+            }
+            this.out.write("\n");
+        }
+        doneProgress();
+        this.out.flush();
+        this.out.close();
+    }
+
+    //==============================================================================//
+    //==============================================================================//
+    //==============================================================================//
+    //==============================================================================//
+    //==============================================================================//
     private void NumToPlink (String GD_path, String GM_path) throws IOException {
         System.out.println("N -> P" + " GD: " + GD_path + " GM: " + GM_path);
-        // Determine the direction and assume both files have similar lines if GD is m by n
+        // Get seperater
+        this.sep = getSep(GD_path, 0);
+        // Determine the direction and assume both files have similar lines if GD is m by
         this.size_GD = getCountOfLines(GD_path);
         this.size_GM = getCountOfLines(GM_path);
+        this.headerLine = getNthLine(GD_path, 1, this.sep);
+        this.lineLength = this.headerLine.length;
         boolean nBym = Math.abs(this.size_GD - this.size_GM) > 1;
+        boolean hasHeader, hasTaxa;
+        // Check n, m sizes and has header or not
+        if (nBym) {
+            hasHeader = !(getNthLine(GD_path, 0, this.sep)[1].length() == 1);
+            hasTaxa = !(getNthLine(GD_path, 1, this.sep)[0].length() == 1);
+            this.nCount = (hasHeader) ? this.size_GD - 1 : this.size_GD;
+            this.mCount = (hasTaxa) ? this.lineLength - 1 : this.lineLength;
+        } else {
+            hasTaxa = !(getNthLine(GD_path, 0, this.sep)[1].length() == 1);
+            hasHeader = !(getNthLine(GD_path, 1, this.sep)[0].length() == 1);
+            this.mCount = (hasHeader) ? this.size_GD - 1 : this.size_GD;
+            this.nCount = (hasTaxa) ? this.lineLength - 1 : this.lineLength;
+        }
         // ========= ========= ========= ========= Map ========= ========= ========= =========
         // Read the first line, catch sep
         this.sep = getSep(GM_path, 0);
@@ -301,18 +418,16 @@ abstract class Cpu_SuperConverter {
                     this.out.write("Family_" + row + "\t" + "Sample_" + row + "\t0\t0\t0\t0\t");
                 // If contain taxa, starts from the second column
                 for (int col = hasTaxa ? 1 : 0; col < this.table_GD[row].length; col ++) {
-                    switch (this.table_GD[row][col]) {
-                        case "0" :
+                    if (this.table_GD[row][col].equals("NA"))
+                        this.out.write(this.isNAFill? "A T" : "0 0");
+                    else {
+                        double gd= Double.parseDouble(this.table_GD[row][col]);
+                        if (gd < 0.7)
                             this.out.write("A A");
-                            break;
-                        case "1" :
+                        else if(gd > 0.7 & gd < 1.3)
                             this.out.write("A T");
-                            break;
-                        case "2" :
+                        else
                             this.out.write("T T");
-                            break;
-                        case "NA" :
-                            this.out.write(this.isNAFill? "A T" : "0 0");
                     }
                     // If haven't reached the end of the row, seperate with tab
                     if (col != this.table_GD[row].length - 1)
@@ -323,6 +438,9 @@ abstract class Cpu_SuperConverter {
             }
             this.lastPosition += this.currentWindow;
         }
+        doneProgress();
+        this.out.flush();
+        this.out.close();
     }
 
     private void NumToPlinkMByN (String path) throws IOException {
@@ -382,7 +500,6 @@ abstract class Cpu_SuperConverter {
                 }
                 countLine++;
             }
-
             // Write the temp into the output file (tempIndex is the index of last letter, so plus one)
             for (int n = 0; n < tempIndex + 1; n ++) {
                 out.write("Family_" + ((lastPosition / 2)  + 1 + n) + "\t" + "Sample_" + ((lastPosition / 2)  + 1 + n)  + "\t0\t0\t0\t0\t");
@@ -408,7 +525,9 @@ abstract class Cpu_SuperConverter {
             countLine = 0;
             lastPosition += readSize;
         }
-
+        doneProgress();
+        this.out.flush();
+        this.out.close();
     }
     //==============================================================================//
     //==============================================================================//
@@ -1307,5 +1426,46 @@ abstract class Cpu_SuperConverter {
 //        20     1230237 .         T      .       47   PASS   NS=3;DP=13;AA=T                   GT:GQ:DP:HQ 0|0:54:7:56,60 0|0:48:4:51,51 0/0:61:2
 //        20     1234567 microsat1 GTCT   G,GTACT 50   PASS   NS=3;DP=9;AA=G                    GT:GQ:DP    0/1:35:4       0/2:17:2       1/1:40:3
     }
+
+    private boolean[] doQCNUM (String GD_path, boolean hasHeader, boolean hasTaxa) throws IOException {
+        boolean[] iskeep = new boolean[this.mCount];
+        this.idxTemp = 0;
+        this.lastPosition = hasTaxa ? 1 : 0;
+        int sum = 0;
+        int countNA = 0;
+        double mafTemp = 0;
+        double naTemp = 0;
+        iniProgress("Scanning Markers",
+                String.format("Marker %d ~ %d : ", 1, this.mCount));
+        while (this.lastPosition < this.lineLength) {
+            updateProgress(this.lastPosition, this.lineLength);
+            // Reset reader to the first line and skip the header line
+            resetToNthLine(GD_path, (hasHeader) ? 1 : 0);
+            // sub_m by n (1st column may be marker name if hasHeader
+            this.table_GD = getSubTransposedGD(this.lastPosition, this.sub_m, this.nCount, this.lineLength, this.sep);
+            this.currentWindow = this.table_GD.length;
+            // Iterate over rows(sub_marker) in table_GD
+            for (int i = 0; i < this.currentWindow; i ++) {
+                sum = 0;
+                countNA = 0;
+                // Iterate over columns(sample) in table_GD
+                for (int j = 0; j < this.nCount; j++) {
+//                for (int j = 399; j < this.nCount; j++) {
+                    if (table_GD[i][j].toUpperCase().equals("NA"))
+                        countNA ++;
+                    else
+                        sum += Integer.parseInt(table_GD[i][j]);
+                }
+                mafTemp = sum / ((double) (2 * this.nCount));
+                mafTemp = Math.min(mafTemp, 1 - mafTemp);
+                naTemp = countNA/((double)(this.nCount));
+                iskeep[this.idxTemp++] = (mafTemp > this.rateMAF) && (naTemp < this.rateNA);
+            }
+            this.lastPosition += this.currentWindow;
+        }
+        doneProgress();
+        return iskeep;
+    }
 }
+
 

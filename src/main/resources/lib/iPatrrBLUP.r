@@ -6,23 +6,38 @@ tryCatch({
   library(data.table)
   library(magrittr)
   library(ggplot2)
-  library(gridExtra)
-  library(grid)
   source("http://zzlab.net/iPat/Function_iPat.R")
   cat("Done\n")
-
-arg = c("-wd", "~/Desktop/Test/",
-        "-project", "project1",
-        "-phenotype", "data.txt",
-        "-pSelect", "t2sepphenotypesep",
-        "-genotype", "data.dat",
-        "-cov", "data.cov",
-        "-cSelect", "cov2sepcov1sep",
-        "-gwas", "FALSE", "3",
-        "-gs", "TRUE", "TRUE", "5", "10")
+  ANALYSIS = "rrBLUP"
 
 # Input arguments
   arg = commandArgs(trailingOnly=TRUE)
+  # ======= Test Code ====== #
+  # rm(list=ls())
+  # arg = c("-gs", "TRUE", "5", "1",
+  #         "-gwas", "TRUE", "0.05",
+  #         "-arg", "BRR", "1200", "500",
+  #         "-wd", "/Users/jameschen/Desktop/Test/iPatDEMO",
+  #         "-project", "rrBLUPbyFarm",
+  #         "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.txt",
+  #         "-pSelect", "y75sepy25sep",
+  #         # "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/data.txt",
+  #         # "-pSelect", "EarHTsepEarDiasep",
+  #         "-cov", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.cov",
+  #         "-cSelect", "C1sep",
+  #         "-genotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.dat",
+  #         "-kin", "NA",
+  #         "-map", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.map")
+  # trait = dataP$name[1]
+  # X = finalG
+  # Y = finalP
+  # # C = finalC
+  # C = NULL
+  # iter = 1
+  # fold = 1
+  # K = finalK
+  # YTemp = yTemp
+  # ======= Test Code ====== #
   for (i in 1 : length(arg)) {
     switch (arg[i],
       "-wd" = {
@@ -58,19 +73,21 @@ arg = c("-wd", "~/Desktop/Test/",
       "-map" = {
         cat("   Loading map ...")
         i = i + 1
-        if (grepl("NA", arg[i]))
+        if (grepl("NA", arg[i])) {
           rawMap = NULL
-        else
+        } else {
           rawMap = fread(arg[i])
+        }
         cat("Done\n")
       },
       "-cov" = {
         cat("   Checking covariates ...")
         i = i + 1
-        if (grepl("NA", arg[i]))
+        if (grepl("NA", arg[i])) {
           rawCov = NULL
-        else
+        } else {
           rawCov = fread(arg[i])
+        }
         # If have taxa column
         if (is.character(rawCov[[1]]))
           rawCov = rawCov[ ,-1]
@@ -84,14 +101,14 @@ arg = c("-wd", "~/Desktop/Test/",
       "-gwas" = {
         i = i + 1
         isGWASAssist = as.logical(arg[i])
-        i = i + 1
-        cutoff = as.numeric(arg[i])
+        cutoff = 0.05
       },
       "-gs" = {
         i = i + 1
         isValid = as.logical(arg[i])
-        i = i + 1
-        isRaw = as.logical(arg[i])
+        # i = i + 1
+        # isRaw = as.logical(arg[i])
+        isRaw = TRUE
         i = i + 1
         countFold = as.numeric(arg[i])
         i = i + 1
@@ -99,6 +116,7 @@ arg = c("-wd", "~/Desktop/Test/",
       }
     )
   }
+  rawKin = NULL
 
 # Subset Phenotype
   cat("   Subsetting phenotype ...")
@@ -112,7 +130,7 @@ arg = c("-wd", "~/Desktop/Test/",
 
 # Iterate over traits
   for (trait in dataP$name) {
-    cat(sprintf("   rrBLUP is computing for trait %s ...", trait))
+    cat(sprintf("   rrBLUP is computing for trait %s ...\n", trait))
     # Collect covariates
       Cov = getCovFromGWAS(isGWASAssist, cutoff,
         sizeN = sizeN, dataCov = dataC,
@@ -126,17 +144,18 @@ arg = c("-wd", "~/Desktop/Test/",
           finalG = rawGenotype[idxNonNA, ]
           finalC = Cov[idxNonNA, ]
         # Run Validation
-          CVByRRBLUP(finalP, finalG, finalC, isRaw,
+          runCrossValidation(finalP, finalG, finalC, isRaw,
                     countFold, countIter, project, trait)
     # No validation
       } else {
           finalP = dataP$data[[trait]]
           finalG = rawGenotype
           finalC = Cov
-          RunByRRBLUP(finalP, finalG, finalC, taxa, project, trait)
+          runRRBLUP(finalP, finalG, finalC, taxa, project, trait)
       }
+    cat("Done\n")
   }
-  print(warnings())
+  # print(warnings())
 }, error = function(e){
   stop(e)
 })

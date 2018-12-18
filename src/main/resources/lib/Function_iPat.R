@@ -1,15 +1,19 @@
-########################### iPat Specific Starts  #############################
 getSelected <- function(data, strSelect) {
   if (!is.null(data)) {
-    name = strSelect %>% strsplit(split = "sep") %>% do.call(c, .)
-    data = data[ ,..name]
+    if (!is.na(strSelect)) {
+      name = strSelect %>% strsplit(split = "sep") %>% do.call(c, .)
+      data = data[ ,..name]
+    } else {
+      name = names(data)
+    }
     size = ncol(data)
     return (list(data = data, name = name, size = size))
   } else {
-    return (list(data = data.table(NULL), name = character(0), size = 0))
+    return (list(data = NULL, name = character(0), size = 0))
   }
 }
 
+########################### iPat Genomic Selection  #############################
 getCovFromGWAS <- function(isGWASAssit, cutoff,
                             sizeN, dataCov,
                             nameProject, nameTrait,
@@ -43,10 +47,10 @@ getCovFromGWAS <- function(isGWASAssit, cutoff,
         sizeQTN = 1
     ### 1+ QTNs
       } else {
-        cGWAS = genotype[ ,..indexSig]
+        cGWAS = genotype[ ,..indexSig] %>% as.data.frame()
         ## LD Remove
         LD_remain = Blink.LDRemove(cGWAS, .7, indexSig, orientation = "col")
-        cGWAS = data.frame(cGWAS[ ,..LD_remain])
+        cGWAS = cGWAS[ ,LD_remain]
         sizeQTN = length(LD_remain)
       }
       cat("Done\n")
@@ -54,25 +58,139 @@ getCovFromGWAS <- function(isGWASAssit, cutoff,
     cGWAS = NULL
     sizeQTN = 0
   }
-# Prevent c > n
+  # Prevent c > n
   ## if c + qtn > n
-    if (sizeN < sizeCov + sizeQTN) {
-      diff = sizeCov + sizeQTN - sizeN
-      return (data.frame(cov, cGWAS[ ,1 : (sizeQTN - diff)]))
+  if (sizeN < sizeCov + sizeQTN) {
+    diff = sizeCov + sizeQTN - sizeN
+    return (data.frame(cov, cGWAS[ ,1 : (sizeQTN - diff)]))
   ## both cov nor qtn has size greater than 0
-    } else if (sizeCov == 0 && sizeQTN == 0) {
-      return (NULL)
+  } else if (sizeCov != 0 && sizeQTN != 0) {
+    return (data.frame(cov, cGWAS))
   ## if c + qtn <= n
-    } else if (sizeQTN != 0){
-      return (data.frame(cov, cGWAS))
+  } else if (sizeCov == 0 && sizeQTN != 0) {
+    return (cGWAS)
   ## if only c
-    } else if (sizeCov != 0 && sizeQTN == 0)
-      return (data.frame(cov))
+  } else if (sizeCov != 0 && sizeQTN == 0) {
+    return (cov)
+  } else if (sizeCov == 0 && sizeQTN == 0) {
+    return (NULL)
+  }
 }
 
+runCrossValidation <- function(finalP, finalG, finalC, isRaw, countFold, countIter, project, trait) {
+  # write header
+    nameTableRaw = sprintf("iPat_%s_%s_raw", project, trait)
+    nameTableAcc = sprintf("iPat_%s_%s_acc", project, trait)
+    if (isRaw)
+      cat("obs\tpre\ttrait\titer\tfold\n", file = paste0(nameTableRaw, ".txt"))
+    cat("r\trmse\ttrait\titer\tfold\n", file = paste0(nameTableAcc, ".txt"))
+  # get sample size
+    n = length(finalP)
+  # For GBLUP
+    if (!is.null(rawKin)) {
+      finalK = rawKin
+    } else {
+      finalK = A.mat(as.matrix(finalG))
+    }
+  # loop over iterations
+    for (iter in 1:countIter) {
+      idxFold = rep(1 : countFold, length = n) %>% sample()
+    # loop over fold
+      for (fold in 1:countFold) {
+      # Progress Message
+        cat(sprintf("iter : %d/%d, fold : %d/%d\n",
+                        iter, countIter, fold, countFold))
+      ## Get index for testing set
+        idxTest = idxFold == fold
+      ## Get phenotype for testing and one with missing value
+        yTemp = finalP
+        yTemp[idxTest] = NA
+      ## Predict
+        switch (ANALYSIS,
+          "gBLUP" = {
+            prediction = getAccByGBLUP(finalG, finalP, finalC, finalK, yTemp, idxTest)
+          },
+          "rrBLUP" = {
+            prediction = getAccByRRBLUP(finalG, finalP, finalC, yTemp, idxTest)
+          },
+          "BGLR" = {
+            prediction = getAccByBGLR(finalG, finalP, finalC, yTemp, idxTest)
+          }
+        )
+      ## Export
+        if (isRaw)
+          writeRaw(finalP[idxTest], prediction$pre, trait, iter, fold, paste0(nameTableRaw, ".txt"))
+        writeAcc(prediction$r, prediction$rmse, trait, iter, fold, paste0(nameTableAcc, ".txt"))
+      }
+    }
+  # Plot
+    plotCV(isRaw, nameTableRaw, nameTableAcc)
+}
 
-# Run RRBLUP
-RunByRRBLUP <- function(finalP, finalG, finalC, taxa, project, trait) {
+rmse <- function(x, y) {
+  sqErr = sum((x - y)^2)
+  rmse = sqrt(sqErr/length(y))
+  return (rmse)
+}
+
+## ---------------------------- gBLUP ---------------------------- ##
+runGBLUP <- function(finalP, finalG, finalC, taxa, project, trait) {
+  # Write header
+  nameTableMarker = sprintf("iPat_%s_%s_marker.txt", project, trait)
+  nameTableGEBV = sprintf("iPat_%s_%s_GEBV", project, trait)
+  nameTableStat = sprintf("iPat_%s_%s_Stat.txt", project, trait)
+  cat("Stat\tValue\n", file = nameTableStat)
+  # Compute kinship
+  if (!is.null(rawKin)) {
+    finalK = rawKin
+  } else {
+    finalK = A.mat(as.matrix(finalG))
+  }
+  # Run rrBLUP for gBLUP
+  gblup = mixed.solve(finalP, X = finalC, K = finalK)
+  # Calculate random effect
+  Zu = as.matrix(gblup$u)
+  # Calculate fixed effect
+  etd.beta = as.matrix(gblup$beta)
+  # Calculate BLUE and BLUP
+  if (!is.null(finalC)) {
+    Xb = as.matrix(finalC) %*% etd.beta
+  } else {
+    Xb = matrix(etd.beta, ncol = 1, nrow = nrow(finalG))
+  }
+  GEBV = Zu + Xb
+  # Export marker effects
+  write.table(x = data.frame(u = Zu), file = nameTableMarker, quote = F,
+              row.names = T, col.names = T, sep = "\t")
+  # Export GEBVs
+  write.table(x = data.frame(taxa, GEBV), file = paste0(nameTableGEBV, ".txt"), quote = F,
+              row.names = F, col.names = T, sep = "\t")
+  # Export Stats
+  beta.name = names(gblup$beta)
+  Stat = c("Vu", "Ve", paste0("beta.", beta.name), "LL")
+  write.table(data.frame(Stat,
+                         Value = c(gblup$Vu, gblup$Ve, gblup$beta, gblup$LL)),
+              file = nameTableStat, append = TRUE, row.names = F, col.names = F, sep = "\t")
+  # Export plot
+  plotHistBV(nameTableGEBV)
+}
+
+getAccByGBLUP <- function(X, Y, C, K, YTemp, idxTest) {
+  gblup = mixed.solve(YTemp, X = C, K = K)
+  Zu = as.matrix(gblup$u[idxTest])
+  etd.beta = as.matrix(gblup$beta)
+  if (!is.null(C))
+    Xb = as.matrix(C)[idxTest, ] %*% etd.beta
+  else
+    Xb = matrix(etd.beta, ncol = 1, nrow = sum(idxTest))
+  gebv = Xb + Zu
+  acc_r = cor(gebv, Y[idxTest]) %>% c()
+  acc_rmse = rmse(gebv, Y[idxTest])
+  return (list(r = acc_r, rmse = acc_rmse, pre = gebv))
+}
+
+## ---------------------------- rrBLUP ---------------------------- ##
+runRRBLUP <- function(finalP, finalG, finalC, taxa, project, trait) {
   # Write header
   nameTableMarker = sprintf("iPat_%s_%s_marker.txt", project, trait)
   nameTableGEBV = sprintf("iPat_%s_%s_GEBV", project, trait)
@@ -86,10 +204,14 @@ RunByRRBLUP <- function(finalP, finalG, finalC, taxa, project, trait) {
   etd.beta = as.matrix(rrblup$beta)
   # Calculate BLUE and BLUP
   Zu = as.matrix(finalG) %*% etd.u
-  Xb = as.matrix(finalC) %*% etd.beta
+  if (!is.null(finalC)) {
+    Xb = as.matrix(finalC) %*% etd.beta
+  } else {
+    Xb = matrix(etd.beta, ncol = 1, nrow = nrow(finalG))
+  }
   GEBV = Zu + Xb
   # Export marker effects
-  write.table(x = data.frame(etd.u), file = nameTableMarker, quote = F,
+  write.table(x = data.frame(u = etd.u), file = nameTableMarker, quote = F,
               row.names = T, col.names = T, sep = "\t")
   # Export GEBVs
   write.table(x = data.frame(taxa, GEBV), file = paste0(nameTableGEBV, ".txt"), quote = F,
@@ -100,6 +222,66 @@ RunByRRBLUP <- function(finalP, finalG, finalC, taxa, project, trait) {
   write.table(data.frame(Stat,
                          Value = c(rrblup$Vu, rrblup$Ve, rrblup$beta, rrblup$LL)),
               file = nameTableStat, append = TRUE, row.names = F, col.names = F, sep = "\t")
+  # Export plot
+  plotHistBV(nameTableGEBV)
+}
+
+getAccByRRBLUP <- function(X, Y, C, YTemp, idxTest) {
+  rrblup = mixed.solve(YTemp, X = C, Z = X)
+  etd.u = as.matrix(rrblup$u)
+  etd.beta = as.matrix(rrblup$beta)
+  Zu = as.matrix(X[idxTest, ]) %*% etd.u
+  if (!is.null(C))
+    Xb = as.matrix(C)[idxTest, ] %*% etd.beta
+  else
+    Xb = matrix(etd.beta, ncol = 1, nrow = sum(idxTest))
+  gebv = Xb + Zu
+  acc_r = cor(gebv, Y[idxTest]) %>% c()
+  acc_rmse = rmse(gebv, Y[idxTest])
+  return (list(r = acc_r, rmse = acc_rmse, pre = gebv))
+}
+
+## ---------------------------- BGLR ---------------------------- ##
+runBGLR <- function(finalP, finalG, finalC, taxa, project, trait) {
+  # Write header
+  nameTableMarker = sprintf("iPat_%s_%s_marker.txt", project, trait)
+  nameTableGEBV = sprintf("iPat_%s_%s_GEBV", project, trait)
+  nameBGLR = sprintf("iPat_%s_", project)
+  # Run BGLR
+  ETA = list(list(X = finalG, model = modelBGLR))
+  if (!is.null(finalC)) {
+    ETA[[2]] = list(X = finalC, model = "FIXED")
+  }
+  bglr = BGLR(y = finalP, ETA = ETA, verbose = FALSE, saveAt = nameBGLR,
+              nIter = nIter, burnIn = burnIn)
+  # GEBVs
+  GEBV = bglr$yHat
+  # Export marker effects
+  write.table(x = data.frame(u = bglr$ETA[[1]]$b), file = nameTableMarker, quote = F,
+              row.names = T, col.names = T, sep = "\t")
+  # Export GEBVs
+  write.table(x = data.frame(taxa, GEBV = bglr$yHat), file = paste0(nameTableGEBV, ".txt"), quote = F,
+              row.names = F, col.names = T, sep = "\t")
+  # Export plot
+  plotHistBV(nameTableGEBV)
+}
+
+getAccByBGLR <- function(X, Y, C, YTemp, idxTest) {
+  nameBGLR = sprintf("iPat_%s_", project)
+  ETA = list(list(X = X, model = modelBGLR))
+  if (!is.null(C)) {
+    ETA[[2]] = list(X = C, model = "FIXED")
+  }
+  bglr = BGLR(y = YTemp, ETA = ETA, verbose = FALSE, saveAt = nameBGLR,
+              nIter = nIter, burnIn = burnIn)
+  gebv = bglr$yHat[idxTest]
+  acc_r = cor(gebv, Y[idxTest]) %>% c()
+  acc_rmse = rmse(gebv, Y[idxTest])
+  return (list(r = acc_r, rmse = acc_rmse, pre = gebv))
+}
+
+## ---------------------------- Plotting ---------------------------- ##
+plotHistBV <- function(nameTableGEBV) {
   # Plotting
   dataGEBV = fread(paste0(nameTableGEBV, ".txt"))
   sizeBin = (range(dataGEBV$GEBV) %>% diff())/20
@@ -110,42 +292,7 @@ RunByRRBLUP <- function(finalP, finalG, finalC, taxa, project, trait) {
   ggsave(plot = plotGEBV, file = paste0(nameTableGEBV, ".png"), height = 10, width = 14)
 }
 
-# Run RRBLUP Validation
-CVByRRBLUP <- function(finalP, finalG, finalC, isRaw, countFold, countIter, project, trait) {
-  # write header
-  nameTableRaw = sprintf("iPat_%s_%s_raw", project, trait)
-  nameTableAcc = sprintf("iPat_%s_%s_acc", project, trait)
-  if (isRaw)
-    cat("obs\tpre\ttrait\titer\tfold\n", file = paste0(nameTableRaw, ".txt"))
-  cat("r\trmse\ttrait\titer\tfold\n", file = paste0(nameTableAcc, ".txt"))
-  # get sample size
-  n = length(finalP)
-  # loop over iterations
-  for (iter in 1:countIter) {
-    idxFold = rep(1 : countFold, length = n) %>% sample()
-    # loop over fold
-    for (fold in 1:countFold) {
-      # Progress Message
-      message(sprintf("iter : %d/%d, fold : %d/%d",
-                      iter, countIter, fold, countFold))
-      ## Get index for testing set
-      idxTest = idxFold == fold
-      ## Get phenotype for testing and one with missing value
-      yTest = finalP[idxTest]
-      yTemp = finalP
-      yTemp[idxTest] = NA
-      ## Get genotype for testing
-      xTest = finalG[idxTest, ]
-      ## Get convariate for testing
-      cTest = finalC[idxTest, ]
-      ## Predict
-      prediction = getAccByRRBLUP(finalG, xTest, yTemp, yTest, finalC, cTest)
-      ## Export
-      if (isRaw)
-        writeRaw(yTest, prediction$pre, trait, iter, fold, paste0(nameTableRaw, ".txt"))
-      writeAcc(prediction$r, prediction$rmse, trait, iter, fold, paste0(nameTableAcc, ".txt"))
-    }
-  }
+plotCV <- function(isRaw, nameTableRaw, nameTableAcc) {
   # Plotting
   if (isRaw) {
     dataRaw = fread(paste0(nameTableRaw, ".txt"))
@@ -164,23 +311,13 @@ CVByRRBLUP <- function(finalP, finalG, finalC, isRaw, countFold, countIter, proj
                         type = rep(c("Correlation (r)", "RMSE"), each = nrow(dataAcc)))
   plotAcc = ggplot(data = dataAcc2, aes(x = value, fill = type)) +
             labs(title = "Distribution of Prediction Accuracy")  +
-            geom_density(alpha= .5) +
+            geom_density(alpha = .5) +
             facet_grid(. ~ type, scales = "free") +
             theme(text = element_text(size = 20))
   ggsave(plot = plotAcc, file = paste0(nameTableAcc, ".png"), height = 10, width = 14)
 }
 
-getAccByRRBLUP <- function(x, xTest, y, yTest, c, cTest) {
-  rrblup = mixed.solve(y, X = c, Z = x)
-  etd.u = as.matrix(rrblup$u)
-  etd.beta = as.matrix(rrblup$beta)
-  Zu = as.matrix(xTest) %*% etd.u
-  Xb = as.matrix(cTest) %*% etd.beta
-  accuracy = cor(Zu + Xb, yTest) %>% c()
-  rmse = rmse(Zu+Xb, yTest)
-  return (list(r = accuracy, rmse = rmse, pre = Zu + Xb))
-}
-
+## ---------------------------- Export docs ---------------------------- ##
 writeRaw <- function(obs, pre, trait, iter, fold, filename) {
   fwrite(data.table(round(obs, 4), round(pre, 4), trait, iter, fold),
       file = filename,
@@ -193,22 +330,8 @@ writeAcc <- function(r, rmse, trait, iter, fold, filename) {
       file = filename, append = TRUE)
 }
 
-rmse <- function(x, y) {
-  sqErr = sum((x - y)^2)
-  rmse = sqrt(sqErr/length(y))
-  return (rmse)
-}
-
-getAccByGBLUP <- function(x, nTrain, y, yTest) {
-  kinship = A.mat(x)
-  gblup = mixed.solve(y, K = kinship)
-  gebv = gblup$u[-c(1:nTrain)]
-  accuracy = cor(gebv, yTest) %>% c()
-  return (accuracy)
-}
 
 ############################# iPat Specific Ends ###############################
-
 
 `iPat.QQ` <-
 function(P.values, plot.type = "log_P_values", filename = "_", name.of.trait = "Trait", DPP = 50000, plot.style = "rainbow"){

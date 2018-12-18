@@ -11,12 +11,8 @@ import java.io.IOException;
 import java.util.List;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
 
-public class GUI_Objs extends JPanel implements ActionListener,MouseMotionListener, MouseListener, DropTargetListener {
+public class GUI_Objs extends JPanel implements ActionListener,MouseMotionListener, MouseListener {
     Obj_Manager iPatOB;
     // MouseListener (object)
     int indexOBPress;
@@ -51,7 +47,7 @@ public class GUI_Objs extends JPanel implements ActionListener,MouseMotionListen
     // repaint timer
     Timer timerRepaint;
 
-    public GUI_Objs(int width, int height) {
+    public GUI_Objs(int width, int height) throws IOException, InterruptedException {
         // Instantiate
         iPatOB = new Obj_Manager();
         timerRotate = new Timer(5, this);
@@ -68,7 +64,6 @@ public class GUI_Objs extends JPanel implements ActionListener,MouseMotionListen
         timerRepaint = new Timer(500, this);
         timerRepaint.start();
         // Add listener
-        new DropTarget(this, DnDConstants.ACTION_COPY, this);
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
         // keymep
@@ -77,6 +72,13 @@ public class GUI_Objs extends JPanel implements ActionListener,MouseMotionListen
         resetHoverStatus();
         resetSelectStatus();
         resetPressStatus();
+        // Opening
+        Point ptCenter = iPat.WINDOWSIZE.getCenterPoint();
+        this.iPatOB.addiModule(
+                (int) ptCenter.getX() - iPat.IMGLIB.getImage("module").getWidth(this) / 2,
+                (int) ptCenter.getY() - iPat.IMGLIB.getImage("module").getHeight(this) / 2);
+        repaint();
+        this.iPatOB.getObjectN(0).setName("Right Click to Create new Project");
     }
 
     void setupKeyMap() {
@@ -88,8 +90,6 @@ public class GUI_Objs extends JPanel implements ActionListener,MouseMotionListen
             public void actionPerformed(ActionEvent e) {
                 if (isOBSelected())
                     iPatOB.removeObject(indexOBSelect);
-                else if (isLineSelected())
-                    iPatOB.removeLine(indexLineSelect);
                 resetSelectStatus();
                 resetHoverStatus();
                 System.out.println("Select object : " + indexOBSelect);
@@ -261,58 +261,6 @@ public class GUI_Objs extends JPanel implements ActionListener,MouseMotionListen
         g2d.dispose();
     }
 
-    void buildLink(int target) {
-        Obj_Super obSelf = this.iPatOB.getObjectN(this.indexOBPress);
-        Obj_Super obTarget = this.iPatOB.getObjectN(target);
-        // Draw line
-        if (!obSelf.isContainMO() || !obTarget.isContainMO())
-            this.iPatOB.addLink(this.indexOBPress, target);
-        // 1. w/ MO - w/ MO
-        if (obSelf.isContainMO() && obTarget.isContainMO()) {
-            // Do nothing
-        // 2. w/o MO - w/ MO
-        } else if (!obSelf.isContainMO() && obTarget.isContainMO()) {
-            if (obSelf.isGroup() && obTarget.isGroup()) {
-                this.iPatOB.setGrOfGrIndex(obSelf.getGrIndex(), obTarget.getGrIndex());
-                this.iPatOB.setGrOfContainMO(obSelf.getGrIndex(), true);
-            } else if (!obSelf.isGroup() && obTarget.isGroup()) {
-                this.iPatOB.setGrIndex(this.indexOBPress, obTarget.getGrIndex());
-                this.iPatOB.setContainMO(this.indexOBPress, true);
-            } else if (obSelf.isGroup() && !obTarget.isGroup()) {
-                this.iPatOB.setGrIndex(target, obSelf.getGrIndex());
-                this.iPatOB.setGrOfContainMO(obSelf.getGrIndex(), true);
-            } else if (!obSelf.isGroup() && !obTarget.isGroup()) {
-                this.iPatOB.addNewGroup(this.indexOBPress, target);
-                this.iPatOB.setContainMO(this.indexOBPress, true);
-            }
-        // 3. w/ MO - w/o MO
-        } else if (obSelf.isContainMO() && !obTarget.isContainMO()) {
-            if (obSelf.isGroup() && obTarget.isGroup()) {
-                this.iPatOB.setGrOfGrIndex(obTarget.getGrIndex(), obSelf.getGrIndex());
-                this.iPatOB.setGrOfContainMO(obTarget.getGrIndex(), true);
-            } else if (!obSelf.isGroup() && obTarget.isGroup()) {
-                this.iPatOB.setGrIndex(this.indexOBPress, obTarget.getGrIndex());
-                this.iPatOB.setGrOfContainMO(obTarget.getGrIndex(), true);
-            } else if (obSelf.isGroup() && !obTarget.isGroup()) {
-                this.iPatOB.setGrIndex(target, obSelf.getGrIndex());
-                this.iPatOB.setContainMO(target, true);
-            } else if (!obSelf.isGroup() && !obTarget.isGroup()) {
-                this.iPatOB.addNewGroup(this.indexOBPress, target);
-                this.iPatOB.setContainMO(target, true);
-            }
-        // 4. w/o MO - w/o MO
-        } else if (!obSelf.isContainMO() && !obTarget.isContainMO()) {
-            if (obSelf.isGroup() && obTarget.isGroup())
-                this.iPatOB.setGrOfGrIndex(obTarget.getGrIndex(), obSelf.getGrIndex());
-            else if (!obSelf.isGroup() && obTarget.isGroup())
-                this.iPatOB.setGrIndex(this.indexOBPress, obTarget.getGrIndex());
-            else if (obSelf.isGroup() && !obTarget.isGroup())
-                this.iPatOB.setGrIndex(target, obSelf.getGrIndex());
-            else if (!obSelf.isGroup() && !obTarget.isGroup())
-                this.iPatOB.addNewGroup(this.indexOBPress, target);
-        }
-    }
-
     @Override
     public void mouseDragged(MouseEvent e) {
         // Get current point
@@ -352,6 +300,15 @@ public class GUI_Objs extends JPanel implements ActionListener,MouseMotionListen
         this.indexOBHover = this.iPatOB.getPointedObject(e);
         this.indexLineHover = this.iPatOB.getPointedLine(e);
         this.indexGrHover = this.iPatOB.getPointedGroup(e);
+        if (this.isHoverOnOB())
+            ((Obj_Module)this.iPatOB.getObjectN(this.indexOBHover)).showProgress(e);
+        else {
+            for (int i = 0; i < this.iPatOB.getModuleCount(); i ++) {
+                if (this.indexOBSelect == this.iPatOB.getModuleN(i).getIndex())
+                    continue;
+                this.iPatOB.getModuleN(i).hideProgress();
+            }
+        }
         repaint();
     }
 
@@ -396,9 +353,11 @@ public class GUI_Objs extends JPanel implements ActionListener,MouseMotionListen
         }
         // Click on right
         if (SwingUtilities.isRightMouseButton(e)) {
-            // if on a object, drop the menu
-            if (this.isHoverOnOB())
-                this.iPatOB.showMenu(this.indexOBHover, e);
+            try {
+                new GUI_Config(1100, 850, (Obj_Module) this.iPatOB.getObjectN(this.indexOBHover));
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
+            }
         // Click on left
         } else if (SwingUtilities.isLeftMouseButton(e)) {
 
@@ -410,19 +369,11 @@ public class GUI_Objs extends JPanel implements ActionListener,MouseMotionListen
     public void mouseReleased(MouseEvent e) {
         // press and release on the object
         if (this.isPressOnOB()) {
-            System.out.println("===== relase ===== ");
-            System.out.println("index : " + indexOBPress);
-            this.iPatOB.printStat();
-            // object nearby
-            if (this.isClosestFound())
-                this.buildLink(this.indexClosest);
             // assign select from press
             this.indexOBSelect = this.indexOBPress == this.indexOBSelect ? -1 : this.indexOBPress;
             this.indexLineSelect = -1;
         // press and release on the line
         } else if (this.isPressOnLine()) {
-            System.out.println("===== relase line ===== ");
-            System.out.println("index : " + indexLinePress);
             // assign select from press
             this.indexLineSelect = this.indexLinePress == this.indexLineSelect ? -1 : this.indexLinePress;
             this.indexOBSelect = -1;
@@ -462,61 +413,8 @@ public class GUI_Objs extends JPanel implements ActionListener,MouseMotionListen
     @Override
     public void mouseExited(MouseEvent e) {
         System.out.println("Mouse exit");
-        this.iPatOB.printStat();
     }
 
-    @Override
-    public void dragEnter(DropTargetDragEvent dtde) {
-        System.out.println("Drag enter");
-    }
-
-    @Override
-    public void dragOver(DropTargetDragEvent dte) {
-        Point pt = dte.getLocation();
-        System.out.println("Drag over");
-    }
-
-    @Override
-    public void dropActionChanged(DropTargetDragEvent dtde) {
-        System.out.println("Drag change");
-    }
-
-    @Override
-    public void dragExit(DropTargetEvent dte) {
-        System.out.println("Drag exit");
-    }
-
-    @Override
-    public void drop(DropTargetDropEvent dtde) {
-        dtde.acceptDrop(DnDConstants.ACTION_COPY);
-        // Get dropped items' data
-        Transferable transferable = dtde.getTransferable();
-        // Get the format
-        DataFlavor[] flavors = transferable.getTransferDataFlavors();
-        for (DataFlavor flavor : flavors) {
-            try {
-                // If multiple files
-                if (flavor.equals(DataFlavor.javaFileListFlavor)) {
-                    List<File> files = (List<File>) transferable.getTransferData(flavor);
-                    int count = 0;
-                    for (File file : files) {
-                        Point pointer = dtde.getLocation();
-                        int x = (int)pointer.getX() - iPat.IMGLIB.getImage("file").getWidth(this) / 2;
-                        int y = (int)pointer.getY() - iPat.IMGLIB.getImage("file").getHeight(this) / 2;
-                        this.iPatOB.addiFile(x + count*30, y + count*15, file.getAbsolutePath());
-                        count ++;
-                        // Print out the file path
-                        System.out.println("File path is '" + file.getPath() + "'.");
-                        repaint();
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        dtde.dropComplete(true);
-//      hint_drop_label.setLocation(new Point(-99, -99));
-    }
 
     @Override
     public void actionPerformed(ActionEvent e) {

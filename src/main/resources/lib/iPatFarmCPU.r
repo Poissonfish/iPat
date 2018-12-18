@@ -4,22 +4,39 @@ tryCatch({
   cat("   Loading libraries ...")
   library(bigmemory)
   library(biganalytics)
-  library(compiler)
-  library(MASS) # required for ginv
-  library(multtest)
-  library(gplots)
-  library(scatterplot3d)
-  library(R.utils)
-  library(ape)
+  library(compiler) #this library is already installed in R
   library(magrittr)
   library(data.table)
-  source("http://zzlab.net/iPat/Function_iPat.R")
-  source("http://zzlab.net/iPat/Function_GAPIT.R")
+  source("http://zzlab.net/GAPIT/gapit_functions.txt")
   source("http://zzlab.net/FarmCPU/FarmCPU_functions.txt")
   cat("Done\n")
 
 # Input arguments
   arg = commandArgs(trailingOnly=TRUE)
+  # ======= Test Code ====== #
+    # rm(list=ls())
+    # arg = c("-arg", "static", "10",
+    #         "-wd", "/Users/jameschen/Desktop/Test/iPatDEMO",
+    #         "-project", "rrBLUPbyFarm",
+    #         "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.txt",
+    #         "-pSelect", "y75sepy25sep",
+    #         # "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/data.txt",
+    #         # "-pSelect", "EarHTsepEarDiasep",
+    #         "-cov", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.cov",
+    #         "-cSelect", "C1sep",
+    #         "-genotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.dat",
+    #         "-kin", "NA",
+    #         "-map", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.map")
+    # trait = dataP$name[1]
+    # X = finalG
+    # Y = finalP
+    # # C = finalC
+    # C = NULL
+    # iter = 1
+    # fold = 1
+    # K = finalK
+    # YTemp = yTemp
+  # ======= Test Code ====== #
   for (i in 1 : length(arg)) {
     switch (arg[i],
       "-wd" = {
@@ -31,62 +48,54 @@ tryCatch({
         i = i + 1
         project = arg[i]
       },
+      "-phenotype" = {
+        cat("   Loading phenotype ...")
+        i = i + 1
+        rawPhenotype = fread(arg[i])
+        taxa = rawPhenotype[ ,1]
+        sizeN = nrow(rawPhenotype)
+        cat("Done\n")
+      },
       "-pSelect" = {
         i = i + 1
         selectP = arg[i]
       },
-      "-format" = {
-        i = i + 1
-        format = arg[i]
-      },
-      "-cSelect" = {
-        i = i + 1
-        selectC = ifelse(grepl("NA", arg[i]),
-          NA, arg[i])
-      },
-      "-phenotype" = {
-        cat("   Loading phenotype ...")
-        i = i + 1
-        phenotype = fread(arg[i])
-        taxa = phenotype[ ,1]
-        cat("Done\n")
-      },
       "-genotype" = {
         cat("   Loading genotype ...")
         i = i + 1
-        genotype = fread(arg[i])
-        if (is.character(genotype[[1]]))
-          genotype = genotype[ ,-1]
+        rawGenotype = fread(arg[i])
+        # If have taxa column
+        if (is.character(rawGenotype[[1]]))
+          rawGenotype = rawGenotype[ ,-1]
         cat("Done\n")
       },
       "-map" = {
         cat("   Loading map ...")
         i = i + 1
-        if (grepl("NA", arg[i]))
-          map = NULL
-        else
-          map = fread(arg[i])
+        if (grepl("NA", arg[i])) {
+          rawMap = NULL
+        } else {
+          rawMap = fread(arg[i])
+        }
         cat("Done\n")
       },
       "-cov" = {
         cat("   Checking covariates ...")
         i = i + 1
-        if (grepl("NA", arg[i]))
-          cov = NULL
-        else
-          cov = fread(arg[i])
-        if (is.character(cov[[1]]))
-          cov = cov[ ,-1]
+        if (grepl("NA", arg[i])) {
+          rawCov = NULL
+        } else {
+          rawCov = fread(arg[i])
+        }
+        # If have taxa column
+        if (is.character(rawCov[[1]]))
+          rawCov = rawCov[ ,-1]
         cat("Done\n")
       },
-      "-kin" = {
-        cat("   Checking kinship ...")
+      "-cSelect" = {
         i = i + 1
-        if (grepl("NA", arg[i]))
-          kin = NULL
-        else
-          kin = fread(arg[i])
-        cat("Done\n")
+        selectC = ifelse(grepl("NA", arg[i]),
+          NA, arg[i])
       },
       "-arg" = {
         i = i + 1
@@ -99,35 +108,22 @@ tryCatch({
 
 # Subset Phenotype
   cat("   Subsetting phenotype ...")
-  indexP = selectP %>%
-    strsplit(split = "sep") %>%
-    do.call(c, .) %>%
-    (function(x){which(x == "Selected") + 1})
-  nameTraits = names(phenotype)[indexP]
-  phenotype = phenotype[, ..indexP]
+  dataP = getSelected(rawPhenotype, selectP)
   cat("Done\n")
 
 # Subset Covariates
   cat("   Subsetting covariates ...")
-  if (!is.null(cov)) {
-    indexC = selectC %>%
-      strsplit(split = "sep") %>%
-      do.call(c, .) %>%
-      (function(x){which(x == "Selected")})
-    cov = data.frame(cov[, ..indexC])
-  }
+  dataC = getSelected(rawCov, selectC)
   cat("Done\n")
 
 # FarmCPU
-  for (trait in nameTraits) {
+  for (trait in dataP$name) {
     x = FarmCPU(
-          Y = data.frame(taxa, phenotype[, trait, with = FALSE]),
-          GM = map,
-          GD = genotype,
-          CV = cov,
+          Y = data.frame(taxa, dataP$data[[trait]]),
+          GM = data.frame(rawMap),
+          GD = data.frame(taxa, rawGenotype),
+          CV = dataC$data,
           method.bin = method.bin,
-          bin.size = c(5e5, 5e6, 5e7), # Default set of bin.size
-          bin.selection = seq(10, 100, 10), # Default set of bin.selection
           maxLoop = maxLoop,
           MAF.calculate = TRUE,
           memo = sprintf("%s_%s", project, trait))
@@ -135,8 +131,7 @@ tryCatch({
                 file = sprintf("%s_%s_GWAS.txt", project, trait),
                 quote = F, row.names = F, sep = "\t")
   }
-
-print(warnings())
+  # print(warnings())
 }, error = function(e) {
   stop(e)
 })

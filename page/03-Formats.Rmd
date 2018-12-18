@@ -1,0 +1,189 @@
+# Formats
+
+## Input formats
+### Genotype
+
+#### ***Hapmap***{-}
+```{r hapmap, echo = FALSE}
+knitr::kable(
+  read.table("../md/hapmap.txt", header = T)[,1:9], booktabs = TRUE,
+  caption = 'Hapmap format'
+)
+knitr::kable(
+  read.table("../md/hapmap.txt", header = T)[,10:14], booktabs = TRUE,
+  caption = 'Hapmap format (Continued)'
+)
+```
+
+#### ***VCF***{-}
+[Reference](https://samtools.github.io/hts-specs/VCFv4.1.pdf){-}
+```{r vcf, echo = FALSE}
+knitr::kable(
+  data.table::fread("../md/vcf.txt", header = T)[,1:8], booktabs = TRUE,
+  caption = 'VCF format'
+)
+knitr::kable(
+  data.table::fread("../md/vcf.txt", header = T)[,9:12], booktabs = TRUE,
+  caption = 'VCF format (Continued)'
+)
+```
+
+#### ***Numerical Data***{-}
+```{r, echo = FALSE}
+knitr::kable(
+  read.table("../md/num.txt", header = T), booktabs = TRUE,
+  caption = 'Numerical format'
+) %>% kableExtra::kable_styling(full_width = F)
+```
+
+#### ***PLINK***{-}
+[Reference](http://zzz.bwh.harvard.edu/plink/data.shtml)
+
+Missing values must be assigned as 0
+
+```{r, echo = FALSE}
+knitr::kable(
+  data.table::fread("../md/plink.txt"), booktabs = TRUE,
+  caption = 'PLINK format', format = "html"
+) %>%
+kableExtra::kable_styling(full_width = F) %>%
+gsub("<thead>.*</thead>", "", .)
+```
+
+### Phenotype
+```{r, echo = FALSE}
+knitr::kable(
+  data.table::fread("../md/phenotype.txt"), booktabs = TRUE,
+  caption = 'Phenotype format', format = "html"
+) %>%
+kableExtra::kable_styling(full_width = F)
+```
+
+### Map
+```{r, echo = FALSE}
+knitr::kable(
+  data.table::fread("../md/map.txt"), booktabs = TRUE,
+  caption = 'SNPs Map for numerical formats', format = "html"
+) %>%
+kableExtra::kable_styling(full_width = F) %>%
+kableExtra::column_spec(1, width = "10em") %>%
+kableExtra::column_spec(2, width = "10em") %>%
+kableExtra::column_spec(3, width = "10em")
+```
+
+```{r, echo = FALSE}
+knitr::kable(
+  data.table::fread("../md/plink_map.txt"), booktabs = TRUE,
+  caption = 'SNPs Map for PLINK formats', format = "html"
+) %>%
+kableExtra::kable_styling(full_width = F) %>%
+kableExtra::column_spec(1, width = "5em") %>%
+kableExtra::column_spec(2, width = "10em") %>%
+kableExtra::column_spec(3, width = "5em") %>%
+kableExtra::column_spec(4, width = "10em") %>%
+gsub("<thead>.*</thead>", "", .)
+```
+
+### Covariates
+```{r, echo = FALSE}
+knitr::kable(
+  data.table::fread("../md/covariate.txt"), booktabs = TRUE,
+  caption = 'Covariates format', format = "html"
+) %>%
+kableExtra::kable_styling(full_width = F)
+```
+
+### Kinship
+```{r, echo = FALSE}
+knitr::kable(
+  data.table::fread("../md/kinship.txt"), booktabs = TRUE,
+  caption = 'Kinship format', format = "html"
+) %>%
+kableExtra::kable_styling(full_width = F) %>%
+gsub("<thead>.*</thead>", "", .)
+```
+
+## Output formats
+### Figures
+#### ***Manhattan plot***{-}
+<p align="center"><img src = "../../md/3.2-ManhattanPlot.png" width = 700></p>
+<p align="center">Fig. Manhattan plot by GWAS</p>
+
+#### ***Scatter plot: Q-Q plot***{-}
+<p align="center"><img src = "../../md/3.2-QQPlot.png" width = 400></p>
+<p align="center">Fig. Q-Q plot by GWAS</p>
+
+#### ***Histogram: GEBV distribution***{-}
+<p align="center"><img src = "../../md/3.2-GEBVDist.png" width = 400></p>
+<p align="center">Fig. Distribution for GEBVs</p>
+
+#### ***Density function: Accuracies for GS validations***{-}
+<p align="center"><img src = "../../md/3.2-AccCV.png" width = 400></p>
+<p align="center">Fig. Distribution for prediction accuracies</p>
+
+#### ***Scatter plot: GS predictions against observations***{-}
+<p align="center"><img src = "../../md/3.2-ScatterPreObs.png" width = 400></p>
+<p align="center">Fig. Distribution for prediction accuracies</p>
+
+#### ***Histogram: Heterozygosity distribution***{-}
+<p align="center"><img src = "../../md/3.2-HeterozygotePlot.png" width = 600></p>
+<p align="center">Fig. Histograms for overview of heterozygosity</p>
+
+#### ***Phenotype overview***{-}
+<p align="center"><img src = "../../md/3.2-PhenotypePlot.png" width = 700></p>
+<p align="center">Fig. Figure for overview of phenotypes</p>
+
+### Tabular results
+#### ***GWAS report***{-}
+```{r, echo = FALSE}
+knitr::kable(
+  data.table::fread("../md/3.2-GWAS.txt"), booktabs = TRUE,
+  caption = 'Tabular GWAS results', format = "html"
+) %>%
+kableExtra::kable_styling(full_width = F)
+```
+
+regression coefficient
+
+
+#### ***GS: GEBV***{-}
+```{r, echo = FALSE}
+knitr::kable(
+  data.table::fread("../md/3.2-GEBVs.txt"), booktabs = TRUE,
+  caption = 'GEBV for each individual', format = "html"
+) %>%
+kableExtra::kable_styling(full_width = F) %>%
+kableExtra::column_spec(1, width = "10em")%>%
+kableExtra::column_spec(2, width = "10em")
+```
+
+#### ***GS: Marker effects***{-}
+```{r, echo = FALSE}
+knitr::kable(
+  data.table::fread("../md/3.2-Markers.txt", header = T), booktabs = TRUE,
+  caption = 'Genetic effects for each marker', format = "html"
+) %>%
+kableExtra::kable_styling(full_width = F) %>%
+kableExtra::column_spec(1, width = "10em")%>%
+kableExtra::column_spec(2, width = "10em")
+```
+
+#### ***GS: Validation results***{-}
+```{r, echo = FALSE}
+knitr::kable(
+  data.table::fread("../md/3.2-CV.txt"), booktabs = TRUE,
+  caption = 'Accuracies from GS validation', format = "html"
+) %>%
+kableExtra::kable_styling(full_width = F)
+```
+
+#### ***GS: Predicted values***{-}
+```{r, echo = FALSE}
+knitr::kable(
+  data.table::fread("../md/3.2-GSraw.txt"), booktabs = TRUE,
+  caption = 'List of predicted and observed phenotypes', format = "html"
+) %>%
+kableExtra::kable_styling(full_width = F)%>%
+kableExtra::column_spec(1, width = "10em")%>%
+kableExtra::column_spec(2, width = "10em")
+```

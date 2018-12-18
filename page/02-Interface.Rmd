@@ -1,0 +1,43 @@
+# Interface and Usage
+
+## Workflow
+
+### Create a new module
+### Import files
+### Choose an analysis
+### Config and run
+### Monitor progress
+### Inspect results
+
+## Global settings
+### Working directory
+<p align="center"><img src = "../../md/2.2-WD.png" width = 900></p>
+
+### Phenotype
+<p align="center"><img src = "../../md/2.2-Phenotype.png" width = 900></p>
+### Quality Control
+<p align="center"><img src = "../../md/2.2-QC.png" width = 900></p>
+
+## GWAS
+### GAPIT
+
+<p align="center"><img src = "../../md/2.3-GAPIT.png" width = 500></p>
+<p align="center">Fig. Configuration for GAPIT</p>
+### FarmCPU
+<p align="center"><img src = "../../md/2.3-FarmCPU.png" width = 500></p>
+<p align="center">Fig. Configuration for FarmCPU</p>
+### PLINK
+<p align="center"><img src = "../../md/2.3-PLINK.png" width = 500></p>
+<p align="center">Fig. Configuration for PLINK</p>
+
+## GS
+<p align="center"><img src = "../../md/2.4-Validation.png" width = 500></p>
+### gBLUP and rrBLUP
+
+### BGLR
+<p align="center"><img src = "../../md/2.4-BGLR.png" width = 500></p>
+
+## GWAS-assisted GS
+
+## Converter
+<p align="center"><img src = "../../md/2.6-Converter.png" width = 500></p>

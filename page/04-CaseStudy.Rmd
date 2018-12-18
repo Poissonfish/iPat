@@ -1,0 +1,9 @@
+# Case Study
+
+## GWAS in GAPIT
+
+## K-fold validation GS in BGLR
+
+## GWAS-assisted GS in rrBLUP
+
+## Convert VCF files to PLINK format

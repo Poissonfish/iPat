@@ -100,7 +100,7 @@ class GroupSlider extends JPanel implements ChangeListener {
     private Hashtable<Integer, JLabel> tableVal, tableLabel;
 
     GroupSlider(String name, int min, int max, int defaultVal, int minTick, int majTick) {
-        super(new MigLayout("fillx, ins 3", "[grow][grow]", "[]"));
+        super(new MigLayout("fillx, ins 5", "[grow][grow]", "[]"));
         this.name = new JLabel(name + " :");
         this.value = new JLabel(Integer.toString(defaultVal));
         this.slider = new JSlider(JSlider.HORIZONTAL, min, max, defaultVal);
@@ -116,7 +116,7 @@ class GroupSlider extends JPanel implements ChangeListener {
     }
 
     GroupSlider(String name, int defaultVal, String[] tableVal, String[] tableLabel) {
-        super(new MigLayout("fillx, ins 3", "[grow][grow]", "[]"));
+        super(new MigLayout("fillx, ins 5", "[grow][grow]", "[]"));
         int size = tableVal.length;
         this.name = new JLabel(name + " :");
         this.slider = new JSlider (JSlider.HORIZONTAL, 1, size, defaultVal);
@@ -139,7 +139,7 @@ class GroupSlider extends JPanel implements ChangeListener {
     }
 
     GroupSlider(String name, int defaultVal, String[] tableVal) {
-        super(new MigLayout("fillx, ins 3", "[grow][grow]", "[]"));
+        super(new MigLayout("fillx, ins 5", "[grow][grow]", "[]"));
         int size = tableVal.length;
         this.name = new JLabel(name + " :");
         this.slider = new JSlider (JSlider.HORIZONTAL, 1, size, defaultVal);

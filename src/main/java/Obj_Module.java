@@ -1,8 +1,8 @@
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 class Obj_Module extends Obj_Super implements ActionListener{
     // Global
@@ -152,12 +152,44 @@ class Obj_Module extends Obj_Super implements ActionListener{
         return this.format.isNA();
     }
 
-    void run (ArrayList<IPatCommand> command, Enum_FileFormat format, boolean isPLINK, String pathGD, String pathGM) {
+    void run (ArrayList<IPatCommand> command, boolean isPLINK) throws IOException {
+        Enum_FileFormat format = getFormat(this.files);
         this.timerThread.start();
         this.rotateSwitch = true;
-        thread = new iPatThread(this.getName(), format, isPLINK, pathGD, pathGM,
+        thread = new iPatThread(this.getName(), isPLINK, format,
+                this.files.getFile(Enum_FileType.Genotype).getPath(), this.files.getFile(Enum_FileType.Map).getPath(),
                 this.maf, this.ms, true, 64);
         thread.setCommandAndRun(command);
+    }
+
+    private int diffValues(String[] line2nd) {
+        int numOfDifferentVals = 0;
+        ArrayList<String> diffNum = new ArrayList<>();
+        // if diffNum not contain the element from array, add it
+        for (String strTemp : line2nd)
+            if(!diffNum.contains(strTemp))
+                diffNum.add(strTemp);
+        // if only one kind of element, return 0, otherwise, its size
+        numOfDifferentVals = diffNum.size() == 1 ? 0 : diffNum.size();
+        return numOfDifferentVals;
+    }
+    private Enum_FileFormat getFormat(Obj_FileCluster files) throws IOException {
+        IPatFile fileGD = files.getFile(Enum_FileType.Genotype);
+        String[] lines = fileGD.getLines(2);
+        int countRowGD = fileGD.getLineCount();
+        String[] line2nd = fileGD.getSepStr(lines[1]);
+        int countColGD = line2nd.length;
+        if (countColGD - lines[1].split("/").length == 8 &&
+                lines[1].split("/").length > 1)
+            return Enum_FileFormat.VCF;
+        else if (countColGD - countRowGD == 11 || countColGD - countRowGD == 10)
+            return Enum_FileFormat.Hapmap;
+        else if (Arrays.asList(line2nd).containsAll(Arrays.asList("0", "1", "2")) &&
+                diffValues(line2nd) < 5)
+            return Enum_FileFormat.Numeric;
+        else if (fileGD.getPath().toUpperCase().endsWith("PED"))
+            return Enum_FileFormat.PLINK;
+        return Enum_FileFormat.NA;
     }
 
     @Override
@@ -166,6 +198,20 @@ class Obj_Module extends Obj_Super implements ActionListener{
             this.rotateSwitch = false;
             timerThread.stop();
         }
+    }
+
+    public void showProgress(MouseEvent e) {
+        if (this.thread != null) {
+            this.thread.areaFrame.setLocation(e.getX() + iPat.IPATFRAME.getX() - 250,
+                                                e.getY() + iPat.IPATFRAME.getY() - 352);
+            this.thread.areaFrame.setVisible(true);
+            this.thread.areaFrame.show();
+        }
+    }
+
+    public void hideProgress() {
+        if (this.thread != null)
+            this.thread.areaFrame.show(false);
     }
 
     class iPatThread extends Thread {
@@ -189,8 +235,10 @@ class Obj_Module extends Obj_Super implements ActionListener{
         // running
         boolean isRunning;
 
-        public iPatThread(String title, Enum_FileFormat format, boolean isPLINK, String pathGD, String pathGM,
-                          double rateMAF, double rateNA, boolean isNAFill, int batchSize) {
+        public iPatThread(String title, boolean isPLINK, Enum_FileFormat format,
+                          String pathGD, String pathGM,
+                          double rateMAF, double rateNA,
+                          boolean isNAFill, int batchSize) {
             this.areaText = new JTextArea();
             this.areaText.setEditable(false);
             this.areaScroll = new JScrollPane(areaText,
@@ -203,8 +251,28 @@ class Obj_Module extends Obj_Super implements ActionListener{
             int height = 350;
             this.areaFrame.setSize(width, height);
             this.areaFrame.setLocation(iPat.WINDOWSIZE.getAppLocation(width, height));
-            this.areaFrame.setVisible(true);
-            this.areaFrame.show();
+//            this.areaFrame.setVisible(true);
+//            this.areaFrame.show(false);
+            this.areaFrame.addWindowListener(new WindowListener() {
+                @Override
+                public void windowOpened(WindowEvent e) {}
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    success = false;
+                    isRunning = false;
+                    process.destroy();
+                }
+                @Override
+                public void windowClosed(WindowEvent e) {}
+                @Override
+                public void windowIconified(WindowEvent e) {}
+                @Override
+                public void windowDeiconified(WindowEvent e) {}
+                @Override
+                public void windowActivated(WindowEvent e) {}
+                @Override
+                public void windowDeactivated(WindowEvent e) {}
+            });
             // During running (BG)
             this.success = true;
             // converter
@@ -253,7 +321,7 @@ class Obj_Module extends Obj_Super implements ActionListener{
                                 pathGD = filename + "_recode.ped";
                                 pathGM = filename + "_recode.map";
                                 format = Enum_FileFormat.PLINK;
-                            } else if (!isPLINK && format != Enum_FileFormat.Numeric) {
+                            } else if (!isPLINK) {
                                 pathGD = filename + "_recode.dat";
                                 pathGM = filename + "_recode.nmap";
                                 format = Enum_FileFormat.Numeric;
@@ -268,17 +336,14 @@ class Obj_Module extends Obj_Super implements ActionListener{
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
-                            if (format != Enum_FileFormat.Numeric) {
-                                filename = pathGD.replaceFirst("[.][^.]+$", "");
-                                pathGD = filename + "_recode.dat";
-                                pathGM = filename + "_recode.nmap";
-                                this.format = Enum_FileFormat.Numeric;
-                            }
+                            filename = pathGD.replaceFirst("[.][^.]+$", "");
+                            pathGD = filename + "_recode.dat";
+                            pathGM = filename + "_recode.nmap";
+                            this.format = Enum_FileFormat.Numeric;
                             command.addArg("-genotype", pathGD);
                             command.addArg("-map", pathGM);
                             break;
                     }
-
                     System.out.println("IPatCommand : " + command);
                     setIcon("module");
                     runtime = Runtime.getRuntime();
