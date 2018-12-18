@@ -1,6 +1,6 @@
 public enum Enum_FileFormat {
     NA("NA"), Hapmap("Hapmap"), Numeric("Numeric"), VCF("VCF"),
-    PLINK("PLINK"), PLINKBIN("PLINK(Binary)"), BSA("BSA");
+    PLINK("PLINK"), genStudio("GenomeStudio"), BSA("BSA");
 
     String name;
 

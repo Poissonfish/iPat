@@ -22,6 +22,7 @@ import java.util.List;
 
 public class GUI_Config extends JFrame implements ActionListener, WindowListener, MouseMotionListener, MouseListener, ItemListener {
     // Main panel
+    Obj_Module module;
     JPanel paneMain;
     int height, width;
         // File Tray
@@ -54,11 +55,13 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
                 JPanel paneConvert;
                 GroupCombo inputConv, outputConv, batchConv;
                 GroupCheckBox fillnaConv;
+                GroupSlider msConv, mafConv;
                 JButton prevConv, doneConv;
 
     public GUI_Config (int width, int height, Obj_Module module) throws InterruptedException {
         this.height = height;
         this.width = width;
+        this.module = module;
         // ================================= File Tray =================================
         // File Tray / Initialize labels
         this.labelP = new FileLabel(Enum_FileType.Phenotype);
@@ -90,7 +93,7 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
         this.arrayLabel.add(this.labelCov);
         this.arrayLabel.add(this.labelKin);
         // File Tray / Layout
-        this.paneFileTray = new JPanel(new MigLayout("ins 5, fill, debug", "[150!]", "[grow][grow][grow][grow][grow][grow][grow][grow][grow][grow]"));
+        this.paneFileTray = new JPanel(new MigLayout("ins 5, fill", "[150!]", "[grow][grow][grow][grow][grow][grow][grow][grow][grow][grow]"));
         this.paneFileTray.add(this.titleP, "cell 0 0, grow, align c");
         this.paneFileTray.add(this.labelP, "cell 0 1, grow, align c");
         this.paneFileTray.add(this.titleGD, "cell 0 2, grow, align c");
@@ -133,11 +136,7 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
                             for (FileLabel lb : arrayLabel) {
                                 if (lb.getBounds().contains(pt)) {
                                     module.setFile(files.get(0).getPath(), lb.getFiletype());
-//                                    lb.setFile(files.get(0).getAbsolutePath());
                                     lb.setFile(new IPatFile(files.get(0).getAbsolutePath()));
-                                    System.out.println("File path is '" + files.get(0).getPath() + "'.");
-                                    System.out.println("Cov is empty : " + labelCov.getFile().isEmpty());
-                                    System.out.println("Cov has file : " + labelCov.getHasFile());
                                     // Do Color change
 //                                    lb.setColor("themecolor");
                                 }
@@ -169,7 +168,7 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
         this.paneWD = new PanelWD("Project");
         this.paneQC = new PanelQC();
         this.paneCommon = new JTabbedPane();
-        this.paneCommon.setFont(new Font( "Dialog", Font.BOLD|Font.ITALIC, 18 ) );
+        this.paneCommon.setFont(new Font("Dialog", Font.BOLD|Font.ITALIC, 18));
         this.paneCommon.addTab("Working Directory", paneWD);
         this.paneCommon.addTab("Quality Control", paneQC);
         // ================================= GWAS =================================
@@ -184,7 +183,7 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
         this.paneGWAS2 = new PanelBottom(Enum_Analysis.GWAS, this.labelCov, false);
         this.paneGWAS2.buttonLeft.addActionListener(this);
         this.paneGWAS2.buttonRight.addActionListener(this);
-        this.paneGS2 = new PanelBottom(Enum_Analysis.GS,  this.labelCov, true);
+        this.paneGS2 = new PanelBottom(Enum_Analysis.GWASGS,  this.labelCov, true);
         this.paneGS2.buttonLeft.addActionListener(this);
         this.paneGS2.buttonRight.addActionListener(this);
         // ================================= Config and Card =================================
@@ -194,14 +193,18 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
         this.cardConfig.add(this.paneGWAS2, "gwas2");
         this.cardConfig.add(this.paneGS2, "gs2");
         this.paneConfig = new JPanel(new MigLayout("fill, ins 3", "[grow]", "[grow][grow]"));
-        this.paneConfig.add(this.paneCommon, "wrap, grow");
-        this.paneConfig.add(this.cardConfig, "grow");
+        this.paneConfig.add(this.paneCommon, "cell 0 0, grow");
+        this.paneConfig.add(this.cardConfig, "cell 0 1, grow");
         // ================================= Converter =================================
-        this.paneConvert = new JPanel(new MigLayout("fill, debug", "[grow][grow]", "[grow][grow][grow][grow][]"));
+        this.paneConvert = new JPanel(new MigLayout("fill", "[grow][grow]", "[grow][grow][grow][grow][grow][]"));
         this.inputConv = new GroupCombo("Input Format", new String[]{"------       ", "Hapmap", "Numeric", "VCF", "PLINK", "GenomeStudio"});
         this.inputConv.combo.addItemListener(this);
         this.outputConv = new GroupCombo("Output Fromat", new String[]{"------      "});
         this.outputConv.combo.setEnabled(false);
+        this.msConv = new GroupSlider("By missing rate", 4,
+                new String[]{"0", "0.05", "0.1", "0.2", "0.5"});
+        this.mafConv = new GroupSlider("By MAF ", 3,
+                new String[]{"0", "0.01", "0.05", "0.1", "0.2"});
         this.fillnaConv = new GroupCheckBox("Fill NAs as heterozygotes");
         this.batchConv = new GroupCombo("Batch of Sample Size", new String[]{"32", "64", "128", "256", "512"});
         this.batchConv.setValue(1); // set default as 64
@@ -210,10 +213,12 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
         this.doneConv = new JButton("Confirm and Run");
         this.doneConv.addActionListener(this);
         // assemble
-        this.paneConvert.add(this.inputConv, "cell 0 0 2 1, grow, align c");
-        this.paneConvert.add(this.outputConv, "cell 0 1 2 1, grow, align c");
-        this.paneConvert.add(this.fillnaConv, "cell 0 2 2 1, grow, align c");
-        this.paneConvert.add(this.batchConv, "cell 0 3 2 1, grow, align c");
+        this.paneConvert.add(this.inputConv, "cell 0 0, grow, align c");
+        this.paneConvert.add(this.outputConv, "cell 1 0, grow, align c");
+        this.paneConvert.add(this.msConv, "cell 0 1 2 1, grow, align c");
+        this.paneConvert.add(this.mafConv, "cell 0 2 2 1, grow, align c");
+        this.paneConvert.add(this.fillnaConv, "cell 0 3, grow, align c");
+        this.paneConvert.add(this.batchConv, "cell 1 3, grow, align c");
         this.paneConvert.add(this.prevConv, "cell 0 4, grow, align c");
         this.paneConvert.add(this.doneConv, "cell 1 4, grow, align c");
         // ================================= Right Panel (Card) =================================
@@ -222,14 +227,13 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
         this.cardRight.add(this.paneConfig, "gg");
         this.cardRight.add(this.paneConvert, "converter");
         // ================================= Main =================================
-        this.paneMain = new JPanel(new MigLayout("fill, debug", "[grow]", "[]"));
+        this.paneMain = new JPanel(new MigLayout("fill", "[grow]", "[]"));
         this.paneMain.add(this.paneFileTray, "dock west");
         this.paneMain.add(this.cardRight, "grow");
 //        this.paneCommon.setBounds(300, 1, 200, 200);
 //        this.paneCommon.revalidate();
 //        this.paneCard.revalidate();
 //        this.paneCommon.setBounds(10, 10, 1000, 100);
-
         // ================================= Frame =================================
         this.addWindowListener(this);
         this.addMouseListener(this);
@@ -237,7 +241,7 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
         this.setContentPane(this.paneMain);
         this.setResizable(false);
         this.setVisible(true);
-        this.setSize(this.width, this.height);
+//        this.setSize(this.width, this.height);
         this.pack();
         this.setLocation(iPat.WINDOWSIZE.getAppLocation(this.getWidth(), this.getHeight()));
     }
@@ -268,35 +272,171 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
         } else if (obj == this.prevConv) {
             new SliderListener(this.cardRight, this.paneConvert, this.paneAnalysis, "analysis", false, 10);
         } else if (obj == this.paneGWAS.buttonRight) {
-            // Run Process
-
+            // Run Process GWAS
+            this.loadFileTray(this.module);
+            IPatCommand command = this.paneGWAS.getCommand();
+            command.addWD(this.paneWD.getPath());
+            command.addProject(this.paneWD.getProject());
+            command.addArg("-phenotype", this.labelP.getFile().getPath());
+            command.addArg("-pSelect", this.panePhenotype.getSelected());
+            command.addArg("-cov", this.labelCov.getFile().getPath());
+            command.setMethod(Enum_Analysis.GWAS);
+            // Create array (in case gaws-assist)
+            ArrayList<IPatCommand> commandRun = new ArrayList<>();
+            commandRun.add(command);
+            // Load QC
+            this.module.setMAF(Double.parseDouble(this.paneQC.getMAF()));
+            this.module.setMS(Double.parseDouble(this.paneQC.getMS()));
+            // Subtmit final command
+            try {
+                this.module.run(commandRun, this.paneGWAS.toolTap.equals(Enum_Tool.PLINK));
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+            this.module.setName(this.paneWD.getProject());
+            this.module.setFile(this.paneWD.getPath());
+            this.dispose();
         } else if (obj == this.paneGS.buttonRight) {
-            // Run Process
-
+            // Run Process GS
+            this.loadFileTray(this.module);
+            IPatCommand command = this.paneGS.getCommand();
+            command.addWD(this.paneWD.getPath());
+            command.addProject(this.paneWD.getProject());
+            command.addArg("-phenotype", this.labelP.getFile().getPath());
+            command.addArg("-pSelect", this.panePhenotype.getSelected());
+            command.addArg("-cov", this.labelCov.getFile().getPath());
+            command.setMethod(Enum_Analysis.GS);
+            // Create array (in case gaws-assist)
+            ArrayList<IPatCommand> commandRun = new ArrayList<>();
+            commandRun.add(command);
+            // Load QC
+            this.module.setMAF(Double.parseDouble(this.paneQC.getMAF()));
+            this.module.setMS(Double.parseDouble(this.paneQC.getMS()));
+            // Subtmit final command
+            try {
+                this.module.run(commandRun, false);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+            this.module.setName(this.paneWD.getProject());
+            this.module.setFile(this.paneWD.getPath());
+            this.dispose();
         } else if (obj == this.paneGWAS2.buttonRight) {
             new SliderListener(this.cardConfig, this.paneGWAS2, this.paneGS2, "gs2", true, 10);
         } else if (obj == this.paneGS2.buttonLeft) {
             new SliderListener(this.cardConfig, this.paneGS2, this.paneGWAS2, "gwas2", false, 10);
         } else if (obj == this.paneGS2.buttonRight) {
-            // Run Process
-
+            // Run Process GWAS-assist GS
+            this.loadFileTray(this.module);
+            IPatCommand commandGWAS = this.paneGWAS2.getCommand();
+            commandGWAS.addWD(this.paneWD.getPath());
+            commandGWAS.addProject(this.paneWD.getProject());
+            commandGWAS.addArg("-phenotype", this.labelP.getFile().getPath());
+            commandGWAS.addArg("-pSelect", this.panePhenotype.getSelected());
+            commandGWAS.addArg("-cov", this.labelCov.getFile().getPath());
+            commandGWAS.setMethod(Enum_Analysis.GWAS);
+            IPatCommand commandGS = this.paneGS2.getCommand();
+            commandGS.addWD(this.paneWD.getPath());
+            commandGS.addProject(this.paneWD.getProject());
+            commandGS.addArg("-phenotype", this.labelP.getFile().getPath());
+            commandGS.addArg("-pSelect", this.panePhenotype.getSelected());
+            commandGS.addArg("-cov", this.labelCov.getFile().getPath());
+            commandGS.setMethod(Enum_Analysis.GS);
+            // Create array (in case gaws-assist)
+            ArrayList<IPatCommand> commandRun = new ArrayList<>();
+            commandRun.add(commandGWAS);
+            commandRun.add(commandGS);
+            // Load QC
+            this.module.setMAF(Double.parseDouble(this.paneQC.getMAF()));
+            this.module.setMS(Double.parseDouble(this.paneQC.getMS()));
+            // Subtmit final command
+            try {
+                this.module.run(commandRun, this.paneGWAS2.toolTap.equals(Enum_Tool.PLINK));
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+            this.module.setName(this.paneWD.getProject());
+            this.module.setFile(this.paneWD.getPath());
+            this.dispose();
         } else if (obj == this.doneConv) {
-            // Run Process
+            // Load Module
+            this.loadFileTray(this.module);
+            Enum_FileFormat in_format = Enum_FileFormat.NA, out_format = Enum_FileFormat.NA;
+            switch (this.inputConv.getValue()) {
+                case "Hapmap":
+                    in_format = Enum_FileFormat.Hapmap; break;
+                case "Numeric":
+                    in_format = Enum_FileFormat.Numeric; break;
+                case "VCF":
+                    in_format = Enum_FileFormat.VCF; break;
+                case "PLINK":
+                    in_format = Enum_FileFormat.PLINK; break;
+                case "GenomeStudio":
+                    in_format = Enum_FileFormat.genStudio; break;
+            }
+            switch (this.outputConv.getValue()) {
+                case "Numeric":
+                    out_format = Enum_FileFormat.Numeric; break;
+                case "PLINK":
+                    out_format = Enum_FileFormat.PLINK; break;
+            }
+            try {
+                new Cpu_Converter(in_format, out_format,
+                        this.module.getFile(Enum_FileType.Genotype).getPath(),
+                        this.module.getFile(Enum_FileType.Map).getPath(),
+                        Double.parseDouble(this.mafConv.getStrValue()),
+                        Double.parseDouble(this.msConv.getStrValue()),
+                        this.fillnaConv.isCheck(), Integer.parseInt(this.batchConv.getValue())
+                );
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+            this.module.setName("Converter");
+            this.module.setFile(this.module.getFile(Enum_FileType.Genotype).getParentFile().getPath());
+            this.dispose();
 
         } else if (obj == this.toGWAS) {
-            rebuildCommonPane();
-            ((CardLayout)this.cardConfig.getLayout()).show(this.cardConfig, "gwas");
-            new SliderListener(this.cardRight, this.paneAnalysis, this.paneConfig, "gg", true, 10);
+            if (this.labelP.isEmpty()) {
+                JOptionPane msgPang = new JOptionPane("GWAS can't run without phenotypes", JOptionPane.ERROR_MESSAGE);
+                JDialog dialog = msgPang.createDialog("Please assign phenotypes");
+                dialog.setAlwaysOnTop(true);
+                dialog.setVisible(true);
+            } else {
+                rebuildCommonPane();
+                ((CardLayout)this.cardConfig.getLayout()).show(this.cardConfig, "gwas");
+                new SliderListener(this.cardRight, this.paneAnalysis, this.paneConfig, "gg", true, 10);
+            }
         } else if (obj == this.toGS) {
-            rebuildCommonPane();
-            ((CardLayout)this.cardConfig.getLayout()).show(this.cardConfig, "gs");
-            new SliderListener(this.cardRight, this.paneAnalysis, this.paneConfig, "gg", true, 10);
+            if (this.labelP.isEmpty()) {
+                JOptionPane msgPang = new JOptionPane("GS can't run without phenotypes", JOptionPane.ERROR_MESSAGE);
+                JDialog dialog = msgPang.createDialog("Please assign phenotypes");
+                dialog.setAlwaysOnTop(true);
+                dialog.setVisible(true);
+            } else {
+                rebuildCommonPane();
+                ((CardLayout) this.cardConfig.getLayout()).show(this.cardConfig, "gs");
+                new SliderListener(this.cardRight, this.paneAnalysis, this.paneConfig, "gg", true, 10);
+            }
         } else if (obj == this.toGWASGS) {
-            rebuildCommonPane();
-            ((CardLayout)this.cardConfig.getLayout()).show(this.cardConfig, "gwas2");
-            new SliderListener(this.cardRight, this.paneAnalysis, this.paneConfig, "gg", true, 10);
+            if (this.labelP.isEmpty()) {
+                JOptionPane msgPang = new JOptionPane("GWAS-assisted GS can't run without phenotypes", JOptionPane.ERROR_MESSAGE);
+                JDialog dialog = msgPang.createDialog("Please assign phenotypes");
+                dialog.setAlwaysOnTop(true);
+                dialog.setVisible(true);
+            } else {
+                rebuildCommonPane();
+                ((CardLayout) this.cardConfig.getLayout()).show(this.cardConfig, "gwas2");
+                new SliderListener(this.cardRight, this.paneAnalysis, this.paneConfig, "gg", true, 10);
+            }
         } else if (obj == this.toConverter) {
-            new SliderListener(this.cardRight, this.paneAnalysis, this.paneConvert, "converter", true, 10);
+            if (this.labelGD.isEmpty()) {
+                JOptionPane msgPang = new JOptionPane("The converter can't run without genotypes", JOptionPane.ERROR_MESSAGE);
+                JDialog dialog = msgPang.createDialog("Please assign genotypes");
+                dialog.setAlwaysOnTop(true);
+                dialog.setVisible(true);
+            } else {
+                new SliderListener(this.cardRight, this.paneAnalysis, this.paneConvert, "converter", true, 10);
+            }
         }
     }
 
@@ -402,40 +542,45 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
             this.outputConv.combo.setEnabled(false);
             this.outputConv.combo.removeAllItems();
             this.outputConv.combo.addItem("------      ");
+            this.doneConv.setEnabled(false);
         } else if (this.inputConv.getValue().equals("Hapmap")) {
             this.outputConv.combo.removeAllItems();
             this.outputConv.combo.addItem("Numeric");
             this.outputConv.combo.addItem("PLINK");
             this.outputConv.combo.setEnabled(true);
+            this.doneConv.setEnabled(true);
         } else if (this.inputConv.getValue().equals("Numeric")) {
             this.outputConv.combo.removeAllItems();
+            this.outputConv.combo.addItem("Numeric");
             this.outputConv.combo.addItem("PLINK");
             this.outputConv.combo.setEnabled(true);
+            this.doneConv.setEnabled(true);
         } else if (this.inputConv.getValue().equals("VCF")) {
             this.outputConv.combo.removeAllItems();
             this.outputConv.combo.addItem("Numeric");
             this.outputConv.combo.addItem("PLINK");
             this.outputConv.combo.setEnabled(true);
+            this.doneConv.setEnabled(true);
         } else if (this.inputConv.getValue().equals("PLINK")) {
             this.outputConv.combo.removeAllItems();
             this.outputConv.combo.addItem("Numeric");
             this.outputConv.combo.setEnabled(true);
+            this.doneConv.setEnabled(true);
         } else if (this.inputConv.getValue().equals("GenomeStudio")) {
             this.outputConv.combo.removeAllItems();
             this.outputConv.combo.addItem("Numeric");
             this.outputConv.combo.setEnabled(true);
+            this.doneConv.setEnabled(true);
         }
     }
-    // ================================= Class : File Tray =================================
-
-
-    // ================================= Class : Common Panel =================================
-
-
-
-
-
-
+    // ================================= Method : File Tray =================================
+    void loadFileTray (Obj_Module mod) {
+        mod.setFile(this.labelGD.getFile().getPath(), Enum_FileType.Genotype);
+        mod.setFile(this.labelGM.getFile().getPath(), Enum_FileType.Map);
+        mod.setFile(this.labelP.getFile().getPath(), Enum_FileType.Phenotype);
+        mod.setFile(this.labelCov.getFile().getPath(), Enum_FileType.Covariate);
+        mod.setFile(this.labelKin.getFile().getPath(), Enum_FileType.Kinship);
+    }
 }
 
 class FileLabel extends JPanel {
@@ -456,20 +601,16 @@ class FileLabel extends JPanel {
         // Filename
         this.labelFilename = new JLabel("");
         this.add(this.labelFilename, "grow");
+        this.labelFilename.setHorizontalAlignment(SwingConstants.CENTER);
         // File
         this.setFile(new IPatFile());
         // Backgroud
         this.setOpaque(false);
     }
-//
-//    public void paintComponent(Graphics g) {
-//        g.setColor(getBackground());
-//        Rectangle r = g.getClipBounds();
-//        g.fillRect(r.x, r.y, r.width, r.height);
-//        super.paintComponent(g);
-//    }
-
     // File I/O Deploy
+    boolean isEmpty() {
+        return this.file.isEmpty();
+    }
     Enum_FileType getFiletype() {
         return this.filetype;
     }
@@ -479,7 +620,6 @@ class FileLabel extends JPanel {
     IPatFile getFile() {
         return this.file;
     }
-
     void setFile(IPatFile file) {
         this.file = file;
         this.setHasFile(!this.file.isEmpty());
@@ -525,13 +665,13 @@ class FileLabel extends JPanel {
         if (this.getFile().isEmpty())
             this.setHasFile(false);
     }
-
     // Misc
     void setColor(String colorcode) {
 //        this.setOpaque(true);
         this.setBackground(iPat.IMGLIB.getColor(colorcode));
     }
 }
+
 
 
 class CardButton extends JButton {

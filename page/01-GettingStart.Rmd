@@ -1,0 +1,34 @@
+# Get started
+
+The operation environment need to meet the following requirements:
+
+- [Java Runtime Environment (JRE)](http://www.oracle.com/technetwork/java/javase/downloads/index.html): **Version 8** or later.
+
+- [R](https://www.r-project.org): Version **3.5** or later.
+  (It's highly recommended to update R to the latest version for first-time users, since some packages may not be available to download in older versions of R)
+
+Install all the required R libraries by running following code. This command will download all the missing packages that are required in iPat.
+
+```r
+source("http://zzlab.net/iPat/iPat_installation.r")
+```
+
+<p align="center"><p align="center"><img src = "../../md/installation.png" width = 1200></p>
+
+## Windows users
+1. Download [iPat.zip](http://zzlab.net/iPat/iPat.zip) and decompress it. You will then get a folder named "**iPat**", which contains a executable file "**iPat.exe**" and a folder "**res**".
+
+2. It's noted that users are always required to place "**iPat.exe**" and the folder "**res**" in the same folder (directory) so that iPat can function normally.
+
+3. Double click '**iPat.exe**' to launch iPat.
+
+<p align="center"><p align="center"><img src = "../../md/install_win.png" width = 1200></p>
+
+## Mac OS users
+1. Download [iPat_Installer.dmg](http://zzlab.net/iPat/iPat_Installer.dmg) and mount it on Mac.
+
+2. Follow the instruction to install iPat.
+
+3. Double click '**iPat.app**' to launch iPat.
+
+<p align="center"><p align="center"><img src = "../../md/install_mac.png" width = 1200></p>

@@ -11,8 +11,7 @@ import java.util.*;
 abstract class PanelTool extends JTabbedPane {
     public PanelTool() {
         super();
-        this.setFont(new Font( "Dialog", Font.BOLD|Font.ITALIC, 18 ) );
-
+        this.setFont(new Font( "Dialog", Font.BOLD|Font.ITALIC, 18));
         UIManager.getDefaults().put("TabbedPane.contentBorderInsets", new Insets(0,0,0,0));
         UIManager.getDefaults().put("TabbedPane.tabsOverlapBorder", true);
     }
@@ -29,7 +28,7 @@ class PanelGAPIT extends PanelTool {
     public PanelGAPIT(IPatFile cFile) {
         // Basic features
         this.paneBasic = new JPanel(new MigLayout("fillx", "[]", "[grow][grow]"));
-        this.comboModel = new GroupCombo("Select a model", new String[]{"GLM", "MLM", "CMLM"});
+        this.comboModel = new GroupCombo("Select a model", new String[]{"GLM", "MLM", "CMLM", "FarmCPU"});
         this.slidePC = new GroupSlider("Number of PCs included", 1, new String[]{"3", "4", "5", "6", "7", "8", "9", "10"});
         this.paneBasic.add(this.comboModel, "cell 0 0, align c");
         this.paneBasic.add(this.slidePC, "cell 0 1, align c");
@@ -43,9 +42,13 @@ class PanelGAPIT extends PanelTool {
     @Override
     ArrayList<String> getCommand() {
         ArrayList<String> command = new ArrayList<>();
+        command.add(iPat.REXC);
+        command.add(iPat.FILELIB.getAbsolutePath("iPatGAPIT.r"));
         command.add("-arg");
         command.add(this.comboModel.getValue());
         command.add(this.slidePC.getStrValue());
+        command.add("-cSelect");
+        command.add(this.paneCov.getSelected());
         return command;
     }
 }
@@ -58,7 +61,7 @@ class PanelFarmCPU extends PanelTool {
 
     public PanelFarmCPU(IPatFile cFile) {
         // Basic features
-        paneBasic = new JPanel(new MigLayout("fillx"));
+        paneBasic = new JPanel(new MigLayout("fillx", "[]", "[grow][grow]"));
         comboBin = new GroupCombo("Method bin",
                 new String[]{"optimum", "static"});
         slideLoop = new GroupSlider("maxLoop", 10, new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"});
@@ -74,9 +77,13 @@ class PanelFarmCPU extends PanelTool {
     @Override
     ArrayList<String> getCommand() {
         ArrayList<String> command = new ArrayList<>();
+        command.add(iPat.REXC);
+        command.add(iPat.FILELIB.getAbsolutePath("iPatFarmCPU.r"));
         command.add("-arg");
         command.add(this.comboBin.getValue());
         command.add(this.slideLoop.getStrValue());
+        command.add("-cSelect");
+        command.add(this.paneCov.getSelected());
         return command;
     }
 }
@@ -89,8 +96,8 @@ class PanelPlink extends PanelTool {
 
     public PanelPlink(IPatFile cFile) {
         // Basic features
-        paneBasic = new JPanel(new MigLayout("fillx"));
-        slideCI = new GroupSlider("C.I.", 3, new String[]{"0.5", "0.68", "0.95"});
+        paneBasic = new JPanel(new MigLayout("fillx", "[]", "[grow][grow]"));
+        slideCI = new GroupSlider("C.I.", 1, new String[]{"0.95", "0.975", "0.995"});
         comboModel = new GroupCombo("Method",
                 new String[]{"GLM", "Logistic Regression"});
         paneBasic.add(slideCI, "cell 0 0, align c");
@@ -100,16 +107,19 @@ class PanelPlink extends PanelTool {
         // Build tab pane
         this.addTab("PLINK input", paneBasic);
         this.addTab("Covariates", paneCov);
-
     }
 
     @Override
     ArrayList<String> getCommand() {
         ArrayList<String> command = new ArrayList<>();
+        command.add(iPat.REXC);
+        command.add(iPat.FILELIB.getAbsolutePath("iPatPLINK.r"));
         command.add("-arg");
         command.add(slideCI.getStrValue());
         command.add(comboModel.getValue());
         command.add(iPat.FILELIB.getAbsolutePath("plink"));
+        command.add("-cSelect");
+        command.add(this.paneCov.getSelected());
         return command;
     }
 }
@@ -118,6 +128,7 @@ class PanelgBLUP extends PanelTool {
     JPanel paneBasic;
     JPanel paneGS;
     SelectPanel paneCov;
+    JPanel paneGWASAssist;
     // parameters
     GroupCombo comboImpute;
     JCheckBox checkShrink;
@@ -125,13 +136,10 @@ class PanelgBLUP extends PanelTool {
     JCheckBox checkValid;
     GroupSlider slideFold;
     GroupSlider slideIter;
-    public PanelgBLUP(IPatFile cFile) {
-        // Basic
-        this.paneBasic = new JPanel(new MigLayout("fillx, ins 3", "[grow]", "[grow][grow]"));
-        this.comboImpute = new GroupCombo("Impute Method", new String[]{"mean", "EM"});
-        this.checkShrink = new JCheckBox("Shrinkage estimation");
-        this.paneBasic.add(this.comboImpute, "cell 0 0, align c");
-        this.paneBasic.add(this.checkShrink, "cell 0 1, align c");
+    // GWAS-assist
+    boolean isGWASGS;
+    public PanelgBLUP(IPatFile cFile, boolean isGWASGS) {
+        this.isGWASGS = isGWASGS;
         // GS
         this.paneGS = new JPanel(new MigLayout("fillx, ins 3", "[grow][grow]", "[grow][grow]"));
         this.checkValid = new JCheckBox("Validation on accuracy?");
@@ -143,20 +151,22 @@ class PanelgBLUP extends PanelTool {
         // cov
         this.paneCov = new SelectPanel(cFile, "Covariates <br> Not Found", 0);
         // Build tab pane
-        this.addTab("gBLUP Input", this.paneBasic);
         this.addTab("GS Validation", this.paneGS);
         this.addTab("Covariates", this.paneCov);
     }
     @Override
     ArrayList<String> getCommand() {
         ArrayList<String> command = new ArrayList<String>();
-        command.add("-arg");
-        command.add(this.comboImpute.getValue());
-        command.add(this.checkShrink.isSelected() ? "TRUE" : "FALSE");
+        command.add(iPat.REXC);
+        command.add(iPat.FILELIB.getAbsolutePath("iPatgBLUP.r"));
         command.add("-gs");
         command.add(this.checkValid.isSelected() ? "TRUE" : "FALSE");
         command.add(this.slideFold.getStrValue());
         command.add(this.slideIter.getStrValue());
+        command.add("-gwas");
+        command.add(this.isGWASGS ? "TRUE" : "FALSE");
+        command.add("-cSelect");
+        command.add(this.paneCov.getSelected());
         return command;
     }
 }
@@ -168,7 +178,10 @@ class PanelrrBLUP extends PanelTool {
     JCheckBox checkValid;
     GroupSlider slideFold;
     GroupSlider slideIter;
-    public PanelrrBLUP(IPatFile cFile) {
+    // GWAS-assist
+    boolean isGWASGS;
+    public PanelrrBLUP(IPatFile cFile, boolean isGWASGS) {
+        this.isGWASGS = isGWASGS;
         // Basic features
         this.paneGS = new JPanel(new MigLayout("fillx, ins 3", "[grow][grow]", "[grow][grow]"));
         this.checkValid = new JCheckBox("Validation on accuracy?");
@@ -187,10 +200,16 @@ class PanelrrBLUP extends PanelTool {
     @Override
     ArrayList<String> getCommand() {
         ArrayList<String> command = new ArrayList<String>();
+        command.add(iPat.REXC);
+        command.add(iPat.FILELIB.getAbsolutePath("iPatrrBLUP.r"));
         command.add("-gs");
         command.add(this.checkValid.isSelected() ? "TRUE" : "FALSE");
         command.add(this.slideFold.getStrValue());
         command.add(this.slideIter.getStrValue());
+        command.add("-gwas");
+        command.add(this.isGWASGS ? "TRUE" : "FALSE");
+        command.add("-cSelect");
+        command.add(this.paneCov.getSelected());
         return command;
     }
 }
@@ -200,6 +219,8 @@ class PanelBGLR extends PanelTool  {
     JPanel basic;
     JPanel paneGS;
     SelectPanel paneCov;
+    JPanel paneGWASAssist;
+
     GroupCombo comboModel;
     GroupCombo comboResponse;
     GroupSlider slideNIter;
@@ -209,22 +230,21 @@ class PanelBGLR extends PanelTool  {
     JCheckBox checkValid;
     GroupSlider slideFold;
     GroupSlider slideIter;
+    // GWAS-assist1
+    boolean isGWASGS;
+    GroupSlider slideCut;
 
-    public PanelBGLR(IPatFile cFile) {
+    public PanelBGLR(IPatFile cFile, boolean isGWASGS) {
+        this.isGWASGS = isGWASGS;
         // Basic features
-        basic = new JPanel(new MigLayout("fillx", "[grow]", "[grow][grow][grow][grow][grow]"));
-        comboModel = new GroupCombo("Model of the Predictor (markers)",
-                new String[]{"BRR", "BayesA", "BL", "BayesB", "BayesC", "FIXED"});
-        comboResponse = new GroupCombo("response_type",
-                new String[]{"gaussian", "ordinal"});
-        slideNIter = new GroupSlider("nIter", 2, new String[]{"1000", "5000", "10000", "30000", "50000", "100000"}, new String[]{"1K", "5K", "10K", "30k", "50k", "100k"});
-        slideBurnIn = new GroupSlider("burnIn", 2, new String[]{"200", "500", "1000", "3000", "5000", "10000"});
-        slideThin = new GroupSlider("thin", 5, new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"});
-        basic.add(comboModel, "cell 0 0, grow");
-        basic.add(comboResponse, "cell 0 1, grow");
-        basic.add(slideNIter, "cell 0 2, grow");
-        basic.add(slideBurnIn, "cell 0 3, grow");
-        basic.add(slideThin, "cell 0 4, grow");
+        this.basic = new JPanel(new MigLayout("fillx", "[grow]", "[grow][grow][grow][grow][grow]"));
+        this.comboModel = new GroupCombo("Model of the Predictor (markers)",
+                new String[]{"BRR", "BL", "BayesA", "BayesB", "BayesC"});
+        this.slideNIter = new GroupSlider("nIter", 2, new String[]{"1000", "5000", "10000", "30000", "50000", "100000"}, new String[]{"1K", "5K", "10K", "30k", "50k", "100k"});
+        this.slideBurnIn = new GroupSlider("burnIn", 2, new String[]{"200", "500", "1000", "3000", "5000", "10000"});
+        this.basic.add(this.comboModel, "cell 0 0, grow");
+        this.basic.add(this.slideNIter, "cell 0 1, grow");
+        this.basic.add(this.slideBurnIn, "cell 0 2, grow");
         // GS
         this.paneGS = new JPanel(new MigLayout("fillx, ins 3", "[grow][grow]", "[grow][grow]"));
         this.checkValid = new JCheckBox("Validation on accuracy?");
@@ -246,6 +266,8 @@ class PanelBGLR extends PanelTool  {
     @Override
     ArrayList<String> getCommand() {
         ArrayList<String> command = new ArrayList<String>();
+        command.add(iPat.REXC);
+        command.add(iPat.FILELIB.getAbsolutePath("iPatBGLR.r"));
         command.add("-arg");
         command.add(comboModel.getValue());
         command.add(comboResponse.getValue());
@@ -256,6 +278,10 @@ class PanelBGLR extends PanelTool  {
         command.add(this.checkValid.isSelected() ? "TRUE" : "FALSE");
         command.add(this.slideFold.getStrValue());
         command.add(this.slideIter.getStrValue());
+        command.add("-gwas");
+        command.add(this.isGWASGS ? "TRUE" : "FALSE");
+        command.add("-cSelect");
+        command.add(this.paneCov.getSelected());
         return command;
     }
 }
@@ -269,7 +295,7 @@ class PanelQC extends JPanel {
     GroupSlider sliderMAF;
 
     public PanelQC() {
-        super(new MigLayout("fillx", "[grow]", "[grow][grow]"));
+        super(new MigLayout("fillx, ins 3", "[grow]", "[grow][grow]"));
 
         this.sliderMS = new GroupSlider("By missing rate", 4,
                 new String[]{"0", "0.05", "0.1", "0.2", "0.5"});
@@ -300,14 +326,12 @@ class PanelWD extends JPanel{
     // GUI objects
     GroupValue project;
     GroupPath path;
-    JLabel format;
-
     public PanelWD(String name) {
-        super(new MigLayout("fill", "[grow]", "[grow][grow]"));
+        super(new MigLayout("fill, ins 3", "[grow]", "[grow][grow]"));
         this.project = new GroupValue(7, "Module Name");
         this.project.setValue(name);
         this.path = new GroupPath("Output Directory");
-        this.format = new JLabel("");
+        this.path.setPath(System.getProperty("user.home"));
         this.add(this.project, "cell 0 0, grow");
         this.add(this.path,  "cell 0 1, grow");
     }
@@ -364,7 +388,7 @@ class PanelBottom extends JPanel implements MouseListener, MouseMotionListener {
                 this.add(this.toolFarmCPU, "cell 2 1, grow, w 150:150:");
                 this.add(this.toolPLINK, "cell 2 2, grow, w 150:150:");
                 break;
-            case GS:
+            case GS: case GWASGS:
                 // GUI
                 this.add(this.toolgBLUP, "cell 2 0, grow, w 150:150:");
                 this.add(this.toolrrBLUP, "cell 2 1, grow, w 150:150:");
@@ -385,7 +409,10 @@ class PanelBottom extends JPanel implements MouseListener, MouseMotionListener {
         if (isFinal && method == Enum_Analysis.GWAS) {
             this.buttonLeft = new JButton("<- Select Analysis");
             this.buttonRight = new JButton("Confirm and Run");
-        } else if (isFinal && method == Enum_Analysis.GS) {
+        } else if (method == Enum_Analysis.GS) {
+            this.buttonLeft = new JButton("<- Select Analysis");
+            this.buttonRight = new JButton("Confirm and Run");
+        } else if (method == Enum_Analysis.GWASGS) {
             this.buttonLeft = new JButton("<- Define GWAS");
             this.buttonRight = new JButton("Confirm and Run");
         } else if (!isFinal) {
@@ -598,11 +625,11 @@ class PanelBottom extends JPanel implements MouseListener, MouseMotionListener {
                         break;
                     case PLINK: this.paneDeploy = new PanelPlink(this.LabelC.getFile());
                         break;
-                    case gBLUP: this.paneDeploy = new PanelgBLUP(this.LabelC.getFile());
+                    case gBLUP: this.paneDeploy = new PanelgBLUP(this.LabelC.getFile(), this.method.equals(Enum_Analysis.GWASGS));
                         break;
-                    case rrBLUP: this.paneDeploy = new PanelrrBLUP(this.LabelC.getFile());
+                    case rrBLUP: this.paneDeploy = new PanelrrBLUP(this.LabelC.getFile(), this.method.equals(Enum_Analysis.GWASGS));
                         break;
-                    case BGLR: this.paneDeploy = new PanelBGLR(this.LabelC.getFile());
+                    case BGLR: this.paneDeploy = new PanelBGLR(this.LabelC.getFile(), this.method.equals(Enum_Analysis.GWASGS));
                         break;
                 }
                 this.isTapped = true;
@@ -630,7 +657,7 @@ class PanelBottom extends JPanel implements MouseListener, MouseMotionListener {
 
         IPatCommand getCommand() {
             IPatCommand command = new IPatCommand();
-            if (this.method == Enum_Analysis.GS)
+//            if (this.method == Enum_Analysis.GS)
 //                command.addAll(this.paneCov.getGWAS());
             if (this.isTapped()) {
                 command.addAll(this.paneDeploy.getCommand());
@@ -641,18 +668,23 @@ class PanelBottom extends JPanel implements MouseListener, MouseMotionListener {
                 switch (this.toolDeployed) {
                     case GAPIT:
                         map = iPat.MODVAL.mapGAPIT;
+                        command.add(iPat.REXC);
+                        command.add(iPat.FILELIB.getAbsolutePath("iPatGAPIT.r"));
                         command.add("-arg");
                         command.add(map.get("model"));
-                        command.add(map.get("cluster"));
-                        command.add(map.get("group"));
-                        command.add(map.get("snpfrac"));
-                        command.add(map.get("checkS"));
+                        command.add(map.get("pc"));
+                        command.add("-cSelect");
+                        command.add("NA");
                         return command;
                     case FarmCPU:
                         map = iPat.MODVAL.mapFarmCPU;
+                        command.add(iPat.REXC);
+                        command.add(iPat.FILELIB.getAbsolutePath("iPatFarmCPU.r"));
                         command.add("-arg");
                         command.add(map.get("bin"));
                         command.add(map.get("loop"));
+                        command.add("-cSelect");
+                        command.add("NA");
                         return command;
                     case PLINK:
                         map = iPat.MODVAL.mapPLINK;
@@ -660,33 +692,51 @@ class PanelBottom extends JPanel implements MouseListener, MouseMotionListener {
                         command.add(map.get("ci"));
                         command.add(map.get("model"));
                         command.add(iPat.FILELIB.getAbsolutePath("plink"));
+                        command.add("-cSelect");
+                        command.add("NA");
                         return command;
                     case gBLUP:
                         map = iPat.MODVAL.mapgBLUP;
-                        command.add("-arg");
-                        command.add(map.get("snpfrac"));
-                        command.add(map.get("checkS"));
+                        command.add(iPat.REXC);
+                        command.add(iPat.FILELIB.getAbsolutePath("iPatgBLUP.r"));
+                        command.add("-gs");
+                        command.add(map.get("valid"));
+                        command.add(map.get("fold"));
+                        command.add(map.get("iter"));
+                        command.add("-gwas");
+                        command.add(map.get("isGWAS"));
+                        command.add("-cSelect");
+                        command.add("NA");
                         return command;
                     case rrBLUP:
                         map = iPat.MODVAL.maprrBLUP;
-                        command.add("-arg");
-                        command.add(map.get("impute"));
-                        command.add(map.get("shrink"));
+                        command.add(iPat.REXC);
+                        command.add(iPat.FILELIB.getAbsolutePath("iPatrrBLUP.r"));
+                        command.add("-gs");
+                        command.add(map.get("valid"));
+                        command.add(map.get("fold"));
+                        command.add(map.get("iter"));
+                        command.add("-gwas");
+                        command.add(map.get("isGWAS"));
+                        command.add("-cSelect");
+                        command.add("NA");
                         return command;
                     case BGLR:
                         map = iPat.MODVAL.mapBGLR;
+                        command.add(iPat.REXC);
+                        command.add(iPat.FILELIB.getAbsolutePath("iPatBGLR.r"));
                         command.add("-arg");
                         command.add(map.get("model"));
-                        command.add(map.get("response"));
                         command.add(map.get("niter"));
                         command.add(map.get("burn"));
-                        command.add(map.get("thin"));
-                        return command;
-                    case BSA:
-                        map = iPat.MODVAL.mapBGLR;
-                        command.add("-arg");
-                        command.add(map.get("window"));
-                        command.add(map.get("power"));
+                        command.add("-gs");
+                        command.add(map.get("valid"));
+                        command.add(map.get("fold"));
+                        command.add(map.get("iter"));
+                        command.add("-gwas");
+                        command.add(map.get("isGWAS"));
+                        command.add("-cSelect");
+                        command.add("NA");
                         return command;
                 }
             }
@@ -701,6 +751,7 @@ class PanelBottom extends JPanel implements MouseListener, MouseMotionListener {
             this.isDeployed = true;
             this.toolDeployed = tool;
         }
+
         void removeMethod() {
             this.isDeployed = false;
             this.toolDeployed = Enum_Tool.NA;
@@ -819,6 +870,7 @@ class PanelCov extends JPanel implements ActionListener {
 }
 
 class SelectPanel extends JPanel implements ActionListener {
+    private IPatFile file;
     private JLabel labelSrc;
     private JList listSrc;
     private SortedListModel modelSrc;
@@ -833,6 +885,7 @@ class SelectPanel extends JPanel implements ActionListener {
     private JButton buttonRmAll;
 
     public SelectPanel (IPatFile file, String messageEmpty, int skipCol) {
+        this.file = file;
         //============================================= Layout ===========================================
         if (file.isEmpty()) {
             this.setLayout(new MigLayout("", "[grow]", "[grow]"));
@@ -894,11 +947,14 @@ class SelectPanel extends JPanel implements ActionListener {
     }
 
     public String getSelected(){
-        Object[] objs = this.modelSrc.getAllElements();
-        String strSelect = "";
-        for (int i = 0; i < objs.length; i ++)
-            strSelect.concat(objs[i].toString() + "sep");
-        return strSelect;
+        if (!file.isEmpty()) {
+            Object[] objs = this.modelSrc.getAllElements();
+            String strSelect = "";
+            for (int i = 0; i < objs.length; i ++)
+                strSelect = strSelect.concat(objs[i].toString() + "sep");
+            return strSelect;
+        }
+        return "NA";
     }
 
     public void addSrcItems (String items[]) {

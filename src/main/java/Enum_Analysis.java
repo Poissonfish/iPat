@@ -1,5 +1,5 @@
 public enum Enum_Analysis {
-    NA("NA", -1), GWAS("GWAS", 0), GS("GS", 1), BSA("BSA", 2);
+    NA("NA", -1), GWAS("GWAS", 0), GS("GS", 1), GWASGS("GWAS/GS", 2), BSA("BSA", 3);
 
     String name;
     int index;

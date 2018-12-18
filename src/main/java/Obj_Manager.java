@@ -21,19 +21,6 @@ class Obj_Manager implements ActionListener, WindowListener {
     ArrayList<Integer> indexLineEd;
     // menu (file, module)
     int indexSelected;
-    JPopupMenu menuFile;
-    JMenuItem menuOpenFile;
-    JMenuItem menuDelFile;
-    JMenuItem menuIsRegular;
-    JMenuItem menuIsCov;
-    JMenuItem menuIsKin;
-    JPopupMenu menuMO;
-    JMenuItem menuOpenMO;
-    JMenuItem menuDelMO;
-    JMenuItem menuGWAS;
-    JMenuItem menuGS;
-    JMenuItem menuBSA;
-    JMenuItem menuRun;
     // counter
     int countGr;
     int countConfig;
@@ -56,46 +43,10 @@ class Obj_Manager implements ActionListener, WindowListener {
         this.countGr = 0;
         this.countConfig = 0;
         // Menu
-        this.iniMenu();
         this.indexSelected = -1;
         // config
 //        config = new ArrayList<>();
         deletedConfig = new ArrayList<>();
-    }
-
-    // menu
-    void iniMenu() {
-        // Instantiate
-        // module
-        this.menuMO = new JPopupMenu();
-        this.menuOpenMO = iniMenuItem("Open Working Directory");
-        this.menuGWAS = iniMenuItem("GWAS (Empty)");
-        this.menuGS = iniMenuItem("GS (Empty)");
-        this.menuBSA = iniMenuItem("BSA (Empty)");
-        this.menuRun = iniMenuItem("Run");
-        // file
-        this.menuFile = new JPopupMenu();
-        this.menuOpenFile = iniMenuItem("Open File");
-        this.menuIsRegular = iniMenuItem("Assign as a regular file");
-        this.menuIsCov = iniMenuItem("Assign as a covariates file");
-        this.menuIsKin = iniMenuItem("Assign as a kinship file");
-        // Construct menu
-        // module
-        this.menuMO.add(menuOpenMO);
-        this.menuMO.add(menuGWAS);
-        this.menuMO.add(menuGS);
-        this.menuMO.add(menuBSA);
-        this.menuMO.addSeparator();
-        this.menuMO.add(menuRun);
-        this.menuRun.setEnabled(false);
-        // file
-        this.menuFile.add(menuOpenFile);
-        this.menuFile.add(menuIsRegular);
-        this.menuFile.add(menuIsCov);
-        this.menuFile.add(menuIsKin);
-        // Layout (module)
-        this.menuMO.setBorder(new BevelBorder(BevelBorder.RAISED));
-        this.menuFile.setBorder(new BevelBorder(BevelBorder.RAISED));
     }
 
     JMenuItem iniMenuItem(String name) {
@@ -103,39 +54,6 @@ class Obj_Manager implements ActionListener, WindowListener {
         item.setHorizontalTextPosition(JMenuItem.RIGHT);
         item.addActionListener(this);
         return item;
-    }
-
-    void showMenu(int index, MouseEvent e) {
-        this.indexSelected = index;
-        if (this.isFile(index)) {
-            this.menuFile.show(e.getComponent(), e.getX(), e.getY());
-        } else {
-            // updatea based on the deployment
-            Obj_Module mo = (Obj_Module)this.getObjectN(index);
-            if (mo.isGWASDeployed())
-                this.menuGWAS.setText("GWAS (" + mo.getDeployedGWASTool() + ")");
-            else
-                this.menuGWAS.setText("GWAS (Empty)");
-            if (mo.isGSDeployed())
-                this.menuGS.setText("GS (" + mo.getDeployedGSTool() + ")");
-            else
-                this.menuGS.setText("GS (Empty)");
-            if (mo.isBSADeployed())
-                this.menuBSA = iniMenuItem("BSA (Ready)");
-            else
-                this.menuBSA = iniMenuItem("BSA (Empty)");
-            this.menuRun.setEnabled(mo.isDeployed());
-            this.menuMO.show(e.getComponent(), e.getX(), e.getY());
-        }
-    }
-
-    void printStat() {
-        System.out.println("Index : " + this.getIndex());
-        System.out.println("File : " + this.getFileIndex());
-        System.out.println("Module : " + this.getModuleIndex());
-        System.out.println("Group : " + indexGr);
-        System.out.println("line start: " + indexLineSt);
-        System.out.println("line end :  " + indexLineEd);
     }
 
     // get array
@@ -307,199 +225,6 @@ class Obj_Manager implements ActionListener, WindowListener {
         return this.indexGr.get(n);
     }
 
-    Enum_FileFormat getFormat(int indexMO) throws IOException {
-        // need extension (without extension): Binary fam
-        // type record which table is P(1), C(2) or K(3)
-        // get all index in the group
-        ArrayList<Integer> indexInGr = this.getGrN(this.getGrIndex(indexMO));
-        indexInGr.removeIf(Predicate.isEqual(indexMO));
-        // get file from OBs
-        ArrayList<IPatFile> files = new ArrayList<>();
-        int countFile = 0;
-        for (int i : indexInGr) {
-            Obj_Super obj = this.getObjectN(i);
-            files.add(obj.getFile());
-            if (!((Obj_File)obj).isKin() && !((Obj_File)obj).isCov())
-                countFile++;
-        }
-        // file by two string
-        ArrayList<String[]> head2Lines = new ArrayList<>();
-        // file by separated elements
-        ArrayList<String[]> row1 = new ArrayList<>();
-        ArrayList<String[]> row2 = new ArrayList<>();
-        // file by count
-        ArrayList<Integer> countRow = new ArrayList<>();
-        ArrayList<Integer> countCol = new ArrayList<>();
-        // fetch information from files
-        for (IPatFile file : files) {
-            String[] lines = file.getLines(2);
-            String[] row1Temp = file.getSepStr(lines[0]);
-            String[] row2Temp = file.getSepStr(lines[1]);
-            int countColTemp = row1Temp.length;
-            head2Lines.add(lines);
-            row1.add(row1Temp);
-            row2.add(row2Temp);
-            countRow.add(file.getLineCount());
-            countCol.add(countColTemp);
-        }
-        // determine which format
-        int i1, i2, i3;
-        switch (countFile) {
-            case 2:
-                boolean[] isPLINK = {
-                        files.get(0).getPath().toUpperCase().endsWith("MAP") &&
-                                files.get(1).getPath().toUpperCase().endsWith("PED") && countCol.get(0) == 4,
-                        files.get(1).getPath().toUpperCase().endsWith("MAP") &&
-                                files.get(0).getPath().toUpperCase().endsWith("PED") && countCol.get(1) == 4
-                };
-                boolean[] isVCF = {
-                        countCol.get(0) - head2Lines.get(0)[1].split("/").length == 8 &&
-                                head2Lines.get(0)[1].split("/").length > 1,
-                        countCol.get(1) - head2Lines.get(1)[1].split("/").length == 8 &&
-                                head2Lines.get(1)[1].split("/").length > 1
-                };
-                boolean[] isHMP = {
-                        countCol.get(0) - countRow.get(1) == 11 || countCol.get(0) - countRow.get(1) == 10,
-                        countCol.get(1) - countRow.get(0) == 11 || countCol.get(1) - countRow.get(0) == 10
-                };
-                boolean[] isNUM = {
-                        Arrays.asList(row2.get(0)).containsAll(Arrays.asList("0", "1", "2")) &&
-                                diffValues(row2.get(0)) < 5,
-                        Arrays.asList(row2.get(1)).containsAll(Arrays.asList("0", "1", "2")) &&
-                                diffValues(row2.get(1)) < 5
-                };
-                boolean[] isBSA = {
-                        countCol.get(0) == 5 && countCol.get(1) == 3 && countRow.get(0) == countRow.get(1),
-                        countCol.get(1) == 5 && countCol.get(0) == 3 && countRow.get(1) == countRow.get(0)
-                };
-                i1 = indexInGr.get(0);
-                i2 = indexInGr.get(1);
-                if (isPartialTrue(isPLINK)) {
-                    this.getFileN(i1).setFileType(isPLINK[0] ? Enum_FileType.Map : Enum_FileType.Genotype);
-                    this.getFileN(i2).setFileType(isPLINK[1] ? Enum_FileType.Map : Enum_FileType.Genotype);
-//                    this.getModuleN(indexMO).setMap(isPLINK[0] ? this.getFileN(i1).getFile() : this.getFileN(i2).getFile());
-//                    this.getModuleN(indexMO).setGenotype(isPLINK[1] ? this.getFileN(i1).getFile() : this.getFileN(i2).getFile());
-                    return Enum_FileFormat.PLINK;
-                } else if (isPartialTrue(isVCF)) {
-                    this.getFileN(i1).setFileType(isVCF[0] ? Enum_FileType.Genotype : Enum_FileType.Phenotype);
-                    this.getFileN(i2).setFileType(isVCF[1] ? Enum_FileType.Genotype : Enum_FileType.Phenotype);
-//                    this.getModuleN(indexMO).setGenotype(isVCF[0] ? this.getFileN(i1).getFile() : this.getFileN(i2).getFile());
-//                    this.getModuleN(indexMO).setPhenotype(isVCF[1] ? this.getFileN(i1).getFile() : this.getFileN(i2).getFile());
-                    return Enum_FileFormat.VCF;
-                } else if (isPartialTrue(isHMP)) {
-                    this.getFileN(i1).setFileType(isHMP[0] ? Enum_FileType.Genotype : Enum_FileType.Phenotype);
-                    this.getFileN(i2).setFileType(isHMP[1] ? Enum_FileType.Genotype : Enum_FileType.Phenotype);
-//                    this.getModuleN(indexMO).setGenotype(isHMP[0] ? this.getFileN(i1).getFile() : this.getFileN(i2).getFile());
-//                    this.getModuleN(indexMO).setPhenotype(isHMP[1] ? this.getFileN(i1).getFile() : this.getFileN(i2).getFile());
-                    return Enum_FileFormat.Hapmap;
-                } else if (isPartialTrue(isNUM)) {
-                    this.getFileN(i1).setFileType(isNUM[0] ? Enum_FileType.Genotype : Enum_FileType.Phenotype);
-                    this.getFileN(i2).setFileType(isNUM[1] ? Enum_FileType.Genotype : Enum_FileType.Phenotype);
-//                    this.getModuleN(indexMO).setGenotype(isNUM[0] ? this.getFileN(i1).getFile() : this.getFileN(i2).getFile());
-//                    this.getModuleN(indexMO).setPhenotype(isNUM[1] ? this.getFileN(i1).getFile() : this.getFileN(i2).getFile());
-                    return Enum_FileFormat.Numeric;
-                } else if (isPartialTrue(isBSA)) {
-                    this.getFileN(i1).setFileType(isBSA[0] ? Enum_FileType.Genotype : Enum_FileType.Map);
-                    this.getFileN(i2).setFileType(isBSA[1] ? Enum_FileType.Genotype : Enum_FileType.Map);
-//                    this.getModuleN(indexMO).setGenotype(isPLINK[0] ? this.getFileN(i1).getFile() : this.getFileN(i2).getFile());
-//                    this.getModuleN(indexMO).setMap(isPLINK[1] ? this.getFileN(i1).getFile() : this.getFileN(i2).getFile());
-                    return Enum_FileFormat.BSA;
-                }
-                break;
-            case 3:
-                // Numerical
-                for (int i = 0; i < 3; i++) {
-                    i1 = indexInGr.get(i);
-                    i2 = indexInGr.get((i + 1) % 3);
-                    i3 = indexInGr.get((i + 2) % 3);
-                    if ((Arrays.asList(row2.get(i)).containsAll(Arrays.asList("0", "1")) ||
-                            Arrays.asList(row2.get(i)).containsAll(Arrays.asList("0", "2"))) &&
-                            diffValues(row2.get(i)) < 6) {
-                        this.getFileN(i1).setFileType(Enum_FileType.Genotype);
-                        // m or m+1 - m or m+1 = -1, 0 1
-                        this.getFileN(i2).setFileType((countCol.get((i + 1) % 3) == 3 &&
-                                Math.abs(countCol.get(i) - countRow.get((i + 1) % 3)) <= 1) ? Enum_FileType.Map : Enum_FileType.Phenotype);
-                        this.getFileN(i3).setFileType((countCol.get((i + 2) % 3) == 3 &&
-                                Math.abs(countCol.get(i) - countRow.get((i + 2) % 3)) <= 1) &&
-                                this.getFileN(i2).getFileType() != Enum_FileType.Map ? Enum_FileType.Map : Enum_FileType.Phenotype);
-                        // check if contains all filetype
-                        ArrayList<Enum_FileType> alltype = new ArrayList<>();
-                        alltype.add(this.getFileN(i1).getFileType());
-                        alltype.add(this.getFileN(i2).getFileType());
-                        alltype.add(this.getFileN(i3).getFileType());
-                        if (alltype.containsAll(Arrays.asList(Enum_FileType.Genotype, Enum_FileType.Map, Enum_FileType.Phenotype)))
-                            return Enum_FileFormat.Numeric;
-                    }
-                }
-                // PLINK
-                int PED = -1;
-                int MAP = -1;
-                for (int i = 0; i < 3; i++) {
-                    i1 = indexInGr.get(i);
-                    if (files.get(i).getPath().toUpperCase().endsWith("PED")) {
-                        this.getFileN(i1).setFileType(Enum_FileType.Genotype);
-                        PED = i;
-                    } else if (files.get(i).getPath().toUpperCase().endsWith("MAP") && countCol.get(i) == 4) {
-                        this.getFileN(i1).setFileType(Enum_FileType.Map);
-                        MAP = i;
-                    }
-                }
-                if (PED != -1 && MAP != -1) {
-                    int indexP = indexInGr.get(3 - PED - MAP);
-                    this.getFileN(indexP).setFileType(Enum_FileType.Phenotype);
-                    return Enum_FileFormat.PLINK;
-                }
-                // Binary
-                int BED = -1;
-                int BIM = -1;
-                int FAM = -1;
-                for (int i = 0; i < 3; i++) {
-                    i1 = indexInGr.get(i);
-                    if (files.get(i).getPath().toUpperCase().endsWith("BED")) {
-                        this.getFileN(i1).setFileType(Enum_FileType.Genotype);
-                        BED = i;
-                    } else if (files.get(i).getPath().toUpperCase().endsWith("BIM") && countCol.get(i) == 6) {
-                        this.getFileN(i1).setFileType(Enum_FileType.BIM);
-                        BIM = i;
-                    } else if (files.get(i).getPath().toUpperCase().endsWith("BIM") && countCol.get(i) == 6) {
-                        this.getFileN(i1).setFileType(Enum_FileType.FAM);
-                        FAM = i;
-                    }
-                }
-                if (BED != -1 && BIM != -1 && FAM != -1)
-                    return Enum_FileFormat.PLINKBIN;
-                break;
-            case 4:
-                // Binary
-                BED = -1;
-                BIM = -1;
-                FAM = -1;
-                for (int i = 0; i < 3; i++) {
-                    i1 = indexInGr.get(i);
-                    if (files.get(i).getPath().toUpperCase().endsWith("BED")) {
-                        this.getFileN(i1).setFileType(Enum_FileType.Genotype);
-                        BED = i;
-                    } else if (files.get(i).getPath().toUpperCase().endsWith("BIM") && countCol.get(i) == 6) {
-                        this.getFileN(i1).setFileType(Enum_FileType.BIM);
-                        BIM = i;
-                    } else if (files.get(i).getPath().toUpperCase().endsWith("BIM") && countCol.get(i) == 6) {
-                        this.getFileN(i1).setFileType(Enum_FileType.FAM);
-                        FAM = i;
-                    }
-                }
-                if (BED != -1 && BIM != -1 && FAM != -1) {
-                    int P = 6 - BED - BIM - FAM;
-                    int indexP = indexInGr.get(P);
-                    if (Math.abs(countRow.get(FAM) - countRow.get(P)) < 2) {
-                        this.getFileN(indexP).setFileType(Enum_FileType.Phenotype);
-                        return Enum_FileFormat.PLINKBIN;
-                    }
-                }
-                break;
-        }
-        return Enum_FileFormat.NA;
-    }
-
     boolean isPartialTrue(boolean[] array){
         for (boolean b : array) if(b) return true;
         return false;
@@ -629,49 +354,7 @@ class Obj_Manager implements ActionListener, WindowListener {
         return this.listOB.get(index).isContainMO();
     }
 
-    // remove line onlu
-    void removeLine(int index) {
-        int index1 = this.indexLineSt.get(index);
-        int index2 = this.indexLineEd.get(index);
-        // break linkage and update two group
-        this.breakLinkage(index1, index2);
-        this.countGr ++;
-        // Rearrange line list
-        this.indexLineSt.remove(index);
-        this.indexLineEd.remove(index);
-
-    }
-
-    // similar to removeLine but arrange it at final
-    void removeLineOfOB(int indexOB) {
-        ArrayList<Integer> indexOfLineRemove = new ArrayList<>();
-        for (int i : this.getLineIndexOfOB(indexOB)) {
-            indexOfLineRemove.add(i);
-            int index1 = this.indexLineSt.get(i);
-            int index2 = this.indexLineEd.get(i);
-            // break linkage and update two group
-            System.out.println("Index1 : " + index1 + " Index2 : " + index2);
-            System.out.println("Group Index : " + this.countGr);
-            if (index1 == indexOB)
-                this.breakLinkage(index1, index2);
-            else
-                this.breakLinkage(index2, index1);
-            this.countGr ++;
-        }
-        Collections.sort(indexOfLineRemove);
-        Collections.reverse(indexOfLineRemove);
-        // Rearrange line list
-        System.out.println("delete : " + indexOfLineRemove);
-        for (int i : indexOfLineRemove) {
-            this.indexLineSt.remove(i);
-            this.indexLineEd.remove(i);
-        }
-        this.printStat();
-    }
-
     void removeObject(int index) {
-        // Get its pair and remove linkage
-        removeLineOfOB(index);
         // Rearrange file list
         int indexDelete = -1;
         for (int i = 0; i < this.getFileCount(); i ++) {
@@ -715,118 +398,12 @@ class Obj_Manager implements ActionListener, WindowListener {
         this.listOB.remove(index);
         this.indexGr.remove(index);
 
-        this.printStat();
-    }
-
-    // assign new index, update containCO and isGroup
-    void breakLinkage(int index1, int index2) {
-        // assign new gr to the group of index2
-        this.setNewGrIndexRecur(index1, index2);
-        // get group index from both object
-        int indexGr1 = this.getGrIndex(index1);
-        System.out.println("indexGr1 = " + indexGr1);
-        int indexGr2 = this.getGrIndex(index2);
-        System.out.println("indexGr2 = " + indexGr2);
-        // update ContainMO status
-        this.setGrOfContainMO(indexGr1, isGroupContainCO(indexGr1));
-        this.setGrOfContainMO(indexGr2, isGroupContainCO(indexGr2));
-        // update isGroup status
-        if (this.getGrN(indexGr1).size() == 1)
-            this.setGrIndex(index1, -1);
-        if (this.getGrN(indexGr2).size() == 1)
-            this.setGrIndex(index2, -1);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
-        Enum_Analysis method = Enum_Analysis.NA;
-        if (source == this.menuIsRegular) {
-            this.getFileN(this.indexSelected).setAsRegular();
-        } else if (source == this.menuIsCov) {
-            this.getFileN(this.indexSelected).setAsCov();
-        } else if (source == this.menuIsKin) {
-            this.getFileN(this.indexSelected).setAsKin();
-        } else if (source == this.menuGWAS) {
-            method = Enum_Analysis.GWAS;
-        } else if (source == this.menuGS) {
-            method = Enum_Analysis.GS;
-        } else if (source == this.menuBSA) {
-            method = Enum_Analysis.BSA;
-        } else if (source == this.menuRun) {
-            Obj_Module mo = this.getModuleN(this.indexSelected);
-            Enum_FileFormat format = mo.getFormat();
-            // Add command for launching app (deep copy)
-            IPatCommand commandGWAS = mo.getCommandGWAS().getCopy();
-            commandGWAS.setMethod(Enum_Analysis.GWAS);
-            IPatCommand commandGS = mo.getCommandGS().getCopy();
-            commandGS.setMethod(Enum_Analysis.GS);
-            IPatCommand commandBSA  = mo.getCommandBSA().getCopy();
-            commandBSA.setMethod(Enum_Analysis.BSA);
-            // do conversion if needed, add filepaths to the command
-            String pathGD = this.getFile(this.indexSelected, Enum_FileType.Genotype).getAbsolutePath();
-            String pathGM = this.getFile(this.indexSelected, Enum_FileType.Map).getAbsolutePath();
-            // GWAS
-            boolean isPLINK = false;
-            if (mo.isGWASDeployed()) {
-                isPLINK = mo.getDeployedGWASTool() == Enum_Tool.PLINK;
-                if (format == Enum_FileFormat.PLINKBIN) {
-                    commandGWAS.addArg("-fam",
-                            this.getFile(this.indexSelected, Enum_FileType.FAM).getAbsolutePath());
-                    commandGWAS.addArg("-bim",
-                            this.getFile(this.indexSelected, Enum_FileType.BIM).getAbsolutePath());
-                }
-                commandGWAS.addArg("-phenotype",
-                        this.getFile(this.indexSelected, Enum_FileType.Phenotype).getAbsolutePath());
-                commandGWAS.addArg("-cov",
-                        this.getFile(this.indexSelected, Enum_FileType.Covariate).getAbsolutePath());
-                commandGWAS.addArg("-kin",
-                        this.getFile(this.indexSelected, Enum_FileType.Kinship).getAbsolutePath());
-            }
-            // GS
-            if (mo.isGSDeployed()) {
-                commandGS.addArg("-phenotype",
-                        this.getFile(this.indexSelected, Enum_FileType.Phenotype).getAbsolutePath());
-                commandGS.addArg("-cov",
-                        this.getFile(this.indexSelected, Enum_FileType.Covariate).getAbsolutePath());
-                commandGS.addArg("-kin",
-                        this.getFile(this.indexSelected, Enum_FileType.Kinship).getAbsolutePath());
-            }
-            // BSA
-            if (mo.isBSADeployed()) {
-                commandBSA.addArg("-phenotype",
-                        this.getFile(this.indexSelected, Enum_FileType.Phenotype).getAbsolutePath());
-                commandBSA.addArg("-genotype", pathGD);
-                commandBSA.addArg("-map", pathGM);
-            }
-            // assemble command
-            ArrayList<IPatCommand> commandRun = new ArrayList<>();
-            commandRun.add(commandGWAS);
-            commandRun.add(commandGS);
-            commandRun.add(commandBSA);
-            mo.run(commandRun, format, isPLINK, pathGD, pathGM);
-        }
-        // Open config panel
-        if (method != Enum_Analysis.NA && source != this.menuRun) {
-            Obj_Module ob = this.getModuleN(this.indexSelected);
-            ob.setIcon("module");
-            try {
-                ob.setFormat(this.getFormat(this.indexSelected));
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-            checkFormat(ob);
-//            GUI_Models_arc newConfig = new GUI_Models_arc(this.indexSelected, ob.getName(), method,
-//                    method == Enum_Analysis.GWAS ? ob.getDeployedGWASTool() : ob.getDeployedGSTool(),
-//                    ob.getFormat(),
-//                    this.getFile(this.indexSelected, Enum_FileType.Phenotype), ob.getPhenotype(),
-//                    this.getFile(this.indexSelected, Enum_FileType.Covariate),
-//                    method == Enum_Analysis.GWAS ? ob.getCovGWAS() : ob.getCovGS(),
-//                    this.countConfig ++);
-//            newConfig.addWindowListener(this);
-//            this.config.add(newConfig);
-            this.indexSelected = -1;
-        }
+        this.indexSelected = -1;
     }
 
     void checkFormat(Obj_Module mo) {

@@ -20,11 +20,8 @@ public class Lib_Ref {
         mapCommon.put("ms", "0.2");
         // GAPIT
         mapGAPIT = new HashMap<>();
-        mapGAPIT.put("model", "GLM");
-        mapGAPIT.put("cluster", "average");
-        mapGAPIT.put("group", "Mean");
-        mapGAPIT.put("snpfrac", "1");
-        mapGAPIT.put("checkS", "FALSE");
+        mapGAPIT.put("model", "CMLM");
+        mapGAPIT.put("pc", "3");
         // FarmCPU
         mapFarmCPU = new HashMap<>();
         mapFarmCPU.put("bin", "optimum");
@@ -35,19 +32,24 @@ public class Lib_Ref {
         mapPLINK.put("model", "GLM");
         // gBLUP
         mapgBLUP = new HashMap<>();
-        mapgBLUP.put("snpfrac", "1");
-        mapgBLUP.put("checkS", "FALSE");
+        mapgBLUP.put("isGWAS", "FALSE");
+        mapgBLUP.put("valid", "FALSE");
+        mapgBLUP.put("fold", "1");
+        mapgBLUP.put("iter", "1");
         // rrBLUP
         maprrBLUP = new HashMap<>();
-        maprrBLUP.put("impute", "mean");
-        maprrBLUP.put("shrink", "TRUE");
+        maprrBLUP.put("isGWAS", "FALSE");
+        maprrBLUP.put("valid", "FALSE");
+        maprrBLUP.put("fold", "1");
+        maprrBLUP.put("iter", "1");
         // BGLR
         mapBGLR = new HashMap<>();
         mapBGLR.put("model", "BRR");
-        mapBGLR.put("response", "gaussian");
         mapBGLR.put("niter", "5000");
         mapBGLR.put("burn", "500");
-        mapBGLR.put("thin", "5");
+        mapBGLR.put("valid", "FALSE");
+        mapBGLR.put("fold", "1");
+        mapBGLR.put("iter", "1");
         // BSA
         mapBSA = new HashMap<>();
         mapBSA.put("window", "20000");
