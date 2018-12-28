@@ -2,75 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="410acb04-9b59-4ff5-984f-22dc119a6f59" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/libBACKUP/Function_iPat.R" afterPath="$PROJECT_DIR$/libBACKUP/Function_iPat.R" />
-      <change beforePath="$PROJECT_DIR$/libBACKUP/iPatBGLR.r" afterPath="$PROJECT_DIR$/libBACKUP/iPatBGLR.r" />
-      <change beforePath="$PROJECT_DIR$/libBACKUP/iPatFarmCPU.r" afterPath="$PROJECT_DIR$/libBACKUP/iPatFarmCPU.r" />
-      <change beforePath="$PROJECT_DIR$/libBACKUP/iPatGAPIT.r" afterPath="$PROJECT_DIR$/libBACKUP/iPatGAPIT.r" />
-      <change beforePath="$PROJECT_DIR$/libBACKUP/iPatPLINK.r" afterPath="$PROJECT_DIR$/libBACKUP/iPatPLINK.r" />
-      <change beforePath="$PROJECT_DIR$/libBACKUP/iPatgBLUP.r" afterPath="$PROJECT_DIR$/libBACKUP/iPatgBLUP.r" />
-      <change beforePath="$PROJECT_DIR$/libBACKUP/iPatrrBLUP.r" afterPath="$PROJECT_DIR$/libBACKUP/iPatrrBLUP.r" />
-      <change beforePath="$PROJECT_DIR$/md/2.6-Converter.png" afterPath="$PROJECT_DIR$/md/2.6-Converter.png" />
-      <change beforePath="$PROJECT_DIR$/page/02-Interface.Rmd" afterPath="$PROJECT_DIR$/page/02-Interface.Rmd" />
-      <change beforePath="$PROJECT_DIR$/page/03-Formats.Rmd" afterPath="$PROJECT_DIR$/page/03-Formats.Rmd" />
-      <change beforePath="$PROJECT_DIR$/page/04-CaseStudy.Rmd" afterPath="$PROJECT_DIR$/page/04-CaseStudy.Rmd" />
-      <change beforePath="$PROJECT_DIR$/page/05-References.Rmd" afterPath="$PROJECT_DIR$/page/05-References.Rmd" />
-      <change beforePath="$PROJECT_DIR$/page/_book/case-study.html" afterPath="$PROJECT_DIR$/page/_book/case-study.html" />
-      <change beforePath="$PROJECT_DIR$/page/_book/convert-vcf-files-to-plink-format.html" afterPath="$PROJECT_DIR$/page/_book/convert-vcf-files-to-plink-format.html" />
-      <change beforePath="$PROJECT_DIR$/page/_book/converter.html" afterPath="$PROJECT_DIR$/page/_book/converter.html" />
-      <change beforePath="$PROJECT_DIR$/page/_book/formats.html" afterPath="$PROJECT_DIR$/page/_book/formats.html" />
-      <change beforePath="$PROJECT_DIR$/page/_book/get-started.html" afterPath="$PROJECT_DIR$/page/_book/get-started.html" />
-      <change beforePath="$PROJECT_DIR$/page/_book/global-settings.html" afterPath="$PROJECT_DIR$/page/_book/global-settings.html" />
-      <change beforePath="$PROJECT_DIR$/page/_book/gs.html" afterPath="$PROJECT_DIR$/page/_book/gs.html" />
-      <change beforePath="$PROJECT_DIR$/page/_book/gwas-assisted-gs-in-rrblup.html" afterPath="$PROJECT_DIR$/page/_book/gwas-assisted-gs-in-rrblup.html" />
-      <change beforePath="$PROJECT_DIR$/page/_book/gwas-assisted-gs.html" afterPath="$PROJECT_DIR$/page/_book/gwas-assisted-gs.html" />
-      <change beforePath="$PROJECT_DIR$/page/_book/gwas-in-gapit.html" afterPath="$PROJECT_DIR$/page/_book/gwas-in-gapit.html" />
-      <change beforePath="$PROJECT_DIR$/page/_book/gwas.html" afterPath="$PROJECT_DIR$/page/_book/gwas.html" />
-      <change beforePath="$PROJECT_DIR$/page/_book/index.html" afterPath="$PROJECT_DIR$/page/_book/index.html" />
-      <change beforePath="$PROJECT_DIR$/page/_book/input-formats.html" afterPath="$PROJECT_DIR$/page/_book/input-formats.html" />
-      <change beforePath="$PROJECT_DIR$/page/_book/interface-and-usage.html" afterPath="$PROJECT_DIR$/page/_book/interface-and-usage.html" />
-      <change beforePath="$PROJECT_DIR$/page/_book/k-fold-validation-gs-in-bglr.html" afterPath="$PROJECT_DIR$/page/_book/k-fold-validation-gs-in-bglr.html" />
-      <change beforePath="$PROJECT_DIR$/page/_book/mac-os-users.html" afterPath="$PROJECT_DIR$/page/_book/mac-os-users.html" />
-      <change beforePath="$PROJECT_DIR$/page/_book/output-formats.html" afterPath="$PROJECT_DIR$/page/_book/output-formats.html" />
-      <change beforePath="$PROJECT_DIR$/page/_book/references.html" afterPath="$PROJECT_DIR$/page/_book/references.html" />
-      <change beforePath="$PROJECT_DIR$/page/_book/search_index.json" afterPath="$PROJECT_DIR$/page/_book/search_index.json" />
-      <change beforePath="$PROJECT_DIR$/page/_book/windows-users.html" afterPath="$PROJECT_DIR$/page/_book/windows-users.html" />
-      <change beforePath="$PROJECT_DIR$/page/_book/workflow.html" afterPath="$PROJECT_DIR$/page/_book/workflow.html" />
-      <change beforePath="$PROJECT_DIR$/page/index.Rmd" afterPath="$PROJECT_DIR$/page/index.Rmd" />
-      <change beforePath="$PROJECT_DIR$/page/render_book.r" afterPath="$PROJECT_DIR$/page/render_book.r" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/Cpu_Converter.java" afterPath="$PROJECT_DIR$/src/main/java/Cpu_Converter.java" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/Cpu_SuperConverter.java" afterPath="$PROJECT_DIR$/src/main/java/Cpu_SuperConverter.java" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/GUI_Config.java" afterPath="$PROJECT_DIR$/src/main/java/GUI_Config.java" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/GUI_Objs.java" afterPath="$PROJECT_DIR$/src/main/java/GUI_Objs.java" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/GUI_Panels.java" afterPath="$PROJECT_DIR$/src/main/java/GUI_Panels.java" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/Lib_Image.java" afterPath="$PROJECT_DIR$/src/main/java/Lib_Image.java" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/Obj_Module.java" afterPath="$PROJECT_DIR$/src/main/java/Obj_Module.java" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/Obj_Super.java" afterPath="$PROJECT_DIR$/src/main/java/Obj_Super.java" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/iPat.java" afterPath="$PROJECT_DIR$/src/main/java/iPat.java" />
-      <change beforePath="$PROJECT_DIR$/target/classes/CardButton.class" afterPath="$PROJECT_DIR$/target/classes/CardButton.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/Cpu_Converter.class" afterPath="$PROJECT_DIR$/target/classes/Cpu_Converter.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/Cpu_SuperConverter.class" afterPath="$PROJECT_DIR$/target/classes/Cpu_SuperConverter.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/FileLabel.class" afterPath="$PROJECT_DIR$/target/classes/FileLabel.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/GUI_Config$1.class" afterPath="$PROJECT_DIR$/target/classes/GUI_Config$1.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/GUI_Config.class" afterPath="$PROJECT_DIR$/target/classes/GUI_Config.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/GUI_Objs.class" afterPath="$PROJECT_DIR$/target/classes/GUI_Objs.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/Lib_Image.class" afterPath="$PROJECT_DIR$/target/classes/Lib_Image.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/Obj_Module$iPatThread.class" afterPath="$PROJECT_DIR$/target/classes/Obj_Module$iPatThread.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/Obj_Super.class" afterPath="$PROJECT_DIR$/target/classes/Obj_Super.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/PanelBGLR.class" afterPath="$PROJECT_DIR$/target/classes/PanelBGLR.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/PanelBottom$1.class" afterPath="$PROJECT_DIR$/target/classes/PanelBottom$1.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/PanelBottom$PanelConfig.class" afterPath="$PROJECT_DIR$/target/classes/PanelBottom$PanelConfig.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/PanelBottom$ToolAdapter.class" afterPath="$PROJECT_DIR$/target/classes/PanelBottom$ToolAdapter.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/PanelBottom$ToolButton.class" afterPath="$PROJECT_DIR$/target/classes/PanelBottom$ToolButton.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/PanelBottom.class" afterPath="$PROJECT_DIR$/target/classes/PanelBottom.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/PanelCov.class" afterPath="$PROJECT_DIR$/target/classes/PanelCov.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/PanelQC.class" afterPath="$PROJECT_DIR$/target/classes/PanelQC.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/PanelWD.class" afterPath="$PROJECT_DIR$/target/classes/PanelWD.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/SelectPanel.class" afterPath="$PROJECT_DIR$/target/classes/SelectPanel.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/SortedListModel.class" afterPath="$PROJECT_DIR$/target/classes/SortedListModel.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/iPat.class" afterPath="$PROJECT_DIR$/target/classes/iPat.class" />
-      <change beforePath="$PROJECT_DIR$/target/lib/iPatFarmCPU.r" afterPath="$PROJECT_DIR$/target/lib/iPatFarmCPU.r" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
@@ -856,6 +788,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="759">
           <caret line="37" column="0" lean-forward="false" selection-start-line="37" selection-start-column="0" selection-end-line="37" selection-end-column="0" />
+          <folding>
+            <element signature="e#769#770#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
