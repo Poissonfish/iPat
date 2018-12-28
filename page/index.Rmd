@@ -16,7 +16,7 @@ lof: yes
 fontsize: 12pt
 monofont: "Source Code Pro"
 monofontoptions: "Scale=0.7"
-cover-image: ../../md/icon.png
+cover-image: md/icon.png
 ---
 # Why iPat? {-}
 <p align="center"><img src = "md/icon.png" width = 200></p>
@@ -27,10 +27,8 @@ cover-image: ../../md/icon.png
 
 <center>**[Demo data](http://zzlab.net/iPat/demo.zip)**</center>
 
-<center>**[User manual (pdf)](http://zzlab.net/iPat/iPat_manual.pdf)**</center>
-
 <br>
-Intelligent Prediction and Association Tool (iPat) is a software for genomic studies with a user-friendly graphical user interface (GUI). With iPat, GWAS or GS can be performed using a pointing device to simply drag and/or click on graphical elements to specify input data files, choose input parameters, and select analytical models. It can also serve as a format converter for people who want to use the converted files for other purposes. 
+Intelligent Prediction and Association Tool (iPat) is a software for genomic studies with a user-friendly graphical user interface (GUI). With iPat, GWAS or GS can be performed using a pointing device to simply drag and/or click on graphical elements to specify input data files, choose input parameters, and select analytical models. It can also serve as a format converter for people who want to use the converted files for other purposes.
 
 <br>
 <p align="center"><img src = "md/Welcom_Demo.gif"></p>
