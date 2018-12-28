@@ -9,7 +9,7 @@
 ## [Demo data](http://zzlab.net/iPat/demo.zip)
 
 # Why iPat?
- Intelligent Prediction and Association Tool (iPat) is a software for genomic studies with a user-friendly graphical user interface (GUI). With iPat, GWAS or GS can be performed using a pointing device to simply drag and/or click on graphical elements to specify input data files, choose input parameters, and select analytical models. It can also serve as a format converter for people who want to use the converted files for other purposes. Please click [here](http://poissonfish.github.io/iPat) for further information on the GibHub pages.
+ Intelligent Prediction and Association Tool (iPat) is a software for genomic studies with a user-friendly graphical user interface (GUI). With iPat, GWAS or GS can be performed using a pointing device to simply drag and/or click on graphical elements to specify input data files, choose input parameters, and select analytical models. It can also serve as a format converter for people who want to use the converted files for other purposes. Please click [here](http://poissonfish.github.io/iPat) for further information on the GibHub Pages.
 
 # Support
 
