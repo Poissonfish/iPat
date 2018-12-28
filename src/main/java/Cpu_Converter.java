@@ -9,11 +9,13 @@ class Cpu_Converter extends Cpu_SuperConverter {
     Container content;
     Border border;
     JProgressBar progressBar;
+    iPatFormat inputF, outputF;
+    String pathGD, pathGM;
 
-    //        args = new String[]{"-in", "hmp", "-out", "num", "-GD", "/Users/jameschen/sam.hmp"};
     public Cpu_Converter(Enum_FileFormat formatIn, Enum_FileFormat formatOut, String pathGD, String pathGM,
                          double rateMAF, double rateNA,
-                         boolean isNAFill, int batchSize) throws IOException {
+                         boolean isNAFill, int batchSize,
+                         boolean isBG) throws IOException {
         super();
         // Translate enum in iPat to enum in converter
         iPatFormat input = null, output = null;
@@ -35,8 +37,37 @@ class Cpu_Converter extends Cpu_SuperConverter {
         this.rateNA = rateNA;
         this.isNAFill = isNAFill;
         this.sub_n = batchSize;
-        // Do conversion
-        run(input, output, pathGD, pathGM);
+        this.inputF = input;
+        this.outputF = output;
+        this.pathGD = pathGD;
+        this.pathGM = pathGM;
+        // Run conversion
+        if (isBG)
+            ConvertInBackground();
+        else
+            ConvertAndWait();
+    }
+    void ConvertInBackground() {
+        ConvertRun run = new ConvertRun(this);
+        new Thread(run).start();
+    }
+    void ConvertAndWait() throws IOException {
+        this.run(this.inputF, this.outputF, this.pathGD, this.pathGM);
+    }
+
+    private class ConvertRun implements Runnable {
+        Cpu_Converter converterTemp;
+        ConvertRun(Cpu_Converter converter) {
+            this.converterTemp = converter;
+        }
+        @Override
+        public void run() {
+            try {
+                this.converterTemp.run(this.converterTemp.inputF, this.converterTemp.outputF, this.converterTemp.pathGD, this.converterTemp.pathGM);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override

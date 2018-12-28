@@ -10,23 +10,25 @@ tryCatch({
   cat("Done\n")
   ANALYSIS = "rrBLUP"
 
-# ======= Test Code ====== #
-  rm(list=ls())
-  arg = c("-gs", "TRUE", "5", "1",
-          "-gwas", "FALSE", "0",
-          "-wd", "/Users/jameschen/Desktop/Test/iPatDEMO",
-          "-project", "rrBLUP",
-          "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.txt",
-          "-pSelect", "y75sepy25sep",
-          # "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/data.txt",
-          # "-pSelect", "EarHTsepEarDiasep",
-          "-cov", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.cov",
-          "-cSelect", "C1sep",
-          "-genotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.dat",
-          "-kin", "NA",
-          "-map", "NA")
-  trait = dataP$name[1]
-
+# Input arguments
+  arg = commandArgs(trailingOnly=TRUE)
+  # ======= Test Code ====== #
+  # rm(list=ls())
+  # arg = c("-gs", "TRUE", "5", "1",
+  #         "-gwas", "TRUE", "0.05",
+  #         "-arg", "BRR", "1200", "500",
+  #         "-wd", "/Users/jameschen/Desktop/Test/iPatDEMO",
+  #         "-project", "farm",
+  #         "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.txt",
+  #         "-pSelect", "y25sepy50sepy75sep",
+  #         # "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/data.txt",
+  #         # "-pSelect", "EarHTsepEarDiasep",
+  #         "-cov", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.cov",
+  #         "-cSelect", "C1sep",
+  #         "-genotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo_recode.dat",
+  #         "-kin", "NA",
+  #         "-map", "/Users/jameschen/Desktop/Test/iPatDEMO/demo_recode.nmap")
+  # trait = dataP$name[1]
   # X = finalG
   # Y = finalP
   # # C = finalC
@@ -35,10 +37,7 @@ tryCatch({
   # fold = 1
   # K = finalK
   # YTemp = yTemp
-# ======= Test Code ====== #
-
-# Input arguments
-  arg = commandArgs(trailingOnly=TRUE)
+  # ======= Test Code ====== #
   for (i in 1 : length(arg)) {
     switch (arg[i],
       "-wd" = {
@@ -102,8 +101,7 @@ tryCatch({
       "-gwas" = {
         i = i + 1
         isGWASAssist = as.logical(arg[i])
-        i = i + 1
-        cutoff = as.numeric(arg[i])
+        cutoff = 0.05
       },
       "-gs" = {
         i = i + 1
@@ -132,7 +130,7 @@ tryCatch({
 
 # Iterate over traits
   for (trait in dataP$name) {
-    cat(sprintf("   rrBLUP is computing for trait %s ...", trait))
+    cat(sprintf("   rrBLUP is computing for trait %s ...\n", trait))
     # Collect covariates
       Cov = getCovFromGWAS(isGWASAssist, cutoff,
         sizeN = sizeN, dataCov = dataC,
@@ -155,9 +153,11 @@ tryCatch({
           finalC = Cov
           runRRBLUP(finalP, finalG, finalC, taxa, project, trait)
       }
+      iPat.Genotype.View(myGD = data.frame(taxa, rawGenotype), filename = sprintf("iPat_%s_%s", project, trait))
+      iPat.Phenotype.View(myY = data.frame(taxa, dataP$data[[trait]]), filename = sprintf("iPat_%s_%s", project, trait))
     cat("Done\n")
   }
-  print(warnings())
+  # print(warnings())
 }, error = function(e){
   stop(e)
 })

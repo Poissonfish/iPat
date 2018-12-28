@@ -146,10 +146,10 @@ public class iPat {
         // Add the panel into JFrame
         IPATFRAME.setContentPane(iPat);
         IPATFRAME.show();
-        new Cpu_Converter(Enum_FileFormat.Numeric, Enum_FileFormat.PLINK,
-                "/Users/jameschen/Desktop/Test/iPatDEMO/demo.dat", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.map",
-                0.05,  0.2,
-                true, 64);
+//        new Cpu_Converter(Enum_FileFormat.Hapmap, Enum_FileFormat.PLINK,
+//                "/Users/jameschen/Desktop/Test/iPatDEMO/demo.hmp", "NA",
+//                0.3,  0.2,
+//                false, 64);
     }
 }
 

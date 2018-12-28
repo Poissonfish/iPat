@@ -120,7 +120,7 @@ abstract class Obj_Super {
 
     void setFile(String text) {
         this.file = new IPatFile(text);
-        this.name = text;
+//        this.name = text;
     }
 
     void remove() {

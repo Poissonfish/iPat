@@ -78,7 +78,7 @@ public class GUI_Objs extends JPanel implements ActionListener,MouseMotionListen
                 (int) ptCenter.getX() - iPat.IMGLIB.getImage("module").getWidth(this) / 2,
                 (int) ptCenter.getY() - iPat.IMGLIB.getImage("module").getHeight(this) / 2);
         repaint();
-        this.iPatOB.getObjectN(0).setName("Right Click to Create new Project");
+        this.iPatOB.getObjectN(0).setName("Right Click to Create a New Project");
     }
 
     void setupKeyMap() {

@@ -114,7 +114,9 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
                 for (FileLabel lb : arrayLabel) {
                     if (lb.getBounds().contains(pt)) {
                         // Do Color change
-                    }
+                        lb.iconDetect();
+                    } else
+                        lb.iconUpdate();
                 }
             }
             @Override
@@ -137,8 +139,6 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
                                 if (lb.getBounds().contains(pt)) {
                                     module.setFile(files.get(0).getPath(), lb.getFiletype());
                                     lb.setFile(new IPatFile(files.get(0).getAbsolutePath()));
-                                    // Do Color change
-//                                    lb.setColor("themecolor");
                                 }
                             }
                             repaint();
@@ -280,6 +280,7 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
             command.addArg("-phenotype", this.labelP.getFile().getPath());
             command.addArg("-pSelect", this.panePhenotype.getSelected());
             command.addArg("-cov", this.labelCov.getFile().getPath());
+            command.addArg("-kin", this.labelKin.getFile().getPath());
             command.setMethod(Enum_Analysis.GWAS);
             // Create array (in case gaws-assist)
             ArrayList<IPatCommand> commandRun = new ArrayList<>();
@@ -305,6 +306,7 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
             command.addArg("-phenotype", this.labelP.getFile().getPath());
             command.addArg("-pSelect", this.panePhenotype.getSelected());
             command.addArg("-cov", this.labelCov.getFile().getPath());
+            command.addArg("-kin", this.labelKin.getFile().getPath());
             command.setMethod(Enum_Analysis.GS);
             // Create array (in case gaws-assist)
             ArrayList<IPatCommand> commandRun = new ArrayList<>();
@@ -334,6 +336,7 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
             commandGWAS.addArg("-phenotype", this.labelP.getFile().getPath());
             commandGWAS.addArg("-pSelect", this.panePhenotype.getSelected());
             commandGWAS.addArg("-cov", this.labelCov.getFile().getPath());
+            commandGWAS.addArg("-kin", this.labelKin.getFile().getPath());
             commandGWAS.setMethod(Enum_Analysis.GWAS);
             IPatCommand commandGS = this.paneGS2.getCommand();
             commandGS.addWD(this.paneWD.getPath());
@@ -341,6 +344,7 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
             commandGS.addArg("-phenotype", this.labelP.getFile().getPath());
             commandGS.addArg("-pSelect", this.panePhenotype.getSelected());
             commandGS.addArg("-cov", this.labelCov.getFile().getPath());
+            commandGS.addArg("-kin", this.labelKin.getFile().getPath());
             commandGS.setMethod(Enum_Analysis.GS);
             // Create array (in case gaws-assist)
             ArrayList<IPatCommand> commandRun = new ArrayList<>();
@@ -386,8 +390,7 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
                         this.module.getFile(Enum_FileType.Map).getPath(),
                         Double.parseDouble(this.mafConv.getStrValue()),
                         Double.parseDouble(this.msConv.getStrValue()),
-                        this.fillnaConv.isCheck(), Integer.parseInt(this.batchConv.getValue())
-                );
+                        this.fillnaConv.isCheck(), Integer.parseInt(this.batchConv.getValue()), true);
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
@@ -528,6 +531,12 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
         if (!this.labelTemp.getFiletype().isNA())
             this.labelTemp.setLocation(pt.x - this.ptPress.x + this.ptTemp.x,
                     pt.y - this.ptPress.y + this.ptTemp.y);
+        for (FileLabel lb : this.arrayLabel) {
+            if (lb.getBounds().contains(pt) && !lb.equals(this.labelTemp) && !this.labelTemp.isEmpty())
+                lb.iconDetect();
+            else
+                lb.iconUpdate();
+        }
     }
 
     @Override
@@ -596,7 +605,7 @@ class FileLabel extends JPanel {
         // Icon
         this.labelImage = new JLabel();
         this.labelImage.setHorizontalAlignment(SwingConstants.CENTER);
-        labelImage.setIcon(new ImageIcon(iPat.IMGLIB.file));
+        labelImage.setIcon(new ImageIcon(iPat.IMGLIB.file_empty));
         this.add(labelImage, "wrap, grow");
         // Filename
         this.labelFilename = new JLabel("");
@@ -606,6 +615,22 @@ class FileLabel extends JPanel {
         this.setFile(new IPatFile());
         // Backgroud
         this.setOpaque(false);
+    }
+    // icon change
+    void iconToEmpty() {
+        labelImage.setIcon(new ImageIcon(iPat.IMGLIB.file_empty));
+    }
+    void iconToFile() {
+        labelImage.setIcon(new ImageIcon(iPat.IMGLIB.file));
+    }
+    void iconDetect() {
+        labelImage.setIcon(new ImageIcon(iPat.IMGLIB.file_detect));
+    }
+    void iconUpdate() {
+        if (this.isEmpty())
+            this.iconToEmpty();
+        else
+            this.iconToFile();
     }
     // File I/O Deploy
     boolean isEmpty() {
@@ -638,8 +663,10 @@ class FileLabel extends JPanel {
                 this.labelFilename.setText(nameTrim);
             } else
                 this.labelFilename.setText(nameOrg);
+            this.iconToFile();
         } else {
             this.labelFilename.setText("Empty");
+            this.iconToEmpty();
         }
     }
     boolean getHasFile() {
@@ -649,9 +676,11 @@ class FileLabel extends JPanel {
         this.hasFile = hasFile;
         if (this.hasFile) {
             // Do File assigning
+            this.iconToFile();
         } else {
             // Do File deleting
             this.file = new IPatFile();
+            this.iconToEmpty();
         }
     }
     void swapFile (FileLabel target) {
@@ -670,6 +699,7 @@ class FileLabel extends JPanel {
 //        this.setOpaque(true);
         this.setBackground(iPat.IMGLIB.getColor(colorcode));
     }
+
 }
 
 
