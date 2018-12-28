@@ -3,34 +3,33 @@ tryCatch({
   cat("=== BGLR ===\n")
   cat("   Loading libraries ...")
   library(BGLR)
+  library(rrBLUP)
   library(data.table)
   library(magrittr)
   library(ggplot2)
   source("http://zzlab.net/iPat/Function_iPat.R")
   cat("Done\n")
   ANALYSIS = "BGLR"
-
-  # ======= Test Code ====== #
-    # rm(list=ls())
-    # arg = c("-gs", "TRUE", "5", "1",
-    #         "-gwas", "FALSE", "0",
-    #         "-arg", "BRR", "1200", "500",
-    #         "-wd", "/Users/jameschen/Desktop/Test/iPatDEMO",
-    #         "-project", "BGLR",
-    #         "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.txt",
-    #         "-pSelect", "y75sepy25sep",
-    #         # "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/data.txt",
-    #         # "-pSelect", "EarHTsepEarDiasep",
-    #         "-cov", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.cov",
-    #         "-cSelect", "C1sep",
-    #         "-genotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.dat",
-    #         "-kin", "NA",
-    #         "-map", "NA")
-    # trait = dataP$name[1]
-  # ======= Test Code ====== #
-
 # Input arguments
   arg = commandArgs(trailingOnly=TRUE)
+  # ======= Test Code ====== #
+  # rm(list=ls())
+  # arg = c("-gs", "TRUE", "5", "1",
+  #         "-gwas", "TRUE", "0.05",
+  #         "-arg", "BRR", "1200", "500",
+  #         "-wd", "/Users/jameschen/Desktop/Test/iPatDEMO",
+  #         "-project", "PLINK",
+  #         "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.txt",
+  #         "-pSelect", "y75sepy25sep",
+  #         # "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/data.txt",
+  #         # "-pSelect", "EarHTsepEarDiasep",
+  #         "-cov", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.cov",
+  #         "-cSelect", "C1sep",
+  #         "-genotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.dat",
+  #         "-kin", "NA",
+  #         "-map", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.map")
+  # trait = dataP$name[1]
+  # ======= Test Code ====== #
   for (i in 1 : length(arg)) {
     switch (arg[i],
       "-wd" = {
@@ -132,7 +131,7 @@ tryCatch({
 
 # Iterate over traits
   for (trait in dataP$name) {
-    cat(sprintf("   BGLR is computing for trait %s ...", trait))
+    cat(sprintf("   BGLR is computing for trait %s ...\n", trait))
     # Collect covariates
       Cov = getCovFromGWAS(isGWASAssist, cutoff,
         sizeN = sizeN, dataCov = dataC,
@@ -155,49 +154,11 @@ tryCatch({
           finalC = Cov
           runBGLR(finalP, finalG, finalC, taxa, project, trait)
       }
+      iPat.Genotype.View(myGD = data.frame(taxa, rawGenotype), filename = sprintf("iPat_%s_%s", project, trait))
+      iPat.Phenotype.View(myY = data.frame(taxa, dataP$data[[trait]]), filename = sprintf("iPat_%s_%s", project, trait))
     cat("Done\n")
   }
   print(warnings())
 }, error = function(e){
   stop(e)
 })
-
-
-#
-# set.seed(99163)
-# idx.test = sample(nrow(phenotype), round(nrow(phenotype) * 0.2))
-# y = phenotype[idx.test, 2] %>% as.matrix() %>% c()
-# phenotype[idx.test, 2] = NA
-
-# Input arguments
-# arg = c(
-#   "-wd", "~/Desktop/jay",
-#   "-project", "bglr",
-#   "-pSelect", "Selected",
-#   "-maf", "0.05",
-#   "-ms", "0.20",
-#   "-format", "numeric",
-#   "-cSelect", "NA",
-#   "-phenotype", "~/Desktop/jay/data.txt",
-#   "-genotype", "~/Desktop/jay/data.dat",
-#   "-map", "NA",
-#   "-cov", "NA",
-#   "-kin", "NA",
-#   "-gwas", "FALSE", "0.0001",
-#   "-arg", "BL", "gaussian", "500", "500", "3"
-# )
-#
-# -project, bglr,
-# -cSelect, NA,
-# -pSelect, Selectedsep,
-# -maf, 0.05, -ms, 0.2,
-# -format, Numeric,
-# -gwas, FALSE, 0.00001,
-# -arg, BL, gaussian, 500, 500, 5, -wd, /Users/jameschen, -project, bglr,
-# -cSelect, NA,
-# -phenotype, /Users/jameschen/Desktop/jay/data.txt,
-# -cov, /Applications/iPat.app/Contents/MacOS/NA,
-#  -kin, /Applications/iPat.app/Contents/MacOS/NA,
-#  -genotype, /Users/jameschen/Desktop/jay/data.dat,
-#  -map, /Applications/iPat.app/Contents/MacOS/NA
-# cor(blr$yHat[idx.test], y)

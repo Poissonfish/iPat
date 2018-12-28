@@ -1,43 +1,212 @@
 # Interface and Usage
+In this chapter, we'll walk through the basic workflow in iPat and how users can define their analyses with different tools. Also, other miscellaneous features will be addressed in the later section of this chapter.
 
 ## Workflow
+To perform GWAS, GS, and GWAS-assisted GS in iPat, following six steps are demonstrated for users to follow:
 
-### Create a new module
-### Import files
-### Choose an analysis
-### Config and run
-### Monitor progress
-### Inspect results
+### ***Create a new module***{-}
+Every single analysis is defined by a 'module', which can be created by double-click anywhere in the screen and opened by right-click on a gear-shaped icon which is newly created. It's noted that there will always be an automatically created module at the very beginning when users launch iPat, so users only need to right-click on the gear-shaped icon to start their first analysis.
+
+<p align="center"><img src = "../../md/2.1-CreateMod.gif" width = 900></p>
+<p align="center">Fig. Right click to open a module</p>
+
+### ***Import files***{-}
+Users can drag-and-drop their files to import them into iPat. Each filetype has its own slot, and each analysis have slightly different requirements for the imported files. Please follow the instruction in section [2.3](#gwas), [2.4](#gs), [2.5](#format-converter) to learn for further information.
+
+<p align="center"><img src = "../../md/2.1-Import.gif" width = 900></p>
+<p align="center">Fig. Drag-and-drop files to import</p>
+
+### ***Choose an analysis***{-}
+Currently there're four analyses available in iPat. Once users done importing all the required files, they can click a desired analysis to enter the next panel for further configuration.
+
+<p align="center"><img src = "../../md/2.1-ChooseAna.gif" width = 900></p>
+<p align="center">Fig. Choose an analysis for further configuration</p>
+
+### ***Config and run***{-}
+Usually there're two parts in this panel. In the upper part, users can specify the working directory, which phenotype to be analyzed, and quality controls on genetic markers. This panel can be globally defined regardless chosen analysis ([section -2.2](#global-settings)). Whereas the sub-panel in the bottom part is tool-specific, this area allows users to define the chosen tool in details. Please read section [2.3](#gwas), [2.4](#gs), [2.5](#format-converter) for further information. The analysis will be launched when 'run' button in the right-corner is clicked.
+
+<p align="center"><img src = "../../md/2.1-Config.gif" width = 900></p>
+<p align="center">Fig. Detailed configuration for the analysis </p>
+
+### ***Monitor progress***{-}
+Users can hover the pointer on the running module to monitor its progress, or to click on the module to lock the progress window, which can prevent it from disappearing when the pointer is no longer hovered on the module.
+
+<p align="center"><img src = "../../md/2.1-Monitor.gif" width = 900></p>
+<p align="center">Fig. Hover the pointer to monitor the progress </p>
+
+### ***Inspect results***{-}
+Once the analysis is done, a green dot will present at the upper-left corner of the module. Users can open the working directory and find all the output files by double-clicking on the module.
+
+<p align="center"><img src = "../../md/2.1-Result.gif" width = 900></p>
+<p align="center">Fig. Double click to open the working directory </p>
 
 ## Global settings
+
 ### Working directory
+Users can specify the working directory and module names in this panel. Module names will be presented in the output, which can serve as a label for users to distinguish different analyses.
+
 <p align="center"><img src = "../../md/2.2-WD.png" width = 900></p>
+<p align="center">Fig. Panel for users to define working directory </p>
 
 ### Phenotype
+Sometimes users may have several traits in one phenotype file, but not all of them are traits of interest. To deal with this concern, in this panel, traits can be selected and excluded for the following analysis. Click '-->' button to exclude traits that are not the interest of this analysis, or click '<--' button to rescue back traits that are mistakenly excluded.   
+
 <p align="center"><img src = "../../md/2.2-Phenotype.png" width = 900></p>
+<p align="center">Fig. Panel for users to select traits of interest</p>
+
 ### Quality Control
+Two ways of quality controls (QC) are available in this panel, both ways will be applied to genetic markers. 'By missing rate' will filter out any marker that has missing rate (i.e., 1 - calling rate) **higher** than the assigned value. 'By MAF' will filter out markers with minor allele frequency **lower** than the assigned value.
+
 <p align="center"><img src = "../../md/2.2-QC.png" width = 900></p>
+<p align="center">Fig. Sliders for performing quality controls</p>
 
 ## GWAS
+It's required to provide [genotype](#genotype), [map](#map) (if applicable), and [phenotype](#phenotype) files to run GWAS in iPat. [Covariates](#covariates) and [kinship](#kinship) matrix are optional. User-provided [covariates](#covariates) will serve as fixed effects in the GWAS model. Often time users are not recommended to provide a [kinship](#kinship) matrix, since those implemented tools will generate one automatically and user-define [kinship](#kinship) is used only in 'MLM' and 'CMLM' from GAPIT.
+
+Output files from GWAS include:
+
+* Figures: [Manhattan plot](#manhattan-plot), [Q-Q plot](#scatter-plot-q-q-plot), [Heterozygosity distribution](#histogram-heterozygosity-distribution), and [Phenotype overview](#phenotype-overview)
+* Tables: [GWAS report](#gwas-report)
+
 ### GAPIT
+```{r, echo = FALSE}
+data = data.table(Arguments = character(), Default = character(), Options = character(), Description = character())
+data = rbindlist(list(data, data.table('Model', 'GLM', 'GLM, MLM, CMLM, FarmCPU', 'Implemented models: general linear model (GLM), mixed linear model (MLM), compressed mixed linear model (CMLM), and FarmCPU.')))
+data = rbindlist(list(data, data.table('PC', '3', 'Ranges between 3 to 10', "Principal components to control spurious signals caused by population stratifications")))
+knitr::kable(
+  data, booktabs = TRUE,
+  caption = 'Arguments for GAPIT', format = "html"
+) %>%
+kableExtra::kable_styling(full_width = F) %>%
+kableExtra::column_spec(4, width = "20em")
+```
 
 <p align="center"><img src = "../../md/2.3-GAPIT.png" width = 500></p>
 <p align="center">Fig. Configuration for GAPIT</p>
+
+**Reference**
+
+* Tang,Y. et al. (2016) GAPIT Version 2: An Enhanced Integrated Tool for Genomic Association and Prediction. Plant J., 9.
+
 ### FarmCPU
+```{r, echo = FALSE}
+data = data.table(Arguments = character(), Default = character(), Options = character(), Description = character())
+data = rbindlist(list(data, data.table('Method bin', 'optimum', 'static, optimum', '')))
+data = rbindlist(list(data, data.table('maxLoop', '10', 'Ranges between 1 to 10', 'Number of iterations for FarmCPU to detect QTNs')))
+
+knitr::kable(
+  data, booktabs = TRUE,
+  caption = 'Arguments for FarmCPU', format = "html"
+) %>%
+kableExtra::kable_styling(full_width = F) %>%
+kableExtra::column_spec(4, width = "20em")
+```
+
 <p align="center"><img src = "../../md/2.3-FarmCPU.png" width = 500></p>
 <p align="center">Fig. Configuration for FarmCPU</p>
+
+**Reference**
+
+* Liu,X. et al. (2016) Iterative Usage of Fixed and Random Effect Models for Powerful and Efficient Genome-Wide Association Studies. PLoS Genet., 12 , e1005767
+
 ### PLINK
+```{r, echo = FALSE}
+data = data.table(Arguments = character(), Default = character(), Options = character(), Description = character())
+data = rbindlist(list(data, data.table('C.I.', '0.95', '0.95, 0.975, 0.995', 'Confident interval for testing marker effects')))
+data = rbindlist(list(data, data.table('Method', 'GLM', 'GLM, Logistic Regression', 'Implemented models')))
+knitr::kable(
+  data, booktabs = TRUE,
+  caption = 'Arguments for PLINK', format = "html"
+) %>%
+kableExtra::kable_styling(full_width = F) %>%
+kableExtra::column_spec(4, width = "20em")
+```
+
 <p align="center"><img src = "../../md/2.3-PLINK.png" width = 500></p>
 <p align="center">Fig. Configuration for PLINK</p>
 
+**Reference**
+
+* Purcell,S. et al. (2007) PLINK: A Tool Set for Whole-Genome Association and Population-Based Linkage Analyses. Am J Hum Genet, 81, 559–575.
+
 ## GS
+It's required to provide [genotype](#genotype) and [phenotype](#phenotype) files to run GS in iPat. User-provided [covariates](#covariates) will serve as fixed effects in the GS model, but none of GS methods will take user-defined [kinship](#kinship) in iPat.
+
+In iPat, users can perform two types of GS. If the 'validation' option is unchecked, iPat would estimate genetic estimated breeding values (GEBV) for samples in the whole dataset based on the phenotyped samples. Whereas when users check the option 'Validation on accuracy', iPat will split whole dataset into training and testing samples in order to verify the capability of trained GS model. For this manner, validation accuracies will be reported instead of GEBVs.
+
+```{r, echo = FALSE}
+data = data.table(Arguments = character(), Default = character(), Options = character(), Description = character())
+data = rbindlist(list(data, data.table('Validation on accuracy', 'unchecked', 'checked, unchecked', 'If k-fold validation is performed in GS')))
+data = rbindlist(list(data, data.table('Folds', '3', '3, 5, 10', 'K value for K-fold validation. For example, if k = 5, 20% samples will be tested as accuracy validation.')))
+data = rbindlist(list(data, data.table('Iteration', '10', 'Range from 10 to 100', 'Number of iterations. Each iteration will split whole dataset into training part and testing part based on the specified k value for K-fold validation.')))
+
+knitr::kable(
+  data, booktabs = TRUE,
+  caption = 'Arguments for GS', format = "html"
+) %>%
+kableExtra::kable_styling(full_width = F) %>%
+kableExtra::column_spec(4, width = "20em")
+```
+
 <p align="center"><img src = "../../md/2.4-Validation.png" width = 500></p>
+
+Output files from GS include:
+
+* Figures: [GEBV distribution](#histogram-gebv-distribution), [Validation accuracies](#density-function-accuracies-for-gs-validation), [Predicted versus observed values](#scatter-plot-gs-predictions-against-observation), [Heterozygosity distribution](#histogram-heterozygosity-distribution), and [Phenotype overview](#phenotype-overview).
+* Tables: [GEBV report](#gs-gebv), [Marker effects](#gs-marker-effects), [Validation results](#gs-validation-results), and [Predicted values](#gs-predicted-values)
+
 ### gBLUP and rrBLUP
+There's no specific arguments available for both of these methods.
+
+**Reference**
+
+* Endelman,J. (2011) Ridge regression and other kernels for genomic selection in the R package rrBLUP. Plant Genome, 4, 250–255.
 
 ### BGLR
+```{r, echo = FALSE}
+data = data.table(Arguments = character(), Default = character(), Options = character(), Description = character())
+data = rbindlist(list(data, data.table('Model for predictors', 'BRR', 'BRR, Bayes A, Bayes B, Bayes C, BL', 'Model to estimate marker effects')))
+data = rbindlist(list(data, data.table('nIter', '5k', 'Range from 1k to 100k', 'Number of iteration')))
+data = rbindlist(list(data, data.table('burnIn', '500', 'Range from 200 to 10k', 'Burn-in values')))
+
+knitr::kable(
+  data, booktabs = TRUE,
+  caption = 'Arguments for BGLR', format = "html"
+) %>%
+kableExtra::kable_styling(full_width = F) %>%
+kableExtra::column_spec(4, width = "20em")
+```
+
 <p align="center"><img src = "../../md/2.4-BGLR.png" width = 500></p>
 
-## GWAS-assisted GS
+**Reference**
 
-## Converter
-<p align="center"><img src = "../../md/2.6-Converter.png" width = 500></p>
+* Pérez, Paulino. et al. (2014) Genome-wide regression and prediction with the BGLR statistical package. Genetics, 198, 483-495.
+
+## GWAS-assisted GS
+It's a hybrid analysis that includes GWAS reported markers as covariates (fixed effects) in the GS model, whichever tested marker that has an association signal more significant than Bonferroni cutoff (*p-value* < 0.05 / number of markers) will be considered as such covariates. The workflow for GWAS-assisted GS in iPat is basically the same as performing GWAS and GS alone, please follow the [tutorial](#gwas-assisted-gs-in-rrblup) for details.
+
+## Format converter
+iPat not only provides a format-free environment for genomic studies, it also allows users to utilize the build-in converter to convert files for other further purposes. By providing a genotype file and a map file (if applicable) that meet a certain format, iPat can convert them into numerical-encoded genotypes or PLINK format that is compatible to other software.
+
+<p align="center"><img src = "../../md/2.6-Converter.png" width = 900></p>
+
+Other than specifying requested formats and arguments for quality controls, users can decide whether they would like to have missing values filled as heterozygous genotypes. Also, the argument "Batch size" determines how many samples are read into the memory at a time. The larger the batch size is, the faster the conversion would be. However, for those computing units with limited memory resources, it's highly recommended to start from a smaller number such as 64 or 32. Large batch size will crash the program easily when dealing with a large number of markers.
+
+```{r, echo = FALSE}
+data = data.table(Arguments = character(), Default = character(), Options = character())
+data = rbindlist(list(data, data.table('Input formats', 'None', 'Numerical, Hapmap, VCF, PLINK')))
+data = rbindlist(list(data, data.table('Output formats', 'None', 'Numerical, PLINK')))
+data = rbindlist(list(data, data.table('By missing rate', '0.2', '0, 0.05, 0.1, 0.2, 0.5')))
+data = rbindlist(list(data, data.table('By MAF', '0.05', '0, 0.01, 0.05, 0.1, 0.2')))
+data = rbindlist(list(data, data.table('Fill NA', 'unchecked', 'checked, unchecked')))
+data = rbindlist(list(data, data.table('Batch size', '64', '32, 64, 128, 256, 512')))
+
+knitr::kable(
+  data, booktabs = TRUE,
+  caption = 'Arguments for iPat converter', format = "html"
+) %>%
+kableExtra::kable_styling(full_width = F)
+```
+
+## Multi-thread is supported

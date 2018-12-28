@@ -311,7 +311,7 @@ class Obj_Module extends Obj_Super implements ActionListener{
                             try {
                                 new Cpu_Converter(this.format,
                                         this.isPLINK ? Enum_FileFormat.PLINK : Enum_FileFormat.Numeric,
-                                        this.pathGD, this.pathGM, this.maf, this.ms, this.nafill, this.batchSize);
+                                        this.pathGD, this.pathGM, this.maf, this.ms, this.nafill, this.batchSize, false);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -332,7 +332,7 @@ class Obj_Module extends Obj_Super implements ActionListener{
                         case GS:
                             try {
                                 new Cpu_Converter(this.format, Enum_FileFormat.Numeric,
-                                        this.pathGD, this.pathGM, this.maf, this.ms, this.nafill, this.batchSize);
+                                        this.pathGD, this.pathGM, this.maf, this.ms, this.nafill, this.batchSize, false);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }

@@ -1,9 +1,78 @@
-# Case Study
+# Step by Step Tutorial
+This chapter we'll demonstrate four commonly used analyses in iPat with step-by-step GIFs and brief descriptions.
 
 ## GWAS in GAPIT
+In this section, we're demonstrate how users can conduct GAPIT GWAS with PLINK files. Compressed mixed linear model will be used in this study.
 
-## K-fold validation GS in BGLR
+### ***Prepare PLINK files***{-}
+<p align="center"><img src = "../../md/4.1-FileFormat.gif" width = 700></p>
+<p align="center">Fig. Check if the format is PLINK</p>
+
+### ***Import files***{-}
+<p align="center"><img src = "../../md/4.1-Import.gif" width = 700></p>
+<p align="center">Fig. Import files to iPat</p>
+
+### ***Define GAPIT***{-}
+<p align="center"><img src = "../../md/4.1-Config.gif" width = 700></p>
+<p align="center">Fig. Define GAPIT analysis</p>
+
+### ***Inspect results***{-}
+<p align="center"><img src = "../../md/4.1-Run.gif" width = 700></p>
+<p align="center">Fig. Files will be generated while iPat is running </p>
+
+## K-fold cross-validation GS in BGLR
+In this study, we're going to perform GS with 5-fold cross-validation. The input files are in VCF format.
+
+### ***Prepare VCF files***{-}
+<p align="center"><img src = "../../md/4.2-FileFormat.gif" width = 700></p>
+<p align="center">Fig. Check if the format is VCF</p>
+
+### ***Import files***{-}
+<p align="center"><img src = "../../md/4.2-Import.gif" width = 700></p>
+<p align="center">Fig. Import files to iPat</p>
+
+### ***Define BGLR***{-}
+<p align="center"><img src = "../../md/4.2-Config.gif" width = 700></p>
+<p align="center">Fig. Define validation details</p>
+
+### ***Inspect results***{-}
+<p align="center"><img src = "../../md/4.2-Run.gif" width = 700></p>
+<p align="center">Fig. Monitor the progress of validations</p>
 
 ## GWAS-assisted GS in rrBLUP
+In this case, we will use numerical files to demonstrate GWAS-assisted GS in iPat, with the implementation of FarmCPU and rrBLUP.
 
-## Convert VCF files to PLINK format
+### ***Import files***{-}
+<p align="center"><img src = "../../md/4.3-Import.gif" width = 700></p>
+<p align="center">Fig. Import files to iPat</p>
+
+### ***Define FarmCPU (GWAS)***{-}
+<p align="center"><img src = "../../md/4.3-GWAS.gif" width = 700></p>
+<p align="center">Fig. Define GWAS in FarmCPU</p>
+
+### ***Define rrBLUP (GS)***{-}
+<p align="center"><img src = "../../md/4.3-GS.gif" width = 700></p>
+<p align="center">Fig. Define GS in rrBLUP</p>
+
+### ***Inspect Progress***{-}
+<p align="center"><img src = "../../md/4.3-Run.gif" width = 700></p>
+<p align="center">Fig. Monitor the progress of validations</p>
+
+## Convert Hapmap to PLINK format
+This section will demonstrate that how to convert Hapmap files into PLINK-formatted files.
+
+### ***Prepare Hapmap files***{-}
+<p align="center"><img src = "../../md/4.4-FileFormat.gif" width = 700></p>
+<p align="center">Fig. Check if the format is Hapmap</p>
+
+### ***Import files***{-}
+<p align="center"><img src = "../../md/4.4-Import.gif" width = 700></p>
+<p align="center">Fig. Import Hapmap files into iPat</p>
+
+### ***Define BGLR***{-}
+<p align="center"><img src = "../../md/4.4-Run.gif" width = 700></p>
+<p align="center">Fig. Define the conversion</p>
+
+### ***Inspect results***{-}
+<p align="center"><img src = "../../md/4.4-Results.gif" width = 700></p>
+<p align="center">Fig. Inspect results</p>

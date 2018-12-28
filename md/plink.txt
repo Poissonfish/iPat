@@ -1,3 +1,0 @@
-ID_1	ID_1	0	0	0	0	C C	C C	G G
-ID_2	ID_2	0	0	0	0	0 0	G G	G G
-ID_3	ID_3	0	0	0	0	A C	C C	T T

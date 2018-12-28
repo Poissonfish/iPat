@@ -1,32 +1,33 @@
+# 191211
 tryCatch({
 # Library
   cat("=== gBLUP ===\n")
   cat("   Loading libraries ...")
-  library(rrBLUP)
+  lary(rrBLUP)
   library(data.table)
   library(magrittr)
   library(ggplot2)
   source("http://zzlab.net/iPat/Function_iPat.R")
   cat("Done\n")
   ANALYSIS = "gBLUP"
-
+# Input arguments
+  arg = commandArgs(trailingOnly=TRUE)
   # ======= Test Code ====== #
-    rm(list=ls())
-    arg = c("-gs", "TRUE", "5", "1",
-            "-gwas", "FALSE", "0",
-            "-wd", "/Users/jameschen/Desktop/Test/iPatDEMO",
-            "-project", "gBLUP",
-            "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.txt",
-            "-pSelect", "y75sepy25sep",
-            # "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/data.txt",
-            # "-pSelect", "EarHTsepEarDiasep",
-            "-cov", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.cov",
-            "-cSelect", "C1sep",
-            "-genotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.dat",
-            "-kin", "NA",
-            "-map", "NA")
-    trait = dataP$name[1]
-    
+    # rm(list=ls())
+    # arg = c("-gs", "TRUE", "5", "1",
+    #         "-gwas", "FALSE", "0",
+    #         "-wd", "/Users/jameschen/Desktop/Test/iPatDEMO",
+    #         "-project", "gBLUP",
+    #         "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.txt",
+    #         "-pSelect", "y75sepy25sep",
+    #         # "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/data.txt",
+    #         # "-pSelect", "EarHTsepEarDiasep",
+    #         "-cov", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.cov",
+    #         "-cSelect", "C1sep",
+    #         "-genotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.dat",
+    #         "-kin", "NA",
+    #         "-map", "NA")
+    # trait = dataP$name[1]
     # X = finalG
     # Y = finalP
     # # C = finalC
@@ -36,9 +37,6 @@ tryCatch({
     # K = finalK
     # YTemp = yTemp
   # ======= Test Code ====== #
-
-# Input arguments
-  arg = commandArgs(trailingOnly=TRUE)
   for (i in 1 : length(arg)) {
     switch (arg[i],
       "-wd" = {
@@ -115,8 +113,7 @@ tryCatch({
       "-gwas" = {
         i = i + 1
         isGWASAssist = as.logical(arg[i])
-        i = i + 1
-        cutoff = as.numeric(arg[i])
+        cutoff = 0.05
       },
       "-gs" = {
         i = i + 1
@@ -167,6 +164,8 @@ tryCatch({
           finalC = Cov
           runGBLUP(finalP, finalG, finalC, taxa, project, trait)
       }
+      iPat.Genotype.View(myGD = data.frame(taxa, rawGenotype), filename = sprintf("iPat_%s_%s", project, trait))
+      iPat.Phenotype.View(myY = data.frame(taxa, dataP$data[[trait]]), filename = sprintf("iPat_%s_%s", project, trait))
     cat("Done\n")
   }
   print(warnings())

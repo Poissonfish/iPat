@@ -121,7 +121,7 @@ tryCatch({
     finalC = data.frame(taxa, datac$data)
   }
   cat("Done\n")
-  
+
 # FarmCPU
   for (trait in dataP$name) {
     x = FarmCPU(

@@ -1,4 +1,0 @@
-rs	alleles	chrom	pos	strand	assembly	center	protLSID	assayLSID	panel	QCcode	ID_1	ID_2	ID_3
-SNP_1	A/C	1	1000	"+"	AGPv1	Panzea	NA	NA	nam	NA	CC	NA	AC
-SNP_2	C/G	1	1010	"+"	AGPv1	Panzea	NA	NA	nam	NA	CC	GG	CC
-SNP_3	G/T	1	1020	"+"	AGPv1	Panzea	NA	NA	nam	NA	GG	GG	TT

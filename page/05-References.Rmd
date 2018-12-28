@@ -7,6 +7,8 @@
 
 * Liu,X. et al. (2016) Iterative Usage of Fixed and Random Effect Models for Powerful and Efficient Genome-Wide Association Studies. PLoS Genet., 12, e1005767.
 
+* Pérez, Paulino. et al. (2014) Genome-wide regression and prediction with the BGLR statistical package. Genetics, 198, 483-495.
+
 * Purcell,S. et al. (2007) PLINK: A Tool Set for Whole-Genome Association and Population-Based Linkage Analyses. Am J Hum Genet, 81, 559–575.
 
 * Tang,Y. et al. (2016) GAPIT Version 2: An Enhanced Integrated Tool for Genomic Association and Prediction. Plant J., 9.

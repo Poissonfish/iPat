@@ -3,50 +3,37 @@ tryCatch({
   cat("=== PLINK ===\n")
   cat("   Loading libraries ...")
   library(magrittr)
-  library(bigmemory)
-  library(biganalytics)
-  library(compiler) #this library is already installed in R
   library(data.table)
   library(MASS) # required for ginv
   library(multtest)
   library(gplots)
+  library(compiler) #required for cmpfun
   library(scatterplot3d)
   library(R.utils)
   source("http://zzlab.net/iPat/Function_iPat.R")
-  source("http://zzlab.net/iPat/Function_GAPIT.R")
+  source("http://zzlab.net/GAPIT/gapit_functions.txt")
   cat("Done\n")
-
-  # Fix selected phenotypes!!!!!!
-  # ======= Test Code ====== #
-    rm(list=ls())
-    arg = c("-arg", "0.95", "GLM", "/Users/jameschen/IdeaProjects/iPat/target/lib/plink",
-            "-wd", "/Users/jameschen/Desktop/Test/iPatDEMO",
-            "-project", "PLINK",
-            "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.txt",
-            "-pSelect", "y75sepy25sep",
-            "-maf", "0.05",
-            "-ms", "0.20",
-            # "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/data.txt",
-            # "-pSelect", "EarHTsepEarDiasep",
-            "-cov", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.cov",
-            "-cSelect", "C1sep",
-            "-genotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.dat",
-            "-kin", "NA",
-            "-map", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.map")
-    trait = dataP$name[1]
-
-    # X = finalG
-    # Y = finalP
-    # # C = finalC
-    # C = NULL
-    # iter = 1
-    # fold = 1
-    # K = finalK
-    # YTemp = yTemp
-  # ======= Test Code ====== #
 
 # Input arguments
   arg = commandArgs(trailingOnly=TRUE)
+  # ======= Test Code ====== #
+  arg = c("-arg", "0.95", "GLM", "/Users/jameschen/IdeaProjects/iPat/target/lib/plink",
+          "-wd", "/Users/jameschen/Desktop/Test/iPatDEMO",
+          "-project", "PLINK",
+          "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.txt",
+          "-pSelect", "y75sepy25sep",
+          "-maf", "0.05",
+          "-ms", "0.20",
+          # "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/data.txt",
+          # "-pSelect", "EarHTsepEarDiasep",
+          # "-cov", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.cov",
+          # "-cSelect", "C1sep",
+          "-cov", "NA",
+          "-cSelect", "NA",
+          "-genotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo_recode.ped",
+          "-kin", "NA",
+          "-map", "/Users/jameschen/Desktop/Test/iPatDEMO/demo_recode.map")
+  # ======= Test Code ====== #
   for (i in 1 : length(arg)) {
     switch (arg[i],
       "-wd" = {
@@ -119,7 +106,7 @@ tryCatch({
     cat("   Loading phenotype ...")
     # If no phenotype provided, which would be in
     if(Y.path == "NA"){
-      Y.data = fread(GD.path, na.strings = c("NA", "NaN")) %>% as.data.frame
+      Y.data = fread(GD.path, na.strings = c("NA", "NaN")) %>% as.data.frame()
       Y.path = paste0(GD.path %>% substr(1, nchar(.) - 3), "_trait.txt")
       write.table(x = data.frame(FID = Y.data[,1], SID = Y.data[,2], trait = Y.data[,6]),
                   file = Y.path, quote = F, row.names = F, sep = '\t')
@@ -129,16 +116,15 @@ tryCatch({
     # If phenotype provided
     }else{
       Y.data = fread(Y.path, na.strings = c("NA", "NaN"))
+      G.data = fread(GD.path, na.strings = c("NA", "NaN")) %>% as.data.frame()
       # wrong format for PLINK
-      trait.name = Y.data[, -1] %>% names()
-      taxa = Y.data[,1]
+      FID = G.data[,1]
+      IID = G.data[,2]
       # get selected data
-      name = selectP %>% strsplit(split = "sep") %>% do.call(c, .)
-      Y.data = data.table(FID = taxa, SID = taxa, Y.data[ ,..name])
-      names(Y.data) = c("FID", "SID", name)
+      trait.name = selectP %>% strsplit(split = "sep") %>% do.call(c, .)
+      Y.data = data.frame(FID = FID, IID = IID, Y.data[ ,..trait.name])
+      names(Y.data) = c("FID", "IID", trait.name)
       Y.path = paste0(Y.path %>% substr(1, nchar(.) - 4), "_trait.txt")
-      fwrite(x = Y.data, file = Y.path, quote = F, row.names = F, sep = '\t')
-      Y = Y.data
       trait_count = (names(Y.data) %>% length()) - 2
       suffix = ".qassoc"
     }
@@ -162,33 +148,42 @@ tryCatch({
     suffix = paste0(suffix, ".logistic")
   }
 
-  basic = sprintf("%s --ped %s --map %s %s --allow-no-sex --adjust -ci %s --pheno %s --all-pheno -out %s",
+  basic = sprintf("%s --ped %s --map %s %s --allow-no-sex --adjust -ci %s --pheno %s --all-pheno --prune -out %s",
                   paste0('"', pathPLINK, '"'), paste0('"', GD.path, '"'),
                   paste0('"', GM.path, '"'),
-                  method, ci, paste0('"', Y.path, '"'), paste0('"', file.path(wd, project), '"'))
+                  method, ci,
+                  paste0('"', Y.path, '"'),
+                  paste0('"', file.path(wd, project), '"'))
   ## QC
   if(!is.na(ms)) MS = sprintf("--geno %s", ms) else MS = character()
   if(!is.na(maf)) MAF = sprintf("--maf %s", maf) else MAF = character()
-  ## COV and running PLINK
-  if(length(C.name) > 0){
-    cov = sprintf("--covar %s --covar-name %s", paste0('"', C.path, '"'), paste(C.name, collapse = ", "))
-    paste(basic, MS, MAF, cov) %>% system(input = "notepad")
-  }else{
-    paste(basic, MS, MAF) %>% system(input = "notepad")
-  }
   #Plotting
   setwd(wd)
   for (t in 1:trait_count){
+    ## Rewrite Phenotype
+    if(Y.path != "NA"){
+      tCol = t + 2
+      updateY = Y.data[,c(1:2, tCol)]
+      updateY[is.na(updateY[,3]),3] = -9
+      fwrite(x = updateY, file = Y.path, quote = F, row.names = F, sep = '\t')
+    }
+    ## COV and running PLINK
+    if(length(C.name) > 0){
+      cov = sprintf("--covar %s --covar-name %s", paste0('"', C.path, '"'), paste(C.name, collapse = ", "))
+      paste(basic, MS, MAF, cov) %>% system(input = "notepad")
+    }else{
+      paste(basic, MS, MAF) %>% system(input = "notepad")
+    }
     #Loading data
     cat(sprintf("   Plotting trait %s ...", t))
-    data = fread(paste0(project, ".P", t, suffix),header=T)
-    data = na.omit(data) %>% (function(x){x[order(x$CHR,x$BP),c("CHR", "SNP", "BP", "P")]}) %>% as.data.frame
-    iPat.Manhattan(GI.MP = data[,c(1,3,4)], filename = sprintf("iPat_%s_%s", project, trait.name[t]))
-    iPat.QQ(data$P, filename = sprintf("iPat_%s_%s", project, trait.name[t]))
-    iPat.Phenotype.View(myY = data.frame(Y[,1], Y[, 2 + t]), filename = sprintf("iPat_%s_%s", project, trait.name[t]))
-    write.table(x = data.frame(SNP = data$SNP, Chromosom = data$CHR, Position = data$BP, P.value = data$P),
-                file = sprintf("%s_%s_GWAS.txt", project, trait.name[t]),
-                quote = F, row.names = F, sep = "\t")
+    dt_gwas = fread(paste0(project, ".", trait.name[t], suffix), header = T)
+    names(dt_gwas) = c("Chromosome", "SNP", "Position", "NMISS", "effect", "SE", "R2", "T", "P.value")
+    dt_gwas[,c(2, 1, 3, 9, 5)] %>% fwrite(file = sprintf("iPat_%s_%s_GWAS.txt", project, trait.name[t]), quote = F, row.names = F, sep = "\t")
+    dt_out = dt_gwas[,c(1:3, 9)] %>% data.frame()
+    names(dt_out) = c("CHR", "SNP", "BP", "P")
+    iPat.Manhattan(GI.MP = dt_out[,-2], filename = sprintf("iPat_%s_%s", project, trait.name[t]))
+    iPat.QQ(dt_out$P, filename = sprintf("iPat_%s_%s", project, trait.name[t]))
+    iPat.Phenotype.View(myY = data.frame(taxa, updateY[,3]), filename = sprintf("iPat_%s_%s", project, trait.name[t]))
     cat("Done\n")
   }
   print(warnings())

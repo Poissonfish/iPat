@@ -21,6 +21,8 @@ public class Lib_Image {
     // Image
     Image iPat;
     Image file;
+    Image file_empty;
+    Image file_detect;
     Image cov;
     Image kin;
     Image module;
@@ -56,6 +58,8 @@ public class Lib_Image {
         try {
             iPat = ImageIO.read(this.getClass().getResource("img/iPat.png"));
             file = ImageIO.read(this.getClass().getResource("img/File.png"));
+            file_empty = ImageIO.read(this.getClass().getResource("img/File_Empty.png"));
+            file_detect = ImageIO.read(this.getClass().getResource("img/File_Empty_Hover.png"));
             cov = ImageIO.read(this.getClass().getResource("img/File_c.png"));
             kin = ImageIO.read(this.getClass().getResource("img/File_k.png"));
             module = ImageIO.read(this.getClass().getResource("img/Model.png"));
@@ -75,6 +79,7 @@ public class Lib_Image {
         switch (name) {
             case "iPat": return this.iPat;
             case "file": return this.file;
+            case "file_empty": return this.file_empty;
             case "cov" : return this.cov;
             case "kin" : return this.kin;
             case "module" : return this.module;

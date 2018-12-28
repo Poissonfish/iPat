@@ -1,4 +1,0 @@
-taxa	SNP_1	SNP_2	SNP_3
-ID_1	2	0	0
-ID_2	NA	2	0
-ID_3	2	0	0

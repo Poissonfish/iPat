@@ -1,5 +1,0 @@
-SNP	Chromosome	Position
-SNP_1	1	1000
-SNP_2	1	1010
-SNP_3	1	1020
-...	...	...

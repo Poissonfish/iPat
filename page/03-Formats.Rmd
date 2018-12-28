@@ -6,7 +6,7 @@
 #### ***Hapmap***{-}
 ```{r hapmap, echo = FALSE}
 knitr::kable(
-  read.table("../md/hapmap.txt", header = T)[,1:9], booktabs = TRUE,
+  read.table("md/hapmap.txt", header = T)[,1:9], booktabs = TRUE,
   caption = 'Hapmap format'
 )
 knitr::kable(
@@ -142,9 +142,6 @@ knitr::kable(
 ) %>%
 kableExtra::kable_styling(full_width = F)
 ```
-
-regression coefficient
-
 
 #### ***GS: GEBV***{-}
 ```{r, echo = FALSE}

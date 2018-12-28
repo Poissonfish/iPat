@@ -237,7 +237,7 @@ class PanelBGLR extends PanelTool  {
     public PanelBGLR(IPatFile cFile, boolean isGWASGS) {
         this.isGWASGS = isGWASGS;
         // Basic features
-        this.basic = new JPanel(new MigLayout("fillx", "[grow]", "[grow][grow][grow][grow][grow]"));
+        this.basic = new JPanel(new MigLayout("fillx, ins 3", "[grow]", "[grow][grow][grow][grow][grow]"));
         this.comboModel = new GroupCombo("Model of the Predictor (markers)",
                 new String[]{"BRR", "BL", "BayesA", "BayesB", "BayesC"});
         this.slideNIter = new GroupSlider("nIter", 2, new String[]{"1000", "5000", "10000", "30000", "50000", "100000"}, new String[]{"1K", "5K", "10K", "30k", "50k", "100k"});
@@ -256,9 +256,9 @@ class PanelBGLR extends PanelTool  {
         // cov
         this.paneCov = new SelectPanel(cFile, "Covariates <br> Not Found", 0);
         // scroll
-        scroll = new JScrollPane(this.basic, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+//        scroll = new JScrollPane(this.basic, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         // Build tab pane
-        this.addTab("BGLR Input", scroll);
+        this.addTab("BGLR Input", this.basic);
         this.addTab("GS Validation", this.paneGS);
         this.addTab("Covariates", paneCov);
     }
@@ -270,10 +270,8 @@ class PanelBGLR extends PanelTool  {
         command.add(iPat.FILELIB.getAbsolutePath("iPatBGLR.r"));
         command.add("-arg");
         command.add(comboModel.getValue());
-        command.add(comboResponse.getValue());
         command.add(slideNIter.getStrValue());
         command.add(slideBurnIn.getStrValue());
-        command.add(slideThin.getStrValue());
         command.add("-gs");
         command.add(this.checkValid.isSelected() ? "TRUE" : "FALSE");
         command.add(this.slideFold.getStrValue());
