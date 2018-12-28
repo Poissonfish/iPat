@@ -106,31 +106,31 @@ gsub("<thead>.*</thead>", "", .)
 ## Output formats
 ### Figures
 #### ***Manhattan plot***{-}
-<p align="center"><img src = "../../md/3.2-ManhattanPlot.png" width = 700></p>
+<p align="center"><img src = "md/3.2-ManhattanPlot.png" width = 700></p>
 <p align="center">Fig. Manhattan plot by GWAS</p>
 
 #### ***Scatter plot: Q-Q plot***{-}
-<p align="center"><img src = "../../md/3.2-QQPlot.png" width = 400></p>
+<p align="center"><img src = "md/3.2-QQPlot.png" width = 400></p>
 <p align="center">Fig. Q-Q plot by GWAS</p>
 
 #### ***Histogram: GEBV distribution***{-}
-<p align="center"><img src = "../../md/3.2-GEBVDist.png" width = 400></p>
+<p align="center"><img src = "md/3.2-GEBVDist.png" width = 400></p>
 <p align="center">Fig. Distribution for GEBVs</p>
 
 #### ***Density function: Accuracies for GS validations***{-}
-<p align="center"><img src = "../../md/3.2-AccCV.png" width = 400></p>
+<p align="center"><img src = "md/3.2-AccCV.png" width = 400></p>
 <p align="center">Fig. Distribution for prediction accuracies</p>
 
 #### ***Scatter plot: GS predictions against observations***{-}
-<p align="center"><img src = "../../md/3.2-ScatterPreObs.png" width = 400></p>
+<p align="center"><img src = "md/3.2-ScatterPreObs.png" width = 400></p>
 <p align="center">Fig. Distribution for prediction accuracies</p>
 
 #### ***Histogram: Heterozygosity distribution***{-}
-<p align="center"><img src = "../../md/3.2-HeterozygotePlot.png" width = 600></p>
+<p align="center"><img src = "md/3.2-HeterozygotePlot.png" width = 600></p>
 <p align="center">Fig. Histograms for overview of heterozygosity</p>
 
 #### ***Phenotype overview***{-}
-<p align="center"><img src = "../../md/3.2-PhenotypePlot.png" width = 700></p>
+<p align="center"><img src = "md/3.2-PhenotypePlot.png" width = 700></p>
 <p align="center">Fig. Figure for overview of phenotypes</p>
 
 ### Tabular results

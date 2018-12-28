@@ -13,7 +13,7 @@ Install all the required R libraries by running following code. This command wil
 source("http://zzlab.net/iPat/iPat_installation.r")
 ```
 
-<p align="center"><p align="center"><img src = "../../md/installation.png" width = 1200></p>
+<p align="center"><p align="center"><img src = "md/installation.png" width = 1200></p>
 
 ## Windows users
 1. Download [iPat.zip](http://zzlab.net/iPat/iPat.zip) and decompress it. You will then get a folder named "**iPat**", which contains a executable file "**iPat.exe**" and a folder "**res**".
@@ -22,7 +22,7 @@ source("http://zzlab.net/iPat/iPat_installation.r")
 
 3. Double click '**iPat.exe**' to launch iPat.
 
-<p align="center"><p align="center"><img src = "../../md/install_win.png" width = 1200></p>
+<p align="center"><p align="center"><img src = "md/install_win.png" width = 1200></p>
 
 ## Mac OS users
 1. Download [iPat_Installer.dmg](http://zzlab.net/iPat/iPat_Installer.dmg) and mount it on Mac.
@@ -31,4 +31,4 @@ source("http://zzlab.net/iPat/iPat_installation.r")
 
 3. Double click '**iPat.app**' to launch iPat.
 
-<p align="center"><p align="center"><img src = "../../md/install_mac.png" width = 1200></p>
+<p align="center"><p align="center"><img src = "md/install_mac.png" width = 1200></p>
