@@ -1,4 +1,4 @@
-# Tutorial
+# Step by Step Tutorial
 This chapter we'll demonstrate four commonly used analyses in iPat with step-by-step GIFs and brief descriptions.
 
 ## GWAS in GAPIT
