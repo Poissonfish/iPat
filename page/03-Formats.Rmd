@@ -143,9 +143,6 @@ knitr::kable(
 kableExtra::kable_styling(full_width = F)
 ```
 
-regression coefficient
-
-
 #### ***GS: GEBV***{-}
 ```{r, echo = FALSE}
 knitr::kable(

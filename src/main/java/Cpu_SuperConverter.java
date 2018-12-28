@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 
-// 2018/12/17
+// 2018/12/19
 abstract class Cpu_SuperConverter {
     int sub_n = 128, sub_m = 8192;
     String sep = "\t";
@@ -245,7 +245,6 @@ abstract class Cpu_SuperConverter {
         this.size_GD = getCountOfLines(GD_path);
         this.nCount = (hasHeader) ? this.size_GD - 1 : this.size_GD;
         this.mCount = (hasTaxa) ? this.lineLength - 1 : this.lineLength;
-        this.mCountQC = 0;
         this.isKeep = new boolean[this.mCount];
         Arrays.fill(this.isKeep, true);
         // ========= ========= ========= ========= QC ========= ========= ========= =========
@@ -413,9 +412,9 @@ abstract class Cpu_SuperConverter {
                     continue;
                 // If contain taxa, give the taxa name. Otherwise, name it initail as "Sample_"
                 if (hasTaxa)
-                    this.out.write(this.table_GD[row][0] + "\t" + this.table_GD[row][0] + "\t0\t0\t0\t0\t");
+                    this.out.write(this.table_GD[row][0] + "\t" + this.table_GD[row][0] + "\t0\t0\t0\t-9\t");
                 else
-                    this.out.write("Family_" + row + "\t" + "Sample_" + row + "\t0\t0\t0\t0\t");
+                    this.out.write("Family_" + row + "\t" + "Sample_" + row + "\t0\t0\t0\t-9\t");
                 // If contain taxa, starts from the second column
                 for (int col = hasTaxa ? 1 : 0; col < this.table_GD[row].length; col ++) {
                     if (this.table_GD[row][col].equals("NA"))
@@ -543,7 +542,7 @@ abstract class Cpu_SuperConverter {
         this.lineLength = this.headerLine.length;
         // See the if the first marker show only one character
         boolean isOneChar = this.reader.readLine().replaceAll("\"", "").split(sep)[11].length() == 1;
-        String valueNA = (isOneChar) ? "N" : "NA";
+        String valueNA = (isOneChar) ? "N" : "NN";
         // Get n and m count (the first 11 columns are meta information)
         this.nCount = this.lineLength - 11;
         this.mCount = this.size_GD - 1;
@@ -560,12 +559,13 @@ abstract class Cpu_SuperConverter {
                 this.mCountQC += b ? 1 : 0;
         }
         // ========= ========= ========= ========= Map ========= ========= ========= =========
+        resetToNthLine(GD_path, 1);
         iniProgress("Converting Map File",
                 String.format("Marker %d ~ %d : ", 1, this.mCount));
         setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.nmap");
         this.out.write("SNP\tChromosome\tPosition\n");
         this.lastPosition = 0;
-        while (this.lastPosition < mCount) {
+        while (this.lastPosition < this.mCount) {
             updateProgress(this.lastPosition, this.mCount);
             this.table_GD = getNLines(this.sub_m, this.sep);
             this.currentWindow = this.table_GD.length;
@@ -664,7 +664,7 @@ abstract class Cpu_SuperConverter {
         this.lineLength = this.headerLine.length;
         // See the if the first marker show only one character
         boolean isOneChar = this.reader.readLine().replaceAll("\"", "").split(sep)[11].length() == 1;
-        String valueNA = (isOneChar) ? "N" : "NA";
+        String valueNA = (isOneChar) ? "N" : "NN";
         // Get n and m count (the first 11 columns are meta information)
         this.nCount = this.lineLength - 11;
         this.mCount = this.size_GD - 1;
@@ -682,6 +682,7 @@ abstract class Cpu_SuperConverter {
         }
         // ========= ========= ========= ========= Map ========= ========= ========= =========
         System.out.println("Converting Map file");
+        resetToNthLine(GD_path, 1);
         setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.map");
         iniProgress("Converting Map File",
                 String.format("Marker %d ~ %d : ", 1, mCount));
@@ -713,9 +714,11 @@ abstract class Cpu_SuperConverter {
             // subN by M matrix
             this.table_GD = getSubTransposedGD(this.lastPosition, this.sub_n, this.mCount, this.lineLength, this.sep);
             this.currentWindow = this.table_GD.length;
+            // loop over samples
             for (int i = 0; i < this.currentWindow; i ++) {
-                out.write(taxa.get(lastPosition - 11 + i) + "\t" + taxa.get(lastPosition - 11 + i) + "\t0\t0\t0\t-9\t");
+                out.write(taxa.get(lastPosition - 11 + i) + "\t" + taxa.get(lastPosition - 11 + i) + "\t0\t0\t0\t-9");
                 if (isOneChar) {
+                    // loop over all markers
                     for (int j = 0; j < this.mCount; j ++) {
                         if (!this.isKeep[j])
                             continue;
@@ -729,6 +732,7 @@ abstract class Cpu_SuperConverter {
                         }
                     }
                 } else {
+                    // loop over all markers
                     for (int j = 0; j < this.mCount; j ++) {
                         if (!this.isKeep[j])
                             continue;
@@ -814,7 +818,7 @@ abstract class Cpu_SuperConverter {
         this.out.close();
         // ========= ========= ========= ========= GD ========= ========= ========= =========
         iniProgress("Converting Genotype File",
-                String.format("Sample %d ~ %d : ", 1, this.mCount));
+                String.format("Sample %d ~ %d : ", 1, this.nCount));
         setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.dat");
         // output marker names as 1st line
         this.out.write("taxa");
@@ -855,7 +859,7 @@ abstract class Cpu_SuperConverter {
                                 // Homozygous, and are 1st alt allele
                                 this.out.write("\t2");
                                 break;
-                            case '2':
+                            case '2': case '3':
                                 // Homozygous, and are 2nd alt allele
                                 this.out.write("\t2");
                                 break;
@@ -1100,7 +1104,6 @@ abstract class Cpu_SuperConverter {
                         this.out.write("\n");
                     else
                         this.out.write("\t");
-
                 }
             }
             doneProgress();
@@ -1110,13 +1113,14 @@ abstract class Cpu_SuperConverter {
             System.out.println(e);
         }
         // ========= ========= ========= ========= Map ========= ========= ========= =========
+        this.sep = getSep(GM_path, 0);
+        this.lastPosition = 0;
         try{
-            this.sep = getSep(GM_path, 0);
+            setReader(GM_path);
             setWriter(GD_path.replaceFirst("[.][^.]+$", "") + "_recode.nmap");
             this.out.write("SNP\tChromosome\tPosition\n");
             iniProgress("Converting Map File",
                     String.format("Marker %d ~ %d : ", 1, this.mCount));
-            this.lastPosition = 0;
             while (this.lastPosition < this.size_GM) {
                 updateProgress(this.lastPosition, this.size_GM);
                 this.table_GM = getNLines(this.sub_m, this.sep);
@@ -1346,7 +1350,10 @@ abstract class Cpu_SuperConverter {
                     else
                         break;
                 }
-                // calculate maf
+//                for (Map.Entry<String, Long> entry : tableMap.entrySet()) {
+//                    System.out.println(entry.getKey() + ":" + entry.getValue());
+//                }
+                    // calculate maf
                 switch (tableMap.size()) {
                     // NA, {AA, BB, AB}
                     case 2:
@@ -1368,7 +1375,11 @@ abstract class Cpu_SuperConverter {
                         break;
                     // AA AB BB
                     case 4:
-                        maf = (tableMap.get(a1 + a1)*2 + tableMap.get(a1 + a2))/((double)((this.nCount - countNA) * 2));
+                        try {
+                            maf = (tableMap.get(a1 + a1)*2 + tableMap.get(a1 + a2))/((double)((this.nCount - countNA) * 2));
+                        } catch(NullPointerException e) {
+                            maf = (tableMap.get(a1 + a1)*2 + tableMap.get(a2 + a1))/((double)((this.nCount - countNA) * 2));
+                        }
                         break;
                 }
             }
@@ -1393,30 +1404,48 @@ abstract class Cpu_SuperConverter {
             // Extract all alleles: 001000.0.0,12; Length = 2n; and convert ',' to '.'
             Pattern pattern = Pattern.compile("[01.,]{1}[|/]{1}[01.,]{1}");
             for (int i = 0; i < arrayLine.length; i ++) {
-                Matcher matcher = pattern.matcher(arrayLine[i]);
-                matcher.find();
-                arrayLine[i] = matcher.group().replaceAll("[|/]", "").replaceAll(",", ".");
+                Matcher matcher;
+                // Remove vertical bars
+                try {
+                    matcher = pattern.matcher(arrayLine[i]);
+                    matcher.find();
+                    arrayLine[i] = matcher.group().replaceAll("[|/]", "");
+                } catch (java.lang.IllegalStateException ignored) {}
+                // Replace comma with a dot
+                try {
+                    matcher = pattern.matcher(arrayLine[i]);
+                    matcher.find();
+                    arrayLine[i] = matcher.group().replaceAll(",", ".");
+                } catch (java.lang.IllegalStateException ignored) {}
             }
             // Count all the element
             Map<String, Long> tableMap = Arrays.asList(arrayLine).stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
             // Fill NA if no missin gvalues
-            if (!tableMap.containsKey("."))
-                tableMap.put(".", 0L);
-            long countNA = tableMap.get(".");
-            // Calculate maf
-            double maf = 0;
-            double ma = 0;
-            switch (tableMap.size()) {
-                case 2:
-                    maf = 0;
-                    break;
-                case 3: case 4:
-                    maf = (tableMap.get("0")) / ((double)(this.nCount * 2 - countNA));
-                    break;
+            if (!tableMap.containsKey(".."))
+                tableMap.put("..", 0L);
+            long countNA = tableMap.get("..");
+            // Calculate count of allele '0' and compute maf
+            long count01, count10, count00;
+            try {
+                count01 = tableMap.get("01");
+            } catch(NullPointerException e) {
+                count01 = 0;
             }
+            try {
+                count10 = tableMap.get("10");
+            } catch(NullPointerException e) {
+                count10 = 0;
+            }
+            try {
+                count00 = tableMap.get("00");
+            } catch(NullPointerException e) {
+                count00 = 0;
+            }
+            double maf = (count00*2 + count01 + count10) / ((double)((this.nCount - countNA)*2));
             maf = Math.min(maf, 1 - maf);
-            ma = countNA/((double)(this.nCount * 2));
-            iskeep[this.idxTemp++] = (maf > this.rateMAF) && (ma < this.rateNA);
+            double na = countNA/((double)(this.nCount));
+//            System.out.println("maf: " + maf + " na: " + na);
+            iskeep[this.idxTemp++] = (maf > this.rateMAF) && (na < this.rateNA);
         }
         doneProgress();
         return iskeep;

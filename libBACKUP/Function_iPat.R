@@ -1,7 +1,11 @@
 getSelected <- function(data, strSelect) {
   if (!is.null(data)) {
-    name = strSelect %>% strsplit(split = "sep") %>% do.call(c, .)
-    data = data[ ,..name]
+    if (!is.na(strSelect)) {
+      name = strSelect %>% strsplit(split = "sep") %>% do.call(c, .)
+      data = data[ ,..name]
+    } else {
+      name = names(data)
+    }
     size = ncol(data)
     return (list(data = data, name = name, size = size))
   } else {
@@ -20,7 +24,7 @@ getCovFromGWAS <- function(isGWASAssit, cutoff,
   if (isGWASAssist) {
     cat("   Loading QTNs information ...")
     ## Read GWAS result
-      tableGWAS = fread(sprintf("%s_%s_GWAS.txt", nameProject, nameTrait))
+      tableGWAS = fread(sprintf("iPat_%s_%s_GWAS.txt", nameProject, nameTrait))
     ## Merge GM and p-value
       names(rawMap)[1] = "SNP"
       mapGWAS = data.table(rawMap)
@@ -43,10 +47,10 @@ getCovFromGWAS <- function(isGWASAssit, cutoff,
         sizeQTN = 1
     ### 1+ QTNs
       } else {
-        cGWAS = genotype[ ,..indexSig]
+        cGWAS = genotype[ ,..indexSig] %>% as.data.frame()
         ## LD Remove
         LD_remain = Blink.LDRemove(cGWAS, .7, indexSig, orientation = "col")
-        cGWAS = data.frame(cGWAS[ ,..LD_remain])
+        cGWAS = cGWAS[ ,LD_remain]
         sizeQTN = length(LD_remain)
       }
       cat("Done\n")
@@ -60,14 +64,16 @@ getCovFromGWAS <- function(isGWASAssit, cutoff,
     diff = sizeCov + sizeQTN - sizeN
     return (data.frame(cov, cGWAS[ ,1 : (sizeQTN - diff)]))
   ## both cov nor qtn has size greater than 0
-  } else if (sizeCov == 0 && sizeQTN == 0) {
-    return (NULL)
+  } else if (sizeCov != 0 && sizeQTN != 0) {
+    return (data.frame(cov, cGWAS))
   ## if c + qtn <= n
   } else if (sizeCov == 0 && sizeQTN != 0) {
     return (cGWAS)
   ## if only c
   } else if (sizeCov != 0 && sizeQTN == 0) {
     return (cov)
+  } else if (sizeCov == 0 && sizeQTN == 0) {
+    return (NULL)
   }
 }
 
@@ -130,7 +136,7 @@ rmse <- function(x, y) {
 ## ---------------------------- gBLUP ---------------------------- ##
 runGBLUP <- function(finalP, finalG, finalC, taxa, project, trait) {
   # Write header
-  nameTableMarker = sprintf("iPat_%s_%s_marker.txt", project, trait)
+  nameTableMarker = sprintf("iPat_%s_%s_GEBV_By_Marker.txt", project, trait)
   nameTableGEBV = sprintf("iPat_%s_%s_GEBV", project, trait)
   nameTableStat = sprintf("iPat_%s_%s_Stat.txt", project, trait)
   cat("Stat\tValue\n", file = nameTableStat)
