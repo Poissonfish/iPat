@@ -6,11 +6,11 @@
 #### ***Hapmap***{-}
 ```{r hapmap, echo = FALSE}
 knitr::kable(
-  read.table("md/hapmap.txt", header = T)[,1:9], booktabs = TRUE,
+  read.table("/Users/jameschen/IdeaProjects/iPat/docs/md/hapmap.txt", header = T)[,1:9], booktabs = TRUE,
   caption = 'Hapmap format'
 )
 knitr::kable(
-  read.table("../md/hapmap.txt", header = T)[,10:14], booktabs = TRUE,
+  read.table("/Users/jameschen/IdeaProjects/iPat/docs/md/hapmap.txt", header = T)[,10:14], booktabs = TRUE,
   caption = 'Hapmap format (Continued)'
 )
 ```
@@ -19,11 +19,11 @@ knitr::kable(
 [Reference](https://samtools.github.io/hts-specs/VCFv4.1.pdf){-}
 ```{r vcf, echo = FALSE}
 knitr::kable(
-  data.table::fread("../md/vcf.txt", header = T)[,1:8], booktabs = TRUE,
+  data.table::fread("/Users/jameschen/IdeaProjects/iPat/docs/md/vcf.txt", header = T)[,1:8], booktabs = TRUE,
   caption = 'VCF format'
 )
 knitr::kable(
-  data.table::fread("../md/vcf.txt", header = T)[,9:12], booktabs = TRUE,
+  data.table::fread("/Users/jameschen/IdeaProjects/iPat/docs/md/vcf.txt", header = T)[,9:12], booktabs = TRUE,
   caption = 'VCF format (Continued)'
 )
 ```
@@ -31,7 +31,7 @@ knitr::kable(
 #### ***Numerical Data***{-}
 ```{r, echo = FALSE}
 knitr::kable(
-  read.table("../md/num.txt", header = T), booktabs = TRUE,
+  read.table("/Users/jameschen/IdeaProjects/iPat/docs/md/num.txt", header = T), booktabs = TRUE,
   caption = 'Numerical format'
 ) %>% kableExtra::kable_styling(full_width = F)
 ```
@@ -43,7 +43,7 @@ Missing values must be assigned as 0
 
 ```{r, echo = FALSE}
 knitr::kable(
-  data.table::fread("../md/plink.txt"), booktabs = TRUE,
+  data.table::fread("/Users/jameschen/IdeaProjects/iPat/docs/md/plink.txt"), booktabs = TRUE,
   caption = 'PLINK format', format = "html"
 ) %>%
 kableExtra::kable_styling(full_width = F) %>%
@@ -53,7 +53,7 @@ gsub("<thead>.*</thead>", "", .)
 ### Phenotype
 ```{r, echo = FALSE}
 knitr::kable(
-  data.table::fread("../md/phenotype.txt"), booktabs = TRUE,
+  data.table::fread("/Users/jameschen/IdeaProjects/iPat/docs/md/phenotype.txt"), booktabs = TRUE,
   caption = 'Phenotype format', format = "html"
 ) %>%
 kableExtra::kable_styling(full_width = F)
@@ -62,7 +62,7 @@ kableExtra::kable_styling(full_width = F)
 ### Map
 ```{r, echo = FALSE}
 knitr::kable(
-  data.table::fread("../md/map.txt"), booktabs = TRUE,
+  data.table::fread("/Users/jameschen/IdeaProjects/iPat/docs/md/map.txt"), booktabs = TRUE,
   caption = 'SNPs Map for numerical formats', format = "html"
 ) %>%
 kableExtra::kable_styling(full_width = F) %>%
@@ -73,7 +73,7 @@ kableExtra::column_spec(3, width = "10em")
 
 ```{r, echo = FALSE}
 knitr::kable(
-  data.table::fread("../md/plink_map.txt"), booktabs = TRUE,
+  data.table::fread("/Users/jameschen/IdeaProjects/iPat/docs/md/plink_map.txt"), booktabs = TRUE,
   caption = 'SNPs Map for PLINK formats', format = "html"
 ) %>%
 kableExtra::kable_styling(full_width = F) %>%
@@ -87,7 +87,7 @@ gsub("<thead>.*</thead>", "", .)
 ### Covariates
 ```{r, echo = FALSE}
 knitr::kable(
-  data.table::fread("../md/covariate.txt"), booktabs = TRUE,
+  data.table::fread("/Users/jameschen/IdeaProjects/iPat/docs/md/covariate.txt"), booktabs = TRUE,
   caption = 'Covariates format', format = "html"
 ) %>%
 kableExtra::kable_styling(full_width = F)
@@ -96,7 +96,7 @@ kableExtra::kable_styling(full_width = F)
 ### Kinship
 ```{r, echo = FALSE}
 knitr::kable(
-  data.table::fread("../md/kinship.txt"), booktabs = TRUE,
+  data.table::fread("/Users/jameschen/IdeaProjects/iPat/docs/md/kinship.txt"), booktabs = TRUE,
   caption = 'Kinship format', format = "html"
 ) %>%
 kableExtra::kable_styling(full_width = F) %>%
@@ -137,7 +137,7 @@ gsub("<thead>.*</thead>", "", .)
 #### ***GWAS report***{-}
 ```{r, echo = FALSE}
 knitr::kable(
-  data.table::fread("../md/3.2-GWAS.txt"), booktabs = TRUE,
+  data.table::fread("/Users/jameschen/IdeaProjects/iPat/docs/md/3.2-GWAS.txt"), booktabs = TRUE,
   caption = 'Tabular GWAS results', format = "html"
 ) %>%
 kableExtra::kable_styling(full_width = F)
@@ -146,7 +146,7 @@ kableExtra::kable_styling(full_width = F)
 #### ***GS: GEBV***{-}
 ```{r, echo = FALSE}
 knitr::kable(
-  data.table::fread("../md/3.2-GEBVs.txt"), booktabs = TRUE,
+  data.table::fread("/Users/jameschen/IdeaProjects/iPat/docs/md/3.2-GEBVs.txt"), booktabs = TRUE,
   caption = 'GEBV for each individual', format = "html"
 ) %>%
 kableExtra::kable_styling(full_width = F) %>%
@@ -157,7 +157,7 @@ kableExtra::column_spec(2, width = "10em")
 #### ***GS: Marker effects***{-}
 ```{r, echo = FALSE}
 knitr::kable(
-  data.table::fread("../md/3.2-Markers.txt", header = T), booktabs = TRUE,
+  data.table::fread("/Users/jameschen/IdeaProjects/iPat/docs/md/3.2-Markers.txt", header = T), booktabs = TRUE,
   caption = 'Genetic effects for each marker', format = "html"
 ) %>%
 kableExtra::kable_styling(full_width = F) %>%
@@ -168,7 +168,7 @@ kableExtra::column_spec(2, width = "10em")
 #### ***GS: Validation results***{-}
 ```{r, echo = FALSE}
 knitr::kable(
-  data.table::fread("../md/3.2-CV.txt"), booktabs = TRUE,
+  data.table::fread("/Users/jameschen/IdeaProjects/iPat/docs/md/3.2-CV.txt"), booktabs = TRUE,
   caption = 'Accuracies from GS validation', format = "html"
 ) %>%
 kableExtra::kable_styling(full_width = F)
@@ -177,7 +177,7 @@ kableExtra::kable_styling(full_width = F)
 #### ***GS: Predicted values***{-}
 ```{r, echo = FALSE}
 knitr::kable(
-  data.table::fread("../md/3.2-GSraw.txt"), booktabs = TRUE,
+  data.table::fread("/Users/jameschen/IdeaProjects/iPat/docs/md/3.2-GSraw.txt"), booktabs = TRUE,
   caption = 'List of predicted and observed phenotypes', format = "html"
 ) %>%
 kableExtra::kable_styling(full_width = F)%>%
