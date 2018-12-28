@@ -1,5 +1,5 @@
 # Step by Step Tutorial
-This chapter we'll demonstrate four commonly used analyses in iPat with step-by-step GIFs and brief descriptions.
+This chapter we'll demonstrate four commonly used analyses in iPat with step-by-step GIFs and brief descriptions. Readers can find all the demo files from [here](http://zzlab.net/iPat/demo.zip).
 
 ## GWAS in GAPIT
 In this section, we're demonstrate how users can conduct GAPIT GWAS with PLINK files. Compressed mixed linear model will be used in this study.
