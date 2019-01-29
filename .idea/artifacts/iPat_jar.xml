@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="iPat:jar">
+    <output-path>$USER_HOME$/Dropbox/iPat/wrapper/jar</output-path>
+    <root id="archive" name="iPat.jar">
+      <element id="module-output" name="iPat" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/miglayout/miglayout/3.7.4/miglayout-3.7.4.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

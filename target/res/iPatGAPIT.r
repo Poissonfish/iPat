@@ -1,33 +1,42 @@
-# 191211
 tryCatch({
 # Library
-  cat("=== gBLUP ===\n")
+  cat("=== GAPIT ===\n")
   cat("   Loading libraries ...")
-  lary(rrBLUP)
-  library(data.table)
   library(magrittr)
-  library(ggplot2)
+  library(data.table)
+  library(multtest)
+  library(gplots)
+  library(LDheatmap)
+  library(genetics)
+  library(ape)
+  library(EMMREML)
+  library(compiler) #this library is already installed in R
+  library(scatterplot3d)
   source("http://zzlab.net/iPat/Function_iPat.R")
+  source("http://zzlab.net/GAPIT/emma.txt")
+  source("http://zzlab.net/GAPIT/gapit_functions.txt")
+  source("http://zzlab.net/FarmCPU/FarmCPU_functions.txt")
   cat("Done\n")
-  ANALYSIS = "gBLUP"
+
 # Input arguments
   arg = commandArgs(trailingOnly=TRUE)
   # ======= Test Code ====== #
     # rm(list=ls())
-    # arg = c("-gs", "TRUE", "5", "1",
-    #         "-gwas", "FALSE", "0",
+    # arg = c("-arg", "MLM", "3",
     #         "-wd", "/Users/jameschen/Desktop/Test/iPatDEMO",
-    #         "-project", "gBLUP",
+    #         "-project", "GAPIT",
     #         "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.txt",
-    #         "-pSelect", "y75sepy25sep",
+    #         "-pSelect", "y25sepy50sepy75sep",
     #         # "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/data.txt",
     #         # "-pSelect", "EarHTsepEarDiasep",
-    #         "-cov", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.cov",
-    #         "-cSelect", "C1sep",
-    #         "-genotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.dat",
+    #         "-cov", "NA",
+    #         "-cSelect", "NA",
+    #         # "-cov", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.cov",
+    #         # "-cSelect", "C1sep",
+    #         "-genotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo_recode.dat",
     #         "-kin", "NA",
-    #         "-map", "NA")
-    # trait = dataP$name[1]
+    #         "-map", "/Users/jameschen/Desktop/Test/iPatDEMO/demo_recode.nmap")
+    # # trait = dataP$name[1]
     # X = finalG
     # Y = finalP
     # # C = finalC
@@ -76,6 +85,7 @@ tryCatch({
           rawMap = NULL
         } else {
           rawMap = fread(arg[i])
+          names(rawMap) = c("SNP", "Chromosome", "Position")
         }
         cat("Done\n")
       },
@@ -103,28 +113,18 @@ tryCatch({
         if (grepl("NA", arg[i])) {
           rawKin = NULL
         } else {
-          rawKin = fread(arg[i])
+          rawKin = fread(arg[i]) %>% as.data.frame()
         }
         # If have taxa column
         if (is.character(rawKin[[1]]))
           rawKin = rawKin[ ,-1]
         cat("Done\n")
       },
-      "-gwas" = {
+      "-arg" = {
         i = i + 1
-        isGWASAssist = as.logical(arg[i])
-        cutoff = 0.05
-      },
-      "-gs" = {
+        model = arg[i]
         i = i + 1
-        isValid = as.logical(arg[i])
-        # i = i + 1
-        # isRaw = as.logical(arg[i])
-        isRaw = TRUE
-        i = i + 1
-        countFold = as.numeric(arg[i])
-        i = i + 1
-        countIter = as.numeric(arg[i])
+        nPC = as.numeric(arg[i])
       }
     )
   }
@@ -137,38 +137,34 @@ tryCatch({
 # Subset Covariates
   cat("   Subsetting covariates ...")
   dataC = getSelected(rawCov, selectC)
+  if (is.null(dataC$data)) {
+    finalC = NULL
+  } else {
+    finalC = data.frame(taxa, datac$data)
+  }
   cat("Done\n")
 
-# Iterate over traits
+# GAPIT
   for (trait in dataP$name) {
-    cat(sprintf("   gBLUP is computing for trait %s ...", trait))
-    # Collect covariates
-      Cov = getCovFromGWAS(isGWASAssist, cutoff,
-        sizeN = sizeN, dataCov = dataC,
-        nameProject = project, nameTrait = trait,
-        rawGenotype, rawMap)
-    # Validation
-      if (isValid) {
-        # In case have any missing data
-          idxNonNA = !is.na(dataP$data[[trait]])
-          finalP = dataP$data[[trait]][idxNonNA]
-          finalG = rawGenotype[idxNonNA, ]
-          finalC = Cov[idxNonNA, ]
-        # Run Validation
-          runCrossValidation(finalP, finalG, finalC, isRaw,
-                    countFold, countIter, project, trait)
-    # No validation
-      } else {
-          finalP = dataP$data[[trait]]
-          finalG = rawGenotype
-          finalC = Cov
-          runGBLUP(finalP, finalG, finalC, taxa, project, trait)
-      }
-      iPat.Genotype.View(myGD = data.frame(taxa, rawGenotype), filename = sprintf("iPat_%s_%s", project, trait))
-      iPat.Phenotype.View(myY = data.frame(taxa, dataP$data[[trait]]), filename = sprintf("iPat_%s_%s", project, trait))
-    cat("Done\n")
+    x = GAPIT(
+          Y = data.frame(taxa, dataP$data[[trait]]),
+          GM = data.frame(rawMap),
+          GD = data.frame(taxa, rawGenotype),
+          KI = rawKin,
+          CV = finalC,
+          PCA.total = nPC,
+          file.output = F,
+          model = model)
+    dt_gwas = x$GWAS
+    dt_gwas = merge(rawMap, dt_gwas[,-c(2, 3)], sort = F) %>% data.table(effect = x$mc)
+    fwrite(x = dt_gwas, file = sprintf("iPat_%s_%s_GWAS.txt", project, trait), quote = F, row.names = F, sep = "\t")
+    dt_out = dt_gwas[,c(2, 1, 3, 4)] %>% data.frame()
+    names(dt_out) = c("CHR", "SNP", "BP", "P")
+    iPat.Manhattan(GI.MP = dt_out[,-2], filename = sprintf("iPat_%s_%s", project, trait))
+    iPat.QQ(dt_out$P, filename = sprintf("iPat_%s_%s", project, trait))
+    iPat.Genotype.View(myGD = data.frame(taxa, rawGenotype), filename = sprintf("iPat_%s_%s", project, trait))
+    iPat.Phenotype.View(myY = data.frame(taxa, dataP$data[[trait]]), filename = sprintf("iPat_%s_%s", project, trait))
   }
-  print(warnings())
-}, error = function(e){
+}, error = function(e) {
   stop(e)
 })
