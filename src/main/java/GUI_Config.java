@@ -56,6 +56,7 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
                 GroupCombo inputConv, outputConv, batchConv;
                 GroupCheckBox fillnaConv;
                 GroupSlider msConv, mafConv;
+                GroupCheckBox msCheckConv, mafCheckConv;
                 JButton prevConv, doneConv;
 
     public GUI_Config (int width, int height, Obj_Module module) throws InterruptedException {
@@ -201,10 +202,12 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
         this.inputConv.combo.addItemListener(this);
         this.outputConv = new GroupCombo("Output Fromat", new String[]{"------      "});
         this.outputConv.combo.setEnabled(false);
-        this.msConv = new GroupSlider("By missing rate", 4,
-                new String[]{"0", "0.05", "0.1", "0.2", "0.5"});
-        this.mafConv = new GroupSlider("By MAF ", 3,
-                new String[]{"0", "0.01", "0.05", "0.1", "0.2"});
+        this.msCheckConv = new GroupCheckBox("By MS");
+        this.msConv = new GroupSlider("keep markers with missing rate LOWER than", 6,
+                new String[]{"0.01", "0.03", "0.05", "0.10", "0.20", "1.00"});
+        this.mafCheckConv = new GroupCheckBox("By MAF");
+        this.mafConv = new GroupSlider("Keep markers with minor allele frequencies HIGHER than", 1,
+                new String[]{"0.00", "0.01", "0.03", "0.05", "0.10", "0.20"});
         this.fillnaConv = new GroupCheckBox("Fill NAs as heterozygotes");
         this.batchConv = new GroupCombo("Batch of Sample Size", new String[]{"32", "64", "128", "256", "512"});
         this.batchConv.setValue(1); // set default as 64
@@ -215,12 +218,19 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
         // assemble
         this.paneConvert.add(this.inputConv, "cell 0 0, grow, align c");
         this.paneConvert.add(this.outputConv, "cell 1 0, grow, align c");
-        this.paneConvert.add(this.msConv, "cell 0 1 2 1, grow, align c");
-        this.paneConvert.add(this.mafConv, "cell 0 2 2 1, grow, align c");
+        this.paneConvert.add(this.msCheckConv, "cell 0 1, grow, align l");
+        this.paneConvert.add(this.msConv, "cell 1 1, grow, align l");
+        this.paneConvert.add(this.mafCheckConv, "cell 0 2, grow, align l");
+        this.paneConvert.add(this.mafConv, "cell 1 2, grow, align l");
         this.paneConvert.add(this.fillnaConv, "cell 0 3, grow, align c");
         this.paneConvert.add(this.batchConv, "cell 1 3, grow, align c");
         this.paneConvert.add(this.prevConv, "cell 0 4, grow, align c");
         this.paneConvert.add(this.doneConv, "cell 1 4, grow, align c");
+        // for action
+        this.msConv.slider.setEnabled(false);
+        this.mafConv.slider.setEnabled(false);
+        this.msCheckConv.check.addActionListener(this);
+        this.mafCheckConv.check.addActionListener(this);
         // ================================= Right Panel (Card) =================================
         this.cardRight = new JPanel(new CardLayout());
         this.cardRight.add(this.paneAnalysis, "analysis");
@@ -362,6 +372,18 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
             this.module.setName(this.paneWD.getProject());
             this.module.setFile(this.paneWD.getPath());
             this.dispose();
+        } else if (obj == this.msCheckConv.check) {
+            this.msConv.slider.setEnabled(!this.msConv.slider.isEnabled());
+            if (!this.msConv.slider.isEnabled())
+                this.msConv.setStrValue("1.00");
+            else
+                this.msConv.setStrValue("0.05");
+        } else if (obj == this.mafCheckConv.check) {
+            this.mafConv.slider.setEnabled(!this.mafConv.slider.isEnabled());
+            if (!this.mafConv.slider.isEnabled())
+                this.mafConv.setStrValue("0.00");
+            else
+                this.mafConv.setStrValue("0.05");
         } else if (obj == this.doneConv) {
             // Load Module
             this.loadFileTray(this.module);

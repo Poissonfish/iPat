@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 
-// 2018/12/19
+// 2019/03/25
 abstract class Cpu_SuperConverter {
     int sub_n = 128, sub_m = 8192;
     String sep = "\t";
@@ -100,7 +100,8 @@ abstract class Cpu_SuperConverter {
                 }
                 break;
             case PLINK:
-                PlinkToNum(pathGD, pathGM);
+                if (OutputFormat == iPatFormat.Numerical)
+                   PlinkToNum(pathGD, pathGM);
                 break;
             case genStudio:
                 GenStdioToNum(pathGD);
@@ -252,7 +253,8 @@ abstract class Cpu_SuperConverter {
             this.isKeep = doQCNUM(GD_path, hasHeader, hasTaxa);
             for(boolean b : this.isKeep)
                 this.mCountQC += b ? 1 : 0;
-        }
+        } else
+            this.mCountQC = this.mCount;
         // ========= ========= ========= ========= Map ========= ========= ========= =========
         if (!GM_path.equals("NA")) {
             setReader(GM_path);
@@ -557,7 +559,8 @@ abstract class Cpu_SuperConverter {
             this.isKeep = doQCHapmap(GD_path, valueNA, isOneChar);
             for(boolean b : this.isKeep)
                 this.mCountQC += b ? 1 : 0;
-        }
+        } else
+            this.mCountQC = this.mCount;
         // ========= ========= ========= ========= Map ========= ========= ========= =========
         resetToNthLine(GD_path, 1);
         iniProgress("Converting Map File",
@@ -679,7 +682,8 @@ abstract class Cpu_SuperConverter {
             this.isKeep = doQCHapmap(GD_path, valueNA, isOneChar);
             for(boolean b : this.isKeep)
                 this.mCountQC += b ? 1 : 0;
-        }
+        } else
+            this.mCountQC = this.mCount;
         // ========= ========= ========= ========= Map ========= ========= ========= =========
         System.out.println("Converting Map file");
         resetToNthLine(GD_path, 1);
@@ -792,7 +796,8 @@ abstract class Cpu_SuperConverter {
             this.isKeep = doQCVCF(GD_path);
             for(boolean b : this.isKeep)
                 this.mCountQC += b ? 1 : 0;
-        }
+        } else
+            this.mCountQC = this.mCount;
         // ========= ========= ========= ========= Map ========= ========= ========= =========
         resetToNthLine(GD_path, this.vcfAnnotation);
         iniProgress("Converting Map File",
@@ -923,7 +928,8 @@ abstract class Cpu_SuperConverter {
             this.isKeep = doQCVCF(GD_path);
             for(boolean b : this.isKeep)
                 this.mCountQC += b ? 1 : 0;
-        }
+        } else
+            this.mCountQC = this.mCount;
         // ========= ========= ========= ========= Map ========= ========= ========= =========
         resetToNthLine(GD_path, this.vcfAnnotation);
         iniProgress("Converting Map File",

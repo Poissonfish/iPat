@@ -4,33 +4,39 @@ tryCatch({
   cat("   Loading libraries ...")
   library(magrittr)
   library(data.table)
-  library(MASS) # required for ginv
   library(multtest)
   library(gplots)
-  library(compiler) #required for cmpfun
+  library(LDheatmap)
+  library(genetics)
+  library(ape)
+  library(EMMREML)
+  library(compiler) #this library is already installed in R
   library(scatterplot3d)
-  library(R.utils)
   source("http://zzlab.net/iPat/Function_iPat.R")
+  source("http://zzlab.net/GAPIT/emma.txt")
   source("http://zzlab.net/GAPIT/gapit_functions.txt")
+  source("http://zzlab.net/FarmCPU/FarmCPU_functions.txt")
   cat("Done\n")
 
 # Input arguments
   arg = commandArgs(trailingOnly=TRUE)
   # ======= Test Code ====== #
     # rm(list=ls())
-    # arg = c("-arg", "MLM",
+    # arg = c("-arg", "MLM", "3",
     #         "-wd", "/Users/jameschen/Desktop/Test/iPatDEMO",
     #         "-project", "GAPIT",
     #         "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.txt",
-    #         "-pSelect", "y75sepy25sep",
+    #         "-pSelect", "y25sepy50sepy75sep",
     #         # "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/data.txt",
     #         # "-pSelect", "EarHTsepEarDiasep",
-    #         "-cov", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.cov",
-    #         "-cSelect", "C1sep",
-    #         "-genotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.dat",
+    #         "-cov", "NA",
+    #         "-cSelect", "NA",
+    #         # "-cov", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.cov",
+    #         # "-cSelect", "C1sep",
+    #         "-genotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo_recode.dat",
     #         "-kin", "NA",
-    #         "-map", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.map")
-    # trait = dataP$name[1]
+    #         "-map", "/Users/jameschen/Desktop/Test/iPatDEMO/demo_recode.nmap")
+    # # trait = dataP$name[1]
     # X = finalG
     # Y = finalP
     # # C = finalC
@@ -66,7 +72,7 @@ tryCatch({
       "-genotype" = {
         cat("   Loading genotype ...")
         i = i + 1
-        genotype = fread(arg[i])
+        rawGenotype = fread(arg[i])
         # If have taxa column
         if (is.character(rawGenotype[[1]]))
           rawGenotype = rawGenotype[ ,-1]
@@ -79,6 +85,7 @@ tryCatch({
           rawMap = NULL
         } else {
           rawMap = fread(arg[i])
+          names(rawMap) = c("SNP", "Chromosome", "Position")
         }
         cat("Done\n")
       },
@@ -117,7 +124,7 @@ tryCatch({
         i = i + 1
         model = arg[i]
         i = i + 1
-        nPC = arg[i]
+        nPC = as.numeric(arg[i])
       }
     )
   }
@@ -130,24 +137,34 @@ tryCatch({
 # Subset Covariates
   cat("   Subsetting covariates ...")
   dataC = getSelected(rawCov, selectC)
+  if (is.null(dataC$data)) {
+    finalC = NULL
+  } else {
+    finalC = data.frame(taxa, datac$data)
+  }
   cat("Done\n")
 
 # GAPIT
-  for (trait in nameTraits) {
+  for (trait in dataP$name) {
     x = GAPIT(
           Y = data.frame(taxa, dataP$data[[trait]]),
           GM = data.frame(rawMap),
           GD = data.frame(taxa, rawGenotype),
           KI = rawKin,
-          CV = data.frame(taxa, dataC$data),
+          CV = finalC,
           PCA.total = nPC,
-          model = model,
-          memo = sprintf("%s_%s.txt", project, trait))
-    write.table(x = data.frame(SNP = x$GWAS$SNP, P.value = x$GWAS$P.value),
-              file = sprintf("%s_%s_GWAS.txt", project, trait),
-              quote = F, row.names = F, sep = "\t")
+          file.output = F,
+          model = model)
+    dt_gwas = x$GWAS
+    dt_gwas = merge(rawMap, dt_gwas[,-c(2, 3)], sort = F) %>% data.table(effect = x$mc)
+    fwrite(x = dt_gwas, file = sprintf("iPat_%s_%s_GWAS.txt", project, trait), quote = F, row.names = F, sep = "\t")
+    dt_out = dt_gwas[,c(2, 1, 3, 4)] %>% data.frame()
+    names(dt_out) = c("CHR", "SNP", "BP", "P")
+    iPat.Manhattan(GI.MP = dt_out[,-2], filename = sprintf("iPat_%s_%s", project, trait))
+    iPat.QQ(dt_out$P, filename = sprintf("iPat_%s_%s", project, trait))
+    iPat.Genotype.View(myGD = data.frame(taxa, rawGenotype), filename = sprintf("iPat_%s_%s", project, trait))
+    iPat.Phenotype.View(myY = data.frame(taxa, dataP$data[[trait]]), filename = sprintf("iPat_%s_%s", project, trait))
   }
-  print(warnings())
 }, error = function(e) {
   stop(e)
 })

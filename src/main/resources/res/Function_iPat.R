@@ -24,7 +24,7 @@ getCovFromGWAS <- function(isGWASAssit, cutoff,
   if (isGWASAssist) {
     cat("   Loading QTNs information ...")
     ## Read GWAS result
-      tableGWAS = fread(sprintf("%s_%s_GWAS.txt", nameProject, nameTrait))
+      tableGWAS = fread(sprintf("iPat_%s_%s_GWAS.txt", nameProject, nameTrait))
     ## Merge GM and p-value
       names(rawMap)[1] = "SNP"
       mapGWAS = data.table(rawMap)
@@ -136,7 +136,7 @@ rmse <- function(x, y) {
 ## ---------------------------- gBLUP ---------------------------- ##
 runGBLUP <- function(finalP, finalG, finalC, taxa, project, trait) {
   # Write header
-  nameTableMarker = sprintf("iPat_%s_%s_marker.txt", project, trait)
+  nameTableMarker = sprintf("iPat_%s_%s_GEBV_By_Marker.txt", project, trait)
   nameTableGEBV = sprintf("iPat_%s_%s_GEBV", project, trait)
   nameTableStat = sprintf("iPat_%s_%s_Stat.txt", project, trait)
   cat("Stat\tValue\n", file = nameTableStat)

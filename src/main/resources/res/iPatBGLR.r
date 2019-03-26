@@ -154,6 +154,8 @@ tryCatch({
           finalC = Cov
           runBGLR(finalP, finalG, finalC, taxa, project, trait)
       }
+      iPat.Genotype.View(myGD = data.frame(taxa, rawGenotype), filename = sprintf("iPat_%s_%s", project, trait))
+      iPat.Phenotype.View(myY = data.frame(taxa, dataP$data[[trait]]), filename = sprintf("iPat_%s_%s", project, trait))
     cat("Done\n")
   }
   print(warnings())

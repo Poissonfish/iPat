@@ -325,6 +325,9 @@ class Obj_Module extends Obj_Super implements ActionListener{
                                 pathGD = filename + "_recode.dat";
                                 pathGM = filename + "_recode.nmap";
                                 format = Enum_FileFormat.Numeric;
+                            } else if (isPLINK && format == Enum_FileFormat.PLINK) {
+                                command.addArg("-maf", Double.toString(this.maf));
+                                command.addArg("-ms", Double.toString(this.ms));
                             }
                             command.addArg("-genotype", pathGD);
                             command.addArg("-map", pathGM);

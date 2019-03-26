@@ -59,7 +59,7 @@ class GroupCheckBox extends JPanel{
         this.check = new JCheckBox();
         this.check.setText(text);
         this.check.setSelected(false);
-        this.add(this.check, "cell 0 0, align r");
+        this.add(this.check, "cell 0 0, align c");
     }
     void setCheck(boolean check) {
         this.check.setSelected(check);

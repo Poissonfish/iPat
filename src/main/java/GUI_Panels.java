@@ -286,21 +286,31 @@ class PanelBGLR extends PanelTool  {
 
 // ================================= Class : Common Panel =================================
 
-class PanelQC extends JPanel {
+class PanelQC extends JPanel implements ActionListener {
     // MS
+    GroupCheckBox checkMS;
     GroupSlider sliderMS;
     // MAF
+    GroupCheckBox checkMAF;
     GroupSlider sliderMAF;
 
     public PanelQC() {
-        super(new MigLayout("fillx, ins 3", "[grow]", "[grow][grow]"));
-
-        this.sliderMS = new GroupSlider("By missing rate", 4,
-                new String[]{"0", "0.05", "0.1", "0.2", "0.5"});
-        this.sliderMAF = new GroupSlider("By MAF ", 3,
-                new String[]{"0", "0.01", "0.05", "0.1", "0.2"});
-        this.add(this.sliderMS, "cell 0 0, grow, align c");
-        this.add(this.sliderMAF, "cell 0 1, grow, align c");
+        super(new MigLayout("fillx, ins 3", "[grow][grow]", "[grow][grow]"));
+        this.checkMS = new GroupCheckBox("By MS");
+        this.sliderMS = new GroupSlider("keep markers with missing rate LOWER than", 6,
+                new String[]{"0.01", "0.03", "0.05", "0.10", "0.20", "1.00"});
+        this.checkMAF = new GroupCheckBox("By MAF");
+        this.sliderMAF = new GroupSlider("Keep markers with minor allele frequencies HIGHER than", 1,
+                new String[]{"0.00", "0.01", "0.03", "0.05", "0.10", "0.20"});
+        this.add(this.checkMS, "cell 0 0, grow, align l");
+        this.add(this.sliderMS, "cell 1 0, grow, align c");
+        this.add(this.checkMAF, "cell 0 1, grow, align l");
+        this.add(this.sliderMAF, "cell 1 1, grow, align c");
+        // Add action listener
+        this.sliderMS.slider.setEnabled(false);
+        this.sliderMAF.slider.setEnabled(false);
+        this.checkMS.check.addActionListener(this);
+        this.checkMAF.check.addActionListener(this);
     }
 
     String getMS() {
@@ -317,6 +327,24 @@ class PanelQC extends JPanel {
 
     void setMAF(String val) {
         this.sliderMAF.setStrValue(val);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        Object obs = e.getSource();
+        if (obs == this.checkMS.check) {
+            this.sliderMS.slider.setEnabled(!this.sliderMS.slider.isEnabled());
+            if (!this.sliderMS.slider.isEnabled())
+                this.sliderMS.setStrValue("1.00");
+            else
+                this.sliderMS.setStrValue("0.05");
+        } else if (obs == this.checkMAF.check) {
+            this.sliderMAF.slider.setEnabled(!this.sliderMAF.slider.isEnabled());
+            if (!this.sliderMAF.slider.isEnabled())
+                this.sliderMAF.setStrValue("0.00");
+            else
+                this.sliderMAF.setStrValue("0.05");
+        }
     }
 }
 
@@ -686,6 +714,8 @@ class PanelBottom extends JPanel implements MouseListener, MouseMotionListener {
                         return command;
                     case PLINK:
                         map = iPat.MODVAL.mapPLINK;
+                        command.add(iPat.REXC);
+                        command.add(iPat.FILELIB.getAbsolutePath("iPatPLINK.r"));
                         command.add("-arg");
                         command.add(map.get("ci"));
                         command.add(map.get("model"));

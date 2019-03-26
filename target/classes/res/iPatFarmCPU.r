@@ -7,6 +7,7 @@ tryCatch({
   library(compiler) #this library is already installed in R
   library(magrittr)
   library(data.table)
+  source("http://zzlab.net/iPat/Function_iPat.R")
   source("http://zzlab.net/GAPIT/gapit_functions.txt")
   source("http://zzlab.net/FarmCPU/FarmCPU_functions.txt")
   cat("Done\n")
@@ -114,6 +115,11 @@ tryCatch({
 # Subset Covariates
   cat("   Subsetting covariates ...")
   dataC = getSelected(rawCov, selectC)
+  if (is.null(dataC$data)) {
+    finalC = NULL
+  } else {
+    finalC = data.frame(taxa, datac$data)
+  }
   cat("Done\n")
 
 # FarmCPU
@@ -122,16 +128,20 @@ tryCatch({
           Y = data.frame(taxa, dataP$data[[trait]]),
           GM = data.frame(rawMap),
           GD = data.frame(taxa, rawGenotype),
-          CV = dataC$data,
+          CV = finalC,
           method.bin = method.bin,
           maxLoop = maxLoop,
           MAF.calculate = TRUE,
-          memo = sprintf("%s_%s", project, trait))
-    write.table(x = data.frame(SNP = x$GWAS$SNP, P.value = x$GWAS$P.value),
-                file = sprintf("%s_%s_GWAS.txt", project, trait),
-                quote = F, row.names = F, sep = "\t")
+          file.output = F)
+    dt_gwas = x$GWAS
+    fwrite(x = dt_gwas, file = sprintf("iPat_%s_%s_GWAS.txt", project, trait), quote = F, row.names = F, sep = "\t")
+    dt_out = dt_gwas[,c(2, 1, 3, 4)] %>% data.frame()
+    names(dt_out) = c("CHR", "SNP", "BP", "P")
+    iPat.Manhattan(GI.MP = dt_out[,-2], filename = sprintf("iPat_%s_%s", project, trait))
+    iPat.QQ(dt_out$P, filename = sprintf("iPat_%s_%s", project, trait))
+    iPat.Genotype.View(myGD = data.frame(taxa, rawGenotype), filename = sprintf("iPat_%s_%s", project, trait))
+    iPat.Phenotype.View(myY = data.frame(taxa, dataP$data[[trait]]), filename = sprintf("iPat_%s_%s", project, trait))
   }
-  # print(warnings())
 }, error = function(e) {
   stop(e)
 })

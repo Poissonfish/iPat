@@ -18,16 +18,16 @@ tryCatch({
   #         "-gwas", "TRUE", "0.05",
   #         "-arg", "BRR", "1200", "500",
   #         "-wd", "/Users/jameschen/Desktop/Test/iPatDEMO",
-  #         "-project", "rrBLUPbyFarm",
+  #         "-project", "farm",
   #         "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.txt",
-  #         "-pSelect", "y75sepy25sep",
+  #         "-pSelect", "y25sepy50sepy75sep",
   #         # "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/data.txt",
   #         # "-pSelect", "EarHTsepEarDiasep",
   #         "-cov", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.cov",
   #         "-cSelect", "C1sep",
-  #         "-genotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.dat",
+  #         "-genotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo_recode.dat",
   #         "-kin", "NA",
-  #         "-map", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.map")
+  #         "-map", "/Users/jameschen/Desktop/Test/iPatDEMO/demo_recode.nmap")
   # trait = dataP$name[1]
   # X = finalG
   # Y = finalP
@@ -153,6 +153,8 @@ tryCatch({
           finalC = Cov
           runRRBLUP(finalP, finalG, finalC, taxa, project, trait)
       }
+      iPat.Genotype.View(myGD = data.frame(taxa, rawGenotype), filename = sprintf("iPat_%s_%s", project, trait))
+      iPat.Phenotype.View(myY = data.frame(taxa, dataP$data[[trait]]), filename = sprintf("iPat_%s_%s", project, trait))
     cat("Done\n")
   }
   # print(warnings())
