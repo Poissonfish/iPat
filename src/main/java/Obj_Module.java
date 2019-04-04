@@ -175,14 +175,15 @@ class Obj_Module extends Obj_Super implements ActionListener{
     }
     private Enum_FileFormat getFormat(Obj_FileCluster files) throws IOException {
         IPatFile fileGD = files.getFile(Enum_FileType.Genotype);
+        IPatFile fileP = files.getFile(Enum_FileType.Phenotype);
         String[] lines = fileGD.getLines(2);
-        int countRowGD = fileGD.getLineCount();
+        int countRowP = fileP.getLineCount();
         String[] line2nd = fileGD.getSepStr(lines[1]);
         int countColGD = line2nd.length;
         if (countColGD - lines[1].split("/").length == 8 &&
                 lines[1].split("/").length > 1)
             return Enum_FileFormat.VCF;
-        else if (countColGD - countRowGD == 11 || countColGD - countRowGD == 10)
+        else if (countColGD - countRowP == 11 || countColGD - countRowP == 10)
             return Enum_FileFormat.Hapmap;
         else if (Arrays.asList(line2nd).containsAll(Arrays.asList("0", "1", "2")) &&
                 diffValues(line2nd) < 5)
@@ -377,7 +378,6 @@ class Obj_Module extends Obj_Super implements ActionListener{
                         e.printStackTrace(new PrintWriter(errors));
                         popErrorMsg(errors.toString());
                     }
-
                     // Output error message
                     boolean errorClose = false;
                     try {

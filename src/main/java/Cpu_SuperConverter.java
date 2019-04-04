@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 
-// 2019/03/25
+// 2019/04/03
 abstract class Cpu_SuperConverter {
     int sub_n = 128, sub_m = 8192;
     String sep = "\t";
@@ -608,19 +608,22 @@ abstract class Cpu_SuperConverter {
                         if (!this.isKeep[j])
                             continue;
                         this.m1 = this.table_GD[i][j].charAt(0);
-                        if (this.m1 == 'N' || this.m1 == 'n') {
-                            // missing data
-                            this.out.write(this.isNAFill? "\t1" : "\tNA");
-                        } else if (this.m1 == this.RefAllele[j]) {
+                       if (this.m1 == this.RefAllele[j]) {
                             // 2 alleles are the same, and equal to the first allele
                             this.out.write("\t0");
-                        } else if (this.m1 != this.RefAllele[j]) {
-                            // 2 alleles are the same, and equal to the second allele
-                            this.out.write("\t2");
-                        } else {
-                            // 2 alleles are not the same
-                            this.out.write("\t1");
-                        }
+                       } else {
+                            switch (this.m1) {
+                                // missing data
+                                case 'N': case 'n':
+                                    this.out.write(this.isNAFill? "\t1" : "\tNA"); break;
+                                // alleles are the same, and equal to the second allele
+                                case 'A': case 'T': case 'C': case 'G':
+                                    this.out.write("\t2"); break;
+                                // alleles are not the same (IUPAC nucleotide ambiguity codes)
+                                default:
+                                    this.out.write("\t1"); break;
+                            }
+                       }
                     }
                 } else {
                     for (int j = 0; j < this.mCount; j ++) {
@@ -727,12 +730,25 @@ abstract class Cpu_SuperConverter {
                         if (!this.isKeep[j])
                             continue;
                         this.m1 = this.table_GD[i][j].charAt(0);
-                        if (this.m1 == 'N' || this.m1 == 'n') {
-                            // missing data, coded as 0 0
-                            this.out.write("\t0 0");
-                        } else {
-                            // record the exact value
-                            this.out.write("\t" + this.m1 + " " + this.m1);
+                        switch (this.m1) {
+                            // missing data
+                            case 'N': case 'n':
+                                this.out.write("\t0 0"); break;
+                            // alleles are the same, and equal to the second allele
+                            case 'A': case 'T': case 'C': case 'G':
+                                this.out.write("\t" + this.m1 + " " + this.m1); break;
+                            case 'R':
+                                this.out.write("\t" + "A G");break;
+                            case 'Y':
+                                this.out.write("\t" + "C T");break;
+                            case 'S':
+                                this.out.write("\t" + "G C");break;
+                            case 'W':
+                                this.out.write("\t" + "A T");break;
+                            case 'K':
+                                this.out.write("\t" + "G T");break;
+                            case 'M':
+                                this.out.write("\t" + "A C");break;
                         }
                     }
                 } else {
@@ -1174,7 +1190,7 @@ abstract class Cpu_SuperConverter {
             String[] tempLines = readline.replaceAll("\"", "").split(sep);
             // Hapmap Specific. If is the first round, catch the RefAllele if necessary
             if (lastPosition == 11)
-                RefAllele[index] = tempLines[11].charAt(0);
+                RefAllele[index] = tempLines[1].charAt(0);
             for (int i = lastPosition; i < upperBound; i ++)
                 tableGD[i - lastPosition][index] = tempLines[i];
             index ++;

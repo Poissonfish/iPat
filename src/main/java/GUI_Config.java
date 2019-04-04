@@ -105,6 +105,13 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
         this.paneFileTray.add(this.labelCov, "cell 0 7, grow, align c");
         this.paneFileTray.add(this.titleKin, "cell 0 8, grow, align c");
         this.paneFileTray.add(this.labelKin, "cell 0 9, grow, align c");
+        // Load module files into the tray
+        for (FileLabel lb : arrayLabel) {
+            Enum_FileType tempType = lb.getFiletype();
+            IPatFile tempFile = module.getFile(tempType);
+            if (!tempFile.isEmpty())
+                lb.setFile(new IPatFile(tempFile.getAbsolutePath()));
+        }
         // DnD feature
         new DropTarget(this.paneFileTray, new DropTargetListener() {
             @Override
