@@ -6,12 +6,7 @@
     </artifacts-to-build>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="410acb04-9b59-4ff5-984f-22dc119a6f59" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/Cpu_SuperConverter.java" afterPath="$PROJECT_DIR$/src/main/java/Cpu_SuperConverter.java" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/GUI_Config.java" afterPath="$PROJECT_DIR$/src/main/java/GUI_Config.java" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/Obj_Module.java" afterPath="$PROJECT_DIR$/src/main/java/Obj_Module.java" />
-    </list>
+    <list default="true" id="410acb04-9b59-4ff5-984f-22dc119a6f59" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -39,7 +34,7 @@
             <entry file="file://$PROJECT_DIR$/src/main/java/Obj_Manager.java">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="322">
-                  <caret line="51" column="40" lean-forward="true" selection-start-line="51" selection-start-column="40" selection-end-line="51" selection-end-column="40" />
+                  <caret line="51" column="40" lean-forward="false" selection-start-line="51" selection-start-column="40" selection-end-line="51" selection-end-column="40" />
                   <folding>
                     <element signature="e#6703#6704#0" expanded="true" />
                     <element signature="e#6744#6745#0" expanded="true" />
@@ -106,7 +101,7 @@
                     <entry file="file://$PROJECT_DIR$/src/main/java/GUI_Config.java">
                       <provider selected="true" editor-type-id="text-editor">
                         <state relative-caret-position="804">
-                          <caret line="551" column="13" lean-forward="true" selection-start-line="551" selection-start-column="13" selection-end-line="551" selection-end-column="13" />
+                          <caret line="551" column="13" lean-forward="false" selection-start-line="551" selection-start-column="13" selection-end-line="551" selection-end-column="13" />
                           <folding />
                         </state>
                       </provider>
@@ -133,7 +128,7 @@
                     <entry file="file://$PROJECT_DIR$/src/main/java/GUI_Config.java">
                       <provider selected="true" editor-type-id="text-editor">
                         <state relative-caret-position="634">
-                          <caret line="548" column="0" lean-forward="true" selection-start-line="548" selection-start-column="0" selection-end-line="548" selection-end-column="0" />
+                          <caret line="548" column="0" lean-forward="false" selection-start-line="548" selection-start-column="0" selection-end-line="548" selection-end-column="0" />
                           <folding />
                         </state>
                       </provider>
@@ -149,7 +144,7 @@
                 <entry file="file://$PROJECT_DIR$/src/main/java/Obj_FileCluster.java">
                   <provider selected="true" editor-type-id="text-editor">
                     <state relative-caret-position="817">
-                      <caret line="25" column="20" lean-forward="true" selection-start-line="25" selection-start-column="20" selection-end-line="25" selection-end-column="20" />
+                      <caret line="25" column="20" lean-forward="false" selection-start-line="25" selection-start-column="20" selection-end-line="25" selection-end-column="20" />
                       <folding />
                     </state>
                   </provider>
@@ -159,7 +154,7 @@
                 <entry file="file://$PROJECT_DIR$/src/main/java/Obj_Module.java">
                   <provider selected="true" editor-type-id="text-editor">
                     <state relative-caret-position="721">
-                      <caret line="61" column="5" lean-forward="true" selection-start-line="61" selection-start-column="5" selection-end-line="61" selection-end-column="5" />
+                      <caret line="61" column="5" lean-forward="false" selection-start-line="61" selection-start-column="5" selection-end-line="61" selection-end-column="5" />
                       <folding />
                     </state>
                   </provider>
@@ -179,7 +174,7 @@
                 <entry file="file://$PROJECT_DIR$/src/main/java/Cpu_SuperConverter.java">
                   <provider selected="true" editor-type-id="text-editor">
                     <state relative-caret-position="575">
-                      <caret line="755" column="37" lean-forward="true" selection-start-line="755" selection-start-column="37" selection-end-line="755" selection-end-column="37" />
+                      <caret line="755" column="37" lean-forward="false" selection-start-line="755" selection-start-column="37" selection-end-line="755" selection-end-column="37" />
                       <folding>
                         <element signature="e#912#920#0" expanded="true" />
                         <element signature="e#968#976#0" expanded="true" />
@@ -192,7 +187,7 @@
                 <entry file="file://$PROJECT_DIR$/src/main/java/Cpu_Converter.java">
                   <provider selected="true" editor-type-id="text-editor">
                     <state relative-caret-position="730">
-                      <caret line="44" column="17" lean-forward="true" selection-start-line="44" selection-start-column="17" selection-end-line="44" selection-end-column="17" />
+                      <caret line="44" column="17" lean-forward="false" selection-start-line="44" selection-start-column="17" selection-end-line="44" selection-end-column="17" />
                       <folding />
                     </state>
                   </provider>
@@ -307,7 +302,7 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="y" value="23" />
     <option name="width" value="3840" />
     <option name="height" value="1577" />
@@ -553,8 +548,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="3840" height="1577" extended-state="0" />
-    <editor active="true" />
+    <frame x="1" y="23" width="3840" height="1577" extended-state="6" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -564,7 +558,7 @@
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32956812" sideWeight="0.5" order="6" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1927468" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.1927468" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -925,7 +919,7 @@
     <entry file="file://$PROJECT_DIR$/src/main/java/Cpu_Converter.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="730">
-          <caret line="44" column="17" lean-forward="true" selection-start-line="44" selection-start-column="17" selection-end-line="44" selection-end-column="17" />
+          <caret line="44" column="17" lean-forward="false" selection-start-line="44" selection-start-column="17" selection-end-line="44" selection-end-column="17" />
           <folding />
         </state>
       </provider>
@@ -933,7 +927,7 @@
     <entry file="file://$PROJECT_DIR$/src/main/java/Obj_Manager.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="322">
-          <caret line="51" column="40" lean-forward="true" selection-start-line="51" selection-start-column="40" selection-end-line="51" selection-end-column="40" />
+          <caret line="51" column="40" lean-forward="false" selection-start-line="51" selection-start-column="40" selection-end-line="51" selection-end-column="40" />
           <folding>
             <element signature="e#6703#6704#0" expanded="true" />
             <element signature="e#6744#6745#0" expanded="true" />
@@ -944,7 +938,7 @@
     <entry file="file://$PROJECT_DIR$/src/main/java/Obj_FileCluster.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="817">
-          <caret line="25" column="20" lean-forward="true" selection-start-line="25" selection-start-column="20" selection-end-line="25" selection-end-column="20" />
+          <caret line="25" column="20" lean-forward="false" selection-start-line="25" selection-start-column="20" selection-end-line="25" selection-end-column="20" />
           <folding />
         </state>
       </provider>
@@ -979,7 +973,7 @@
     <entry file="file://$PROJECT_DIR$/src/main/java/Obj_Module.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="721">
-          <caret line="61" column="5" lean-forward="true" selection-start-line="61" selection-start-column="5" selection-end-line="61" selection-end-column="5" />
+          <caret line="61" column="5" lean-forward="false" selection-start-line="61" selection-start-column="5" selection-end-line="61" selection-end-column="5" />
           <folding />
         </state>
       </provider>
@@ -987,7 +981,7 @@
     <entry file="file://$PROJECT_DIR$/src/main/java/GUI_Config.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="634">
-          <caret line="548" column="0" lean-forward="true" selection-start-line="548" selection-start-column="0" selection-end-line="548" selection-end-column="0" />
+          <caret line="548" column="0" lean-forward="false" selection-start-line="548" selection-start-column="0" selection-end-line="548" selection-end-column="0" />
           <folding />
         </state>
       </provider>
