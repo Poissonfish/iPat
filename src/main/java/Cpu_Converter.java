@@ -4,7 +4,7 @@ import java.awt.*;
 import java.io.IOException;
 
 class Cpu_Converter extends Cpu_SuperConverter {
-     // progress
+     // progress 
     JFrame frameProgress;
     Container content;
     Border border;
