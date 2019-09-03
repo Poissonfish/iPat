@@ -12,9 +12,13 @@
  Intelligent Prediction and Association Tool (iPat) is a software for genomic studies with a user-friendly graphical user interface (GUI). With iPat, GWAS or GS can be performed using a pointing device to simply drag and/or click on graphical elements to specify input data files, choose input parameters, and select analytical models. It can also serve as a format converter for people who want to use the converted files for other purposes. Please click [here](http://poissonfish.github.io/iPat) for further information on the GibHub Pages.
 
 # Update History
+### Sep 3, 2019
+- FarmCPU and GAPIT: Fix issues when users provide self-defined covariates in GWAS
+- Minor bug fixes
+
 ### Arp 3, 2019
 - Support IUPAC nucleotide ambiguous codes in Hapmap files
-- Minor bug fixes 
+- Minor bug fixes
 
 ### Mar 26, 2019
 - Improve quality control efficiency
