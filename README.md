@@ -5,7 +5,7 @@
 
 ## [User Manual (GitHub Pages)](http://poissonfish.github.io/iPat)
 ## [Download iPat for Windows](http://zzlab.net/iPat/iPat.zip)
-## [Download iPat for Mac OS](http://zzlab.net/iPat/iPatMac.zip)
+## [Download iPat for Mac OS](http://zzlab.net/iPat/iPat_Mac.zip)
 ## [Demo data](http://zzlab.net/iPat/demo.zip)
 
 # Why iPat?
