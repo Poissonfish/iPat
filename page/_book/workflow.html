@@ -1,15 +1,14 @@
 <!DOCTYPE html>
-<html >
-
+<html lang="" xml:lang="">
 <head>
 
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>2.1 Workflow | iPat: Intelligent Prediction and Association Tool</title>
-  <meta name="description" content="Documentation for the caret package.">
-  <meta name="generator" content="bookdown  and GitBook 2.6.7">
+  <meta name="description" content="Documentation for the caret package." />
+  <meta name="generator" content="bookdown 0.20 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="2.1 Workflow | iPat: Intelligent Prediction and Association Tool />
+  <meta property="og:title" content="2.1 Workflow | iPat: Intelligent Prediction and Association Tool" />
   <meta property="og:type" content="book" />
   <meta property="og:url" content="https://github.com/poissonfish/iPat" />
   <meta property="og:image" content="https://github.com/poissonfish/iPatmd/icon.png" />
@@ -17,23 +16,23 @@
   <meta name="github-repo" content="poissonfish/iPat" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="2.1 Workflow | iPat: Intelligent Prediction and Association Tool />
+  <meta name="twitter:title" content="2.1 Workflow | iPat: Intelligent Prediction and Association Tool" />
   
   <meta name="twitter:description" content="Documentation for the caret package." />
   <meta name="twitter:image" content="https://github.com/poissonfish/iPatmd/icon.png" />
 
-<meta name="author" content="Chunpeng James Chen">
+<meta name="author" content="Chunpeng James Chen" />
 
 
-<meta name="date" content="2019-01-29">
+<meta name="date" content="2020-09-09" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="interface-and-usage.html">
-<link rel="next" href="global-settings.html">
+<link rel="prev" href="interface-and-usage.html"/>
+<link rel="next" href="global-settings.html"/>
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -41,6 +40,9 @@
 <link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
 
 
 
@@ -49,6 +51,9 @@
 
 
 <script src="libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="libs/bsTable-3.3.7/bootstrapTable.min.css" rel="stylesheet" />
+<script src="libs/bsTable-3.3.7/bootstrapTable.js"></script>
 
 
 <style type="text/css">
@@ -57,7 +62,6 @@ a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
 a.sourceLine:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode { white-space: pre; position: relative; }
-div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
@@ -69,7 +73,7 @@ a.sourceLine { text-indent: -1em; padding-left: 1em; }
 pre.numberSource a.sourceLine
   { position: relative; left: -4em; }
 pre.numberSource a.sourceLine::before
-  { content: attr(title);
+  { content: attr(data-line-number);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
     border: none; pointer-events: all; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
@@ -166,7 +170,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="3" data-path="formats.html"><a href="formats.html"><i class="fa fa-check"></i><b>3</b> Formats</a><ul>
 <li class="chapter" data-level="3.1" data-path="input-formats.html"><a href="input-formats.html"><i class="fa fa-check"></i><b>3.1</b> Input formats</a><ul>
 <li class="chapter" data-level="3.1.1" data-path="input-formats.html"><a href="input-formats.html#genotype"><i class="fa fa-check"></i><b>3.1.1</b> Genotype</a></li>
-<li class="chapter" data-level="3.1.2" data-path="input-formats.html"><a href="input-formats.html#phenotype-1"><i class="fa fa-check"></i><b>3.1.2</b> Phenotype</a></li>
+<li class="chapter" data-level="3.1.2" data-path="global-settings.html"><a href="global-settings.html#phenotype"><i class="fa fa-check"></i><b>3.1.2</b> Phenotype</a></li>
 <li class="chapter" data-level="3.1.3" data-path="input-formats.html"><a href="input-formats.html#map"><i class="fa fa-check"></i><b>3.1.3</b> Map</a></li>
 <li class="chapter" data-level="3.1.4" data-path="input-formats.html"><a href="input-formats.html#covariates"><i class="fa fa-check"></i><b>3.1.4</b> Covariates</a></li>
 <li class="chapter" data-level="3.1.5" data-path="input-formats.html"><a href="input-formats.html#kinship"><i class="fa fa-check"></i><b>3.1.5</b> Kinship</a></li>
@@ -179,27 +183,27 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="4" data-path="step-by-step-tutorial.html"><a href="step-by-step-tutorial.html"><i class="fa fa-check"></i><b>4</b> Step by Step Tutorial</a><ul>
 <li class="chapter" data-level="4.1" data-path="gwas-in-gapit.html"><a href="gwas-in-gapit.html"><i class="fa fa-check"></i><b>4.1</b> GWAS in GAPIT</a><ul>
 <li><a href="gwas-in-gapit.html#prepare-plink-files"><strong><em>Prepare PLINK files</em></strong></a></li>
-<li><a href="gwas-in-gapit.html#import-files-1"><strong><em>Import files</em></strong></a></li>
+<li><a href="workflow.html#import-files"><strong><em>Import files</em></strong></a></li>
 <li><a href="gwas-in-gapit.html#define-gapit"><strong><em>Define GAPIT</em></strong></a></li>
-<li><a href="gwas-in-gapit.html#inspect-results-1"><strong><em>Inspect results</em></strong></a></li>
+<li><a href="workflow.html#inspect-results"><strong><em>Inspect results</em></strong></a></li>
 </ul></li>
 <li class="chapter" data-level="4.2" data-path="k-fold-cross-validation-gs-in-bglr.html"><a href="k-fold-cross-validation-gs-in-bglr.html"><i class="fa fa-check"></i><b>4.2</b> K-fold cross-validation GS in BGLR</a><ul>
 <li><a href="k-fold-cross-validation-gs-in-bglr.html#prepare-vcf-files"><strong><em>Prepare VCF files</em></strong></a></li>
-<li><a href="k-fold-cross-validation-gs-in-bglr.html#import-files-2"><strong><em>Import files</em></strong></a></li>
+<li><a href="k-fold-cross-validation-gs-in-bglr.html#import-files-1"><strong><em>Import files</em></strong></a></li>
 <li><a href="k-fold-cross-validation-gs-in-bglr.html#define-bglr"><strong><em>Define BGLR</em></strong></a></li>
-<li><a href="k-fold-cross-validation-gs-in-bglr.html#inspect-results-2"><strong><em>Inspect results</em></strong></a></li>
+<li><a href="k-fold-cross-validation-gs-in-bglr.html#inspect-results-1"><strong><em>Inspect results</em></strong></a></li>
 </ul></li>
 <li class="chapter" data-level="4.3" data-path="gwas-assisted-gs-in-rrblup.html"><a href="gwas-assisted-gs-in-rrblup.html"><i class="fa fa-check"></i><b>4.3</b> GWAS-assisted GS in rrBLUP</a><ul>
-<li><a href="gwas-assisted-gs-in-rrblup.html#import-files-3"><strong><em>Import files</em></strong></a></li>
+<li><a href="gwas-assisted-gs-in-rrblup.html#import-files-2"><strong><em>Import files</em></strong></a></li>
 <li><a href="gwas-assisted-gs-in-rrblup.html#define-farmcpu-gwas"><strong><em>Define FarmCPU (GWAS)</em></strong></a></li>
 <li><a href="gwas-assisted-gs-in-rrblup.html#define-rrblup-gs"><strong><em>Define rrBLUP (GS)</em></strong></a></li>
 <li><a href="gwas-assisted-gs-in-rrblup.html#inspect-progress"><strong><em>Inspect Progress</em></strong></a></li>
 </ul></li>
 <li class="chapter" data-level="4.4" data-path="convert-hapmap-to-plink-format.html"><a href="convert-hapmap-to-plink-format.html"><i class="fa fa-check"></i><b>4.4</b> Convert Hapmap to PLINK format</a><ul>
 <li><a href="convert-hapmap-to-plink-format.html#prepare-hapmap-files"><strong><em>Prepare Hapmap files</em></strong></a></li>
-<li><a href="convert-hapmap-to-plink-format.html#import-files-4"><strong><em>Import files</em></strong></a></li>
+<li><a href="convert-hapmap-to-plink-format.html#import-files-3"><strong><em>Import files</em></strong></a></li>
 <li><a href="convert-hapmap-to-plink-format.html#define-bglr-1"><strong><em>Define BGLR</em></strong></a></li>
-<li><a href="convert-hapmap-to-plink-format.html#inspect-results-3"><strong><em>Inspect results</em></strong></a></li>
+<li><a href="convert-hapmap-to-plink-format.html#inspect-results-2"><strong><em>Inspect results</em></strong></a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
@@ -298,11 +302,13 @@ Fig. Double click to open the working directory
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
 <script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
 <script>
 gitbook.require(["gitbook"], function(gitbook) {
 gitbook.start({
@@ -310,12 +316,11 @@ gitbook.start({
 "github": true,
 "facebook": false,
 "twitter": true,
-"google": false,
 "linkedin": false,
 "weibo": false,
 "instapaper": false,
 "vk": false,
-"all": ["facebook", "google", "twitter", "linkedin", "weibo", "instapaper"]
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
 },
 "fontsettings": {
 "theme": "white",
@@ -327,6 +332,10 @@ gitbook.start({
 "text": null
 },
 "history": {
+"link": null,
+"text": null
+},
+"view": {
 "link": null,
 "text": null
 },

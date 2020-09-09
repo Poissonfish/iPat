@@ -23,7 +23,7 @@ cover-image: md/icon.png
 
 <center>**[iPat for Windows](http://zzlab.net/iPat/iPat.zip)**</center>
 
-<center>**[iPat for Mac OS](http://zzlab.net/iPat/iPatMac.zip)**</center>
+<center>**[iPat for Mac OS](http://zzlab.net/iPat/iPat_Mac.zip)**</center>
 
 <center>**[Demo data](http://zzlab.net/iPat/demo.zip)**</center>
 
