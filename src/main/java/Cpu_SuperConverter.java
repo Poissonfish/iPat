@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 
-// 2019/04/03
+// 2020/02/22
 abstract class Cpu_SuperConverter {
     int sub_n = 128, sub_m = 8192;
     String sep = "\t";
@@ -101,7 +101,7 @@ abstract class Cpu_SuperConverter {
                 break;
             case PLINK:
                 if (OutputFormat == iPatFormat.Numerical)
-                   PlinkToNum(pathGD, pathGM);
+                    PlinkToNum(pathGD, pathGM);
                 break;
             case genStudio:
                 GenStdioToNum(pathGD);
@@ -253,8 +253,11 @@ abstract class Cpu_SuperConverter {
             this.isKeep = doQCNUM(GD_path, hasHeader, hasTaxa);
             for(boolean b : this.isKeep)
                 this.mCountQC += b ? 1 : 0;
-        } else
+        } else {
             this.mCountQC = this.mCount;
+            this.isKeep = new boolean[this.mCountQC];
+            Arrays.fill(this.isKeep, true);
+        }
         // ========= ========= ========= ========= Map ========= ========= ========= =========
         if (!GM_path.equals("NA")) {
             setReader(GM_path);
@@ -302,8 +305,9 @@ abstract class Cpu_SuperConverter {
         iniProgress("Converting Genotype File",
                 String.format("Sample %d ~ %d : ", 1, this.nCount));
         // Write following samples (loop over samples)
+        int counter = 0;
         while ((this.tempRead = this.reader.readLine()) != null) {
-            updateProgress(this.idxTemp, this.size_GD);
+            updateProgress(counter++, this.size_GD);
             this.idxTemp = 0;
             String[] sepStr = this.tempRead.replaceAll("\"", "").split(this.sep);
             if (!hasTaxa)
@@ -559,8 +563,11 @@ abstract class Cpu_SuperConverter {
             this.isKeep = doQCHapmap(GD_path, valueNA, isOneChar);
             for(boolean b : this.isKeep)
                 this.mCountQC += b ? 1 : 0;
-        } else
+        } else {
             this.mCountQC = this.mCount;
+            this.isKeep = new boolean[this.mCountQC];
+            Arrays.fill(this.isKeep, true);
+        }
         // ========= ========= ========= ========= Map ========= ========= ========= =========
         resetToNthLine(GD_path, 1);
         iniProgress("Converting Map File",
@@ -608,10 +615,10 @@ abstract class Cpu_SuperConverter {
                         if (!this.isKeep[j])
                             continue;
                         this.m1 = this.table_GD[i][j].charAt(0);
-                       if (this.m1 == this.RefAllele[j]) {
+                        if (this.m1 == this.RefAllele[j]) {
                             // 2 alleles are the same, and equal to the first allele
                             this.out.write("\t0");
-                       } else {
+                        } else {
                             switch (this.m1) {
                                 // missing data
                                 case 'N': case 'n':
@@ -623,14 +630,19 @@ abstract class Cpu_SuperConverter {
                                 default:
                                     this.out.write("\t1"); break;
                             }
-                       }
+                        }
                     }
                 } else {
                     for (int j = 0; j < this.mCount; j ++) {
                         if (!this.isKeep[j])
                             continue;
                         this.m1 = this.table_GD[i][j].charAt(0);
-                        this.m2 = this.table_GD[i][j].charAt(1);
+                        try {
+                            // for some missing values would only have a char
+                            this.m2 = this.table_GD[i][j].charAt(1);
+                        } catch (Exception e) {
+                            this.m2 = this.m1;
+                        }
                         if (this.m1 == 'N' || this.m2 == 'N' || this.m1 == 'n' || this.m2 == 'n') {
                             // missing data
                             this.out.write(this.isNAFill? "\t1" : "\tNA");
@@ -685,8 +697,11 @@ abstract class Cpu_SuperConverter {
             this.isKeep = doQCHapmap(GD_path, valueNA, isOneChar);
             for(boolean b : this.isKeep)
                 this.mCountQC += b ? 1 : 0;
-        } else
+        } else {
             this.mCountQC = this.mCount;
+            this.isKeep = new boolean[this.mCountQC];
+            Arrays.fill(this.isKeep, true);
+        }
         // ========= ========= ========= ========= Map ========= ========= ========= =========
         System.out.println("Converting Map file");
         resetToNthLine(GD_path, 1);
@@ -757,7 +772,11 @@ abstract class Cpu_SuperConverter {
                         if (!this.isKeep[j])
                             continue;
                         this.m1 = this.table_GD[i][j].charAt(0);
-                        this.m2 = this.table_GD[i][j].charAt(1);
+                        try {
+                            this.m2 = this.table_GD[i][j].charAt(1);
+                        } catch (Exception e) {
+                            this.m2 = this.m1;
+                        }
                         if (this.m1 == 'N' || this.m2 == 'N' || this.m1 == 'n' || this.m2 == 'n') {
                             // missing data, coded as 0 0
                             this.out.write("\t0 0");
@@ -812,8 +831,11 @@ abstract class Cpu_SuperConverter {
             this.isKeep = doQCVCF(GD_path);
             for(boolean b : this.isKeep)
                 this.mCountQC += b ? 1 : 0;
-        } else
+        } else {
             this.mCountQC = this.mCount;
+            this.isKeep = new boolean[this.mCountQC];
+            Arrays.fill(this.isKeep, true);
+        }
         // ========= ========= ========= ========= Map ========= ========= ========= =========
         resetToNthLine(GD_path, this.vcfAnnotation);
         iniProgress("Converting Map File",
@@ -944,8 +966,11 @@ abstract class Cpu_SuperConverter {
             this.isKeep = doQCVCF(GD_path);
             for(boolean b : this.isKeep)
                 this.mCountQC += b ? 1 : 0;
-        } else
+        } else {
             this.mCountQC = this.mCount;
+            this.isKeep = new boolean[this.mCountQC];
+            Arrays.fill(this.isKeep, true);
+        }
         // ========= ========= ========= ========= Map ========= ========= ========= =========
         resetToNthLine(GD_path, this.vcfAnnotation);
         iniProgress("Converting Map File",
@@ -1375,7 +1400,7 @@ abstract class Cpu_SuperConverter {
 //                for (Map.Entry<String, Long> entry : tableMap.entrySet()) {
 //                    System.out.println(entry.getKey() + ":" + entry.getValue());
 //                }
-                    // calculate maf
+                // calculate maf
                 switch (tableMap.size()) {
                     // NA, {AA, BB, AB}
                     case 2:

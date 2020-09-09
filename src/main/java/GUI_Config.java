@@ -298,6 +298,8 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
             command.addArg("-pSelect", this.panePhenotype.getSelected());
             command.addArg("-cov", this.labelCov.getFile().getPath());
             command.addArg("-kin", this.labelKin.getFile().getPath());
+            command.addArg("-maf", this.paneQC.getMAF());
+            command.addArg("-ms", this.paneQC.getMS());
             command.setMethod(Enum_Analysis.GWAS);
             // Create array (in case gaws-assist)
             ArrayList<IPatCommand> commandRun = new ArrayList<>();
@@ -354,6 +356,8 @@ public class GUI_Config extends JFrame implements ActionListener, WindowListener
             commandGWAS.addArg("-pSelect", this.panePhenotype.getSelected());
             commandGWAS.addArg("-cov", this.labelCov.getFile().getPath());
             commandGWAS.addArg("-kin", this.labelKin.getFile().getPath());
+            commandGWAS.addArg("-maf", this.paneQC.getMAF());
+            commandGWAS.addArg("-ms", this.paneQC.getMS());
             commandGWAS.setMethod(Enum_Analysis.GWAS);
             IPatCommand commandGS = this.paneGS2.getCommand();
             commandGS.addWD(this.paneWD.getPath());

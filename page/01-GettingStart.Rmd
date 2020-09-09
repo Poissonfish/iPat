@@ -25,7 +25,7 @@ source("http://zzlab.net/iPat/iPat_installation.r")
 <p align="center"><p align="center"><img src = "md/install_win.png" width = 1200></p>
 
 ## Mac OS users
-1. Download [iPat_Installer.dmg](http://zzlab.net/iPat/iPatMac.zip) and mount it on Mac.
+1. Download [iPat_Installer.dmg](http://zzlab.net/iPat/iPat_Mac.zip) and mount it on Mac.
 
 2. Follow the instruction to install iPat.
 

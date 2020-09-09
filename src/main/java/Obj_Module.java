@@ -180,13 +180,16 @@ class Obj_Module extends Obj_Super implements ActionListener{
         int countRowP = fileP.getLineCount();
         String[] line2nd = fileGD.getSepStr(lines[1]);
         int countColGD = line2nd.length;
-        if (countColGD - lines[1].split("/").length == 8 &&
-                lines[1].split("/").length > 1)
+//        if (countColGD - lines[1].split("/").length == 8 &&
+//                lines[1].split("/").length > 1)
+        if (fileGD.getPath().toUpperCase().endsWith("VCF"))
             return Enum_FileFormat.VCF;
-        else if (countColGD - countRowP == 11 || countColGD - countRowP == 10)
+//        else if (countColGD - countRowP == 11 || countColGD - countRowP == 10)
+        else if (fileGD.getPath().toUpperCase().endsWith("HMP"))
             return Enum_FileFormat.Hapmap;
         else if (Arrays.asList(line2nd).containsAll(Arrays.asList("0", "1", "2")) &&
                 diffValues(line2nd) < 5)
+//        else if (fileGD.getPath().toUpperCase().endsWith("DAT"))
             return Enum_FileFormat.Numeric;
         else if (fileGD.getPath().toUpperCase().endsWith("PED"))
             return Enum_FileFormat.PLINK;

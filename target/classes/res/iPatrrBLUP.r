@@ -77,6 +77,7 @@ tryCatch({
           rawMap = NULL
         } else {
           rawMap = fread(arg[i])
+          names(rawMap) = c("SNP", "Chromosome", "Position")
         }
         cat("Done\n")
       },

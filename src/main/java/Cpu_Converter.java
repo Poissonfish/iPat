@@ -52,6 +52,10 @@ class Cpu_Converter extends Cpu_SuperConverter {
         new Thread(run).start();
     }
     void ConvertAndWait() throws IOException {
+        System.out.println("input " + this.inputF);
+        System.out.println("output" + this.outputF);
+        System.out.println("GD" + this.pathGD);
+        System.out.println("GM " + this.pathGM);
         this.run(this.inputF, this.outputF, this.pathGD, this.pathGM);
     }
 

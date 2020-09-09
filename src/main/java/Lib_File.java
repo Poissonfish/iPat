@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 public class Lib_File {
     // R script
     String pathJar;
+    String fileLauncher;
     String fileGAPIT;
     String fileFarmCPU;
     String filePLINK;
@@ -18,6 +19,7 @@ public class Lib_File {
     public Lib_File() throws URISyntaxException {
         pathJar = Paths.get(iPat.class.getProtectionDomain().getCodeSource().getLocation().toURI()).
                 getParent().toString();
+        fileLauncher = Paths.get(pathJar, "res", "iPatLauncher.r").toString();
         fileGAPIT = Paths.get(pathJar, "res", "iPatGAPIT.r").toString();
         fileFarmCPU = Paths.get(pathJar, "res", "iPatFarmCPU.r").toString();
         filePLINK = Paths.get(pathJar, "res", "iPatPLINK.r").toString();
@@ -51,6 +53,7 @@ public class Lib_File {
             case "iPatrrBLUP.r": return this.filerrBLUP;
             case "iPatBGLR.r": return this.fileBGLR;
             case "iPatBSA.r": return this.fileBSA;
+            case "launcher": return this.fileLauncher;
             case "plink": return this.exePLINK;
         }
         return null;

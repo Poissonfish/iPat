@@ -43,7 +43,8 @@ class PanelGAPIT extends PanelTool {
     ArrayList<String> getCommand() {
         ArrayList<String> command = new ArrayList<>();
         command.add(iPat.REXC);
-        command.add(iPat.FILELIB.getAbsolutePath("iPatGAPIT.r"));
+        command.add(iPat.FILELIB.getAbsolutePath("launcher"));
+        command.add("GAPIT");
         command.add("-arg");
         command.add(this.comboModel.getValue());
         command.add(this.slidePC.getStrValue());
@@ -78,7 +79,8 @@ class PanelFarmCPU extends PanelTool {
     ArrayList<String> getCommand() {
         ArrayList<String> command = new ArrayList<>();
         command.add(iPat.REXC);
-        command.add(iPat.FILELIB.getAbsolutePath("iPatFarmCPU.r"));
+        command.add(iPat.FILELIB.getAbsolutePath("launcher"));
+        command.add("FarmCPU");
         command.add("-arg");
         command.add(this.comboBin.getValue());
         command.add(this.slideLoop.getStrValue());
@@ -113,7 +115,8 @@ class PanelPlink extends PanelTool {
     ArrayList<String> getCommand() {
         ArrayList<String> command = new ArrayList<>();
         command.add(iPat.REXC);
-        command.add(iPat.FILELIB.getAbsolutePath("iPatPLINK.r"));
+        command.add(iPat.FILELIB.getAbsolutePath("launcher"));
+        command.add("PLINK");
         command.add("-arg");
         command.add(slideCI.getStrValue());
         command.add(comboModel.getValue());
@@ -158,7 +161,8 @@ class PanelgBLUP extends PanelTool {
     ArrayList<String> getCommand() {
         ArrayList<String> command = new ArrayList<String>();
         command.add(iPat.REXC);
-        command.add(iPat.FILELIB.getAbsolutePath("iPatgBLUP.r"));
+        command.add(iPat.FILELIB.getAbsolutePath("launcher"));
+        command.add("gBLUP");
         command.add("-gs");
         command.add(this.checkValid.isSelected() ? "TRUE" : "FALSE");
         command.add(this.slideFold.getStrValue());
@@ -201,7 +205,8 @@ class PanelrrBLUP extends PanelTool {
     ArrayList<String> getCommand() {
         ArrayList<String> command = new ArrayList<String>();
         command.add(iPat.REXC);
-        command.add(iPat.FILELIB.getAbsolutePath("iPatrrBLUP.r"));
+        command.add(iPat.FILELIB.getAbsolutePath("launcher"));
+        command.add("rrBLUP");
         command.add("-gs");
         command.add(this.checkValid.isSelected() ? "TRUE" : "FALSE");
         command.add(this.slideFold.getStrValue());
@@ -267,7 +272,8 @@ class PanelBGLR extends PanelTool  {
     ArrayList<String> getCommand() {
         ArrayList<String> command = new ArrayList<String>();
         command.add(iPat.REXC);
-        command.add(iPat.FILELIB.getAbsolutePath("iPatBGLR.r"));
+        command.add(iPat.FILELIB.getAbsolutePath("launcher"));
+        command.add("BGLR");
         command.add("-arg");
         command.add(comboModel.getValue());
         command.add(slideNIter.getStrValue());
@@ -695,7 +701,8 @@ class PanelBottom extends JPanel implements MouseListener, MouseMotionListener {
                     case GAPIT:
                         map = iPat.MODVAL.mapGAPIT;
                         command.add(iPat.REXC);
-                        command.add(iPat.FILELIB.getAbsolutePath("iPatGAPIT.r"));
+                        command.add(iPat.FILELIB.getAbsolutePath("launcher"));
+                        command.add("GAPIT");
                         command.add("-arg");
                         command.add(map.get("model"));
                         command.add(map.get("pc"));
@@ -705,7 +712,8 @@ class PanelBottom extends JPanel implements MouseListener, MouseMotionListener {
                     case FarmCPU:
                         map = iPat.MODVAL.mapFarmCPU;
                         command.add(iPat.REXC);
-                        command.add(iPat.FILELIB.getAbsolutePath("iPatFarmCPU.r"));
+                        command.add(iPat.FILELIB.getAbsolutePath("launcher"));
+                        command.add("FarmCPU");
                         command.add("-arg");
                         command.add(map.get("bin"));
                         command.add(map.get("loop"));
@@ -715,7 +723,8 @@ class PanelBottom extends JPanel implements MouseListener, MouseMotionListener {
                     case PLINK:
                         map = iPat.MODVAL.mapPLINK;
                         command.add(iPat.REXC);
-                        command.add(iPat.FILELIB.getAbsolutePath("iPatPLINK.r"));
+                        command.add(iPat.FILELIB.getAbsolutePath("launcher"));
+                        command.add("PLINK");
                         command.add("-arg");
                         command.add(map.get("ci"));
                         command.add(map.get("model"));
@@ -726,7 +735,8 @@ class PanelBottom extends JPanel implements MouseListener, MouseMotionListener {
                     case gBLUP:
                         map = iPat.MODVAL.mapgBLUP;
                         command.add(iPat.REXC);
-                        command.add(iPat.FILELIB.getAbsolutePath("iPatgBLUP.r"));
+                        command.add(iPat.FILELIB.getAbsolutePath("launcher"));
+                        command.add("gBLUP");
                         command.add("-gs");
                         command.add(map.get("valid"));
                         command.add(map.get("fold"));
@@ -739,7 +749,8 @@ class PanelBottom extends JPanel implements MouseListener, MouseMotionListener {
                     case rrBLUP:
                         map = iPat.MODVAL.maprrBLUP;
                         command.add(iPat.REXC);
-                        command.add(iPat.FILELIB.getAbsolutePath("iPatrrBLUP.r"));
+                        command.add(iPat.FILELIB.getAbsolutePath("launcher"));
+                        command.add("rrBLUP");
                         command.add("-gs");
                         command.add(map.get("valid"));
                         command.add(map.get("fold"));
@@ -752,7 +763,8 @@ class PanelBottom extends JPanel implements MouseListener, MouseMotionListener {
                     case BGLR:
                         map = iPat.MODVAL.mapBGLR;
                         command.add(iPat.REXC);
-                        command.add(iPat.FILELIB.getAbsolutePath("iPatBGLR.r"));
+                        command.add(iPat.FILELIB.getAbsolutePath("launcher"));
+                        command.add("BGLR");
                         command.add("-arg");
                         command.add(map.get("model"));
                         command.add(map.get("niter"));

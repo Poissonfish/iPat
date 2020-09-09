@@ -13,22 +13,22 @@ tryCatch({
 # Input arguments
   arg = commandArgs(trailingOnly=TRUE)
   # ======= Test Code ====== #
-  # rm(list=ls())
-  # arg = c("-gs", "TRUE", "5", "1",
-  #         "-gwas", "TRUE", "0.05",
-  #         "-arg", "BRR", "1200", "500",
-  #         "-wd", "/Users/jameschen/Desktop/Test/iPatDEMO",
-  #         "-project", "PLINK",
-  #         "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.txt",
-  #         "-pSelect", "y75sepy25sep",
-  #         # "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/data.txt",
-  #         # "-pSelect", "EarHTsepEarDiasep",
-  #         "-cov", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.cov",
-  #         "-cSelect", "C1sep",
-  #         "-genotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.dat",
-  #         "-kin", "NA",
-  #         "-map", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.map")
-  # trait = dataP$name[1]
+  rm(list=ls())
+  arg = c("-gs", "TRUE", "5", "1",
+          "-gwas", "TRUE", "0.05",
+          "-arg", "BRR", "1200", "500",
+          "-wd", "/Users/jameschen/Desktop/Test/iPatDEMO",
+          "-project", "bglr",
+          "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.txt",
+          "-pSelect", "y75sepy25sep",
+          # "-phenotype", "/Users/jameschen/Desktop/Test/iPatDEMO/data.txt",
+          # "-pSelect", "EarHTsepEarDiasep",
+          "-cov", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.cov",
+          "-cSelect", "C1sep",
+          "-genotype", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.dat",
+          "-kin", "NA",
+          "-map", "/Users/jameschen/Desktop/Test/iPatDEMO/demo.map")
+  trait = dataP$name[1]
   # ======= Test Code ====== #
   for (i in 1 : length(arg)) {
     switch (arg[i],

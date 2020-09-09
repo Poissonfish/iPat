@@ -44,6 +44,7 @@ public class Lib_Ref {
         maprrBLUP.put("iter", "1");
         // BGLR
         mapBGLR = new HashMap<>();
+        mapBGLR.put("isGWAS", "FALSE");
         mapBGLR.put("model", "BRR");
         mapBGLR.put("niter", "5000");
         mapBGLR.put("burn", "500");

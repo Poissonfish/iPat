@@ -53,6 +53,15 @@ tryCatch({
         i = i + 1
         project = arg[i]
       },
+      "-phenotype" = {
+        cat("   Loading phenotype ...")
+        i = i + 1
+        if (grepl("NA", arg[i]))
+          Y.path = "NA"
+        else
+          Y.path = arg[i]
+        cat("Done\n")
+      },
       "-pSelect" = {
         i = i + 1
         selectP = arg[i]
@@ -69,15 +78,6 @@ tryCatch({
         i = i + 1
         selectC = ifelse(grepl("NA", arg[i]),
           NA, arg[i])
-      },
-      "-phenotype" = {
-        cat("   Loading phenotype ...")
-        i = i + 1
-        if (grepl("NA", arg[i]))
-          Y.path = "NA"
-        else
-          Y.path = arg[i]
-        cat("Done\n")
       },
       "-genotype" = {
         cat("   Loading genotype ...")
